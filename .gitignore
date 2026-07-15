@@ -1,0 +1,16 @@
+# --- Contenu confidentiel : ne jamais publier -------------------------------
+# Garde-fou : ces dossiers ont été retirés du dépôt. S'ils sont recréés
+# localement (analyses réelles, documents internes), ils resteront ignorés.
+aipd/
+sources/
+
+# --- Outillage local ---------------------------------------------------------
+.claude/
+
+# --- Fichiers temporaires / système -----------------------------------------
+*.tmp
+*.bak
+*~
+Thumbs.db
+desktop.ini
+.DS_Store

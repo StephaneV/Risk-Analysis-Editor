@@ -1,0 +1,301 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "created_at": "2026-07-13",
+    "updated_at": "2026-07-13",
+    "status": "brouillon",
+    "title": "Analyse de risques — Système d'information",
+    "author": "S. Vinter",
+    "organization": "OMT",
+    "scope": "Système d'information — services critiques",
+    "methodology_reference": "interne (inspiré ISO 27005)"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Probabilité",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Très faible",
+          "description": "Vraisemblance très faible : événement très improbable, qui ne devrait pas se produire (ordre de grandeur : moins d'une fois tous les 10 ans)."
+        },
+        {
+          "value": 2,
+          "label": "Faible",
+          "description": "Vraisemblance faible : événement peu probable, susceptible de survenir exceptionnellement (ordre de grandeur : environ une fois tous les 5 ans)."
+        },
+        {
+          "value": 3,
+          "label": "Moyenne",
+          "description": "Vraisemblance moyenne : événement possible, susceptible de se produire occasionnellement (ordre de grandeur : environ une fois par an)."
+        },
+        {
+          "value": 4,
+          "label": "Forte",
+          "description": "Vraisemblance forte : événement probable, susceptible de se produire régulièrement (ordre de grandeur : plusieurs fois par an)."
+        },
+        {
+          "value": 5,
+          "label": "Très forte",
+          "description": "Vraisemblance très forte : événement quasi certain, survenant de façon fréquente ou récurrente."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Gravité",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Très faible",
+          "description": "Impact très faible : conséquence négligeable, sans effet notable sur l'activité, les actifs ou la conformité."
+        },
+        {
+          "value": 2,
+          "label": "Faible",
+          "description": "Impact faible : conséquences mineures, limitées et facilement absorbées (léger désagrément opérationnel)."
+        },
+        {
+          "value": 3,
+          "label": "Moyenne",
+          "description": "Impact moyen : conséquences notables mais maîtrisables (perturbation temporaire de l'activité, coûts contenus)."
+        },
+        {
+          "value": 4,
+          "label": "Forte",
+          "description": "Impact fort : conséquences graves sur l'activité, les finances ou la conformité, difficilement réversibles."
+        },
+        {
+          "value": 5,
+          "label": "Très forte",
+          "description": "Impact très fort : conséquences critiques, voire irréversibles (interruption d'activité, atteinte majeure aux personnes ou aux données, sanction)."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Faible",
+        "score_min": 1,
+        "score_max": 4,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque acceptable : compatible avec les critères d'acceptation du risque. Aucune mesure supplémentaire n'est nécessaire ; à surveiller lors des revues."
+      },
+      {
+        "code": "modere",
+        "label": "Modéré",
+        "score_min": 5,
+        "score_max": 9,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque tolérable : acceptable sous conditions. Des mesures de réduction sont recommandées selon une analyse coût/bénéfice."
+      },
+      {
+        "code": "eleve",
+        "label": "Élevé",
+        "score_min": 10,
+        "score_max": 15,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque élevé : doit être traité. Des mesures de réduction doivent être planifiées et suivies afin de ramener le risque à un niveau acceptable."
+      },
+      {
+        "code": "critique",
+        "label": "Critique",
+        "score_min": 16,
+        "score_max": 25,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque inacceptable : dépasse les critères d'acceptation. Traitement prioritaire et immédiat requis avant toute mise en production ou poursuite de l'activité."
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "R1",
+      "label": "Fuite de données clients",
+      "category": "Cybersécurité",
+      "initial_assessment": {
+        "probability": 5,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 5
+      }
+    },
+    {
+      "id": "R2",
+      "label": "Panne du serveur principal",
+      "category": "Infrastructure",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    },
+    {
+      "id": "R3",
+      "label": "Départ d'une compétence clé",
+      "category": "RH",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    },
+    {
+      "id": "R4",
+      "label": "Non-conformité RGPD",
+      "category": "Conformité",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 4
+      }
+    },
+    {
+      "id": "R5",
+      "label": "Retard d'un fournisseur critique",
+      "category": "Supply chain",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      }
+    },
+    {
+      "id": "R6",
+      "label": "Litige contractuel",
+      "category": "Juridique",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    },
+    {
+      "id": "R7",
+      "label": "Incendie du site de production",
+      "category": "Sûreté",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 4
+      }
+    },
+    {
+      "id": "R8",
+      "label": "Attaque par rançongiciel",
+      "category": "Cybersécurité",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    }
+  ],
+  "measures": [
+    {
+      "id": "M1",
+      "label": "Chiffrement + contrôle d'accès + DLP",
+      "type": "technical",
+      "status": "implemented"
+    },
+    {
+      "id": "M2",
+      "label": "Redondance + plan de reprise (PRA)",
+      "type": "technical",
+      "status": "in_progress"
+    },
+    {
+      "id": "M3",
+      "label": "Documentation + binômage",
+      "type": "organizational",
+      "status": "planned"
+    },
+    {
+      "id": "M4",
+      "label": "Audit + registre des traitements + DPO",
+      "type": "organizational",
+      "status": "implemented"
+    },
+    {
+      "id": "M5",
+      "label": "Double sourcing + stock tampon",
+      "type": "organizational",
+      "status": "in_progress"
+    },
+    {
+      "id": "M6",
+      "label": "Détection + extinction + assurance",
+      "type": "preventive",
+      "status": "implemented"
+    },
+    {
+      "id": "M7",
+      "label": "Sauvegardes hors-ligne + EDR + formation",
+      "type": "technical",
+      "status": "in_progress"
+    }
+  ],
+  "treatments": [
+    {
+      "risk": "R1",
+      "measure": "M1"
+    },
+    {
+      "risk": "R2",
+      "measure": "M2"
+    },
+    {
+      "risk": "R3",
+      "measure": "M3"
+    },
+    {
+      "risk": "R4",
+      "measure": "M4"
+    },
+    {
+      "risk": "R5",
+      "measure": "M5"
+    },
+    {
+      "risk": "R7",
+      "measure": "M6"
+    },
+    {
+      "risk": "R8",
+      "measure": "M7"
+    }
+  ]
+}

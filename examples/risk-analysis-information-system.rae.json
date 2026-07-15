@@ -1,0 +1,301 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "created_at": "2026-07-13",
+    "updated_at": "2026-07-13",
+    "status": "brouillon",
+    "title": "Risk analysis — Information system",
+    "author": "S. Vinter",
+    "organization": "OMT",
+    "scope": "Information system — critical services",
+    "methodology_reference": "internal (inspired by ISO 27005)"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Probability",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Very low",
+          "description": "Very low likelihood: highly improbable event, not expected to occur (order of magnitude: less than once every 10 years)."
+        },
+        {
+          "value": 2,
+          "label": "Low",
+          "description": "Low likelihood: unlikely event, may occur exceptionally (order of magnitude: about once every 5 years)."
+        },
+        {
+          "value": 3,
+          "label": "Medium",
+          "description": "Medium likelihood: possible event, may occur occasionally (order of magnitude: about once a year)."
+        },
+        {
+          "value": 4,
+          "label": "High",
+          "description": "High likelihood: probable event, may occur regularly (order of magnitude: several times a year)."
+        },
+        {
+          "value": 5,
+          "label": "Very high",
+          "description": "Very high likelihood: near-certain event, occurring frequently or recurrently."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Severity",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Very low",
+          "description": "Very low impact: negligible consequence, no notable effect on activity, assets or compliance."
+        },
+        {
+          "value": 2,
+          "label": "Low",
+          "description": "Low impact: minor consequences, limited and easily absorbed (slight operational inconvenience)."
+        },
+        {
+          "value": 3,
+          "label": "Medium",
+          "description": "Medium impact: notable but manageable consequences (temporary disruption of activity, contained costs)."
+        },
+        {
+          "value": 4,
+          "label": "High",
+          "description": "High impact: severe consequences on activity, finances or compliance, hardly reversible."
+        },
+        {
+          "value": 5,
+          "label": "Very high",
+          "description": "Very high impact: critical, even irreversible consequences (business interruption, major harm to people or data, sanction)."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Low",
+        "score_min": 1,
+        "score_max": 4,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Acceptable risk: consistent with the risk acceptance criteria. No additional measure needed; monitor during reviews."
+      },
+      {
+        "code": "modere",
+        "label": "Moderate",
+        "score_min": 5,
+        "score_max": 9,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Tolerable risk: acceptable under conditions. Reduction measures are recommended based on a cost/benefit analysis."
+      },
+      {
+        "code": "eleve",
+        "label": "High",
+        "score_min": 10,
+        "score_max": 15,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "High risk: must be treated. Reduction measures must be planned and tracked to bring the risk to an acceptable level."
+      },
+      {
+        "code": "critique",
+        "label": "Critical",
+        "score_min": 16,
+        "score_max": 25,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Unacceptable risk: exceeds the acceptance criteria. Priority and immediate treatment required before any go-live or continuation of activity."
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "R1",
+      "label": "Customer data breach",
+      "category": "Cybersecurity",
+      "initial_assessment": {
+        "probability": 5,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 5
+      }
+    },
+    {
+      "id": "R2",
+      "label": "Main server failure",
+      "category": "Infrastructure",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    },
+    {
+      "id": "R3",
+      "label": "Loss of a key skill",
+      "category": "HR",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    },
+    {
+      "id": "R4",
+      "label": "GDPR non-compliance",
+      "category": "Compliance",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 4
+      }
+    },
+    {
+      "id": "R5",
+      "label": "Critical supplier delay",
+      "category": "Supply chain",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      }
+    },
+    {
+      "id": "R6",
+      "label": "Contractual dispute",
+      "category": "Legal",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    },
+    {
+      "id": "R7",
+      "label": "Production site fire",
+      "category": "Safety",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 4
+      }
+    },
+    {
+      "id": "R8",
+      "label": "Ransomware attack",
+      "category": "Cybersecurity",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 5
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      }
+    }
+  ],
+  "measures": [
+    {
+      "id": "M1",
+      "label": "Encryption + access control + DLP",
+      "type": "technical",
+      "status": "implemented"
+    },
+    {
+      "id": "M2",
+      "label": "Redundancy + disaster recovery plan",
+      "type": "technical",
+      "status": "in_progress"
+    },
+    {
+      "id": "M3",
+      "label": "Documentation + pairing",
+      "type": "organizational",
+      "status": "planned"
+    },
+    {
+      "id": "M4",
+      "label": "Audit + records of processing + DPO",
+      "type": "organizational",
+      "status": "implemented"
+    },
+    {
+      "id": "M5",
+      "label": "Dual sourcing + buffer stock",
+      "type": "organizational",
+      "status": "in_progress"
+    },
+    {
+      "id": "M6",
+      "label": "Detection + suppression + insurance",
+      "type": "preventive",
+      "status": "implemented"
+    },
+    {
+      "id": "M7",
+      "label": "Offline backups + EDR + training",
+      "type": "technical",
+      "status": "in_progress"
+    }
+  ],
+  "treatments": [
+    {
+      "risk": "R1",
+      "measure": "M1"
+    },
+    {
+      "risk": "R2",
+      "measure": "M2"
+    },
+    {
+      "risk": "R3",
+      "measure": "M3"
+    },
+    {
+      "risk": "R4",
+      "measure": "M4"
+    },
+    {
+      "risk": "R5",
+      "measure": "M5"
+    },
+    {
+      "risk": "R7",
+      "measure": "M6"
+    },
+    {
+      "risk": "R8",
+      "measure": "M7"
+    }
+  ]
+}

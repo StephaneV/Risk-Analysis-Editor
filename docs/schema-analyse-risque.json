@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://omt.mc/schemas/risk-analysis-editor-1.0.json",
+  "title": "Risk Analysis Editor file — .rae.json (v1.0)",
+  "description": "File format holding a risk analysis: grid, risks, measures, risk↔measure links and initial/residual assessments. Property names are in English; free-text values (labels, descriptions) may be in any language.",
+  "type": "object",
+  "required": ["format", "version", "grid", "risks"],
+  "additionalProperties": true,
+  "properties": {
+    "format": {
+      "const": "risk-analysis-editor"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "organization": { "type": "string" },
+        "scope": { "type": "string" },
+        "methodology_reference": { "type": "string" },
+        "created_at": { "type": "string", "format": "date" },
+        "updated_at": { "type": "string", "format": "date" },
+        "revision": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "grid": {
+      "type": "object",
+      "required": ["vertical_axis", "horizontal_axis", "score", "criticality_levels"],
+      "additionalProperties": true,
+      "properties": {
+        "vertical_axis": { "$ref": "#/$defs/axis" },
+        "horizontal_axis": { "$ref": "#/$defs/axis" },
+        "score": {
+          "type": "object",
+          "required": ["method"],
+          "additionalProperties": true,
+          "properties": {
+            "method": { "enum": ["product", "sum", "matrix"] },
+            "matrix": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "integer" }
+              }
+            }
+          },
+          "if": { "properties": { "method": { "const": "matrix" } } },
+          "then": { "required": ["matrix"] }
+        },
+        "criticality_levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/criticalityLevel" }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/risk" }
+    },
+    "measures": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/measure" }
+    },
+    "treatments": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/treatment" }
+    },
+    "custom_fields": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/customField" }
+    },
+    "custom": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "i18nText": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "customField": {
+      "type": "object",
+      "required": ["code", "target", "label", "type"],
+      "additionalProperties": true,
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "target": { "enum": ["analysis", "risk", "measure"] },
+        "label": { "$ref": "#/$defs/i18nText" },
+        "help": { "$ref": "#/$defs/i18nText" },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "select", "checklist"] },
+        "required": { "type": "boolean" },
+        "min": { "type": ["number", "string"] },
+        "max": { "type": ["number", "string"] },
+        "min_items": { "type": "integer" },
+        "max_items": { "type": "integer" },
+        "order": { "type": "integer" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code", "label"],
+            "additionalProperties": true,
+            "properties": {
+              "code": { "type": "string", "minLength": 1 },
+              "label": { "$ref": "#/$defs/i18nText" }
+            }
+          }
+        }
+      },
+      "if": { "properties": { "type": { "enum": ["select", "checklist"] } } },
+      "then": { "required": ["items"] }
+    },
+    "axis": {
+      "type": "object",
+      "required": ["label", "levels"],
+      "additionalProperties": true,
+      "properties": {
+        "label": { "type": "string" },
+        "levels": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "additionalProperties": true,
+            "properties": {
+              "value": { "type": "integer" },
+              "label": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "criticalityLevel": {
+      "type": "object",
+      "required": ["code", "label", "score_min", "score_max", "color"],
+      "additionalProperties": true,
+      "properties": {
+        "code": { "type": "string" },
+        "label": { "type": "string" },
+        "score_min": { "type": "integer" },
+        "score_max": { "type": "integer" },
+        "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "acceptance": { "enum": ["acceptable", "tolerable", "to_treat", "unacceptable"] },
+        "order": { "type": "integer" },
+        "description": { "type": "string" }
+      }
+    },
+    "assessment": {
+      "type": "object",
+      "required": ["probability", "severity"],
+      "additionalProperties": true,
+      "properties": {
+        "probability": { "type": "integer" },
+        "severity": { "type": "integer" },
+        "justification": { "type": "string" },
+        "date": { "type": "string", "format": "date" }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "required": ["id", "label", "initial_assessment"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "owner": { "type": "string" },
+        "initial_assessment": { "$ref": "#/$defs/assessment" },
+        "residual_assessment": { "$ref": "#/$defs/assessment" },
+        "comment": { "type": "string" },
+        "custom": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "measure": {
+      "type": "object",
+      "required": ["id", "label"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "enum": ["proposed", "planned", "in_progress", "implemented", "abandoned"] },
+        "responsible": { "type": "string" },
+        "due_date": { "type": "string", "format": "date" },
+        "cost": { "type": ["string", "number"] },
+        "comment": { "type": "string" },
+        "custom": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "treatment": {
+      "type": "object",
+      "required": ["risk", "measure"],
+      "additionalProperties": true,
+      "properties": {
+        "risk": { "type": "string", "minLength": 1 },
+        "measure": { "type": "string", "minLength": 1 },
+        "comment": { "type": "string" }
+      }
+    }
+  }
+}
