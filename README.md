@@ -2,6 +2,10 @@
 
 Outil autonome de **construction et de visualisation de matrices de risque** — risque initial (brut) et risque résiduel (net) — avec un format de fichier ouvert et documenté, le `.rae.json`.
 
+### ▶️ [Ouvrir l'application](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 🎬 [Voir la démonstration](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/analyse-de-risques-systeme-d-information.rae.json)
+
+*Aucune installation : l'outil s'exécute entièrement dans votre navigateur. La démonstration ouvre directement une analyse d'exemple (8 risques, 7 mesures).*
+
 ![Vue Matrices › Trajectoire de l'analyse « Système d'information » (thème clair)](docs/images/capture-trajectoire.png)
 
 > *Vue **Matrices › Trajectoire** : chaque flèche relie la position initiale (contour pointillé) à la position résiduelle (contour plein) d'un risque.*
@@ -18,7 +22,7 @@ L'outil est **indépendant de toute méthodologie** (ISO 27005, EBIOS RM, AIPD/P
 
 Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risques, mesures, liens et cotations initiale/résiduelle. Le format est **spécifié** ([documentation technique](docs/SPEC-format-analyse-risque.md)) et validé par un **schéma JSON** ([schema-analyse-risque.json](docs/schema-analyse-risque.json)). Les noms de propriétés sont en anglais ; les valeurs (libellés, descriptions) restent dans la langue de l'analyse.
 
-**Point d'entrée :** ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) dans un navigateur.
+**Point d'entrée :** [ouvrir l'application en ligne](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — ou, pour un usage **hors-ligne**, télécharger le dépôt et ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) par un simple double-clic.
 
 ---
 
@@ -73,7 +77,7 @@ Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risq
 
 ## Prise en main
 
-1. Ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) dans un navigateur récent.
+1. [Ouvrir l'application en ligne](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — ou ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) depuis une copie locale, dans un navigateur récent.
 2. L'outil démarre sur une **analyse vierge**, ouverte sur l'onglet **Présentation**.
 3. Bouton **Charger…** pour ouvrir un fichier `.rae.json` (par ex. depuis [`examples/`](examples/)), **Enregistrer** pour exporter le vôtre.
 
