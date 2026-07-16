@@ -97,7 +97,8 @@ Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIO
 | `created_at` | date | F | Date de création du document. |
 | `updated_at` | date | F | Date de dernière modification. |
 | `revision` | chaîne | F | Numéro/étiquette de révision du document (distinct de `version` du format). |
-| `status` | chaîne | F | Ex. `"brouillon"`, `"validé"`, `"archivé"`. |
+| `status` | chaîne | F | Ex. `"draft"`, `"approved"`, `"archived"`. |
+| `language` | chaîne | F | Langue de l'interface associée à l'analyse, code ISO 639-1 (`"fr"`, `"en"`, `"it"`). À l'ouverture, l'application adopte cette langue (sauf paramètre d'URL `?lang`) ; en son absence, la langue du navigateur est utilisée, avec repli sur l'anglais. |
 
 ### 4.2 `grid` — paramètres de la matrice
 

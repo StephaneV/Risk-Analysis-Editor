@@ -27,7 +27,8 @@
         "created_at": { "type": "string", "format": "date" },
         "updated_at": { "type": "string", "format": "date" },
         "revision": { "type": "string" },
-        "status": { "type": "string" }
+        "status": { "type": "string" },
+        "language": { "type": "string", "enum": ["fr", "en", "it"], "description": "Langue de l'interface associée à l'analyse (ISO 639-1)." }
       }
     },
     "grid": {

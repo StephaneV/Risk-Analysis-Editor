@@ -618,6 +618,23 @@ let isFresh = false; // vrai tant que l'analyse est la nouvelle analyse vierge (
    (et les valeurs par défaut d'une nouvelle analyse) sont localisées.
    ============================================================ */
 let lang = "fr";
+const SUPPORTED_LANGS = ["fr","en","it"];
+// Normalise un code de langue (sous-étiquette principale, ex. "en-US" -> "en") ; null si non pris en charge.
+function normLang(l){
+  if(!l)return null;
+  const p=String(l).toLowerCase().split(/[-_]/)[0];
+  return SUPPORTED_LANGS.indexOf(p)>=0?p:null;
+}
+function queryLang(){try{return normLang(new URLSearchParams(location.search).get("lang"));}catch(e){return null;}}
+function storedLang(){try{return normLang(localStorage.getItem("mar_lang"));}catch(e){return null;}}
+function browserLang(){try{
+  const list=navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language];
+  for(const l of list){const n=normLang(l);if(n)return n;}
+}catch(e){}return null;}
+// Précédence : ?lang (si withQuery) > langue du fichier > localStorage > navigateur > anglais.
+function resolveLang(fileLang,withQuery){
+  return (withQuery&&queryLang())||normLang(fileLang)||storedLang()||browserLang()||"en";
+}
 const I18N = {
   fr:{
     brand:"Risk Analysis Editor", brand_sub:"· .rae.json",
@@ -1086,7 +1103,7 @@ function emptyAnalysis(lg){
   const D=DEFAULTS[lg||lang]||DEFAULTS.fr;
   return {
     format:"risk-analysis-editor",version:"1.0",
-    metadata:{title:D.newTitle,created_at:today(),updated_at:today(),status:"draft"},
+    metadata:{title:D.newTitle,created_at:today(),updated_at:today(),status:"draft",language:(lg||lang)},
     grid:defaultGrid(lg),risks:[],measures:[],treatments:[]
   };
 }
@@ -1172,10 +1189,15 @@ document.getElementById("btnLoad").addEventListener("click",()=>document.getElem
    aucune conversion. Charger = JSON.parse, enregistrer = JSON.stringify. */
 
 // Applique un objet JSON (.rae.json, clés anglaises) comme analyse courante.
-function applyLoadedData(data,name){
+function applyLoadedData(data,name,withQuery){
   const err=validateStructure(data);
   if(err){alertModal(t("err_invalid_file",err));return false;}
-  analyse=normalize(data);currentFileName=name||null;dirty=false;isFresh=false;renderAll();
+  analyse=normalize(data);currentFileName=name||null;dirty=false;isFresh=false;
+  // Langue de l'interface au chargement : ?lang (si withQuery) > langue du fichier > localStorage > navigateur > anglais.
+  const fileLang=analyse.metadata&&analyse.metadata.language;
+  lang=resolveLang(fileLang,withQuery);
+  applyStaticI18n();
+  renderAll();
   return true;
 }
 
@@ -1184,7 +1206,7 @@ document.getElementById("fileInput").addEventListener("change",e=>{
   const rd=new FileReader();
   rd.onload=()=>{
     try{
-      if(applyLoadedData(JSON.parse(rd.result),f.name))toast(t("toast_loaded"));
+      if(applyLoadedData(JSON.parse(rd.result),f.name,false))toast(t("toast_loaded"));
     }catch(ex){alertModal(t("err_read_file",ex.message));}
   };
   rd.readAsText(f);
@@ -1200,13 +1222,13 @@ async function loadFromURLParam(){
   try{
     const resp=await fetch(url,{cache:"no-store"});
     if(!resp.ok)throw new Error("HTTP "+resp.status);
-    if(applyLoadedData(JSON.parse(await resp.text()),name))toast(t("toast_loaded"));
+    if(applyLoadedData(JSON.parse(await resp.text()),name,true))toast(t("toast_loaded"));
   }catch(ex){
     alertModal(t("err_load_url",url,ex.message));
   }
 }
 document.getElementById("btnSave").addEventListener("click",()=>{
-  analyse.metadata=analyse.metadata||{};analyse.metadata.updated_at=today();
+  analyse.metadata=analyse.metadata||{};analyse.metadata.updated_at=today();analyse.metadata.language=lang;
   const blob=new Blob([JSON.stringify(analyse,null,2)],{type:"application/vnd.rae+json"});
   const name=(slug(analyse.metadata.title)||"risk-analysis")+".rae.json";
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;
@@ -3573,15 +3595,19 @@ function applyStaticI18n(){
   const ls=document.getElementById("langSel");if(ls)ls.value=lang;
 }
 function setLang(l){
-  if(l!=="fr"&&l!=="en"&&l!=="it")l="fr";
+  l=normLang(l)||"fr";
   lang=l;
   try{localStorage.setItem("mar_lang",l);}catch(e){}
   applyStaticI18n();
   if(isFresh){analyse=emptyAnalysis(lang);currentFileName=null;} // relocalise la nouvelle analyse vierge
+  else{ // analyse existante : la langue devient une donnée du fichier -> modifié
+    analyse.metadata=analyse.metadata||{};analyse.metadata.language=lang;markDirty();
+  }
   renderAll();
 }
 document.getElementById("langSel").addEventListener("change",e=>setLang(e.target.value));
-(function(){let l="fr";try{l=localStorage.getItem("mar_lang")||"fr";}catch(e){}if(l!=="fr"&&l!=="en"&&l!=="it")l="fr";lang=l;})();
+// Langue au démarrage (application vierge) : ?lang > localStorage > navigateur > anglais.
+lang=resolveLang(null,true);
 
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue="";}});
 let rzt;window.addEventListener("resize",()=>{clearTimeout(rzt);rzt=setTimeout(()=>{
