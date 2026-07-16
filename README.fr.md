@@ -1,0 +1,92 @@
+# Risk Analysis Editor (RAE)
+
+[English](README.md) · **Français**
+
+Outil autonome de **construction et de visualisation de matrices de risque** — risque initial (brut) et risque résiduel (net) — avec un format de fichier ouvert et documenté, le `.rae.json`.
+
+### ▶️ [Ouvrir l'application](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📊 [Ouvrir un exemple d'analyse](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/analyse-de-risques-systeme-d-information.rae.json) · ⬇️ [Télécharger](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
+
+*Aucune installation : l'outil s'exécute entièrement dans votre navigateur. L'exemple d'analyse est celui de la capture ci-dessous (8 risques, 7 mesures). Le téléchargement fournit **l'unique fichier HTML** de la [dernière version](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest) : double-cliquez-le pour travailler **hors-ligne**.*
+
+![Vue Matrices › Trajectoire de l'analyse « Système d'information » (thème clair)](docs/images/capture-trajectoire.png)
+
+> *Vue **Matrices › Trajectoire** : chaque flèche relie la position initiale (contour pointillé) à la position résiduelle (contour plein) d'un risque.*
+
+---
+
+## Présentation
+
+**Risk Analysis Editor** est une application web **autonome** : un unique fichier HTML, sans aucune dépendance externe, qui fonctionne **hors-ligne** (un simple double-clic suffit, sans installation ni serveur).
+
+Elle permet de mener une analyse de risque complète : définir une grille de cotation, saisir des risques et des mesures de maîtrise, relier les deux, puis **visualiser** le passage du risque **initial** au risque **résiduel** sous forme de matrices ou de trajectoires fléchées.
+
+L'outil est **indépendant de toute méthodologie** (ISO 27005, EBIOS RM, AIPD/PIA CNIL, référentiel interne…) : la grille (taille, libellés, seuils, couleurs, méthode de calcul) est entièrement paramétrable et enregistrée dans le fichier.
+
+Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risques, mesures, liens et cotations initiale/résiduelle. Le format est **spécifié** ([documentation technique](docs/SPEC-format-analyse-risque.md)) et validé par un **schéma JSON** ([schema-analyse-risque.json](docs/schema-analyse-risque.json)). Les noms de propriétés sont en anglais ; les valeurs (libellés, descriptions) restent dans la langue de l'analyse.
+
+**Point d'entrée :** [ouvrir l'application en ligne](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — ou, pour un usage **hors-ligne**, télécharger le dépôt et ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) par un simple double-clic.
+
+---
+
+## Fonctionnalités
+
+### Visualisation
+- **Deux matrices côte à côte** : risque *initial (brut)* et risque *résiduel (net)*.
+- **Vue Trajectoire** : une flèche relie la position initiale à la position résiduelle de chaque risque ; les risques non réduits sont mis en évidence.
+- **Dispositions optimisées** des trajectoires : flèches droites, minimisation des croisements et des chevauchements, grille carrée centrée.
+- **Stratégies de disposition des pastilles** lorsqu'une case contient plusieurs risques : grille, rangée, colonne, amas/spirale, débordement « +N »…
+- **Placement manuel** des pastilles en glisser-déposer, avec grille d'accroche (*snap* N×N paramétrable) et positions enregistrées dans le fichier.
+- **Statistiques** : répartition par niveau de criticité (initial → résiduel), nombre de risques réduits.
+
+### Grille de cotation
+- **Axes paramétrables** (vertical / horizontal) : nombre de niveaux libre, libellés et descriptions en infobulle.
+- **Méthodes de calcul du score** : produit (P × G), somme (P + G) ou **matrice** (niveau défini case par case, avec éditeur dédié).
+- **Niveaux de criticité** : zones colorées, seuils, couleur, décision d'acceptation et description, avec **contrôle de couverture** des scores atteignables.
+- **Transposition des axes** (vertical ↔ horizontal) en un clic, cotations et placements inclus.
+
+### Saisie
+- **Présentation** : onglet dédié aux métadonnées documentaires de l'analyse (titre, statut, auteur, organisation, périmètre, référence méthodologique, description) et aux valeurs des champs personnalisés de niveau analyse.
+- **Registre des risques** : catégorie, propriétaire, description, évaluation initiale et résiduelle, indicateur d'évolution.
+- **Mesures de maîtrise** : nature (technique / organisationnelle…), statut (avec code couleur), responsable, échéance, coût.
+- **Liens risques ↔ mesures** via un tableau croisé à cocher (relation plusieurs-à-plusieurs).
+- **Plan d'action** : suivi des mesures via trois présentations (échéancier, kanban par statut, groupé par responsable), mesures **en retard** mises en évidence (échéance passée et non finalisée), et **avancement global** (barre + compteurs par statut).
+- **Champs personnalisés** : définissez dans *Paramètres* des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures — 8 types (oui/non, entier, décimal, date, texte, liste déroulante, liste à cocher), libellés multilingues (le libellé et l'aide se saisissent dans la langue de l'interface active ; à défaut de traduction, le code est affiché), caractère obligatoire et bornes (min/max, longueur, nombre d'items) ; les valeurs se saisissent dans les fiches (risques, mesures) et dans l'onglet *Présentation* (champs de l'analyse), avec validation, et sont reprises dans le **rapport** et dans l'**import/export CSV**.
+- **Import CSV** des risques, des mesures et des liens : colonnes nommées d'après les clés **anglaises** du format, séparateur auto-détecté ; fusion par identifiant (risques/mesures) ; contrôle d'intégrité et déduplication (liens).
+- **Export CSV des risques, des mesures et des liens** : en-têtes = noms de clés **anglais** (identiques quelle que soit la langue de l'interface), délimiteur `;` et BOM UTF-8 (Excel), avec colonnes dérivées en lecture seule (score/criticité pour les risques ; risques couverts pour les mesures ; libellés pour les liens) ; ré-importable.
+- **Tri et filtrage** des listes Risques, Mesures et Plan d'action : recherche texte, tri par clic sur les colonnes, et filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement »).
+
+### Fichier & export
+- **Nouveau / Charger / Enregistrer** au format `.rae.json`.
+- **Chargement par URL** : ouvrir l'outil avec `?file=<url>` (alias `?url=`) charge automatiquement l'analyse pointée au démarrage — par ex. `risk-analysis-editor.html?file=../examples/analyse-de-risques-systeme-d-information.rae.json`. Nécessite que l'outil soit servi via HTTP(S) (le protocole `file://` bloque cette lecture).
+- **Export image** des matrices : **PNG** (résolution ×1 / ×2 / ×3) et **SVG**, copie dans le presse-papiers, avec titre, sous-titre, libellés d'axes et légende.
+- **Rapport imprimable** : onglet *Rapport* générant un document complet (métadonnées, **bloc Présentation** avec la description et les champs personnalisés de l'analyse, synthèse, grille et niveaux de criticité avec descriptions, matrices Initial/Résiduel et Trajectoire en vectoriel, registre des risques, listes détaillées des risques et des mesures avec leurs descriptions **et valeurs de champs personnalisés**, liens), rendu en style clair et imprimable (→ PDF via le navigateur).
+
+### Personnalisation
+- **Thèmes** : sombre, clair.
+- **Sélecteur de langue** : français / anglais / italien (interface et données par défaut d'une nouvelle analyse), architecture extensible à d'autres langues.
+
+---
+
+## Structure du projet
+
+| Dossier | Contenu |
+|---|---|
+| [`app/`](app/) | L'application (`risk-analysis-editor.html`). |
+| [`docs/`](docs/) | Documentation technique : spécification du format, schéma JSON et stratégies de disposition. |
+| [`examples/`](examples/) | Analyses d'exemple au format `.rae.json` (français et anglais). |
+
+---
+
+## Prise en main
+
+1. [Ouvrir l'application en ligne](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — ou ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) depuis une copie locale, dans un navigateur récent.
+2. L'outil démarre sur une **analyse vierge**, ouverte sur l'onglet **Présentation**.
+3. Bouton **Charger…** pour ouvrir un fichier `.rae.json` (par ex. depuis [`examples/`](examples/)), **Enregistrer** pour exporter le vôtre.
+
+---
+
+## Licence
+
+Distribué sous licence **MIT** — voir [`LICENSE`](LICENSE).
+
+© 2026 Stéphane Vinter
