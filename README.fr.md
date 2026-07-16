@@ -58,6 +58,7 @@ Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risq
 ### Fichier & export
 - **Nouveau / Charger / Enregistrer** au format `.rae.json`.
 - **Chargement par URL** : ouvrir l'outil avec `?file=<url>` (alias `?url=`) charge automatiquement l'analyse pointée au démarrage — par ex. `risk-analysis-editor.html?file=../examples/analyse-de-risques-systeme-d-information.rae.json`. Nécessite que l'outil soit servi via HTTP(S) (le protocole `file://` bloque cette lecture).
+- **Paramètres d'URL au démarrage** (combinables) : `?lang=fr|en|it` force la langue de l'interface (prioritaire sur la langue enregistrée dans le fichier et sur celle du navigateur) ; `?tab=<onglet>[.<sous-onglet>]` ouvre un onglet donné, et éventuellement son sous-onglet — par ex. `?tab=matrices.traj` (Matrices › Trajectoire), `?tab=settings.grid`, `?tab=plan`. Les valeurs inconnues sont ignorées.
 - **Export image** des matrices : **PNG** (résolution ×1 / ×2 / ×3) et **SVG**, copie dans le presse-papiers, avec titre, sous-titre, libellés d'axes et légende.
 - **Rapport imprimable** : onglet *Rapport* générant un document complet (métadonnées, **bloc Présentation** avec la description et les champs personnalisés de l'analyse, synthèse, grille et niveaux de criticité avec descriptions, matrices Initial/Résiduel et Trajectoire en vectoriel, registre des risques, listes détaillées des risques et des mesures avec leurs descriptions **et valeurs de champs personnalisés**, liens), rendu en style clair et imprimable (→ PDF via le navigateur).
 

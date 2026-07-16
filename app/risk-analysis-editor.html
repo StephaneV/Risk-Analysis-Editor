@@ -1163,19 +1163,44 @@ function customFieldsFor(target){return customFields().filter(f=>f&&f.target===t
 /* ============================================================
    NAVIGATION ONGLETS
    ============================================================ */
-document.getElementById("tabs").addEventListener("click",e=>{
-  const tab=e.target.closest(".tab");if(!tab)return;
+// Active un onglet principal (bascule .tab/.view + rendu de la vue).
+function activateView(view){
+  const tab=document.querySelector('.tab[data-view="'+view+'"]');if(!tab)return;
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   tab.classList.add("active");
-  document.getElementById("view-"+tab.dataset.view).classList.add("active");
-  if(tab.dataset.view==="presentation") renderPresentation();
-  if(tab.dataset.view==="matrices") requestAnimationFrame(renderMatrices);
-  if(tab.dataset.view==="links") renderLinks();
-  if(tab.dataset.view==="settings") renderSettings();
-  if(tab.dataset.view==="plan") renderPlan();
-  if(tab.dataset.view==="report") renderReport();
+  document.getElementById("view-"+view).classList.add("active");
+  if(view==="presentation") renderPresentation();
+  if(view==="matrices") requestAnimationFrame(renderMatrices);
+  if(view==="links") renderLinks();
+  if(view==="settings") renderSettings();
+  if(view==="plan") renderPlan();
+  if(view==="report") renderReport();
+}
+document.getElementById("tabs").addEventListener("click",e=>{
+  const tab=e.target.closest(".tab");if(!tab)return;
+  activateView(tab.dataset.view);
 });
+
+/* Ouverture sur un onglet/sous-onglet via ?tab=<onglet>[.<sous-onglet>]
+   (ex. ?tab=matrices.traj, ?tab=settings.grid, ?tab=plan). Token inconnu -> ignoré. */
+const VIEW_TOKENS=["presentation","risks","measures","links","matrices","plan","report","settings"];
+function syncSeg(segId,mode){document.querySelectorAll("#"+segId+" button").forEach(x=>x.classList.toggle("active",x.dataset.mode===mode));}
+const SUBTABS={
+  matrices:{tokens:["side","traj"],set:m=>{matrixMode=m;syncSeg("viewSeg",m);}},
+  plan:{tokens:["due_date","status","responsible"],set:m=>{planMode=m;syncSeg("planSeg",m);}},
+  settings:{tokens:["display","grid","fields"],set:m=>setParamMode(m)}
+};
+function applyTabParam(){
+  let raw;
+  try{raw=new URLSearchParams(location.search).get("tab");}catch(e){return;}
+  if(!raw)return;
+  const parts=raw.split("."),view=parts[0],sub=parts[1];
+  if(VIEW_TOKENS.indexOf(view)<0)return;                 // onglet inconnu -> on garde l'atterrissage par défaut
+  const st=SUBTABS[view];
+  if(sub&&st&&st.tokens.indexOf(sub)>=0)st.set(sub);      // sous-onglet valide -> appliqué avant le rendu de la vue
+  activateView(view);
+}
 
 /* ============================================================
    FICHIER : nouveau / charger / enregistrer
@@ -3616,7 +3641,7 @@ let rzt;window.addEventListener("resize",()=>{clearTimeout(rzt);rzt=setTimeout((
 applyStaticI18n();
 analyse=emptyAnalysis(lang);isFresh=true;
 renderAll();
-loadFromURLParam();
+loadFromURLParam().finally(applyTabParam); // ?tab appliqué après un éventuel chargement ?file
 </script>
 </body>
 </html>

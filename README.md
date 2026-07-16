@@ -58,6 +58,7 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 ### File & export
 - **New / Load / Save** in `.rae.json` format.
 - **Load by URL**: opening the tool with `?file=<url>` (alias `?url=`) automatically loads the pointed analysis at startup — e.g. `risk-analysis-editor.html?file=../examples/risk-analysis-information-system.rae.json`. Requires the tool to be served over HTTP(S) (the `file://` protocol blocks this read).
+- **Startup URL parameters** (combinable): `?lang=fr|en|it` forces the interface language (overrides the file's saved language and the browser language); `?tab=<tab>[.<sub-tab>]` opens a given tab, and optionally its sub-tab — e.g. `?tab=matrices.traj` (Matrices › Trajectory), `?tab=settings.grid`, `?tab=plan`. Unknown tokens are ignored.
 - **Image export** of the matrices: **PNG** (×1 / ×2 / ×3 resolution) and **SVG**, copy to clipboard, with title, subtitle, axis labels and legend.
 - **Printable report**: the *Report* tab generates a complete document (metadata, an **Overview block** with the analysis description and custom fields, summary, grid and criticality levels with descriptions, Initial/Residual and Trajectory matrices as vectors, risk register, detailed risk and measure lists with their descriptions **and custom field values**, links), rendered in a light, printable style (→ PDF via the browser).
 
