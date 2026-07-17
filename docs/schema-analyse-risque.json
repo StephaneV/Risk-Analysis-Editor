@@ -101,8 +101,10 @@
         "target": { "enum": ["analysis", "risk", "measure"] },
         "label": { "$ref": "#/$defs/i18nText" },
         "help": { "$ref": "#/$defs/i18nText" },
-        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "select", "checklist"] },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "select", "checklist", "tags", "progress"] },
         "required": { "type": "boolean" },
+        "multiple": { "type": "boolean", "description": "Type tags : autorise la sélection de plusieurs valeurs (sinon une seule)." },
+        "color_mode": { "enum": ["accent", "threshold"], "description": "Type progress : couleur de la barre (unique ou par seuils)." },
         "min": { "type": ["number", "string"] },
         "max": { "type": ["number", "string"] },
         "min_items": { "type": "integer" },
@@ -116,12 +118,13 @@
             "additionalProperties": true,
             "properties": {
               "code": { "type": "string", "minLength": 1 },
-              "label": { "$ref": "#/$defs/i18nText" }
+              "label": { "$ref": "#/$defs/i18nText" },
+              "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "description": "Type tags : couleur de la puce." }
             }
           }
         }
       },
-      "if": { "properties": { "type": { "enum": ["select", "checklist"] } } },
+      "if": { "properties": { "type": { "enum": ["select", "checklist", "tags"] } } },
       "then": { "required": ["items"] }
     },
     "axis": {

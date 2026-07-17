@@ -221,11 +221,13 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `code` | chaîne | O | Identifiant du champ, **unique**, stable. Sert de clé dans les objets `custom` et d'en-tête de colonne à l'export CSV. |
 | `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
-| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple). |
+| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
+| `multiple` | booléen | F | Type `tags` uniquement : autorise la sélection de plusieurs étiquettes (sinon une seule). |
+| `color_mode` | chaîne | F | Type `progress` uniquement : `"accent"` (couleur unique) ou `"threshold"` (seuils rouge/orange/vert). Défaut `"accent"`. |
 | `min`, `max` | nombre / chaîne | F | Bornes : valeurs pour `integer`/`float` ; dates `AAAA-MM-JJ` pour `date` ; **longueur en caractères** pour `text`/`textarea`. |
 | `min_items`, `max_items` | entier | F | Nombre minimal / maximal d'items cochés pour `checklist`. |
-| `items` | tableau | Cond. | **Obligatoire** pour `select` et `checklist`. Éléments de la liste (§4.6.2). |
+| `items` | tableau | Cond. | **Obligatoire** pour `select`, `checklist` et `tags`. Éléments de la liste (§4.6.2). |
 | `help` | objet | F | Texte d'aide multilingue (infobulle), même forme que `label`. |
 | `order` | entier | F | Ordre d'affichage parmi les champs d'une même cible. |
 
@@ -235,6 +237,7 @@ Objet `items[]` (§4.6.2) :
 |---|---|---|---|
 | `code` | chaîne | O | Identifiant de l'item, **unique** dans le champ. C'est cette valeur qui est stockée. |
 | `label` | objet | O | Libellé multilingue de l'item, même forme que `label` du champ. |
+| `color` | chaîne | F | Type `tags` : couleur de l'étiquette, hexadécimal `#RRGGBB`. |
 
 #### 4.6.3 Valeurs (`custom`)
 
@@ -248,6 +251,8 @@ Chaque objet `custom` associe un `code` de champ à sa valeur, selon le type :
 | `text`, `textarea` | chaîne |
 | `select` | `code` de l'item choisi |
 | `checklist` | tableau de `code` d'items |
+| `tags` | tableau de `code` d'items (même en sélection unique : un seul élément) |
+| `progress` | nombre entier `0`–`100` (pourcentage) |
 
 Exemple :
 
