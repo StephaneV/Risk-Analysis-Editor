@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 1.0.0
+  Version  : 1.1.0
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -45,8 +45,8 @@
     backdrop-filter:blur(6px);position:sticky;top:0;z-index:50;flex-wrap:wrap}
   .brand{font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap}
   .brand small{color:var(--muted);font-weight:400;font-size:12px}
-  .brand-logo{display:inline-flex;vertical-align:middle;margin-right:8px}
-  .brand-logo svg{height:24px;width:24px;display:block}
+  .brand-logo{display:inline-flex;vertical-align:middle;margin-right:8px;margin-top:-4px} /* léger décalage du logo pour l'aligner au texte */
+  .brand-logo svg{height:32px;width:32px;display:block}
   .about-logo{display:flex;justify-content:center;margin-bottom:8px}
   .about-logo svg{height:56px;width:56px;display:block}
   .spacer{flex:1}
@@ -3746,7 +3746,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="1.0.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="1.1.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */
 const LOGO_SVG='<svg viewBox="0 0 18.585251 18.585253" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(-29.633334,-127.52917)" stroke-width="0.329" stroke-miterlimit="8" fill-rule="evenodd">'+

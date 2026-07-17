@@ -1,4 +1,4 @@
-# <img src="docs/images/RAE-logo-mini.svg" alt="" height="28" valign="middle"> Risk Analysis Editor (RAE)
+# <img src="docs/images/RAE-logo-mini.svg" alt="" height="38" align="bottom" style="max-height: 38px; vertical-align: bottom;"> Risk Analysis Editor (RAE)
 
 **English** · [Français](README.fr.md)
 
