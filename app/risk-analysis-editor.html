@@ -813,7 +813,8 @@ const I18N = {
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression",
     cf_multiple:"Sélection multiple", cf_palette:"Palette de couleur", cf_palette_preview:"Aperçu", cf_item_color:"Couleur", cf_step:"Pas",
-    "pal.accent":"Couleur unique (accent)","pal.red-green":"Rouge → Vert","pal.red-orange-green":"Rouge → Orange → Vert","pal.red-orange-yellow-green":"Rouge → Orange → Jaune → Vert","pal.white-black":"Blanc → Noir",
+    cf_pal_colors:"Couleurs de la palette", cf_pal_add_color:"+ Ajouter une couleur", cf_err_colors:"Ajoutez au moins une couleur à la palette.",
+    "pal.accent":"Couleur unique (accent)","pal.red-green":"Rouge → Vert","pal.red-orange-green":"Rouge → Orange → Vert","pal.red-orange-yellow-green":"Rouge → Orange → Jaune → Vert","pal.white-black":"Blanc → Noir","pal.custom":"Personnalisée",
     cf_label:"Libellé", cf_help:"Aide",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
     cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_label:"Libellé",
@@ -964,7 +965,8 @@ const I18N = {
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar",
     cf_multiple:"Multiple selection", cf_palette:"Color palette", cf_palette_preview:"Preview", cf_item_color:"Color", cf_step:"Step",
-    "pal.accent":"Single color (accent)","pal.red-green":"Red → Green","pal.red-orange-green":"Red → Orange → Green","pal.red-orange-yellow-green":"Red → Orange → Yellow → Green","pal.white-black":"White → Black",
+    cf_pal_colors:"Palette colors", cf_pal_add_color:"+ Add a color", cf_err_colors:"Add at least one color to the palette.",
+    "pal.accent":"Single color (accent)","pal.red-green":"Red → Green","pal.red-orange-green":"Red → Orange → Green","pal.red-orange-yellow-green":"Red → Orange → Yellow → Green","pal.white-black":"White → Black","pal.custom":"Custom",
     cf_label:"Label", cf_help:"Help",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
     cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_label:"Label",
@@ -1115,7 +1117,8 @@ const I18N = {
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento",
     cf_multiple:"Selezione multipla", cf_palette:"Tavolozza colori", cf_palette_preview:"Anteprima", cf_item_color:"Colore", cf_step:"Passo",
-    "pal.accent":"Colore unico (accento)","pal.red-green":"Rosso → Verde","pal.red-orange-green":"Rosso → Arancione → Verde","pal.red-orange-yellow-green":"Rosso → Arancione → Giallo → Verde","pal.white-black":"Bianco → Nero",
+    cf_pal_colors:"Colori della tavolozza", cf_pal_add_color:"+ Aggiungi un colore", cf_err_colors:"Aggiungi almeno un colore alla tavolozza.",
+    "pal.accent":"Colore unico (accento)","pal.red-green":"Rosso → Verde","pal.red-orange-green":"Rosso → Arancione → Verde","pal.red-orange-yellow-green":"Rosso → Arancione → Giallo → Verde","pal.white-black":"Bianco → Nero","pal.custom":"Personalizzata",
     cf_label:"Etichetta", cf_help:"Aiuto",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
     cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_label:"Etichetta",
@@ -3110,7 +3113,8 @@ function cfTypeOptsHTML(f){
   if(f.type==="progress"){const pal=progressPaletteId(f);
     return '<label class="field"><span class="lab">'+esc(t("cf_palette"))+'</span><select id="cfPalette">'+PROGRESS_PALETTE_IDS.map(id=>'<option value="'+id+'"'+(id===pal?" selected":"")+'>'+esc(t("pal."+id))+'</option>').join("")+'</select></label>'+
       '<label class="field"><span class="lab">'+esc(t("cf_step"))+'</span><input type="number" id="cfStep" min="1" max="100" step="1" value="'+(f.step!=null?f.step:10)+'"></label>'+
-      '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfPalettePreview" class="cf-pal-preview" style="background:'+palettePreviewBg(pal)+'"></div></div>';}
+      '<div class="field full" id="cfCustomColors" style="display:'+(pal==="custom"?"block":"none")+'"><span class="lab">'+esc(t("cf_pal_colors"))+'</span><div id="cfColors">'+cfColorsRowsHTML(f.colors)+'</div><button class="btn ghost sm" id="cfColorAdd" type="button">'+esc(t("cf_pal_add_color"))+'</button></div>'+
+      '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfPalettePreview" class="cf-pal-preview" style="background:'+palettePreviewBg(progressColors(f))+'"></div></div>';}
   return "";
 }
 function openCustomFieldModal(idx){
@@ -3162,7 +3166,9 @@ function openCustomFieldModal(idx){
       if(mi!==""&&ma!==""&&((kind==="date")?mi>ma:+mi>+ma)){modalMsg(t("cf_err_minmax"));return false;}
     }
     if(type==="tags")obj.multiple=document.getElementById("cfMultiple").checked;
-    if(type==="progress"){const pal=val("cfPalette");obj.palette=PROGRESS_PALETTES.hasOwnProperty(pal)?pal:"accent";const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
+    if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";
+      if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){modalMsg(t("cf_err_colors"));return false;}obj.colors=cols;}
+      const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
     if(cfNeedsItems(type)){
       syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
       if(!items.length){modalMsg(t("cf_err_items"));return false;}
@@ -3213,7 +3219,7 @@ const PROGRESS_PALETTES={
   "red-orange-yellow-green":["#e53935","#fb8c00","#fdd835","#43a047"],
   "white-black":["#ffffff","#000000"]
 };
-const PROGRESS_PALETTE_IDS=["accent","red-green","red-orange-green","red-orange-yellow-green","white-black"];
+const PROGRESS_PALETTE_IDS=["accent","red-green","red-orange-green","red-orange-yellow-green","white-black","custom"];
 function hexToRgb(hex){hex=String(hex).replace("#","");if(hex.length===3)hex=hex.split("").map(c=>c+c).join("");
   return [parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];}
 function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0,l=(mx+mn)/2;
@@ -3233,16 +3239,29 @@ function paletteColor(colors,pv){
   return lerpHsl(colors[i],colors[i+1],t);}
 // Identifiant de palette d'un champ (rétro-compat : ancien color_mode accent/threshold).
 function progressPaletteId(f){
+  if(f.palette==="custom")return "custom";
   if(f.palette&&PROGRESS_PALETTES.hasOwnProperty(f.palette))return f.palette;
   if(f.color_mode==="threshold")return "red-orange-yellow-green";
   return "accent";}
-function progressColorFor(palId,pv){const cols=PROGRESS_PALETTES[palId];return cols?paletteColor(cols,pv):"var(--accent)";}
-function cfProgressColor(f,pv){return progressColorFor(progressPaletteId(f),pv);}
-// Fond CSS d'aperçu d'une palette (dégradé échantillonné, ou aplat pour accent/couleur unique).
-function palettePreviewBg(palId){const cols=PROGRESS_PALETTES[palId];
-  if(!cols)return "var(--accent)";if(cols.length===1)return cols[0];
-  const stops=[];for(let v=0;v<=100;v+=5)stops.push(paletteColor(cols,v)+" "+v+"%");
+// Couleurs (tableau hex) d'un champ : palette prédéfinie, personnalisée (f.colors), ou null=accent.
+function progressColors(f){
+  const id=progressPaletteId(f);
+  if(id==="custom")return (f.colors&&f.colors.length)?f.colors:null;
+  return PROGRESS_PALETTES[id]||null;}
+function cfProgressColor(f,pv){const cols=progressColors(f);return cols&&cols.length?paletteColor(cols,pv):"var(--accent)";}
+// Fond CSS d'aperçu depuis un tableau de couleurs (aplat si 1 couleur, accent si vide).
+function palettePreviewBg(colors){
+  if(!colors||!colors.length)return "var(--accent)";if(colors.length===1)return colors[0];
+  const stops=[];for(let v=0;v<=100;v+=5)stops.push(paletteColor(colors,v)+" "+v+"%");
   return "linear-gradient(to right,"+stops.join(",")+")";}
+function cfColorRowHTML(hex){return '<div class="inline" data-cfc style="margin-bottom:6px"><input type="color" data-cfcv value="'+esc(hex||"#4c7dff")+'" style="width:48px;flex:none;padding:2px;height:34px"><button class="btn icon sm" style="flex:none" data-cfc-del type="button">🗑</button></div>';}
+function cfColorsRowsHTML(colors){colors=(colors&&colors.length)?colors:["#e53935","#43a047"];return colors.map(cfColorRowHTML).join("");}
+function cfCustomColorsFromDOM(){return [...document.querySelectorAll('#cfColors [data-cfcv]')].map(i=>i.value);}
+// Aperçu de la palette dans la modale de définition (lit l'état courant : palette + couleurs perso).
+function updatePalettePreview(){
+  const sel=document.getElementById("cfPalette"),prev=document.getElementById("cfPalettePreview");
+  if(!sel||!prev)return;
+  prev.style.background=palettePreviewBg(sel.value==="custom"?cfCustomColorsFromDOM():PROGRESS_PALETTES[sel.value]);}
 // Rendu HTML (lecture) : puces colorées (tags), barre (progress), sinon texte échappé.
 function cfDisplayHTML(f,v){
   if(!cfHasVal(v))return "";
@@ -3310,8 +3329,8 @@ function cfControlHTML(f,value){
     case "tags":{full=true;const vals=Array.isArray(value)?value:[];
       c='<div class="cf-tags" data-cfmulti="'+(f.multiple?1:0)+'">'+(f.items||[]).map(it=>{const on=vals.includes(it.code),col=it.color||"#888";
         return '<button type="button" class="cf-tag'+(on?" on":"")+'" data-cftag="'+esc(it.code)+'" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(cfItemLabel(it))+'</button>';}).join("")+'</div>';break;}
-    case "progress":{full=true;const pv=(value!=null&&value!=="")?Math.max(0,Math.min(100,Math.round(+value||0))):0;const pal=progressPaletteId(f);
-      c='<div class="cf-progress-edit"><input type="range" min="0" max="100" step="'+(f.step||10)+'" data-cfv data-ppal="'+esc(pal)+'" style="accent-color:'+progressColorFor(pal,pv)+'" value="'+pv+'"><output class="cf-progress-val">'+pv+' %</output></div>';break;}
+    case "progress":{full=true;const pv=(value!=null&&value!=="")?Math.max(0,Math.min(100,Math.round(+value||0))):0;const cols=progressColors(f);const colStr=cols?cols.join(","):"";
+      c='<div class="cf-progress-edit"><input type="range" min="0" max="100" step="'+(f.step||10)+'" data-cfv data-pcolors="'+esc(colStr)+'" style="accent-color:'+(cols&&cols.length?paletteColor(cols,pv):"var(--accent)")+'" value="'+pv+'"><output class="cf-progress-val">'+pv+' %</output></div>';break;}
   }
   return '<div class="cf-field'+(full?" full":"")+'" '+data+'>'+lab+c+'</div>';
 }
@@ -3377,9 +3396,16 @@ document.addEventListener("click",e=>{const b=e.target.closest(".cf-tag");if(!b)
   const af=b.closest("#cfAnalysisValues");if(af)cfSaveAnalysis(); // sauvegarde directe si champ de l'analyse
 });
 document.addEventListener("input",e=>{const r=e.target;
-  if(r&&r.matches&&r.matches('.cf-progress-edit input[type=range]')){const pv=+r.value;const o=r.parentNode.querySelector('.cf-progress-val');if(o)o.textContent=pv+' %';r.style.accentColor=progressColorFor(r.dataset.ppal,pv);}});
-// Modale de définition : aperçu du dégradé mis à jour au changement de palette.
-document.addEventListener("change",e=>{if(e.target&&e.target.id==="cfPalette"){const pv=document.getElementById("cfPalettePreview");if(pv)pv.style.background=palettePreviewBg(e.target.value);}});
+  if(r&&r.matches&&r.matches('.cf-progress-edit input[type=range]')){const pv=+r.value;const o=r.parentNode.querySelector('.cf-progress-val');if(o)o.textContent=pv+' %';const cs=r.dataset.pcolors?r.dataset.pcolors.split(","):null;r.style.accentColor=cs&&cs.length?paletteColor(cs,pv):"var(--accent)";}});
+// Modale de définition : palette (affiche/masque l'éditeur de couleurs perso) + aperçu du dégradé.
+document.addEventListener("change",e=>{const el=e.target;if(!el)return;
+  if(el.id==="cfPalette"){const cc=document.getElementById("cfCustomColors");if(cc)cc.style.display=el.value==="custom"?"block":"none";updatePalettePreview();}
+  else if(el.matches&&el.matches('#cfColors [data-cfcv]'))updatePalettePreview();});
+document.addEventListener("click",e=>{
+  const add=e.target.closest&&e.target.closest("#cfColorAdd");
+  if(add){e.preventDefault();const box=document.getElementById("cfColors");if(box){box.insertAdjacentHTML("beforeend",cfColorRowHTML("#4c7dff"));updatePalettePreview();}return;}
+  const del=e.target.closest&&e.target.closest("[data-cfc-del]");
+  if(del){e.preventDefault();const row=del.closest("[data-cfc]");if(row&&document.querySelectorAll('#cfColors [data-cfc]').length>1){row.remove();updatePalettePreview();}return;}});
 /* Enregistrement en direct des valeurs des champs de l'analyse (pas de bouton d'enregistrement). */
 function cfSaveAnalysis(){
   const scope=document.getElementById("cfAnalysisValues");if(!scope)return;
