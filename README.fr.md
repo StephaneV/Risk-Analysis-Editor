@@ -1,4 +1,4 @@
-# Risk Analysis Editor (RAE)
+# <img src="docs/images/RAE-logo-mini.svg" alt="" height="28" valign="middle"> Risk Analysis Editor (RAE)
 
 [English](README.md) · **Français**
 
@@ -48,9 +48,9 @@ Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risq
 - **Présentation** : onglet dédié aux métadonnées documentaires de l'analyse (titre, statut, auteur, organisation, périmètre, référence méthodologique, description) et aux valeurs des champs personnalisés de niveau analyse.
 - **Registre des risques** : catégorie, propriétaire, description, évaluation initiale et résiduelle, indicateur d'évolution.
 - **Mesures de maîtrise** : nature (technique / organisationnelle…), statut (avec code couleur), responsable, échéance, coût.
-- **Liens risques ↔ mesures** via un tableau croisé à cocher (relation plusieurs-à-plusieurs).
+- **Liens risques ↔ mesures**, en deux sous-onglets : *Associations* (tableau croisé à cocher, plusieurs-à-plusieurs) et *Détails* (registre éditable où chaque lien porte une **note** et ses propres **champs personnalisés**) ; les liens enrichis sont signalés dans le tableau croisé.
 - **Plan d'action** : suivi des mesures via trois présentations (échéancier, kanban par statut, groupé par responsable), mesures **en retard** mises en évidence (échéance passée et non finalisée), et **avancement global** (barre + compteurs par statut).
-- **Champs personnalisés** : définissez dans *Paramètres* des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures — 8 types (oui/non, entier, décimal, date, texte, liste déroulante, liste à cocher), libellés multilingues (le libellé et l'aide se saisissent dans la langue de l'interface active ; à défaut de traduction, le code est affiché), caractère obligatoire et bornes (min/max, longueur, nombre d'items) ; les valeurs se saisissent dans les fiches (risques, mesures) et dans l'onglet *Présentation* (champs de l'analyse), avec validation, et sont reprises dans le **rapport** et dans l'**import/export CSV**.
+- **Champs personnalisés** : définissez dans *Paramètres* des champs supplémentaires rattachés à l'analyse, aux risques, aux mesures ou aux liens — 8 types (oui/non, entier, décimal, date, texte, liste déroulante, liste à cocher), libellés multilingues (le libellé et l'aide se saisissent dans la langue de l'interface active ; à défaut de traduction, le code est affiché), caractère obligatoire et bornes (min/max, longueur, nombre d'items) ; les valeurs se saisissent dans les fiches (risques, mesures) et dans l'onglet *Présentation* (champs de l'analyse), avec validation, et sont reprises dans le **rapport** et dans l'**import/export CSV**.
 - **Import CSV** des risques, des mesures et des liens : colonnes nommées d'après les clés **anglaises** du format, séparateur auto-détecté ; fusion par identifiant (risques/mesures) ; contrôle d'intégrité et déduplication (liens).
 - **Export CSV des risques, des mesures et des liens** : en-têtes = noms de clés **anglais** (identiques quelle que soit la langue de l'interface), délimiteur `;` et BOM UTF-8 (Excel), avec colonnes dérivées en lecture seule (score/criticité pour les risques ; risques couverts pour les mesures ; libellés pour les liens) ; ré-importable.
 - **Tri et filtrage** des listes Risques, Mesures et Plan d'action : recherche texte, tri par clic sur les colonnes, et filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement »).

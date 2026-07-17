@@ -212,7 +212,8 @@
       "properties": {
         "risk": { "type": "string", "minLength": 1 },
         "measure": { "type": "string", "minLength": 1 },
-        "comment": { "type": "string" }
+        "comment": { "type": "string" },
+        "custom": { "type": "object", "additionalProperties": true }
       }
     }
   }

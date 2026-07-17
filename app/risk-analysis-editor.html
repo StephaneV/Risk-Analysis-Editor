@@ -36,6 +36,8 @@
   html{min-height:100%}
   body{margin:0;min-height:100vh;background:var(--body-bg);background-attachment:fixed;color:var(--text);
     font-family:"Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.45;font-size:14px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
 
   /* ---------- Barre supérieure ---------- */
   .topbar{display:flex;align-items:center;gap:14px;padding:12px 20px;
@@ -43,6 +45,10 @@
     backdrop-filter:blur(6px);position:sticky;top:0;z-index:50;flex-wrap:wrap}
   .brand{font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap}
   .brand small{color:var(--muted);font-weight:400;font-size:12px}
+  .brand-logo{display:inline-flex;vertical-align:middle;margin-right:8px}
+  .brand-logo svg{height:24px;width:24px;display:block}
+  .about-logo{display:flex;justify-content:center;margin-bottom:8px}
+  .about-logo svg{height:56px;width:56px;display:block}
   .spacer{flex:1}
   .filestate{color:var(--muted);font-size:12px;white-space:nowrap}
   .filestate b{color:var(--text)}
@@ -215,7 +221,8 @@
     vertical-align:bottom;text-align:left;padding:10px 0 8px;width:34px;
     max-height:230px;overflow:hidden;text-overflow:ellipsis;
     font-size:11.5px;font-weight:600;color:var(--text);text-transform:none;letter-spacing:0}
-  .cross td.cb{width:34px;text-align:center;padding:0}
+  .cross td.cb{width:34px;text-align:center;padding:0;position:relative}
+  .cross .lmark{position:absolute;top:2px;right:3px;font-size:8px;line-height:1;color:var(--accent);pointer-events:none}
   .cross td.rname{position:sticky;left:0;z-index:1;background:var(--panel);white-space:normal;
     overflow-wrap:anywhere;max-width:320px;font-weight:600;padding:8px 16px 8px 12px}
   .cross tbody tr:hover td{background:var(--panel-2)}
@@ -311,7 +318,7 @@
 <body>
 
 <div class="topbar">
-  <div class="brand"><span data-i18n="brand">Risk Analysis Editor</span> <small data-i18n="brand_sub">· .rae.json</small></div>
+  <div class="brand"><span class="brand-logo" id="brandLogo"></span><span data-i18n="brand">Risk Analysis Editor</span> <small data-i18n="brand_sub">· .rae.json</small></div>
   <div class="spacer"></div>
   <div class="filestate"><span class="dot" id="dirtyDot"></span><span id="fileLabel">nouvelle analyse</span></div>
   <select id="langSel" class="topsel" data-i18n-title="lang_title" title="Langue de l'interface">
@@ -453,12 +460,22 @@
   <section class="view" id="view-links">
     <div class="card">
       <div style="display:flex;align-items:center;margin-bottom:14px">
-        <div><h2 data-i18n="links_title">Liens risques ↔ mesures</h2><div class="caption" style="margin:0" data-i18n="links_caption">Cochez une case pour associer une mesure à un risque.</div></div>
+        <div class="seg" id="linksSeg">
+          <button data-mode="grid" class="active" data-i18n="links_seg_grid">Associations</button>
+          <button data-mode="details" data-i18n="links_seg_details">Détails</button>
+        </div>
         <div class="spacer" style="flex:1"></div>
         <button class="btn ghost" id="btnImportLinks" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
         <button class="btn ghost" id="btnExportLinks" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
       </div>
-      <div class="cross" id="crossArea"></div>
+      <div class="lpanel" data-lmode="grid">
+        <div class="caption" style="margin:0 0 12px" data-i18n="links_caption">Cochez une case pour associer une mesure à un risque.</div>
+        <div class="cross" id="crossArea"></div>
+      </div>
+      <div class="lpanel" data-lmode="details" style="display:none">
+        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-ph="flt_search" placeholder="Rechercher…"></div>
+        <div id="linkDetailsArea"></div>
+      </div>
     </div>
   </section>
 
@@ -671,14 +688,16 @@ const I18N = {
     no_linked_measure:"Aucune mesure liée", linked_measures_label:"Mesures de maîtrise liées :",
     risks_title:"Registre des risques", risks_caption:"Cliquez sur un risque pour l'éditer.",
     btn_import_csv:"⭱ Importer (CSV)", btn_export_csv:"⭳ Exporter (CSV)", toast_csv_export:"CSV exporté : {0}", btn_add_risk:"+ Ajouter un risque",
-    th_id:"ID", th_risk:"Risque", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel",
+    th_id:"ID", th_risk:"Risque", th_risk_id:"ID risque", th_measure_id:"ID mesure", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel",
     th_measures:"Mesures", th_evolution:"Évolution",
     risks_empty:"Aucun risque. Cliquez sur « Ajouter un risque ».",
     delta_flat:"● non réduit", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Supprimer le risque {0} ?",
+    confirm_del_link:"Supprimer le lien {0} → {1} ?",
+    confirm_add_link:"Créer le lien {0} → {1} ?",
     risk_new:"Nouveau risque", edit_prefix:"Éditer {0}",
     f_identifier:"Identifiant", f_category:"Catégorie", f_risk_label:"Libellé du risque *", f_owner:"Propriétaire",
-    score_auto_hint:"Le score et la couleur sont calculés automatiquement.", f_description:"Description",
+    score_auto_hint:"Le score et la couleur sont calculés automatiquement.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Évaluation initiale (brute)", eval_residual:"Évaluation résiduelle (nette)",
     linked_measures_title:"Mesures de maîtrise liées",
     no_measures_defined:"Aucune mesure définie. Créez des mesures dans l'onglet « Mesures » pour pouvoir les lier.",
@@ -694,6 +713,10 @@ const I18N = {
     measure_new:"Nouvelle mesure", f_measure_label:"Libellé de la mesure *", f_due_date:"Échéance", f_cost:"Coût estimé",
     links_title:"Liens risques ↔ mesures", links_caption:"Cochez une case pour associer une mesure à un risque.",
     links_empty:"Il faut au moins un risque et une mesure pour établir des liens.", cross_corner:"Risque \\ Mesure",
+    links_seg_grid:"Associations", links_seg_details:"Détails",
+    links_details_empty:"Aucun lien. Créez des associations dans l'onglet Associations.",
+    link_has_data:"Ce lien contient une note ou des champs personnalisés.",
+    link_title:"Lien {0} → {1}",
     settings_general:"Informations générales", settings_general_caption:"Métadonnées documentaires de l'analyse.",
     f_title:"Titre", f_author:"Auteur", f_org:"Organisation", f_scope:"Périmètre", f_methodology:"Référence méthodologique",
     methodology_ph:"ISO 27005, EBIOS RM, interne…",
@@ -754,7 +777,7 @@ const I18N = {
     report_hint:"Aperçu ci-dessous. Le bouton Imprimer ouvre la boîte d'impression du navigateur (→ PDF).",
     rp_summary:"Synthèse", rp_presentation:"Présentation", cf_yes:"Oui", cf_no:"Non", rp_created:"Date de création", rp_updated:"Dernière modification",
     rp_revision:"Révision", rp_value:"Valeur", rp_range:"Plage de score",
-    rp_risk_details:"Détail des risques", rp_measure_details:"Détail des mesures",
+    rp_risk_details:"Détail des risques", rp_measure_details:"Détail des mesures", rp_link_details:"Détail des liens",
     tab_plan:"Plan d'action", plan_caption:"Suivi des mesures de maîtrise : échéances, statut et avancement.",
     plan_view_echeance:"Échéancier", plan_view_statut:"Par statut", plan_view_responsable:"Par responsable",
     plan_progress:"Avancement", plan_overdue:"en retard", plan_overdue_n:"{0} en retard",
@@ -766,7 +789,7 @@ const I18N = {
     cf_section:"Champs personnalisés", cf_caption:"Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.",
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
-    "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure",
+    "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher",
     cf_label:"Libellé", cf_help:"Aide",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
@@ -814,14 +837,16 @@ const I18N = {
     no_linked_measure:"No linked measure", linked_measures_label:"Linked controls:",
     risks_title:"Risk register", risks_caption:"Click a risk to edit it.",
     btn_import_csv:"⭱ Import (CSV)", btn_export_csv:"⭳ Export (CSV)", toast_csv_export:"CSV exported: {0}", btn_add_risk:"+ Add a risk",
-    th_id:"ID", th_risk:"Risk", th_category:"Category", th_initial:"Initial", th_residual:"Residual",
+    th_id:"ID", th_risk:"Risk", th_risk_id:"Risk ID", th_measure_id:"Measure ID", th_category:"Category", th_initial:"Initial", th_residual:"Residual",
     th_measures:"Measures", th_evolution:"Change",
     risks_empty:"No risk. Click “Add a risk”.",
     delta_flat:"● unreduced", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Delete risk {0}?",
+    confirm_del_link:"Delete link {0} → {1}?",
+    confirm_add_link:"Create link {0} → {1}?",
     risk_new:"New risk", edit_prefix:"Edit {0}",
     f_identifier:"Identifier", f_category:"Category", f_risk_label:"Risk label *", f_owner:"Owner",
-    score_auto_hint:"Score and color are computed automatically.", f_description:"Description",
+    score_auto_hint:"Score and color are computed automatically.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Initial assessment (gross)", eval_residual:"Residual assessment (net)",
     linked_measures_title:"Linked controls",
     no_measures_defined:"No measure defined. Create measures in the “Measures” tab to link them.",
@@ -837,6 +862,10 @@ const I18N = {
     measure_new:"New measure", f_measure_label:"Measure label *", f_due_date:"Due date", f_cost:"Estimated cost",
     links_title:"Risk ↔ measure links", links_caption:"Tick a box to link a measure to a risk.",
     links_empty:"At least one risk and one measure are needed to create links.", cross_corner:"Risk \\ Measure",
+    links_seg_grid:"Associations", links_seg_details:"Details",
+    links_details_empty:"No link yet. Create associations in the Associations sub-tab.",
+    link_has_data:"This link has a note or custom fields.",
+    link_title:"Link {0} → {1}",
     settings_general:"General information", settings_general_caption:"Document metadata of the analysis.",
     f_title:"Title", f_author:"Author", f_org:"Organization", f_scope:"Scope", f_methodology:"Methodology reference",
     methodology_ph:"ISO 27005, EBIOS RM, internal…",
@@ -897,7 +926,7 @@ const I18N = {
     report_hint:"Preview below. The Print button opens the browser's print dialog (→ PDF).",
     rp_summary:"Summary", rp_presentation:"Overview", cf_yes:"Yes", cf_no:"No", rp_created:"Created on", rp_updated:"Last updated",
     rp_revision:"Revision", rp_value:"Value", rp_range:"Score range",
-    rp_risk_details:"Risk details", rp_measure_details:"Measure details",
+    rp_risk_details:"Risk details", rp_measure_details:"Measure details", rp_link_details:"Link details",
     tab_plan:"Action plan", plan_caption:"Follow-up of controls: due dates, status and progress.",
     plan_view_echeance:"Timeline", plan_view_statut:"By status", plan_view_responsable:"By owner",
     plan_progress:"Progress", plan_overdue:"overdue", plan_overdue_n:"{0} overdue",
@@ -909,7 +938,7 @@ const I18N = {
     cf_section:"Custom fields", cf_caption:"Define extra fields attached to the analysis, risks or measures.",
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
-    "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure",
+    "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist",
     cf_label:"Label", cf_help:"Help",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
@@ -957,14 +986,16 @@ const I18N = {
     no_linked_measure:"Nessuna misura collegata", linked_measures_label:"Misure di controllo collegate:",
     risks_title:"Registro dei rischi", risks_caption:"Clicca su un rischio per modificarlo.",
     btn_import_csv:"⭱ Importa (CSV)", btn_export_csv:"⭳ Esporta (CSV)", toast_csv_export:"CSV esportato: {0}", btn_add_risk:"+ Aggiungi un rischio",
-    th_id:"ID", th_risk:"Rischio", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo",
+    th_id:"ID", th_risk:"Rischio", th_risk_id:"ID rischio", th_measure_id:"ID misura", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo",
     th_measures:"Misure", th_evolution:"Evoluzione",
     risks_empty:"Nessun rischio. Clicca su « Aggiungi un rischio ».",
     delta_flat:"● non ridotto", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Eliminare il rischio {0}?",
+    confirm_del_link:"Eliminare il collegamento {0} → {1}?",
+    confirm_add_link:"Creare il collegamento {0} → {1}?",
     risk_new:"Nuovo rischio", edit_prefix:"Modifica {0}",
     f_identifier:"Identificatore", f_category:"Categoria", f_risk_label:"Etichetta del rischio *", f_owner:"Titolare",
-    score_auto_hint:"Il punteggio e il colore sono calcolati automaticamente.", f_description:"Descrizione",
+    score_auto_hint:"Il punteggio e il colore sono calcolati automaticamente.", f_description:"Descrizione", f_notes:"Note",
     eval_initial:"Valutazione iniziale (lorda)", eval_residual:"Valutazione residua (netta)",
     linked_measures_title:"Misure di controllo collegate",
     no_measures_defined:"Nessuna misura definita. Crea misure nella scheda « Misure » per poterle collegare.",
@@ -980,6 +1011,10 @@ const I18N = {
     measure_new:"Nuova misura", f_measure_label:"Etichetta della misura *", f_due_date:"Scadenza", f_cost:"Costo stimato",
     links_title:"Collegamenti rischi ↔ misure", links_caption:"Spunta una casella per associare una misura a un rischio.",
     links_empty:"Servono almeno un rischio e una misura per creare collegamenti.", cross_corner:"Rischio \\ Misura",
+    links_seg_grid:"Associazioni", links_seg_details:"Dettagli",
+    links_details_empty:"Nessun collegamento. Crea associazioni nella scheda Associazioni.",
+    link_has_data:"Questo collegamento ha una nota o campi personalizzati.",
+    link_title:"Collegamento {0} → {1}",
     settings_general:"Informazioni generali", settings_general_caption:"Metadati documentali dell'analisi.",
     f_title:"Titolo", f_author:"Autore", f_org:"Organizzazione", f_scope:"Ambito", f_methodology:"Riferimento metodologico",
     methodology_ph:"ISO 27005, EBIOS RM, interno…",
@@ -1040,7 +1075,7 @@ const I18N = {
     report_hint:"Anteprima qui sotto. Il pulsante Stampa apre la finestra di stampa del browser (→ PDF).",
     rp_summary:"Sintesi", rp_presentation:"Presentazione", cf_yes:"Sì", cf_no:"No", rp_created:"Data di creazione", rp_updated:"Ultima modifica",
     rp_revision:"Revisione", rp_value:"Valore", rp_range:"Intervallo di punteggio",
-    rp_risk_details:"Dettaglio dei rischi", rp_measure_details:"Dettaglio delle misure",
+    rp_risk_details:"Dettaglio dei rischi", rp_measure_details:"Dettaglio delle misure", rp_link_details:"Dettaglio dei collegamenti",
     tab_plan:"Piano d'azione", plan_caption:"Monitoraggio delle misure di controllo: scadenze, stato e avanzamento.",
     plan_view_echeance:"Scadenzario", plan_view_statut:"Per stato", plan_view_responsable:"Per responsabile",
     plan_progress:"Avanzamento", plan_overdue:"in ritardo", plan_overdue_n:"{0} in ritardo",
@@ -1052,7 +1087,7 @@ const I18N = {
     cf_section:"Campi personalizzati", cf_caption:"Definisci campi aggiuntivi associati all'analisi, ai rischi o alle misure.",
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
-    "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura",
+    "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla",
     cf_label:"Etichetta", cf_help:"Aiuto",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
@@ -1189,6 +1224,7 @@ function syncSeg(segId,mode){document.querySelectorAll("#"+segId+" button").forE
 const SUBTABS={
   matrices:{tokens:["side","traj"],set:m=>{matrixMode=m;syncSeg("viewSeg",m);}},
   plan:{tokens:["due_date","status","responsible"],set:m=>{planMode=m;syncSeg("planSeg",m);}},
+  links:{tokens:["grid","details"],set:m=>setLinkMode(m)},
   settings:{tokens:["display","grid","fields"],set:m=>setParamMode(m)}
 };
 function applyTabParam(){
@@ -2364,6 +2400,21 @@ function renderReport(){
     '</tbody></table>';
   h+='</div>';
 
+  // 7b. Détail des liens (note + champs perso), si des données de lien existent
+  const lcf=customFieldsFor("link");
+  if(analyse.treatments.length&&(lcf.length||analyse.treatments.some(linkEnriched))){
+    h+='<div class="rp-card"><h2>'+esc(t("rp_link_details"))+'</h2>';
+    h+='<table><thead><tr><th>'+esc(t("th_risk"))+'</th><th>'+esc(t("th_measure"))+'</th><th>'+esc(t("f_notes"))+'</th>';
+    lcf.forEach(f=>h+='<th>'+esc(cfLabel(f))+'</th>');
+    h+='</tr></thead><tbody>';
+    analyse.treatments.forEach(tr=>{const r=riskById(tr.risk),m=measureById(tr.measure);
+      h+='<tr><td>'+esc(tr.risk)+(r?' — '+esc(r.label):'')+'</td><td>'+esc(tr.measure)+(m?' — '+esc(m.label):'')+
+        '</td><td style="white-space:pre-wrap">'+esc(tr.comment||"—")+'</td>';
+      lcf.forEach(f=>h+='<td>'+esc(cfDisplay(f,(tr.custom||{})[f.code])||"—")+'</td>');
+      h+='</tr>';});
+    h+='</tbody></table></div>';
+  }
+
   host.innerHTML=h;
 }
 document.getElementById("btnPrintReport").addEventListener("click",()=>window.print());
@@ -2475,7 +2526,8 @@ document.getElementById("planSeg").addEventListener("click",e=>{const b=e.target
 const listState={
   risks:{q:"",cat:"",sort:"",dir:1},
   measures:{q:"",type:"",status:"",sort:"",dir:1},
-  plan:{q:"",status:"",resp:"",overdue:false}
+  plan:{q:"",status:"",resp:"",overdue:false},
+  links:{sort:"rid",dir:1} // défaut : code risque puis code mesure
 };
 function fillSelect(sel,pairs,allLabel,current){
   if(!sel)return;
@@ -2502,6 +2554,16 @@ function measureCmp(col){return (a,b)=>{
   if(col==="status")return STATUS_CODES.indexOf(a.status)-STATUS_CODES.indexOf(b.status);
   if(col==="resp")return (a.responsible||"").localeCompare(b.responsible||"");
   return 0;};}
+// Liens : tri sur la colonne demandée, avec repli systématique code risque puis code mesure.
+function linkCmp(col){return (a,b)=>{
+  let d=0;
+  if(col==="risk")d=((riskById(a.risk)||{}).label||"").localeCompare((riskById(b.risk)||{}).label||"");
+  else if(col==="mid")d=cmpId({id:a.measure},{id:b.measure});
+  else if(col==="measure")d=((measureById(a.measure)||{}).label||"").localeCompare((measureById(b.measure)||{}).label||"");
+  else if(col==="notes")d=(a.comment||"").localeCompare(b.comment||"");
+  if(d!==0)return d;
+  const dr=cmpId({id:a.risk},{id:b.risk});if(dr!==0)return dr;
+  return cmpId({id:a.measure},{id:b.measure});};}
 
 /* ============================================================
    VUE RISQUES
@@ -2577,6 +2639,7 @@ function openRiskModal(id){
       '<label class="field"><span class="lab">'+esc(t("f_owner"))+'</span><input id="f_prop" value="'+esc(r.owner||"")+'"></label>'+
       '<label class="field"><span class="lab">&nbsp;</span><span class="hint">'+esc(t("score_auto_hint"))+'</span></label>'+
       '<label class="field full"><span class="lab">'+esc(t("f_description"))+'</span><textarea id="f_desc">'+esc(r.description||"")+'</textarea></label>'+
+      '<label class="field full"><span class="lab">'+esc(t("f_notes"))+'</span><textarea id="f_comment">'+esc(r.comment||"")+'</textarea></label>'+
     '</div>'+
     '<div class="row">'+
       '<div class="sub-card"><b>'+esc(t("eval_initial"))+'</b>'+
@@ -2607,19 +2670,20 @@ function openRiskModal(id){
     const cc=cfCollect("risk",document.getElementById("modalBody"));
     if(cc.error){modalMsg(cc.error);return false;}
     const obj={id:newId,label:lib,category:val("f_cat").trim(),owner:val("f_prop").trim(),
-      description:val("f_desc").trim(),
+      description:val("f_desc").trim(),comment:val("f_comment").trim(),
       initial_assessment:{probability:+val("f_ip"),severity:+val("f_ig")},
       residual_assessment:{probability:+val("f_rp"),severity:+val("f_rg")}};
-    if(!obj.category)delete obj.category;if(!obj.owner)delete obj.owner;if(!obj.description)delete obj.description;
+    if(!obj.category)delete obj.category;if(!obj.owner)delete obj.owner;if(!obj.description)delete obj.description;if(!obj.comment)delete obj.comment;
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.risks.push(obj);
     else{const i=analyse.risks.findIndex(x=>x.id===r.id);analyse.risks[i]=obj;
       if(newId!==r.id)analyse.treatments.forEach(t=>{if(t.risk===r.id)t.risk=newId;});}
-    // reconstruire les liens de ce risque
+    // reconstruire les liens de ce risque en préservant note/champs perso des liens conservés
+    const keep=new Set();
+    document.querySelectorAll('#linkList input[type=checkbox]').forEach(cb=>{if(cb.checked)keep.add(cb.dataset.mid);});
+    const prevLinks=analyse.treatments.filter(t=>t.risk===obj.id);
     analyse.treatments=analyse.treatments.filter(t=>t.risk!==obj.id);
-    document.querySelectorAll('#linkList input[type=checkbox]').forEach(cb=>{
-      if(cb.checked)analyse.treatments.push({risk:obj.id,measure:cb.dataset.mid});
-    });
+    keep.forEach(mid=>analyse.treatments.push(prevLinks.find(t=>t.measure===mid)||{risk:obj.id,measure:mid}));
     markDirty();renderAll();return true;
   });
 
@@ -2734,6 +2798,7 @@ function openMeasureModal(id){
     '<label class="field"><span class="lab">'+esc(t("f_due_date"))+'</span><input id="f_due" type="date" value="'+esc(m.due_date||"")+'"></label>'+
     '<label class="field"><span class="lab">'+esc(t("f_cost"))+'</span><input id="f_cost" value="'+esc(m.cost!=null?m.cost:"")+'"></label>'+
     '<label class="field full"><span class="lab">'+esc(t("f_description"))+'</span><textarea id="f_desc">'+esc(m.description||"")+'</textarea></label>'+
+    '<label class="field full"><span class="lab">'+esc(t("f_notes"))+'</span><textarea id="f_comment">'+esc(m.comment||"")+'</textarea></label>'+
     '</div>'+
     (customFieldsFor("measure").length?'<h3 style="margin-top:4px">'+esc(t("cf_section"))+'</h3><div class="grid2">'+cfFieldsHTML("measure",m.custom)+'</div>':'');
   openModal((isNew?t("measure_new"):t("edit_prefix",m.id)),body,()=>{
@@ -2743,8 +2808,8 @@ function openMeasureModal(id){
     const cc=cfCollect("measure",document.getElementById("modalBody"));
     if(cc.error){modalMsg(cc.error);return false;}
     const obj={id:newId,label:lib,type:val("f_type"),status:val("f_status")};
-    const resp=val("f_resp").trim(),ech=val("f_due"),cout=val("f_cost").trim(),desc=val("f_desc").trim();
-    if(resp)obj.responsible=resp;if(ech)obj.due_date=ech;if(cout)obj.cost=cout;if(desc)obj.description=desc;
+    const resp=val("f_resp").trim(),ech=val("f_due"),cout=val("f_cost").trim(),desc=val("f_desc").trim(),com=val("f_comment").trim();
+    if(resp)obj.responsible=resp;if(ech)obj.due_date=ech;if(cout)obj.cost=cout;if(desc)obj.description=desc;if(com)obj.comment=com;
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.measures.push(obj);
     else{const i=analyse.measures.findIndex(x=>x.id===m.id);analyse.measures[i]=obj;
@@ -2754,9 +2819,23 @@ function openMeasureModal(id){
 }
 
 /* ============================================================
-   VUE LIENS (crosstab)
+   VUE LIENS (sous-onglets Associations / Détails)
    ============================================================ */
-function renderLinks(){
+function treatmentOf(rid,mid){return analyse.treatments.find(t=>t.risk===rid&&t.measure===mid);}
+function linkEnriched(tr){return !!(tr&&(tr.comment||(tr.custom&&Object.keys(tr.custom).length)));}
+
+let linkMode="grid";
+function setLinkMode(m){
+  linkMode=m;
+  document.querySelectorAll("#linksSeg button").forEach(b=>b.classList.toggle("active",b.dataset.mode===m));
+  document.querySelectorAll("#view-links .lpanel").forEach(p=>{p.style.display=(p.dataset.lmode===m)?"":"none";});
+}
+document.getElementById("linksSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setLinkMode(b.dataset.mode);});
+
+function renderLinks(){renderCrosstab();renderLinkDetails();}
+
+// Sous-onglet Associations : tableau croisé à cocher (+ marqueur des liens enrichis).
+function renderCrosstab(){
   const area=document.getElementById("crossArea");
   if(!analyse.risks.length||!analyse.measures.length){
     area.innerHTML='<div class="empty">'+esc(t("links_empty"))+'</div>';return;}
@@ -2766,8 +2845,9 @@ function renderLinks(){
   analyse.risks.forEach(r=>{
     h+='<tr><td class="rname"><span class="id-badge">'+esc(r.id)+'</span> '+esc(r.label)+'</td>';
     analyse.measures.forEach((m,i)=>{
-      const on=analyse.treatments.some(t=>t.risk===r.id&&t.measure===m.id);
-      h+='<td class="cb'+(i%2?' altcol':'')+'"><input type="checkbox" data-r="'+esc(r.id)+'" data-m="'+esc(m.id)+'"'+(on?" checked":"")+'></td>';
+      const tr=treatmentOf(r.id,m.id);
+      const mark=linkEnriched(tr)?'<span class="lmark" title="'+esc(t("link_has_data"))+'">●</span>':'';
+      h+='<td class="cb'+(i%2?' altcol':'')+'"><input type="checkbox" data-r="'+esc(r.id)+'" data-m="'+esc(m.id)+'"'+(tr?" checked":"")+'>'+mark+'</td>';
     });
     h+='</tr>';
   });
@@ -2777,11 +2857,96 @@ function renderLinks(){
 document.getElementById("crossArea").addEventListener("change",e=>{
   const cb=e.target.closest('input[type=checkbox]');if(!cb)return;
   const rid=cb.dataset.r,mid=cb.dataset.m;
-  if(cb.checked){if(!analyse.treatments.some(t=>t.risk===rid&&t.measure===mid))
-    analyse.treatments.push({risk:rid,measure:mid});}
-  else analyse.treatments=analyse.treatments.filter(t=>!(t.risk===rid&&t.measure===mid));
-  markDirty();renderRisks();renderMeasures();updateBadges();
+  const refresh=()=>{markDirty();renderCrosstab();renderLinkDetails();renderRisks();renderMeasures();updateBadges();};
+  if(cb.checked){
+    cb.checked=false; // cocher = créer le lien : on attend la confirmation avant de créer
+    confirmModal(t("confirm_add_link",rid,mid),()=>{
+      if(!treatmentOf(rid,mid))analyse.treatments.push({risk:rid,measure:mid});
+      refresh();
+    });
+  }else{
+    cb.checked=true; // décocher = supprimer le lien : on annule visuellement en attendant confirmation
+    confirmModal(t("confirm_del_link",rid,mid),()=>{
+      analyse.treatments=analyse.treatments.filter(t=>!(t.risk===rid&&t.measure===mid));
+      refresh();
+    },{danger:true});
+  }
 });
+
+// Sous-onglet Détails : registre des liens existants (note + champs perso), éditable via modale.
+function renderLinkDetails(){
+  const area=document.getElementById("linkDetailsArea");
+  if(!analyse.treatments.length){area.innerHTML='<div class="empty">'+esc(t("links_details_empty"))+'</div>';return;}
+  const cf=customFieldsFor("link");
+  const st=listState.links;
+  const q=normV((document.getElementById("fltLinkQ").value||""));
+  let list=analyse.treatments.filter(tr=>{
+    if(!q)return true;
+    const r=riskById(tr.risk),m=measureById(tr.measure);
+    const hay=[tr.risk,tr.measure,r&&r.label,m&&m.label,tr.comment].concat(cf.map(f=>cfDisplay(f,(tr.custom||{})[f.code]))).join(" ");
+    return normV(hay).indexOf(q)>=0;});
+  list=list.slice().sort(linkCmp(st.sort));if(st.dir<0)list.reverse();
+  const ind=col=>'<span class="sort-ind">'+(st.sort===col?(st.dir<0?"▼":"▲"):"")+'</span>';
+  const sth=(col,label)=>'<th data-sort="'+col+'">'+esc(label)+ind(col)+'</th>';
+  let h='<table><thead><tr>'+
+    sth("rid",t("th_risk_id"))+sth("risk",t("th_risk"))+
+    sth("mid",t("th_measure_id"))+sth("measure",t("th_measure"))+
+    sth("notes",t("f_notes"));
+  cf.forEach(f=>h+='<th>'+esc(cfLabel(f))+'</th>');
+  h+='<th></th></tr></thead><tbody>';
+  if(!list.length)h+='<tr><td colspan="'+(6+cf.length)+'" class="muted">'+esc(t("flt_none"))+'</td></tr>';
+  list.forEach(tr=>{
+    const r=riskById(tr.risk),m=measureById(tr.measure);
+    const key=esc(tr.risk)+'|'+esc(tr.measure);
+    h+='<tr class="linkrow" data-r="'+esc(tr.risk)+'" data-m="'+esc(tr.measure)+'" style="cursor:pointer">'+
+      '<td><span class="id-badge">'+esc(tr.risk)+'</span></td>'+
+      '<td>'+esc(r?r.label:"—")+'</td>'+
+      '<td><span class="id-badge">'+esc(tr.measure)+'</span></td>'+
+      '<td>'+esc(m?m.label:"—")+'</td>'+
+      '<td>'+esc(tr.comment||"—")+'</td>';
+    cf.forEach(f=>h+='<td>'+esc(cfDisplay(f,(tr.custom||{})[f.code])||"—")+'</td>');
+    h+='<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'">✎</button>'+
+      '<button class="btn icon sm" data-del-l="'+key+'">🗑</button></div></td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  area.innerHTML=h;
+}
+document.getElementById("fltLinkQ").addEventListener("input",renderLinkDetails);
+document.getElementById("linkDetailsArea").addEventListener("click",e=>{
+  const th=e.target.closest("th[data-sort]");
+  if(th){const st=listState.links,col=th.dataset.sort;if(st.sort===col)st.dir=-st.dir;else{st.sort=col;st.dir=1;}renderLinkDetails();return;}
+  const ed=e.target.closest("[data-edit-l]");const dl=e.target.closest("[data-del-l]");
+  if(ed){const[rid,mid]=ed.dataset.editL.split("|");openLinkModal(rid,mid);return;}
+  if(dl){const[rid,mid]=dl.dataset.delL.split("|");
+    confirmModal(t("confirm_del_link",rid,mid),()=>{
+      analyse.treatments=analyse.treatments.filter(x=>!(x.risk===rid&&x.measure===mid));
+      markDirty();renderLinks();renderRisks();renderMeasures();updateBadges();
+    },{danger:true});return;}
+  const row=e.target.closest(".linkrow");if(!row)return;
+  openLinkModal(row.dataset.r,row.dataset.m);
+});
+
+// Modale d'édition d'un lien : Notes (comment) + champs personnalisés de cible « link ».
+function openLinkModal(rid,mid){
+  const tr=treatmentOf(rid,mid);if(!tr)return;
+  const r=riskById(rid),m=measureById(mid),cf=customFieldsFor("link");
+  const body=
+    '<div class="sub-card" style="margin-bottom:14px">'+
+      '<div><span class="id-badge">'+esc(rid)+'</span> '+esc(r?r.label:"")+'</div>'+
+      '<div style="margin-top:6px"><span class="id-badge">'+esc(mid)+'</span> '+esc(m?m.label:"")+'</div>'+
+    '</div>'+
+    '<label class="field full"><span class="lab">'+esc(t("f_notes"))+'</span><textarea id="l_comment">'+esc(tr.comment||"")+'</textarea></label>'+
+    (cf.length?'<h3 style="margin-top:14px">'+esc(t("cf_section"))+'</h3><div class="grid2">'+cfFieldsHTML("link",tr.custom)+'</div>':'');
+  openModal(t("link_title",rid,mid),body,()=>{
+    const cc=cfCollect("link",document.getElementById("modalBody"));
+    if(cc.error){modalMsg(cc.error);return false;}
+    const com=val("l_comment").trim();
+    if(com)tr.comment=com;else delete tr.comment;
+    if(Object.keys(cc.custom).length)tr.custom=cc.custom;else delete tr.custom;
+    markDirty();renderLinks();return true;
+  });
+}
 document.getElementById("btnImportLinks").addEventListener("click",()=>openImportModal("links"));
 document.getElementById("btnExportLinks").addEventListener("click",exportLinksCSV);
 
@@ -2829,7 +2994,7 @@ function renderSettings(){
    CHAMPS PERSONNALISÉS — éditeur de définitions
    ============================================================ */
 const CF_TYPES=["boolean","integer","float","date","text","textarea","select","checklist"];
-const CF_TARGETS=["analysis","risk","measure"];
+const CF_TARGETS=["analysis","risk","measure","link"];
 /* Affichage libellé/item : valeur de la LANGUE COURANTE, sinon le CODE (repli volontaire,
    sans essayer une autre langue). Les libellés se saisissent une langue à la fois. */
 function cfLabel(f){const L=f&&f.label||{};return L[lang]||(f&&f.code)||"";}
@@ -3465,6 +3630,7 @@ function analyzeLinksCSV(text){
     measure:colIndex(H,["measure"]),
     comment:colIndex(H,["comment"])};
   if(IDX.risk<0||IDX.measure<0){res.errors.push(t("import_no_col_link"));return res;}
+  const cfMap=cfImportCols("link",H,new Set(Object.values(IDX).filter(i=>i>=0)));
   const riskIds=new Set(analyse.risks.map(r=>r.id)), mesIds=new Set(analyse.measures.map(m=>m.id));
   for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
     const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[]};
@@ -3472,6 +3638,8 @@ function analyzeLinksCSV(text){
     if(!ri||!mi)p.errors.push(t("import_link_missing"));
     else{if(!riskIds.has(ri))p.errors.push(t("import_risk_unknown",ri));
       if(!mesIds.has(mi))p.errors.push(t("import_measure_unknown",mi));}
+    const custom={};cfMap.forEach(({f,col})=>{const v=cfParseValue(f,get(col));if(cfHasVal(v))custom[f.code]=v;});
+    if(Object.keys(custom).length)p.custom=custom;
     res.items.push(p);if(p.errors.length)res.errors.push(t("import_line",r+1,p.errors.join(" ; ")));}
   return res;
 }
@@ -3479,15 +3647,17 @@ function commitImportLinks(items){
   let added=0,skipped=0;
   items.forEach(p=>{if(p.errors&&p.errors.length)return;
     if(analyse.treatments.some(tr=>tr.risk===p.risk&&tr.measure===p.measure)){skipped++;return;}
-    const obj={risk:p.risk,measure:p.measure};if(p.comment)obj.comment=p.comment;
+    const obj={risk:p.risk,measure:p.measure};if(p.comment)obj.comment=p.comment;if(p.custom)obj.custom=p.custom;
     analyse.treatments.push(obj);added++;});
   markDirty();renderAll();return {added,skipped};
 }
 function exportLinksCSV(){
-  const H=["risk","risk_label","measure","measure_label","comment"];
+  const cf=customFieldsFor("link");
+  const H=["risk","risk_label","measure","measure_label","comment"].concat(cf.map(f=>cfLabel(f)));
   const rows=[H];
   analyse.treatments.forEach(tr=>{const r=riskById(tr.risk),m=measureById(tr.measure);
-    rows.push([tr.risk,r?r.label:"",tr.measure,m?m.label:"",tr.comment||""]);});
+    rows.push([tr.risk,r?r.label:"",tr.measure,m?m.label:"",tr.comment||""]
+      .concat(cf.map(f=>cfDisplay(f,(tr.custom||{})[f.code]))));});
   const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
   downloadCSV(rows,base+"-links.csv");
 }
@@ -3578,11 +3748,25 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dy
 /* ---------- À propos ---------- */
 const APP_VERSION="1.0.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
+/* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */
+const LOGO_SVG='<svg viewBox="0 0 18.585251 18.585253" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(-29.633334,-127.52917)" stroke-width="0.329" stroke-miterlimit="8" fill-rule="evenodd">'+
+  '<path d="m 29.797833,128.11382 c 0,-0.23203 0.188119,-0.42015 0.420159,-0.42015 h 4.715933 c 0.23204,0 0.420158,0.18812 0.420158,0.42015 v 4.71594 c 0,0.23204 -0.188118,0.42016 -0.420158,0.42016 h -4.715933 c -0.23204,0 -0.420159,-0.18812 -0.420159,-0.42016 z" stroke="#d9b22b" fill="#f2c62f"/>'+
+  '<path d="m 36.147833,128.11382 c 0,-0.23203 0.188119,-0.42015 0.420159,-0.42015 h 4.715933 c 0.23204,0 0.420158,0.18812 0.420158,0.42015 v 4.71594 c 0,0.23204 -0.188118,0.42016 -0.420158,0.42016 h -4.715933 c -0.23204,0 -0.420159,-0.18812 -0.420159,-0.42016 z" stroke="#c58931" fill="#f6ac26"/>'+
+  '<path d="m 42.497833,128.04397 c 0,-0.19341 0.156898,-0.3503 0.350309,-0.3503 h 4.855633 c 0.19341,0 0.350308,0.15689 0.350308,0.3503 v 4.85564 c 0,0.19341 -0.156898,0.35031 -0.350308,0.35031 h -4.855633 c -0.193411,0 -0.350309,-0.1569 -0.350309,-0.35031 z" stroke="#c13a1c" fill="#e25631"/>'+
+  '<path d="m 29.797833,134.4289 c 0,-0.21273 0.172509,-0.38523 0.385234,-0.38523 h 4.785783 c 0.212725,0 0.385233,0.1725 0.385233,0.38523 v 4.78578 c 0,0.21272 -0.172508,0.38523 -0.385233,0.38523 h -4.785783 c -0.212725,0 -0.385234,-0.17251 -0.385234,-0.38523 z" stroke="#2b5624" fill="#508343"/>'+
+  '<path d="m 36.147833,134.32386 c 0,-0.15478 0.125413,-0.28019 0.280194,-0.28019 h 4.995863 c 0.154781,0 0.280193,0.12541 0.280193,0.28019 v 4.99586 c 0,0.15478 -0.125412,0.28019 -0.280193,0.28019 h -4.995863 c -0.154781,0 -0.280194,-0.12541 -0.280194,-0.28019 z" stroke="#c58931" fill="#f6ac26"/>'+
+  '<path d="m 42.497833,134.35878 c 0,-0.17409 0.141023,-0.31511 0.315119,-0.31511 h 4.926012 c 0.174096,0 0.315119,0.14102 0.315119,0.31511 v 4.92601 c 0,0.1741 -0.141023,0.31512 -0.315119,0.31512 h -4.926012 c -0.174096,0 -0.315119,-0.14102 -0.315119,-0.31512 z" stroke="#c13a1c" fill="#e25631"/>'+
+  '<path d="m 29.797833,140.74371 c 0,-0.19341 0.156634,-0.35005 0.350044,-0.35005 h 4.856163 c 0.19341,0 0.350043,0.15664 0.350043,0.35005 v 4.85616 c 0,0.19341 -0.156633,0.35004 -0.350043,0.35004 h -4.856163 c -0.19341,0 -0.350044,-0.15663 -0.350044,-0.35004 z" stroke="#193115" fill="#2f5427"/>'+
+  '<path d="m 36.147833,140.74397 c 0,-0.19341 0.156898,-0.35031 0.350309,-0.35031 h 4.855633 c 0.19341,0 0.350308,0.1569 0.350308,0.35031 v 4.85563 c 0,0.19341 -0.156898,0.35031 -0.350308,0.35031 h -4.855633 c -0.193411,0 -0.350309,-0.1569 -0.350309,-0.35031 z" stroke="#2b5624" fill="#508343"/>'+
+  '<path d="m 42.497833,140.74371 c 0,-0.19341 0.156634,-0.35005 0.350044,-0.35005 h 4.856162 c 0.193411,0 0.350044,0.15664 0.350044,0.35005 v 4.85616 c 0,0.19341 -0.156633,0.35004 -0.350044,0.35004 h -4.856162 c -0.19341,0 -0.350044,-0.15663 -0.350044,-0.35004 z" stroke="#891c0d" fill="#c7341b"/>'+
+  '</g></svg>';
+(function(){const el=document.getElementById("brandLogo");if(el)el.innerHTML=LOGO_SVG;})();
 function openAboutModal(){
   const row=(k,v)=>'<div class="muted">'+esc(k)+'</div><div>'+v+'</div>';
   const link='<a href="'+esc(GITHUB_URL)+'" target="_blank" rel="noopener">'+esc(t("about_github"))+' →</a>';
   const body=
     '<div style="text-align:center;padding:2px 0 14px">'+
+      '<div class="about-logo">'+LOGO_SVG+'</div>'+
       '<div style="font-size:18px;font-weight:700">'+esc(t("brand"))+'</div>'+
       '<div class="muted" style="font-size:12px;margin-top:2px">'+esc(t("about_subtitle"))+'</div>'+
     '</div>'+
