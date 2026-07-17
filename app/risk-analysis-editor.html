@@ -198,6 +198,24 @@
   /* ---------- Champs personnalisés (contrôles de saisie) ---------- */
   .cf-field{display:block;margin-bottom:12px}
   .cf-field>.lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
+  /* Champs perso : tags (puces) et barre de progression */
+  .cf-tags{display:flex;flex-wrap:wrap;gap:6px;padding-top:2px}
+  .cf-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:600;
+    cursor:pointer;background:var(--panel-2);color:var(--muted);border:1.5px solid var(--border);line-height:1.5}
+  .cf-tag::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--tagc,#888);flex:none}
+  .cf-tag.on{background:var(--tagc,#888);color:var(--tagfg,#fff);border-color:var(--tagc,#888)}
+  .cf-tag.on::before{background:var(--tagfg,#fff)}
+  .cf-chips{display:inline-flex;flex-wrap:wrap;gap:4px;vertical-align:middle}
+  .cf-chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;
+    color:var(--tagfg,#fff);background:var(--tagc,#888);white-space:nowrap}
+  .cf-progress{display:inline-flex;align-items:center;gap:8px;min-width:120px;max-width:220px;vertical-align:middle}
+  .cf-progress-track{flex:1;height:8px;min-width:60px;background:var(--panel-2);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+  .cf-progress-track>span{display:block;height:100%;background:var(--pc,var(--accent))}
+  .cf-progress-num{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+  .cf-progress-edit{display:flex;align-items:center;gap:12px;padding-top:6px}
+  .cf-progress-edit input[type=range]{flex:1}
+  .cf-pal-preview{height:12px;border-radius:20px;border:1px solid var(--border);margin-top:2px}
+  .cf-progress-val{font-size:13px;font-weight:700;min-width:46px;text-align:right}
 
   /* ---------- Plan d'action ---------- */
   .plan-bar{height:10px;background:var(--panel-3);border-radius:6px;overflow:hidden}
@@ -210,6 +228,9 @@
   .plan-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px}
   .plan-card.overdue{border-color:var(--danger)}
   .plan-card b{font-weight:600}
+  .plan-card.dragging{opacity:.45}
+  .kanban-col.drop-target{outline:2px dashed var(--accent);outline-offset:-4px;border-radius:8px}
+  tr[data-mid]:hover td,.plan-card[data-mid]:hover{background:var(--panel-2)}
 
   /* ---------- Liens crosstab ---------- */
   .cross{overflow:auto;border:1px solid var(--border);border-radius:10px}
@@ -790,7 +811,10 @@ const I18N = {
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
-    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher",
+    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression",
+    cf_multiple:"Sélection multiple", cf_palette:"Palette de couleur", cf_palette_preview:"Aperçu", cf_item_color:"Couleur", cf_step:"Pas",
+    cf_pal_colors:"Couleurs de la palette", cf_pal_add_color:"+ Ajouter une couleur", cf_err_colors:"Ajoutez au moins une couleur à la palette.",
+    "pal.accent":"Couleur unique (accent)","pal.red-green":"Rouge → Vert","pal.red-orange-green":"Rouge → Orange → Vert","pal.red-orange-yellow-green":"Rouge → Orange → Jaune → Vert","pal.white-black":"Blanc → Noir","pal.custom":"Personnalisée",
     cf_label:"Libellé", cf_help:"Aide",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
     cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_label:"Libellé",
@@ -939,7 +963,10 @@ const I18N = {
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
-    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist",
+    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar",
+    cf_multiple:"Multiple selection", cf_palette:"Color palette", cf_palette_preview:"Preview", cf_item_color:"Color", cf_step:"Step",
+    cf_pal_colors:"Palette colors", cf_pal_add_color:"+ Add a color", cf_err_colors:"Add at least one color to the palette.",
+    "pal.accent":"Single color (accent)","pal.red-green":"Red → Green","pal.red-orange-green":"Red → Orange → Green","pal.red-orange-yellow-green":"Red → Orange → Yellow → Green","pal.white-black":"White → Black","pal.custom":"Custom",
     cf_label:"Label", cf_help:"Help",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
     cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_label:"Label",
@@ -1088,7 +1115,10 @@ const I18N = {
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
-    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla",
+    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento",
+    cf_multiple:"Selezione multipla", cf_palette:"Tavolozza colori", cf_palette_preview:"Anteprima", cf_item_color:"Colore", cf_step:"Passo",
+    cf_pal_colors:"Colori della tavolozza", cf_pal_add_color:"+ Aggiungi un colore", cf_err_colors:"Aggiungi almeno un colore alla tavolozza.",
+    "pal.accent":"Colore unico (accento)","pal.red-green":"Rosso → Verde","pal.red-orange-green":"Rosso → Arancione → Verde","pal.red-orange-yellow-green":"Rosso → Arancione → Giallo → Verde","pal.white-black":"Bianco → Nero","pal.custom":"Personalizzata",
     cf_label:"Etichetta", cf_help:"Aiuto",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
     cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_label:"Etichetta",
@@ -2400,19 +2430,19 @@ function renderReport(){
     '</tbody></table>';
   h+='</div>';
 
-  // 7b. Détail des liens (note + champs perso), si des données de lien existent
+  // 7b. Détail des liens (note + champs perso), même présentation que Détail des risques/mesures
   const lcf=customFieldsFor("link");
   if(analyse.treatments.length&&(lcf.length||analyse.treatments.some(linkEnriched))){
     h+='<div class="rp-card"><h2>'+esc(t("rp_link_details"))+'</h2>';
-    h+='<table><thead><tr><th>'+esc(t("th_risk"))+'</th><th>'+esc(t("th_measure"))+'</th><th>'+esc(t("f_notes"))+'</th>';
-    lcf.forEach(f=>h+='<th>'+esc(cfLabel(f))+'</th>');
-    h+='</tr></thead><tbody>';
-    analyse.treatments.forEach(tr=>{const r=riskById(tr.risk),m=measureById(tr.measure);
-      h+='<tr><td>'+esc(tr.risk)+(r?' — '+esc(r.label):'')+'</td><td>'+esc(tr.measure)+(m?' — '+esc(m.label):'')+
-        '</td><td style="white-space:pre-wrap">'+esc(tr.comment||"—")+'</td>';
-      lcf.forEach(f=>h+='<td>'+esc(cfDisplay(f,(tr.custom||{})[f.code])||"—")+'</td>');
-      h+='</tr>';});
-    h+='</tbody></table></div>';
+    analyse.treatments.forEach(tr=>{
+      const r=riskById(tr.risk),m=measureById(tr.measure);
+      const sub=[r&&r.label,m&&m.label].filter(Boolean).map(esc).join(" → ");
+      h+='<div class="rp-item"><div><b>'+esc(tr.risk)+' → '+esc(tr.measure)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
+      if(tr.comment)h+='<div class="rp-note">'+esc(tr.comment)+'</div>';
+      h+=cfReportNotes("link",tr.custom);
+      h+='</div>';
+    });
+    h+='</div>';
   }
 
   host.innerHTML=h;
@@ -2434,7 +2464,7 @@ function planSortByDate(list){
 }
 function planRow(m){
   const ov=isOverdue(m);
-  return '<tr'+(ov?' class="overdue-row"':'')+'>'+
+  return '<tr'+(ov?' class="overdue-row"':'')+' data-mid="'+esc(m.id)+'" style="cursor:pointer">'+
     '<td><span class="id-badge">'+esc(m.id)+'</span></td>'+
     '<td><b>'+esc(m.label)+'</b></td>'+
     '<td class="muted">'+esc(m.responsible||"—")+'</td>'+
@@ -2449,11 +2479,13 @@ function planTable(list){
 }
 function planCard(m){
   const ov=isOverdue(m), risks=risksOfMeasure(m.id);
-  return '<div class="plan-card'+(ov?" overdue":"")+'"><div><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
+  return '<div class="plan-card'+(ov?" overdue":"")+'" data-mid="'+esc(m.id)+'" draggable="true" style="cursor:pointer"><div><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
     ((m.due_date||m.responsible)?'<div class="muted" style="margin-top:4px;font-size:11px">'+
       (m.due_date?'<span'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(m.due_date)+(ov?' ⚠':'')+'</span>':'')+
       (m.due_date&&m.responsible?' · ':'')+(m.responsible?esc(m.responsible):'')+'</div>':'')+
     (risks.length?'<div style="margin-top:5px">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join(" ")+'</div>':'')+
+    customFieldsFor("measure").filter(f=>(f.type==="tags"||f.type==="progress")&&cfHasVal((m.custom||{})[f.code]))
+      .map(f=>'<div style="margin-top:5px">'+cfDisplayHTML(f,(m.custom||{})[f.code])+'</div>').join("")+
   '</div>';
 }
 function renderPlanSummary(){
@@ -2491,7 +2523,7 @@ function renderPlanStatus(area,ms){
   ms.forEach(m=>{if(m.status in by)by[m.status].push(m);else (by["proposed"]=by["proposed"]||[]).push(m);});
   area.innerHTML='<div class="kanban">'+STATUS_CODES.map(c=>{
     const col=STATUS_COLORS[c], {withD,noD}=planSortByDate(by[c]), list=withD.concat(noD);
-    return '<div class="kanban-col"><h4><span class="tag" style="background:'+col.bg+';color:'+col.fg+'">'+esc(statusLabel(c))+'</span> <span class="muted">'+list.length+'</span></h4>'+
+    return '<div class="kanban-col" data-status="'+c+'"><h4><span class="tag" style="background:'+col.bg+';color:'+col.fg+'">'+esc(statusLabel(c))+'</span> <span class="muted">'+list.length+'</span></h4>'+
       list.map(planCard).join("")+'</div>';
   }).join("")+'</div>';
 }
@@ -2517,6 +2549,24 @@ function renderPlan(){
   else if(planMode==="responsible")renderPlanResponsible(area,list);
   else renderPlanTimeline(area,list);
 }
+/* Édition depuis le Plan : clic (carte/ligne) → modale mesure ; glisser-déposer d'une
+   carte entre colonnes de statut (vue Par statut) → change le statut. Écouteurs délégués
+   sur #planArea (persistant, ré-rendu par innerHTML). */
+(function(){
+  const area=document.getElementById("planArea");if(!area)return;
+  let dragId=null;
+  area.addEventListener("click",e=>{const el=e.target.closest("[data-mid]");if(el)openMeasureModal(el.dataset.mid);});
+  area.addEventListener("dragstart",e=>{const c=e.target.closest(".plan-card[draggable]");if(!c)return;
+    dragId=c.dataset.mid;e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain",dragId);}catch(_){}c.classList.add("dragging");});
+  area.addEventListener("dragend",e=>{const c=e.target.closest(".plan-card");if(c)c.classList.remove("dragging");
+    area.querySelectorAll(".kanban-col.drop-target").forEach(x=>x.classList.remove("drop-target"));dragId=null;});
+  area.addEventListener("dragover",e=>{const col=e.target.closest(".kanban-col");if(!col)return;e.preventDefault();e.dataTransfer.dropEffect="move";});
+  area.addEventListener("dragenter",e=>{const col=e.target.closest(".kanban-col");if(col)col.classList.add("drop-target");});
+  area.addEventListener("dragleave",e=>{const col=e.target.closest(".kanban-col");if(col&&!col.contains(e.relatedTarget))col.classList.remove("drop-target");});
+  area.addEventListener("drop",e=>{const col=e.target.closest(".kanban-col");if(!col)return;e.preventDefault();
+    const id=dragId||(e.dataTransfer&&e.dataTransfer.getData("text/plain")),st=col.dataset.status;
+    const m=id&&measureById(id);if(m&&st&&m.status!==st){m.status=st;markDirty();renderAll();}dragId=null;});
+})();
 document.getElementById("planSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   planMode=b.dataset.mode;document.querySelectorAll("#planSeg button").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderPlan();});
 
@@ -2904,7 +2954,7 @@ function renderLinkDetails(){
       '<td><span class="id-badge">'+esc(tr.measure)+'</span></td>'+
       '<td>'+esc(m?m.label:"—")+'</td>'+
       '<td>'+esc(tr.comment||"—")+'</td>';
-    cf.forEach(f=>h+='<td>'+esc(cfDisplay(f,(tr.custom||{})[f.code])||"—")+'</td>');
+    cf.forEach(f=>{const dv=cfDisplayHTML(f,(tr.custom||{})[f.code]);h+='<td>'+(dv||"—")+'</td>';});
     h+='<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'">✎</button>'+
       '<button class="btn icon sm" data-del-l="'+key+'">🗑</button></div></td>';
     h+='</tr>';
@@ -2993,7 +3043,7 @@ function renderSettings(){
 /* ============================================================
    CHAMPS PERSONNALISÉS — éditeur de définitions
    ============================================================ */
-const CF_TYPES=["boolean","integer","float","date","text","textarea","select","checklist"];
+const CF_TYPES=["boolean","integer","float","date","text","textarea","select","checklist","tags","progress"];
 const CF_TARGETS=["analysis","risk","measure","link"];
 /* Affichage libellé/item : valeur de la LANGUE COURANTE, sinon le CODE (repli volontaire,
    sans essayer une autre langue). Les libellés se saisissent une langue à la fois. */
@@ -3001,7 +3051,7 @@ function cfLabel(f){const L=f&&f.label||{};return L[lang]||(f&&f.code)||"";}
 function cfTypeLabel(ty){return t("cft."+ty);}
 function cfTargetLabel(tg){return t("cf_t."+tg);}
 function cfItemLabel(it){const L=it&&it.label||{};return L[lang]||(it&&it.code)||"";}
-function cfNeedsItems(ty){return ty==="select"||ty==="checklist";}
+function cfNeedsItems(ty){return ty==="select"||ty==="checklist"||ty==="tags";}
 function cfBoundKind(ty){ // 'num' | 'date' | 'len' | 'items' | null
   if(ty==="integer"||ty==="float")return "num";
   if(ty==="date")return "date";
@@ -3050,11 +3100,22 @@ function cfBoundsHTML(f){
   return '<div class="grid2"><label class="field"><span class="lab">'+esc(lo)+'</span>'+inp("cfMin",f.min)+'</label>'+
     '<label class="field"><span class="lab">'+esc(hi)+'</span>'+inp("cfMax",f.max)+'</label></div>';
 }
-function cfItemsRowsHTML(items){
+function cfItemsRowsHTML(items,withColor){
   return items.map((it,i)=>'<div class="inline" data-cfi="'+i+'" style="margin-bottom:6px">'+
-    '<input placeholder="'+esc(t("cf_item_code"))+'" data-if="code" value="'+esc(it.code||"")+'" style="max-width:130px">'+
+    '<input placeholder="'+esc(t("cf_item_code"))+'" data-if="code" value="'+esc(it.code||"")+'" style="max-width:120px">'+
     '<input placeholder="'+esc(t("cf_item_label"))+'" data-if="lab" value="'+esc((it.label&&it.label[lang])||"")+'">'+
+    (withColor?'<input type="color" data-if="color" title="'+esc(t("cf_item_color"))+'" value="'+esc(it.color||"#4c7dff")+'" style="width:42px;flex:none;padding:2px;height:34px">':'')+
     '<button class="btn icon sm" style="flex:none" data-cfi-del="'+i+'" type="button">🗑</button></div>').join("");
+}
+// Options spécifiques à un type dans la modale de définition (multiple pour tags, couleur pour progress).
+function cfTypeOptsHTML(f){
+  if(f.type==="tags")return '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfMultiple" style="width:16px;height:16px;flex:none"'+(f.multiple?" checked":"")+'> '+esc(t("cf_multiple"))+'</label></label>';
+  if(f.type==="progress"){const pal=progressPaletteId(f);
+    return '<label class="field"><span class="lab">'+esc(t("cf_palette"))+'</span><select id="cfPalette">'+PROGRESS_PALETTE_IDS.map(id=>'<option value="'+id+'"'+(id===pal?" selected":"")+'>'+esc(t("pal."+id))+'</option>').join("")+'</select></label>'+
+      '<label class="field"><span class="lab">'+esc(t("cf_step"))+'</span><input type="number" id="cfStep" min="1" max="100" step="1" value="'+(f.step!=null?f.step:10)+'"></label>'+
+      '<div class="field full" id="cfCustomColors" style="display:'+(pal==="custom"?"block":"none")+'"><span class="lab">'+esc(t("cf_pal_colors"))+'</span><div id="cfColors">'+cfColorsRowsHTML(f.colors)+'</div><button class="btn ghost sm" id="cfColorAdd" type="button">'+esc(t("cf_pal_add_color"))+'</button></div>'+
+      '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfPalettePreview" class="cf-pal-preview" style="background:'+palettePreviewBg(progressColors(f))+'"></div></div>';}
+  return "";
 }
 function openCustomFieldModal(idx){
   const isNew=idx==null;
@@ -3072,8 +3133,9 @@ function openCustomFieldModal(idx){
       '<label class="field full"><span class="lab">'+esc(t("cf_help"))+'</span><input id="cfHelpTxt" value="'+esc(f.help[lang]||"")+'"></label>'+
     '</div>'+
     '<div id="cfBounds">'+cfBoundsHTML(f)+'</div>'+
+    '<div class="grid2" id="cfTypeOpts">'+cfTypeOptsHTML(f)+'</div>'+
     '<div id="cfItemsWrap" style="display:'+(cfNeedsItems(f.type)?"block":"none")+'">'+
-      '<h3>'+esc(t("cf_items"))+'</h3><div id="cfItems">'+cfItemsRowsHTML(f.items)+'</div>'+
+      '<h3>'+esc(t("cf_items"))+'</h3><div id="cfItems">'+cfItemsRowsHTML(f.items,f.type==="tags")+'</div>'+
       '<button class="btn ghost sm" id="cfItemAdd" type="button">'+esc(t("cf_item_add"))+'</button>'+
     '</div>';
   // lecture des items depuis le DOM (pour ne pas perdre les saisies au re-render)
@@ -3081,7 +3143,8 @@ function openCustomFieldModal(idx){
     const i=+r.dataset.cfi, it=f.items[i]||(f.items[i]={code:"",label:{}});
     it.code=r.querySelector('[data-if=code]').value.trim();it.label=it.label||{};
     const v=r.querySelector('[data-if=lab]').value.trim();
-    if(v)it.label[lang]=v;else delete it.label[lang];});};
+    if(v)it.label[lang]=v;else delete it.label[lang];
+    const cv=r.querySelector('[data-if=color]');if(cv)it.color=cv.value;});};
   openModal(isNew?t("cf_new"):t("cf_edit"),body,()=>{
     const code=val("cfCode").trim(), type=val("cfType"), target=val("cfTarget");
     if(!code){modalMsg(t("cf_err_code"));return false;}
@@ -3102,12 +3165,16 @@ function openCustomFieldModal(idx){
       if(mi!=="")obj.min=(kind==="date")?mi:+mi;if(ma!=="")obj.max=(kind==="date")?ma:+ma;
       if(mi!==""&&ma!==""&&((kind==="date")?mi>ma:+mi>+ma)){modalMsg(t("cf_err_minmax"));return false;}
     }
+    if(type==="tags")obj.multiple=document.getElementById("cfMultiple").checked;
+    if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";
+      if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){modalMsg(t("cf_err_colors"));return false;}obj.colors=cols;}
+      const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
     if(cfNeedsItems(type)){
       syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
       if(!items.length){modalMsg(t("cf_err_items"));return false;}
       const codes=new Set();
       for(const it of items){if(!it.code||codes.has(it.code)){modalMsg(t("cf_err_item_code"));return false;}codes.add(it.code);}
-      obj.items=items.map(it=>({code:it.code,label:Object.assign({},it.label)}));
+      obj.items=items.map(it=>{const o={code:it.code,label:Object.assign({},it.label)};if(type==="tags")o.color=it.color||"#4c7dff";return o;});
     }
     const list=customFields();
     if(isNew){obj.order=list.length;list.push(obj);}else{obj.order=list[idx].order!=null?list[idx].order:idx;list[idx]=obj;}
@@ -3115,14 +3182,16 @@ function openCustomFieldModal(idx){
   });
   // câblage post-ouverture
   const typeSel=document.getElementById("cfType");
-  const refreshType=()=>{f.type=typeSel.value;
+  const refreshType=()=>{syncItems();f.type=typeSel.value;
     document.getElementById("cfBounds").innerHTML=cfBoundsHTML(f);
-    const w=document.getElementById("cfItemsWrap");w.style.display=cfNeedsItems(f.type)?"block":"none";};
+    document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
+    const w=document.getElementById("cfItemsWrap");w.style.display=cfNeedsItems(f.type)?"block":"none";
+    document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");};
   typeSel.addEventListener("change",refreshType);
   // proposition auto du code depuis le libellé (langue courante), à la sortie du champ (si le code est encore vide)
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
-  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();f.items.push({code:"",label:{}});document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items);});
-  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items);});
+  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();f.items.push({code:"",label:{}});document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
+  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
 }
 
 /* ----- Champs personnalisés : contrôles de saisie, lecture, validation ----- */
@@ -3133,8 +3202,75 @@ function cfDisplay(f,v){
   if(v===undefined||v===null||v==="")return "";
   if(f.type==="boolean")return v?t("cf_yes"):t("cf_no");
   if(f.type==="select"){const it=(f.items||[]).find(x=>x.code===v);return it?cfItemLabel(it):String(v);}
-  if(f.type==="checklist"){const arr=Array.isArray(v)?v:[];return arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code);return it?cfItemLabel(it):code;}).join(", ");}
+  if(f.type==="checklist"||f.type==="tags"){const arr=Array.isArray(v)?v:[];return arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code);return it?cfItemLabel(it):code;}).join(", ");}
+  if(f.type==="progress")return Math.max(0,Math.min(100,Math.round(+v||0)))+" %";
   return String(v);
+}
+// Couleur (texte contrasté) sur fond de tag.
+function cfTagFg(hex){hex=String(hex||"").replace("#","");if(hex.length===3)hex=hex.split("").map(c=>c+c).join("");
+  const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  if([r,g,b].some(isNaN))return "#fff";return (0.299*r+0.587*g+0.114*b)>150?"#111":"#fff";}
+/* Palettes de la barre de progression : jalons équirépartis (0→100 %), couleur interpolée
+   en TSL/HSL (chemin de teinte le plus court). "accent" = couleur unique du thème. */
+const PROGRESS_PALETTES={
+  accent:null,
+  "red-green":["#e53935","#43a047"],
+  "red-orange-green":["#e53935","#fb8c00","#43a047"],
+  "red-orange-yellow-green":["#e53935","#fb8c00","#fdd835","#43a047"],
+  "white-black":["#ffffff","#000000"]
+};
+const PROGRESS_PALETTE_IDS=["accent","red-green","red-orange-green","red-orange-yellow-green","white-black","custom"];
+function hexToRgb(hex){hex=String(hex).replace("#","");if(hex.length===3)hex=hex.split("").map(c=>c+c).join("");
+  return [parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];}
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0,l=(mx+mn)/2;
+  if(mx!==mn){const d=mx-mn;s=l>0.5?d/(2-mx-mn):d/(mx+mn);
+    h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h/=6;}
+  return [h*360,s,l];}
+// Interpolation TSL entre deux couleurs hex (t 0..1), teinte par le chemin le plus court.
+function lerpHsl(c1,c2,t){const a=rgbToHsl.apply(null,hexToRgb(c1)),b=rgbToHsl.apply(null,hexToRgb(c2));
+  let dh=b[0]-a[0];if(dh>180)dh-=360;else if(dh<-180)dh+=360;
+  const h=((a[0]+dh*t)%360+360)%360, s=a[1]+(b[1]-a[1])*t, l=a[2]+(b[2]-a[2])*t;
+  return "hsl("+h.toFixed(1)+","+(s*100).toFixed(1)+"%,"+(l*100).toFixed(1)+"%)";}
+function paletteColor(colors,pv){
+  if(!colors||!colors.length)return "var(--accent)";
+  if(colors.length===1)return colors[0];
+  const p=Math.max(0,Math.min(100,+pv||0))/100, seg=1/(colors.length-1);
+  const i=Math.min(colors.length-2,Math.floor(p/seg)), t=(p-i*seg)/seg;
+  return lerpHsl(colors[i],colors[i+1],t);}
+// Identifiant de palette d'un champ (rétro-compat : ancien color_mode accent/threshold).
+function progressPaletteId(f){
+  if(f.palette==="custom")return "custom";
+  if(f.palette&&PROGRESS_PALETTES.hasOwnProperty(f.palette))return f.palette;
+  if(f.color_mode==="threshold")return "red-orange-yellow-green";
+  return "accent";}
+// Couleurs (tableau hex) d'un champ : palette prédéfinie, personnalisée (f.colors), ou null=accent.
+function progressColors(f){
+  const id=progressPaletteId(f);
+  if(id==="custom")return (f.colors&&f.colors.length)?f.colors:null;
+  return PROGRESS_PALETTES[id]||null;}
+function cfProgressColor(f,pv){const cols=progressColors(f);return cols&&cols.length?paletteColor(cols,pv):"var(--accent)";}
+// Fond CSS d'aperçu depuis un tableau de couleurs (aplat si 1 couleur, accent si vide).
+function palettePreviewBg(colors){
+  if(!colors||!colors.length)return "var(--accent)";if(colors.length===1)return colors[0];
+  const stops=[];for(let v=0;v<=100;v+=5)stops.push(paletteColor(colors,v)+" "+v+"%");
+  return "linear-gradient(to right,"+stops.join(",")+")";}
+function cfColorRowHTML(hex){return '<div class="inline" data-cfc style="margin-bottom:6px"><input type="color" data-cfcv value="'+esc(hex||"#4c7dff")+'" style="width:48px;flex:none;padding:2px;height:34px"><button class="btn icon sm" style="flex:none" data-cfc-del type="button">🗑</button></div>';}
+function cfColorsRowsHTML(colors){colors=(colors&&colors.length)?colors:["#e53935","#43a047"];return colors.map(cfColorRowHTML).join("");}
+function cfCustomColorsFromDOM(){return [...document.querySelectorAll('#cfColors [data-cfcv]')].map(i=>i.value);}
+// Aperçu de la palette dans la modale de définition (lit l'état courant : palette + couleurs perso).
+function updatePalettePreview(){
+  const sel=document.getElementById("cfPalette"),prev=document.getElementById("cfPalettePreview");
+  if(!sel||!prev)return;
+  prev.style.background=palettePreviewBg(sel.value==="custom"?cfCustomColorsFromDOM():PROGRESS_PALETTES[sel.value]);}
+// Rendu HTML (lecture) : puces colorées (tags), barre (progress), sinon texte échappé.
+function cfDisplayHTML(f,v){
+  if(!cfHasVal(v))return "";
+  if(f.type==="tags"){const arr=Array.isArray(v)?v:[];
+    return '<span class="cf-chips">'+arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code),col=(it&&it.color)||"#888";
+      return '<span class="cf-chip" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(it?cfItemLabel(it):code)+'</span>';}).join("")+'</span>';}
+  if(f.type==="progress"){const pv=Math.max(0,Math.min(100,Math.round(+v||0)));
+    return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
+  return esc(cfDisplay(f,v));
 }
 function cfHasVal(v){return !(v===undefined||v===null||v===""||(Array.isArray(v)&&!v.length));}
 /* Correspondance d'un texte (code ou libellé FR/EN) vers un item de liste. */
@@ -3147,7 +3283,8 @@ function cfParseValue(f,raw){
   if(f.type==="integer"){const v=parseInt(raw,10);return isNaN(v)?undefined:v;}
   if(f.type==="float"){const v=parseFloat(raw.replace(",","."));return isNaN(v)?undefined:v;}
   if(f.type==="select"){const it=cfMatchItem(f,raw);return it?it.code:undefined;}
-  if(f.type==="checklist"){const codes=raw.split(/[,;]/).map(s=>{const it=cfMatchItem(f,s.trim());return it?it.code:null;}).filter(Boolean);return codes.length?codes:undefined;}
+  if(f.type==="checklist"||f.type==="tags"){const codes=raw.split(/[,;]/).map(s=>{const it=cfMatchItem(f,s.trim());return it?it.code:null;}).filter(Boolean);return codes.length?codes:undefined;}
+  if(f.type==="progress"){const v=parseInt(String(raw).replace(/[^0-9-]/g,""),10);return isNaN(v)?undefined:Math.max(0,Math.min(100,v));}
   return raw; // date, text, textarea
 }
 /* Colonnes personnalisées d'un import : associe chaque champ à sa colonne (par libellé FR/EN ou code), sans réutiliser une colonne déjà prise. */
@@ -3164,13 +3301,13 @@ function cfImportCols(target,H,claimed){
 function cfReportNotes(target,values){
   values=values||{};
   return customFieldsFor(target).map(f=>{const v=values[f.code];
-    return cfHasVal(v)?'<div class="rp-note"><b>'+esc(cfLabel(f))+' :</b> '+esc(cfDisplay(f,v))+'</div>':"";}).join("");
+    return cfHasVal(v)?'<div class="rp-note"><b>'+esc(cfLabel(f))+' :</b> '+cfDisplayHTML(f,v)+'</div>':"";}).join("");
 }
 /* Lignes de tableau « Libellé | valeur » (bloc Présentation de l'analyse). */
 function cfReportRows(target,values){
   values=values||{};
   return customFieldsFor(target).map(f=>{const v=values[f.code];
-    return cfHasVal(v)?'<tr><td>'+esc(cfLabel(f))+'</td><td style="white-space:pre-wrap">'+esc(cfDisplay(f,v))+'</td></tr>':"";}).join("");
+    return cfHasVal(v)?'<tr><td>'+esc(cfLabel(f))+'</td><td style="white-space:pre-wrap">'+cfDisplayHTML(f,v)+'</td></tr>':"";}).join("");
 }
 function cfControlHTML(f,value){
   const req=f.required?" *":"", help=cfHelp(f);
@@ -3189,6 +3326,11 @@ function cfControlHTML(f,value){
     case "select": c='<select data-cfv><option value="">—</option>'+(f.items||[]).map(it=>'<option value="'+esc(it.code)+'"'+(value===it.code?" selected":"")+'>'+esc(cfItemLabel(it))+'</option>').join("")+'</select>';break;
     case "checklist":{full=true;const vals=Array.isArray(value)?value:[];
       c='<div style="display:flex;flex-direction:column;gap:4px;padding-top:4px">'+(f.items||[]).map(it=>'<label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" data-cfchk value="'+esc(it.code)+'" style="width:15px;height:15px;flex:none"'+(vals.includes(it.code)?" checked":"")+'> '+esc(cfItemLabel(it))+'</label>').join("")+'</div>';break;}
+    case "tags":{full=true;const vals=Array.isArray(value)?value:[];
+      c='<div class="cf-tags" data-cfmulti="'+(f.multiple?1:0)+'">'+(f.items||[]).map(it=>{const on=vals.includes(it.code),col=it.color||"#888";
+        return '<button type="button" class="cf-tag'+(on?" on":"")+'" data-cftag="'+esc(it.code)+'" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(cfItemLabel(it))+'</button>';}).join("")+'</div>';break;}
+    case "progress":{full=true;const pv=(value!=null&&value!=="")?Math.max(0,Math.min(100,Math.round(+value||0))):0;const cols=progressColors(f);const colStr=cols?cols.join(","):"";
+      c='<div class="cf-progress-edit"><input type="range" min="0" max="100" step="'+(f.step||10)+'" data-cfv data-pcolors="'+esc(colStr)+'" style="accent-color:'+(cols&&cols.length?paletteColor(cols,pv):"var(--accent)")+'" value="'+pv+'"><output class="cf-progress-val">'+pv+' %</output></div>';break;}
   }
   return '<div class="cf-field'+(full?" full":"")+'" '+data+'>'+lab+c+'</div>';
 }
@@ -3201,9 +3343,10 @@ function cfReadValue(cont,f){
   if(!cont)return undefined;
   if(f.type==="boolean")return cont.querySelector("[data-cfv]").checked;
   if(f.type==="checklist")return [...cont.querySelectorAll("[data-cfchk]:checked")].map(c=>c.value);
+  if(f.type==="tags")return [...cont.querySelectorAll(".cf-tag.on")].map(b=>b.dataset.cftag);
   const el=cont.querySelector("[data-cfv]");const v=(el&&el.value||"").trim();
   if(v==="")return undefined;
-  if(f.type==="integer")return parseInt(v,10);
+  if(f.type==="integer"||f.type==="progress")return parseInt(v,10);
   if(f.type==="float")return parseFloat(v);
   return v;
 }
@@ -3214,7 +3357,7 @@ function cfPresent(f,v){
 function cfValidate(f,v){
   const L=cfLabel(f);
   if(f.required){
-    const missing=f.type==="boolean"?v!==true:f.type==="checklist"?(!v||!v.length):(v===undefined||v===""||v===null);
+    const missing=f.type==="boolean"?v!==true:(f.type==="checklist"||f.type==="tags")?(!v||!v.length):(v===undefined||v===""||v===null);
     if(missing)return t("cf_req_missing",L);
   }
   if(!cfPresent(f,v))return null;
@@ -3244,6 +3387,25 @@ function cfCollect(target,scopeEl){
   }
   return {custom};
 }
+/* Interactions des champs perso « tags » (bascule des puces) et « progress » (valeur du curseur).
+   Écouteurs délégués globaux : valables dans toutes les modales et l'onglet Présentation. */
+document.addEventListener("click",e=>{const b=e.target.closest(".cf-tag");if(!b)return;
+  e.preventDefault();const wrap=b.closest(".cf-tags");if(!wrap)return;
+  if(wrap.dataset.cfmulti!=="1")wrap.querySelectorAll(".cf-tag.on").forEach(x=>{if(x!==b)x.classList.remove("on");});
+  b.classList.toggle("on");
+  const af=b.closest("#cfAnalysisValues");if(af)cfSaveAnalysis(); // sauvegarde directe si champ de l'analyse
+});
+document.addEventListener("input",e=>{const r=e.target;
+  if(r&&r.matches&&r.matches('.cf-progress-edit input[type=range]')){const pv=+r.value;const o=r.parentNode.querySelector('.cf-progress-val');if(o)o.textContent=pv+' %';const cs=r.dataset.pcolors?r.dataset.pcolors.split(","):null;r.style.accentColor=cs&&cs.length?paletteColor(cs,pv):"var(--accent)";}});
+// Modale de définition : palette (affiche/masque l'éditeur de couleurs perso) + aperçu du dégradé.
+document.addEventListener("change",e=>{const el=e.target;if(!el)return;
+  if(el.id==="cfPalette"){const cc=document.getElementById("cfCustomColors");if(cc)cc.style.display=el.value==="custom"?"block":"none";updatePalettePreview();}
+  else if(el.matches&&el.matches('#cfColors [data-cfcv]'))updatePalettePreview();});
+document.addEventListener("click",e=>{
+  const add=e.target.closest&&e.target.closest("#cfColorAdd");
+  if(add){e.preventDefault();const box=document.getElementById("cfColors");if(box){box.insertAdjacentHTML("beforeend",cfColorRowHTML("#4c7dff"));updatePalettePreview();}return;}
+  const del=e.target.closest&&e.target.closest("[data-cfc-del]");
+  if(del){e.preventDefault();const row=del.closest("[data-cfc]");if(row&&document.querySelectorAll('#cfColors [data-cfc]').length>1){row.remove();updatePalettePreview();}return;}});
 /* Enregistrement en direct des valeurs des champs de l'analyse (pas de bouton d'enregistrement). */
 function cfSaveAnalysis(){
   const scope=document.getElementById("cfAnalysisValues");if(!scope)return;
