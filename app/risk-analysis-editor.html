@@ -513,6 +513,7 @@
         <label class="field"><span class="lab" data-i18n="f_org">Organisation</span><input id="mOrg"></label>
         <label class="field"><span class="lab" data-i18n="f_scope">Périmètre</span><input id="mScope"></label>
         <label class="field"><span class="lab" data-i18n="f_methodology">Référence méthodologique</span><input id="mRef" data-i18n-ph="methodology_ph" placeholder="ISO 27005, EBIOS RM, interne…"></label>
+        <label class="field"><span class="lab" data-i18n="f_revision">Révision</span><input id="mRevision"></label>
         <label class="field full"><span class="lab" data-i18n="f_description">Description</span><textarea id="mDesc"></textarea></label>
       </div>
     </div>
@@ -720,6 +721,7 @@ const I18N = {
     f_identifier:"Identifiant", f_category:"Catégorie", f_risk_label:"Libellé du risque *", f_owner:"Propriétaire",
     score_auto_hint:"Le score et la couleur sont calculés automatiquement.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Évaluation initiale (brute)", eval_residual:"Évaluation résiduelle (nette)",
+    f_justification:"Justification", f_assess_date:"Date de cotation", f_revision:"Révision",
     linked_measures_title:"Mesures de maîtrise liées",
     no_measures_defined:"Aucune mesure définie. Créez des mesures dans l'onglet « Mesures » pour pouvoir les lier.",
     err_label_required:"Le libellé est obligatoire.", err_id_exists:"Cet identifiant existe déjà.",
@@ -872,6 +874,7 @@ const I18N = {
     f_identifier:"Identifier", f_category:"Category", f_risk_label:"Risk label *", f_owner:"Owner",
     score_auto_hint:"Score and color are computed automatically.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Initial assessment (gross)", eval_residual:"Residual assessment (net)",
+    f_justification:"Justification", f_assess_date:"Assessment date", f_revision:"Revision",
     linked_measures_title:"Linked controls",
     no_measures_defined:"No measure defined. Create measures in the “Measures” tab to link them.",
     err_label_required:"The label is required.", err_id_exists:"This identifier already exists.",
@@ -1024,6 +1027,7 @@ const I18N = {
     f_identifier:"Identificatore", f_category:"Categoria", f_risk_label:"Etichetta del rischio *", f_owner:"Titolare",
     score_auto_hint:"Il punteggio e il colore sono calcolati automaticamente.", f_description:"Descrizione", f_notes:"Note",
     eval_initial:"Valutazione iniziale (lorda)", eval_residual:"Valutazione residua (netta)",
+    f_justification:"Motivazione", f_assess_date:"Data di valutazione", f_revision:"Revisione",
     linked_measures_title:"Misure di controllo collegate",
     no_measures_defined:"Nessuna misura definita. Crea misure nella scheda « Misure » per poterle collegare.",
     err_label_required:"L'etichetta è obbligatoria.", err_id_exists:"Questo identificatore esiste già.",
@@ -2695,11 +2699,15 @@ function openRiskModal(id){
       '<div class="sub-card"><b>'+esc(t("eval_initial"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_ip">'+levelSelect(pAxis,r.initial_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_ig">'+levelSelect(gAxis,r.initial_assessment.severity)+'</select></label>'+
+        '<label class="field"><span class="lab">'+esc(t("f_justification"))+'</span><textarea id="f_ijust">'+esc(r.initial_assessment.justification||"")+'</textarea></label>'+
+        '<label class="field"><span class="lab">'+esc(t("f_assess_date"))+'</span><input type="date" id="f_idate" value="'+esc(r.initial_assessment.date||"")+'"></label>'+
         '<div class="hint" id="prev_i"></div>'+
       '</div>'+
       '<div class="sub-card"><b>'+esc(t("eval_residual"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_rp">'+levelSelect(pAxis,r.residual_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_rg">'+levelSelect(gAxis,r.residual_assessment.severity)+'</select></label>'+
+        '<label class="field"><span class="lab">'+esc(t("f_justification"))+'</span><textarea id="f_rjust">'+esc(r.residual_assessment.justification||"")+'</textarea></label>'+
+        '<label class="field"><span class="lab">'+esc(t("f_assess_date"))+'</span><input type="date" id="f_rdate" value="'+esc(r.residual_assessment.date||"")+'"></label>'+
         '<div class="hint" id="prev_r"></div>'+
       '</div>'+
     '</div>'+
@@ -2719,10 +2727,11 @@ function openRiskModal(id){
     if(newId!==r.id && analyse.risks.some(x=>x.id===newId)){modalMsg(t("err_id_exists"));return false;}
     const cc=cfCollect("risk",document.getElementById("modalBody"));
     if(cc.error){modalMsg(cc.error);return false;}
+    const mkAssess=(p,s,just,date)=>{const a={probability:+val(p),severity:+val(s)};const j=val(just).trim(),d=val(date);if(j)a.justification=j;if(d)a.date=d;return a;};
     const obj={id:newId,label:lib,category:val("f_cat").trim(),owner:val("f_prop").trim(),
       description:val("f_desc").trim(),comment:val("f_comment").trim(),
-      initial_assessment:{probability:+val("f_ip"),severity:+val("f_ig")},
-      residual_assessment:{probability:+val("f_rp"),severity:+val("f_rg")}};
+      initial_assessment:mkAssess("f_ip","f_ig","f_ijust","f_idate"),
+      residual_assessment:mkAssess("f_rp","f_rg","f_rjust","f_rdate")};
     if(!obj.category)delete obj.category;if(!obj.owner)delete obj.owner;if(!obj.description)delete obj.description;if(!obj.comment)delete obj.comment;
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.risks.push(obj);
@@ -3006,7 +3015,7 @@ document.getElementById("btnExportLinks").addEventListener("click",exportLinksCS
 function renderPresentation(){
   const md=analyse.metadata;
   setVal("mTitle",md.title);setVal("mAuthor",md.author);setVal("mOrg",md.organization);
-  setVal("mScope",md.scope);setVal("mRef",md.methodology_reference);setVal("mDesc",md.description);
+  setVal("mScope",md.scope);setVal("mRef",md.methodology_reference);setVal("mRevision",md.revision);setVal("mDesc",md.description);
   document.getElementById("mStatus").value=md.status||"draft";
   renderCFAnalysis();
 }
@@ -3443,6 +3452,7 @@ document.getElementById("view-presentation").addEventListener("input",e=>{
   else if(t.id==="mOrg")setMeta("organization",t.value);
   else if(t.id==="mScope")setMeta("scope",t.value);
   else if(t.id==="mRef")setMeta("methodology_reference",t.value);
+  else if(t.id==="mRevision")setMeta("revision",t.value);
   else if(t.id==="mDesc")setMeta("description",t.value);
 });
 document.getElementById("view-presentation").addEventListener("change",e=>{
