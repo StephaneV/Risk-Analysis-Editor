@@ -204,12 +204,13 @@ Un `traitement` associe **une mesure à un risque**. La relation est **plusieurs
 | `risk` | chaîne | O | `id` d'un risque existant. |
 | `measure` | chaîne | O | `id` d'une mesure existante. |
 | `comment` | chaîne | F | Note libre. |
+| `custom` | objet | F | Valeurs des champs personnalisés de cible `"link"` (§4.6). |
 
 > **Autorité de la valeur résiduelle.** La position résiduelle affichée est **`risk.residual_assessment`**, saisie globalement par l'analyste. Les `treatments` ne portent que le **lien** risque↔mesure : ils indiquent *quelles* mesures couvrent un risque, pas de combien chacune le réduit. La quantification de la réduction relève entièrement de la cotation résiduelle du risque.
 
 ### 4.6 `custom_fields` et `custom` — champs personnalisés
 
-Le format permet de **définir des champs supplémentaires** rattachés à l'analyse, aux risques ou aux mesures, sans modifier le schéma de base. Les **définitions** sont regroupées à la racine dans `custom_fields` ; les **valeurs** sont portées par un objet `custom` sur l'objet concerné (racine pour l'analyse, chaque `risk`, chaque `measure`).
+Le format permet de **définir des champs supplémentaires** rattachés à l'analyse, aux risques, aux mesures ou aux liens, sans modifier le schéma de base. Les **définitions** sont regroupées à la racine dans `custom_fields` ; les **valeurs** sont portées par un objet `custom` sur l'objet concerné (racine pour l'analyse, chaque `risk`, chaque `measure`, chaque `treatment`).
 
 > **Codes libres, libellés multilingues.** Comme le reste du format, les clés structurelles de `custom_fields` et `custom` sont en anglais. Les `code` (de champ et d'item) sont des chaînes **libres** définies par l'utilisateur (identifiants stables, communs à toutes les langues) ; les libellés destinés à l'affichage sont **multilingues** (voir `label`).
 
@@ -218,7 +219,7 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | Champ | Type | O/F | Description |
 |---|---|---|---|
 | `code` | chaîne | O | Identifiant du champ, **unique**, stable. Sert de clé dans les objets `custom` et d'en-tête de colonne à l'export CSV. |
-| `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"` ou `"measure"`. |
+| `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
 | `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |

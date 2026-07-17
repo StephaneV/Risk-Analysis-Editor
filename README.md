@@ -1,4 +1,4 @@
-# Risk Analysis Editor (RAE)
+# <img src="docs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
 
 **English** · [Français](README.fr.md)
 
@@ -48,9 +48,9 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 - **Overview**: dedicated tab for the analysis's document metadata (title, status, author, organization, scope, methodology reference, description) and analysis-level custom field values.
 - **Risk register**: category, owner, description, initial and residual assessment, change indicator.
 - **Controls / measures**: type (technical / organizational…), status (color-coded), responsible, due date, cost.
-- **Risk ↔ measure links** via a checkbox cross-table (many-to-many relationship).
+- **Risk ↔ measure links**, in two sub-tabs: *Associations* (checkbox cross-table, many-to-many) and *Details* (editable register where each link carries a **note** and its own **custom fields**); enriched links are flagged in the cross-table.
 - **Action plan**: measure tracking across three views (timeline, kanban by status, grouped by owner), **overdue** measures highlighted (past due date and not finalized), and **overall progress** (bar + per-status counters).
-- **Custom fields**: define, in *Settings*, extra fields attached to the analysis, risks or measures — 8 types (yes/no, integer, decimal, date, text, dropdown, checklist), multilingual labels (label and help are entered in the active interface language; when a translation is missing, the code is shown), a required flag and bounds (min/max, length, item count); values are entered in the records (risks, measures) and in the *Overview* tab (analysis fields), with validation, and are included in the **report** and in the **CSV import/export**.
+- **Custom fields**: define, in *Settings*, extra fields attached to the analysis, risks, measures or links — 8 types (yes/no, integer, decimal, date, text, dropdown, checklist), multilingual labels (label and help are entered in the active interface language; when a translation is missing, the code is shown), a required flag and bounds (min/max, length, item count); values are entered in the records (risks, measures) and in the *Overview* tab (analysis fields), with validation, and are included in the **report** and in the **CSV import/export**.
 - **CSV import** of risks, measures and links: columns named after the format's **English** keys, auto-detected separator; merge by identifier (risks/measures); integrity check and deduplication (links).
 - **CSV export of risks, measures and links**: headers = **English** key names (identical whatever the interface language), `;` delimiter and UTF-8 BOM (Excel), with read-only derived columns (score/criticality for risks; covered risks for measures; labels for links); re-importable.
 - **Sorting and filtering** of the Risks, Measures and Action plan lists: text search, sort by clicking columns, and dropdown filters (category, type, status, owner, "overdue only").
