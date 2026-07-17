@@ -762,6 +762,8 @@ const I18N = {
     "acc.acceptable":"Acceptable","acc.tolerable":"Tolérable","acc.to_treat":"À traiter","acc.unacceptable":"Inacceptable",
     axis_label:"Libellé de l'axe", ph_value:"valeur", ph_label:"libellé", ph_desc_tip:"Description (infobulle)",
     level_default:"Niveau {0}", err_min_levels:"Un axe doit garder au moins 2 niveaux.",
+    err_level_in_use:"Impossible de supprimer le niveau « {0} » : il est utilisé par des risques ({1}).",
+    err_crit_in_use:"Impossible de supprimer le niveau de criticité « {0} » : des risques s'y situent ({1}).",
     toast_transposed:"Axes transposés : {0} (vertical) × {1} (horizontal).",
     mtx_edit_title:"Niveau de risque par cellule",
     mtx_edit_caption:"Choisissez le niveau de chaque case. Lignes : <b>{0}</b> (haut = fort) · colonnes : <b>{1}</b>.",
@@ -915,6 +917,8 @@ const I18N = {
     "acc.acceptable":"Acceptable","acc.tolerable":"Tolerable","acc.to_treat":"To treat","acc.unacceptable":"Unacceptable",
     axis_label:"Axis label", ph_value:"value", ph_label:"label", ph_desc_tip:"Description (tooltip)",
     level_default:"Level {0}", err_min_levels:"An axis must keep at least 2 levels.",
+    err_level_in_use:"Cannot delete level “{0}”: it is used by risks ({1}).",
+    err_crit_in_use:"Cannot delete criticality level “{0}”: some risks fall in it ({1}).",
     toast_transposed:"Axes transposed: {0} (vertical) × {1} (horizontal).",
     mtx_edit_title:"Risk level per cell",
     mtx_edit_caption:"Choose the level of each cell. Rows: <b>{0}</b> (top = high) · columns: <b>{1}</b>.",
@@ -1068,6 +1072,8 @@ const I18N = {
     "acc.acceptable":"Accettabile","acc.tolerable":"Tollerabile","acc.to_treat":"Da trattare","acc.unacceptable":"Inaccettabile",
     axis_label:"Etichetta dell'asse", ph_value:"valore", ph_label:"etichetta", ph_desc_tip:"Descrizione (suggerimento)",
     level_default:"Livello {0}", err_min_levels:"Un asse deve mantenere almeno 2 livelli.",
+    err_level_in_use:"Impossibile eliminare il livello « {0} »: è utilizzato da rischi ({1}).",
+    err_crit_in_use:"Impossibile eliminare il livello di criticità « {0} »: alcuni rischi vi rientrano ({1}).",
     toast_transposed:"Assi trasposti: {0} (verticale) × {1} (orizzontale).",
     mtx_edit_title:"Livello di rischio per cella",
     mtx_edit_caption:"Scegli il livello di ogni cella. Righe: <b>{0}</b> (in alto = elevato) · colonne: <b>{1}</b>.",
@@ -3493,12 +3499,25 @@ document.getElementById("view-settings").addEventListener("click",e=>{
   const add=e.target.closest("[data-addlevel]");const del=e.target.closest("[data-axis-del]");
   if(add){const ax=axisOf(add.dataset.addlevel);const v=(ax.levels.reduce((m,n)=>Math.max(m,n.value),0))+1;
     ax.levels.push({value:v,label:t("level_default",v)});markDirty();renderSettings();renderRisks();requestAnimationFrame(renderMatrices);}
-  if(del){const ax=axisOf(del.dataset.axisDel);if(ax.levels.length<=2){alertModal(t("err_min_levels"));return;}
+  if(del){const key=del.dataset.axisDel, ax=axisOf(key);if(ax.levels.length<=2){alertModal(t("err_min_levels"));return;}
     const i=+del.dataset.i, n=ax.levels[i];
+    const used=risksUsingAxisLevel(key,n.value);
+    if(used.length){alertModal(t("err_level_in_use",(n&&n.label)||n.value,used.join(", ")));return;}
     confirmModal(t("confirm_del_level",(n&&n.label)||(n&&n.value)||""),()=>{
       ax.levels.splice(i,1);markDirty();renderSettings();renderRisks();requestAnimationFrame(renderMatrices);},{danger:true});}
 });
 function axisOf(key){return key==="prob"?analyse.grid.vertical_axis:analyse.grid.horizontal_axis;}
+// Risques utilisant un niveau d'axe : key "prob" -> probabilité (axe vertical), sinon gravité (horizontal).
+function risksUsingAxisLevel(key,value){
+  const f=key==="prob"?"probability":"severity";
+  return analyse.risks.filter(r=>(r.initial_assessment&&r.initial_assessment[f]===value)||(r.residual_assessment&&r.residual_assessment[f]===value)).map(r=>r.id);
+}
+// Risques dont un score (initial ou résiduel) tombe dans la plage d'un niveau de criticité.
+function risksUsingCritLevel(c){
+  const inR=s=>s>=c.score_min&&s<=c.score_max;
+  return analyse.risks.filter(r=>{const iv=r.initial_assessment,rv=residual(r);
+    return inR(scoreOf(iv.probability,iv.severity))||inR(scoreOf(rv.probability,rv.severity));}).map(r=>r.id);
+}
 
 /* Transposition des axes : échange axe vertical (probabilité) et horizontal (gravité) */
 function transposeAxes(){
@@ -3612,6 +3631,8 @@ document.getElementById("critTable").addEventListener("click",e=>{
   const del=e.target.closest("[data-crit-del]");if(!del)return;
   if(analyse.grid.criticality_levels.length<=1){alertModal(t("err_min_crit"));return;}
   const i=+del.dataset.critDel, c=analyse.grid.criticality_levels[i];
+  const used=risksUsingCritLevel(c);
+  if(used.length){alertModal(t("err_crit_in_use",(c&&c.label)||"",used.join(", ")));return;}
   confirmModal(t("confirm_del_crit",(c&&c.label)||""),()=>{
     analyse.grid.criticality_levels.splice(i,1);markDirty();renderCrit();renderRisks();requestAnimationFrame(renderMatrices);},{danger:true});
 });
