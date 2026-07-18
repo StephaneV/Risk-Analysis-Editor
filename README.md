@@ -74,7 +74,7 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 |---|---|
 | [`app/`](app/) | The application (`risk-analysis-editor.html`). |
 | [`docs/`](docs/) | Technical documentation (in French): format specification, JSON schema and layout strategies. |
-| [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including a complete **EBIOS RM–inspired demo** (`demo-ebios-rm-*.rae.json`) with tags, progress bars and enriched links. |
+| [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including two **complete demos**: an **EBIOS RM–inspired** risk analysis (`demo-ebios-rm-*.rae.json`) and a **DPIA following the CNIL PIA method** for an occupational health service (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — with colored tags, progress bars, owners and justified links. |
 
 ---
 

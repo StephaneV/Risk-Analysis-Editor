@@ -74,7 +74,7 @@ Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risq
 |---|---|
 | [`app/`](app/) | L'application (`risk-analysis-editor.html`). |
 | [`docs/`](docs/) | Documentation technique : spécification du format, schéma JSON et stratégies de disposition. |
-| [`examples/`](examples/) | Analyses d'exemple au format `.rae.json` (français et anglais), dont une **démo complète inspirée d'EBIOS RM** (`demo-ebios-rm-*.rae.json`) avec tags, barres de progression et liens enrichis. |
+| [`examples/`](examples/) | Analyses d'exemple au format `.rae.json` (français et anglais), dont deux **démos complètes** : une analyse de risques **inspirée d'EBIOS RM** (`demo-ebios-rm-*.rae.json`) et une **AIPD suivant la méthode PIA de la CNIL** pour un service de santé au travail (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — avec tags colorés, barres de progression, responsables et liens justifiés. |
 
 ---
 
