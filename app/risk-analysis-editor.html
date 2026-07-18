@@ -222,8 +222,11 @@
   .md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:.6em 0 .3em;line-height:1.25}
   .md h1{font-size:1.3em}.md h2{font-size:1.18em}.md h3{font-size:1.07em}
   .md h4,.md h5,.md h6{font-size:1em}
-  .md ul,.md ol{margin:.4em 0;padding-left:1.4em}
+  .md ul,.md ol{margin:.4em 0;padding-left:1.6em}
+  .md li>ul,.md li>ol{margin:.2em 0 .1em}   /* sous-listes : indentation héritée du padding-left */
   .md li{margin:.15em 0}
+  .md ul{list-style:disc}.md ul ul{list-style:circle}.md ul ul ul{list-style:square}
+  .md ol{list-style:decimal}.md ol ol{list-style:lower-alpha}.md ol ol ol{list-style:lower-roman}
   .md li.md-task{list-style:none;margin-left:-1.25em}
   .md li.md-task input{margin-right:6px;width:14px;height:14px}
   .md code{background:var(--panel-2);border:1px solid var(--border);border-radius:4px;padding:0 4px;font-size:.92em}
@@ -231,6 +234,11 @@
   .md pre code{background:none;border:none;padding:0}
   .md blockquote{margin:.5em 0;padding:.15em 0 .15em .8em;border-left:3px solid var(--border);color:var(--muted)}
   .md hr{border:none;border-top:1px solid var(--border);margin:.7em 0}
+  /* Tableaux : cadre propre + séparation nette de deux tableaux consécutifs.
+     Le sélecteur .report .md table prend le pas sur la règle générique .report table. */
+  .md table,.report .md table{margin:.8em 0;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .md table+table,.report .md table+table{margin-top:1.5em}
+  .md tbody tr:last-child>td,.report .md tbody tr:last-child>td{border-bottom:none}
   .md a{color:var(--accent)}
   .md img{max-width:100%}
   /* Aperçu Markdown sous les zones de saisie */
@@ -1229,10 +1237,37 @@ function mdInline(s){
   s=s.replace(/~~([^~\n]+)~~/g,"<del>$1</del>");
   return s.replace(/\u0000C(\d+)\u0000/g,(m,i)=>"<code>"+codes[+i]+"</code>");
 }
+const MD_LI=/^([ \t]*)([-*+]|\d+[.)])[ \t]+([\s\S]*)$/;
+function mdIndent(l){return l.match(/^[ \t]*/)[0].replace(/\t/g,"    ").length;}
+/* Analyse une liste à partir de lines[start], en imbriquant les sous-listes
+   d'après leur indentation. Chaque niveau garde son type (ordonné / à puces). */
+function mdList(lines,start,blocks){
+  const indent=mdIndent(lines[start]);
+  const ordered=/\d/.test(lines[start].match(MD_LI)[2]);
+  const items=[];let i=start;
+  while(i<lines.length){
+    const m=lines[i].match(MD_LI);
+    if(!m||mdIndent(lines[i])!==indent||/\d/.test(m[2])!==ordered)break;
+    let txt=m[3],sub="";i++;
+    while(i<lines.length){
+      const line=lines[i];
+      if(!line.trim()||mdIndent(line)<=indent)break;
+      if(MD_LI.test(line)){const r=mdList(lines,i,blocks);sub+=r.html;i=r.next;continue;}
+      const ph=line.trim().match(/^\u0000B(\d+)\u0000$/);
+      if(ph){sub+="<pre><code>"+blocks[+ph[1]]+"</code></pre>";i++;continue;}
+      txt+="\n"+line.trim();i++;
+    }
+    const task=txt.match(/^\[([ xX])\][ \t]+([\s\S]*)$/);
+    const body=task?'<input type="checkbox" disabled'+(/[xX]/.test(task[1])?" checked":"")+"> "+mdInline(task[2].replace(/\n/g,"<br>"))
+      :mdInline(txt.replace(/\n/g,"<br>"));
+    items.push("<li"+(task?' class="md-task"':"")+">"+body+sub+"</li>");
+  }
+  return {html:(ordered?"<ol>":"<ul>")+items.join("")+(ordered?"</ol>":"</ul>"),next:i};
+}
 function mdBlocks(lines,blocks){
   const out=[];let i=0;
   const isHr=l=>/^\s*([-*_])\s*(\1\s*){2,}$/.test(l);
-  const isLi=l=>/^\s*([-*+]|\d+[.)])\s+/.test(l);
+  const isLi=l=>MD_LI.test(l);
   const isPh=l=>/^\u0000B\d+\u0000$/.test(l.trim());
   while(i<lines.length){
     const l=lines[i];
@@ -1254,15 +1289,7 @@ function mdBlocks(lines,blocks){
       while(i<lines.length&&/^\s*&gt;\s?/.test(lines[i])){buf.push(lines[i].replace(/^\s*&gt;\s?/,""));i++;}
       out.push("<blockquote>"+mdBlocks(buf,blocks)+"</blockquote>");continue;}
     if(isLi(l)){
-      const ordered=/^\s*\d+[.)]\s+/.test(l),items=[];
-      while(i<lines.length&&isLi(lines[i])){
-        let txt=lines[i].replace(/^\s*([-*+]|\d+[.)])\s+/,"");i++;
-        while(i<lines.length&&lines[i].trim()&&!isLi(lines[i])&&/^\s{2,}\S/.test(lines[i])){txt+="\n"+lines[i].trim();i++;}
-        const task=txt.match(/^\[([ xX])\]\s+([\s\S]*)$/);
-        if(task)items.push('<li class="md-task"><input type="checkbox" disabled'+(/[xX]/.test(task[1])?" checked":"")+"> "+mdInline(task[2].replace(/\n/g,"<br>"))+"</li>");
-        else items.push("<li>"+mdInline(txt.replace(/\n/g,"<br>"))+"</li>");
-      }
-      out.push((ordered?"<ol>":"<ul>")+items.join("")+(ordered?"</ol>":"</ul>"));continue;
+      const r=mdList(lines,i,blocks);out.push(r.html);i=r.next;continue;
     }
     const buf=[];
     while(i<lines.length&&lines[i].trim()&&!isLi(lines[i])&&!isHr(lines[i])&&!isPh(lines[i])&&
