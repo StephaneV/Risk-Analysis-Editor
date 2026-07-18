@@ -7,6 +7,9 @@ sources/
 # --- Outillage local ---------------------------------------------------------
 .claude/
 
+# --- Documents de travail (audits, notes, brouillons) : non publiés ----------
+travaux/
+
 # --- Fichiers temporaires / système -----------------------------------------
 *.tmp
 *.bak

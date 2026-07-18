@@ -23,12 +23,14 @@
     --bg:#0f1420;--panel:#171d2e;--panel-2:#1e2740;--panel-3:#232d49;--border:#2a3350;
     --text:#e6ebf5;--muted:#8a95ad;--accent:#4c7dff;--accent-2:#3a63d6;
     --green:#2e9e5b;--yellow:#e0b93a;--orange:#e6862e;--red:#d64545;--unchanged:#7a5cff;
+    --green-text:#3fbf74;--red-text:#f06a6a;--unchanged-text:#9b85ff;
     --danger:#d64545;--shadow:0 8px 30px rgba(0,0,0,.45);
   }
   :root[data-theme="light"]{  /* Thème CLAIR */
     --body-bg:linear-gradient(180deg,#f5f7fb,#eceff6);
     --bg:#ffffff;--panel:#ffffff;--panel-2:#f2f5fb;--panel-3:#e7ecf6;--border:#d5dce9;
     --text:#1b2536;--muted:#5f6b83;--accent:#3a63d6;--accent-2:#2c4fc2;
+    --green-text:#1f7a44;--red-text:#b3383a;--unchanged-text:#5b3fd6;
     --danger:#d64545;--shadow:0 10px 28px rgba(35,50,85,.12);
   }
   .topsel{width:auto;max-width:150px;padding:7px 10px;font-size:12px}
@@ -43,7 +45,11 @@
   .topbar{display:flex;align-items:center;gap:14px;padding:12px 20px;
     border-bottom:1px solid var(--border);background:var(--panel);
     backdrop-filter:blur(6px);position:sticky;top:0;z-index:50;flex-wrap:wrap}
-  .brand{font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap}
+  .brand{font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap;margin:0}
+  /* Lien d'évitement : hors écran tant qu'il n'a pas le focus clavier. */
+  .skip-link{position:absolute;left:-9999px;top:0;z-index:100;padding:10px 16px;border-radius:0 0 8px 0;
+    background:var(--accent-2);color:#fff;font-size:13px;font-weight:600;text-decoration:none}
+  .skip-link:focus{left:0}
   .brand small{color:var(--muted);font-weight:400;font-size:12px}
   .brand-logo{display:inline-flex;vertical-align:middle;margin-right:8px;margin-top:-4px} /* léger décalage du logo pour l'aligner au texte */
   .brand-logo svg{height:32px;width:32px;display:block}
@@ -56,7 +62,7 @@
   .dot.dirty{background:var(--yellow)}
 
   button{font-family:inherit}
-  .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 14px;
+  .btn{background:var(--accent-2);color:#fff;border:none;border-radius:8px;padding:8px 14px;
     font-size:13px;font-weight:600;cursor:pointer;transition:filter .15s;white-space:nowrap}
   .btn:hover{filter:brightness(1.12)}
   .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
@@ -69,8 +75,10 @@
   /* ---------- Onglets ---------- */
   .tabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--border);
     background:var(--panel);position:sticky;top:53px;z-index:40;flex-wrap:wrap}
+  /* Onglets : de vrais <button> (atteignables au clavier), dépouillés de leur style natif. */
   .tab{padding:12px 16px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;
-    border-bottom:2px solid transparent;user-select:none}
+    border:0;border-bottom:2px solid transparent;user-select:none;
+    background:none;font-family:inherit;line-height:inherit;display:flex;align-items:center}
   .tab:hover{color:var(--text)}
   .tab.active{color:var(--text);border-bottom-color:var(--accent)}
   .tab-right{margin-left:auto}  /* Paramètres : séparé et aligné à droite */
@@ -94,13 +102,23 @@
   label.field .lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
   input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);
     color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
+  /* Focus clavier : bordure accentuée + halo, qui ne déplace pas la mise en page.
+     Le halo est indispensable — le seul changement de couleur de bordure passe inaperçu. */
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  input:focus-visible,select:focus-visible,textarea:focus-visible{
+    border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+  .tab:focus-visible,.seg button:focus-visible,.cf-tag:focus-visible,.chip:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px}
   textarea{resize:vertical;min-height:64px}
   input[type=color]{padding:2px;height:34px;cursor:pointer}
   .inline{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
   .inline>*{flex:1}
 
   /* ---------- Tableaux ---------- */
+  /* Les registres sont larges : sur écran étroit ils défilent au lieu d'être tronqués. */
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* Compteur « N sur M », affiché seulement quand un filtre masque des lignes. */
+  .flt-count{color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;align-self:center}
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
   th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
@@ -114,9 +132,9 @@
     background:var(--panel-2);border:1px solid var(--border);color:var(--muted)}
   .muted{color:var(--muted)}
   .empty{color:var(--muted);text-align:center;padding:30px;font-style:italic}
-  .delta-down{color:var(--green);font-weight:700}
-  .delta-flat{color:var(--unchanged);font-weight:700}
-  .delta-up{color:var(--red);font-weight:700}
+  .delta-down{color:var(--green-text);font-weight:700}
+  .delta-flat{color:var(--unchanged-text);font-weight:700}
+  .delta-up{color:var(--red-text);font-weight:700}
 
   /* ---------- Matrices ---------- */
   .matrix-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
@@ -124,7 +142,7 @@
   .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
   .seg button{background:transparent;border:none;color:var(--muted);padding:7px 14px;font-size:12px;
     font-weight:600;cursor:pointer}
-  .seg button.active{background:var(--accent);color:#fff}
+  .seg button.active{background:var(--accent-2);color:#fff}
   .matrices{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
   .matrix-block{flex:1;min-width:300px;max-width:560px}
   .matrix-block h4{text-align:center;font-size:13px;margin:0 0 4px;font-weight:600}
@@ -142,7 +160,7 @@
   .matrix-container{position:relative;flex:1;min-width:0}
   .matrix{display:grid;gap:5px}
   .cell{border-radius:7px;position:relative;aspect-ratio:1/1;min-height:44px}
-  .cell .score{position:absolute;top:4px;right:6px;font-size:9.5px;color:rgba(255,255,255,.55);font-weight:700}
+  .cell .score{position:absolute;top:4px;right:6px;font-size:10px;font-weight:700;opacity:.75}
   .chip-stack{position:absolute;inset:0;display:flex;flex-wrap:wrap;gap:3px;align-items:center;
     justify-content:center;padding:3px}
   .chip{background:#0a0e18;color:#fff;border:2px solid #fff;border-radius:50%;
@@ -283,9 +301,16 @@
     font-size:11.5px;font-weight:600;color:var(--text);text-transform:none;letter-spacing:0}
   .cross td.cb{width:34px;text-align:center;padding:0;position:relative}
   .cross .lmark{position:absolute;top:2px;right:3px;font-size:8px;line-height:1;color:var(--accent);pointer-events:none}
-  .cross td.rname{position:sticky;left:0;z-index:1;background:var(--panel);white-space:normal;
-    overflow-wrap:anywhere;max-width:320px;font-weight:600;padding:8px 16px 8px 12px}
-  .cross tbody tr:hover td{background:var(--panel-2)}
+  /* En-tête de ligne (th) : on annule le style générique des th (majuscules, gris, 11 px). */
+  .cross .rname{position:sticky;left:0;z-index:1;background:var(--panel);white-space:normal;
+    overflow-wrap:anywhere;max-width:320px;font-weight:600;padding:8px 16px 8px 12px;
+    text-align:left;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text)}
+  .cross tbody tr:hover td,.cross tbody tr:hover .rname{background:var(--panel-2)}
+  /* Zone cliquable de 24×24 px autour de la case à cocher (la case reste à 16 px). */
+  .cross .cbwrap{display:inline-flex;align-items:center;justify-content:center;
+    width:24px;height:24px;cursor:pointer;border-radius:4px}
+  .cross .cbwrap:hover{background:var(--panel-3)}
+  .cross .cbwrap input{width:16px;height:16px;margin:0}
   .cross .altcol{background:rgba(255,255,255,.03)}
   .cross input[type=checkbox]{width:16px;height:16px;cursor:pointer;vertical-align:middle;margin:0}
 
@@ -338,7 +363,10 @@
   .mtx-edit .axname{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 
   /* ---------- Rapport (document clair, aperçu = impression) ---------- */
-  #view-report{ /* le rapport est toujours rendu en clair, quel que soit le thème */
+  /* Le document du rapport est toujours rendu en clair, quel que soit le thème.
+     L'override porte sur .report et non sur #view-report : la barre d'outils, elle,
+     reste dans le thème de la page (sinon son texte gris clair se retrouve sur fond sombre). */
+  .report{
     --body-bg:#f5f7fb;--bg:#ffffff;--panel:#ffffff;--panel-2:#f2f5fb;--panel-3:#e7ecf6;--border:#d5dce9;
     --text:#1b2536;--muted:#5f6b83}
   .report-toolbar{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
@@ -363,6 +391,21 @@
   .report .rp-item p{margin:4px 0 0;font-size:12.5px;white-space:pre-wrap}
   .report .rp-item .rp-note{margin-top:4px;font-size:12px;color:var(--muted);white-space:pre-wrap}
 
+  /* Respect de la préférence système « animations réduites ». */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+      transition-duration:.01ms!important;scroll-behavior:auto!important}
+  }
+
+  /* Écrans étroits : la barre d'onglets défile au lieu de s'empiler sur trois lignes. */
+  @media (max-width:720px){
+    .topbar{padding:8px 12px;gap:6px}
+    .tabs{flex-wrap:nowrap;overflow-x:auto;padding:0 8px;scrollbar-width:thin}
+    .tab{padding:10px 12px;white-space:nowrap;flex:none}
+    .tab-right{margin-left:0}
+    main{padding:14px 12px}
+  }
+
   @media print{
     .topbar,.tabs,.report-toolbar,.toast,.tt,.modal-bg{display:none!important}
     main{padding:0;max-width:none;margin:0}
@@ -377,8 +420,10 @@
 </head>
 <body>
 
+<a class="skip-link" href="#mainContent" data-i18n="skip_to_content">Aller au contenu</a>
+
 <div class="topbar">
-  <div class="brand"><span class="brand-logo" id="brandLogo"></span><span data-i18n="brand">Risk Analysis Editor</span> <small data-i18n="brand_sub">· .rae.json</small></div>
+  <h1 class="brand"><span class="brand-logo" id="brandLogo"></span><span data-i18n="brand">Risk Analysis Editor</span> <small data-i18n="brand_sub">· .rae.json</small></h1>
   <div class="spacer"></div>
   <div class="filestate"><span class="dot" id="dirtyDot"></span><span id="fileLabel">nouvelle analyse</span></div>
   <select id="langSel" class="topsel" data-i18n-title="lang_title" title="Langue de l'interface">
@@ -397,18 +442,18 @@
   <input type="file" id="fileInput" accept=".json,.rae.json,application/json" style="display:none">
 </div>
 
-<div class="tabs" id="tabs">
-  <div class="tab active" data-view="presentation" data-i18n="tab_presentation">Présentation</div>
-  <div class="tab" data-view="risks"><span data-i18n="tab_risks">Risques</span> <span class="badge" id="badgeRisks">0</span></div>
-  <div class="tab" data-view="measures"><span data-i18n="tab_measures">Mesures</span> <span class="badge" id="badgeMeasures">0</span></div>
-  <div class="tab" data-view="links"><span data-i18n="tab_links">Liens</span> <span class="badge" id="badgeLinks">0</span></div>
-  <div class="tab" data-view="matrices" data-i18n="tab_matrices">Matrices</div>
-  <div class="tab" data-view="plan"><span data-i18n="tab_plan">Plan d'action</span> <span class="badge" id="badgePlan" style="display:none">0</span></div>
-  <div class="tab" data-view="report" data-i18n="tab_report">Rapport</div>
-  <div class="tab tab-right" data-view="settings" data-i18n="tab_settings">Paramètres</div>
-</div>
+<nav class="tabs" id="tabs" role="tablist" data-i18n-label="nav_sections" aria-label="Sections de l'analyse">
+  <button type="button" class="tab active" role="tab" aria-selected="true" aria-controls="view-presentation" data-view="presentation" data-i18n="tab_presentation">Présentation</button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-risks" data-view="risks"><span data-i18n="tab_risks">Risques</span> <span class="badge" id="badgeRisks">0</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-measures" data-view="measures"><span data-i18n="tab_measures">Mesures</span> <span class="badge" id="badgeMeasures">0</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-links" data-view="links"><span data-i18n="tab_links">Liens</span> <span class="badge" id="badgeLinks">0</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-matrices" data-view="matrices" data-i18n="tab_matrices">Matrices</button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-plan" data-view="plan"><span data-i18n="tab_plan">Plan d'action</span> <span class="badge" id="badgePlan" style="display:none">0</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-report" data-view="report" data-i18n="tab_report">Rapport</button>
+  <button type="button" class="tab tab-right" role="tab" aria-selected="false" aria-controls="view-settings" data-view="settings" data-i18n="tab_settings">Paramètres</button>
+</nav>
 
-<main>
+<main id="mainContent">
   <!-- ============ MATRICES ============ -->
   <section class="view" id="view-matrices">
     <div class="card">
@@ -440,10 +485,11 @@
         <button class="btn" id="btnAddRisk" data-i18n="btn_add_risk">+ Ajouter un risque</button>
       </div>
       <div class="filterbar">
-        <input type="search" id="fltRiskQ" data-i18n-ph="flt_search" placeholder="Rechercher…">
-        <select id="fltRiskCat"></select>
+        <input type="search" id="fltRiskQ" data-i18n-label="flt_search_risks" data-i18n-ph="flt_search" placeholder="Rechercher…">
+        <select id="fltRiskCat" data-i18n-label="flt_by_category"></select>
+        <span class="flt-count" id="cntRisks"></span>
       </div>
-      <table id="risksTableEl">
+      <div class="table-scroll"><table id="risksTableEl">
         <thead><tr>
           <th data-sort="id"><span data-i18n="th_id">ID</span><span class="sort-ind"></span></th>
           <th data-sort="risk"><span data-i18n="th_risk">Risque</span><span class="sort-ind"></span></th>
@@ -455,7 +501,7 @@
           <th></th>
         </tr></thead>
         <tbody id="risksTable"></tbody>
-      </table>
+      </table></div>
       <div class="empty" id="risquesEmpty" style="display:none" data-i18n="risks_empty">Aucun risque. Cliquez sur « Ajouter un risque ».</div>
     </div>
   </section>
@@ -471,11 +517,12 @@
         <button class="btn" id="btnAddMeasure" data-i18n="btn_add_measure">+ Ajouter une mesure</button>
       </div>
       <div class="filterbar">
-        <input type="search" id="fltMeasureQ" data-i18n-ph="flt_search" placeholder="Rechercher…">
-        <select id="fltMeasureType"></select>
-        <select id="fltMeasureStatus"></select>
+        <input type="search" id="fltMeasureQ" data-i18n-label="flt_search_measures" data-i18n-ph="flt_search" placeholder="Rechercher…">
+        <select id="fltMeasureType" data-i18n-label="flt_by_type"></select>
+        <select id="fltMeasureStatus" data-i18n-label="flt_by_status"></select>
+        <span class="flt-count" id="cntMeasures"></span>
       </div>
-      <table id="measuresTableEl">
+      <div class="table-scroll"><table id="measuresTableEl">
         <thead><tr>
           <th data-sort="id"><span data-i18n="th_id">ID</span><span class="sort-ind"></span></th>
           <th data-sort="measure"><span data-i18n="th_measure">Mesure</span><span class="sort-ind"></span></th>
@@ -486,7 +533,7 @@
           <th></th>
         </tr></thead>
         <tbody id="measuresTable"></tbody>
-      </table>
+      </table></div>
       <div class="empty" id="mesuresEmpty" style="display:none" data-i18n="measures_empty">Aucune mesure. Cliquez sur « Ajouter une mesure ».</div>
     </div>
   </section>
@@ -507,9 +554,9 @@
         </div>
       </div>
       <div class="filterbar">
-        <input type="search" id="fltPlanQ" data-i18n-ph="flt_search" placeholder="Rechercher…">
-        <select id="fltPlanStatus"></select>
-        <select id="fltPlanResp"></select>
+        <input type="search" id="fltPlanQ" data-i18n-label="flt_search_measures" data-i18n-ph="flt_search" placeholder="Rechercher…">
+        <select id="fltPlanStatus" data-i18n-label="flt_by_status"></select>
+        <select id="fltPlanResp" data-i18n-label="flt_by_responsible"></select>
         <label class="chk"><input type="checkbox" id="fltPlanOverdue"> <span data-i18n="flt_overdue">En retard uniquement</span></label>
       </div>
       <div id="planArea"></div>
@@ -533,7 +580,7 @@
         <div class="cross" id="crossArea"></div>
       </div>
       <div class="lpanel" data-lmode="details" style="display:none">
-        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-ph="flt_search" placeholder="Rechercher…"></div>
+        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-label="flt_search_links" data-i18n-ph="flt_search" placeholder="Rechercher…"></div>
         <div id="linkDetailsArea"></div>
       </div>
     </div>
@@ -645,10 +692,10 @@
       <div id="matrixEditor" style="display:none"></div>
 
       <h3 data-i18n="crit_title">Niveaux de criticité (zones colorées)</h3>
-      <table id="critTable">
+      <div class="table-scroll"><table id="critTable">
         <thead><tr><th data-i18n="th_label">Libellé</th><th data-i18n="th_code">Code</th><th data-i18n="th_score_min">Score min</th><th data-i18n="th_score_max">Score max</th><th data-i18n="th_color">Couleur</th><th data-i18n="th_acceptance">Acceptation</th><th></th></tr></thead>
         <tbody id="critBody"></tbody>
-      </table>
+      </table></div>
       <button class="btn ghost sm" id="btnAddCrit" style="margin-top:10px" data-i18n="btn_add_crit">+ Niveau de criticité</button>
       <div id="critWarn"></div>
     </div>
@@ -656,10 +703,10 @@
     <!-- -------- Sous-onglet : Champs personnalisés -------- -->
     <div class="card ppanel" data-pmode="fields" style="display:none">
       <div class="caption" data-i18n="cf_caption">Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.</div>
-      <table id="cfTable">
+      <div class="table-scroll"><table id="cfTable">
         <thead><tr><th data-i18n="cf_target">Cible</th><th data-i18n="cf_code">Code</th><th data-i18n="th_label">Libellé</th><th data-i18n="th_type">Type</th><th data-i18n="cf_required">Obligatoire</th><th></th></tr></thead>
         <tbody id="cfBody"></tbody>
-      </table>
+      </table></div>
       <div class="empty" id="cfEmpty" style="display:none" data-i18n="cf_none">Aucun champ personnalisé défini.</div>
       <button class="btn ghost sm" id="btnAddCF" style="margin-top:10px" data-i18n="cf_add">+ Ajouter un champ</button>
     </div>
@@ -678,14 +725,14 @@
 <!-- Modale générique -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
-    <header><h3 id="modalTitle">Titre</h3><button class="x" id="modalX">&times;</button></header>
+    <header><h3 id="modalTitle">Titre</h3><button class="x" id="modalX" data-i18n-label="a11y_close" data-i18n-title="a11y_close">&times;</button></header>
     <div class="body" id="modalBody"></div>
     <footer id="modalFooter"></footer>
   </div>
 </div>
 
 <div class="tt" id="tooltip"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
@@ -838,6 +885,32 @@ const I18N = {
     sep_tab:"tab", no_label:"(sans libellé)",
     btn_cancel:"Annuler", btn_save_modal:"Enregistrer", btn_ok:"OK", btn_confirm:"Confirmer", btn_close:"Fermer", dialog_error:"Erreur", dialog_confirm:"Confirmation",
     about_title:"À propos", about_subtitle:"Éditeur de matrices de risque · format .rae.json", about_version:"Version", about_credits:"Auteur", about_license:"Licence", about_github:"Voir le projet sur GitHub",
+    skip_to_content:"Aller au contenu",
+    nav_sections:"Sections de l'analyse",
+    flt_search_risks:"Rechercher un risque",
+    flt_search_measures:"Rechercher une mesure",
+    flt_search_links:"Rechercher un lien",
+    flt_by_category:"Filtrer par catégorie",
+    flt_by_type:"Filtrer par type",
+    flt_by_status:"Filtrer par statut",
+    flt_by_responsible:"Filtrer par responsable",
+    a11y_edit_risk:"Modifier le risque {0}",
+    a11y_del_risk:"Supprimer le risque {0}",
+    a11y_edit_measure:"Modifier la mesure {0}",
+    a11y_del_measure:"Supprimer la mesure {0}",
+    a11y_edit_link:"Modifier le lien {0} – {1}",
+    a11y_del_link:"Supprimer le lien {0} – {1}",
+    a11y_edit_field:"Modifier le champ « {0} »",
+    a11y_del_field:"Supprimer le champ « {0} »",
+    a11y_move_up:"Déplacer « {0} » vers le haut",
+    a11y_move_down:"Déplacer « {0} » vers le bas",
+    a11y_del_level:"Supprimer le niveau « {0} »",
+    a11y_del_crit:"Supprimer le niveau de criticité « {0} »",
+    a11y_del_item:"Supprimer l'item « {0} »",
+    a11y_del_color:"Supprimer cette couleur",
+    a11y_close:"Fermer",
+    a11y_link_cell:"Associer le risque {0} « {1} » à la mesure {2} « {3} »",
+    flt_results:"{0} sur {1}",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -999,6 +1072,32 @@ const I18N = {
     sep_tab:"tab", no_label:"(no label)",
     btn_cancel:"Cancel", btn_save_modal:"Save", btn_ok:"OK", btn_confirm:"Confirm", btn_close:"Close", dialog_error:"Error", dialog_confirm:"Confirmation",
     about_title:"About", about_subtitle:"Risk matrix editor · .rae.json format", about_version:"Version", about_credits:"Author", about_license:"License", about_github:"View the project on GitHub",
+    skip_to_content:"Skip to content",
+    nav_sections:"Analysis sections",
+    flt_search_risks:"Search a risk",
+    flt_search_measures:"Search a measure",
+    flt_search_links:"Search a link",
+    flt_by_category:"Filter by category",
+    flt_by_type:"Filter by type",
+    flt_by_status:"Filter by status",
+    flt_by_responsible:"Filter by owner",
+    a11y_edit_risk:"Edit risk {0}",
+    a11y_del_risk:"Delete risk {0}",
+    a11y_edit_measure:"Edit measure {0}",
+    a11y_del_measure:"Delete measure {0}",
+    a11y_edit_link:"Edit link {0} – {1}",
+    a11y_del_link:"Delete link {0} – {1}",
+    a11y_edit_field:"Edit field \"{0}\"",
+    a11y_del_field:"Delete field \"{0}\"",
+    a11y_move_up:"Move \"{0}\" up",
+    a11y_move_down:"Move \"{0}\" down",
+    a11y_del_level:"Delete level \"{0}\"",
+    a11y_del_crit:"Delete criticality level \"{0}\"",
+    a11y_del_item:"Delete item \"{0}\"",
+    a11y_del_color:"Delete this colour",
+    a11y_close:"Close",
+    a11y_link_cell:"Link risk {0} \"{1}\" to measure {2} \"{3}\"",
+    flt_results:"{0} of {1}",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1160,6 +1259,32 @@ const I18N = {
     sep_tab:"tab", no_label:"(senza etichetta)",
     btn_cancel:"Annulla", btn_save_modal:"Salva", btn_ok:"OK", btn_confirm:"Conferma", btn_close:"Chiudi", dialog_error:"Errore", dialog_confirm:"Conferma",
     about_title:"Informazioni", about_subtitle:"Editor di matrici di rischio · formato .rae.json", about_version:"Versione", about_credits:"Autore", about_license:"Licenza", about_github:"Vedi il progetto su GitHub",
+    skip_to_content:"Vai al contenuto",
+    nav_sections:"Sezioni dell'analisi",
+    flt_search_risks:"Cerca un rischio",
+    flt_search_measures:"Cerca una misura",
+    flt_search_links:"Cerca un collegamento",
+    flt_by_category:"Filtra per categoria",
+    flt_by_type:"Filtra per tipo",
+    flt_by_status:"Filtra per stato",
+    flt_by_responsible:"Filtra per responsabile",
+    a11y_edit_risk:"Modifica il rischio {0}",
+    a11y_del_risk:"Elimina il rischio {0}",
+    a11y_edit_measure:"Modifica la misura {0}",
+    a11y_del_measure:"Elimina la misura {0}",
+    a11y_edit_link:"Modifica il collegamento {0} – {1}",
+    a11y_del_link:"Elimina il collegamento {0} – {1}",
+    a11y_edit_field:"Modifica il campo «{0}»",
+    a11y_del_field:"Elimina il campo «{0}»",
+    a11y_move_up:"Sposta «{0}» in alto",
+    a11y_move_down:"Sposta «{0}» in basso",
+    a11y_del_level:"Elimina il livello «{0}»",
+    a11y_del_crit:"Elimina il livello di criticità «{0}»",
+    a11y_del_item:"Elimina l'elemento «{0}»",
+    a11y_del_color:"Elimina questo colore",
+    a11y_close:"Chiudi",
+    a11y_link_cell:"Collega il rischio {0} «{1}» alla misura {2} «{3}»",
+    flt_results:"{0} su {1}",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -1366,17 +1491,17 @@ function enhanceTextareas(scope){
       const foot=document.createElement("div");foot.className="md-foot";
       const hint=document.createElement("span");hint.textContent=t("md_supports");
       const btn=document.createElement("button");btn.type="button";btn.className="md-eye";
-      btn.title=t("md_preview");btn.innerHTML=MD_ICON_EYE;
+      btn.title=t("md_preview");btn.setAttribute("aria-label",t("md_preview"));btn.setAttribute("aria-pressed","false");btn.innerHTML=MD_ICON_EYE;
       foot.appendChild(hint);foot.appendChild(btn);
       wrap.appendChild(prev);wrap.appendChild(foot);
       btn.addEventListener("click",()=>{
         if(prev.style.display!=="none"){
           prev.style.display="none";ta.style.display="";
-          btn.classList.remove("on");btn.innerHTML=MD_ICON_EYE;btn.title=t("md_preview");autoGrow(ta);
+          btn.classList.remove("on");btn.innerHTML=MD_ICON_EYE;btn.title=t("md_preview");btn.setAttribute("aria-label",t("md_preview"));btn.setAttribute("aria-pressed","false");autoGrow(ta);
         }else{
           prev.innerHTML=mdToHTML(ta.value)||'<span class="muted">—</span>';
           prev.style.display="";ta.style.display="none";
-          btn.classList.add("on");btn.innerHTML=MD_ICON_EYE_OFF;btn.title=t("md_edit");
+          btn.classList.add("on");btn.innerHTML=MD_ICON_EYE_OFF;btn.title=t("md_edit");btn.setAttribute("aria-label",t("md_edit"));btn.setAttribute("aria-pressed","true");
         }
       });
     }
@@ -1401,8 +1526,15 @@ function refreshFileState(){
 }
 function nextId(list,prefix){let n=1;const ids=new Set(list.map(x=>x.id));while(ids.has(prefix+n))n++;return prefix+n;}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200);}
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),4000);}
 
+/* Nom accessible + infobulle d'un bouton à icône. Mêmes arguments que t(). */
+function a11y(){const s=t.apply(null,arguments);return ' aria-label="'+esc(s)+'" title="'+esc(s)+'"';}
+/* « 3 sur 12 » quand un filtre est actif ; rien sinon (le badge d'onglet porte déjà le total). */
+function setFltCount(id,shown,total){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=(shown<total)?t("flt_results",shown,total):"";
+}
 function slug(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
   .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);}
 function cmpId(a,b){const na=parseInt(String(a.id).replace(/\D/g,""),10),nb=parseInt(String(b.id).replace(/\D/g,""),10);
@@ -1450,9 +1582,9 @@ function activateView(view){
   if(view!=="presentation"&&presPending&&
      document.getElementById("view-presentation").classList.contains("active"))
     return presGuard(()=>activateView(view));
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t=>{t.classList.remove("active");t.setAttribute("aria-selected","false");});
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-  tab.classList.add("active");
+  tab.classList.add("active");tab.setAttribute("aria-selected","true");
   document.getElementById("view-"+view).classList.add("active");
   if(view==="presentation") renderPresentation();
   if(view==="matrices") requestAnimationFrame(renderMatrices);
@@ -1460,16 +1592,36 @@ function activateView(view){
   if(view==="settings") renderSettings();
   if(view==="plan") renderPlan();
   if(view==="report") renderReport();
+  applyTableA11y();
 }
 document.getElementById("tabs").addEventListener("click",e=>{
   const tab=e.target.closest(".tab");if(!tab)return;
   activateView(tab.dataset.view);
 });
+/* Motif ARIA « tablist » : flèches ←/→ (et Origine/Fin) pour circuler entre les onglets. */
+document.getElementById("tabs").addEventListener("keydown",e=>{
+  const K={ArrowRight:1,ArrowLeft:-1,Home:"first",End:"last"}[e.key];if(!K)return;
+  const tabs=[...document.querySelectorAll("#tabs .tab")];
+  const i=tabs.indexOf(e.target.closest(".tab"));if(i<0)return;
+  e.preventDefault();
+  const n=K==="first"?0:K==="last"?tabs.length-1:(i+K+tabs.length)%tabs.length;
+  tabs[n].focus();activateView(tabs[n].dataset.view);
+});
+// Chaque vue est le panneau de son onglet (relation annoncée par les lecteurs d'écran).
+document.querySelectorAll(".view").forEach(v=>{
+  const tab=document.querySelector('.tab[aria-controls="'+v.id+'"]');if(!tab)return;
+  v.setAttribute("role","tabpanel");v.setAttribute("tabindex","0");
+  if(!tab.id)tab.id="tab-"+v.id;
+  v.setAttribute("aria-labelledby",tab.id);
+});
 
 /* Ouverture sur un onglet/sous-onglet via ?tab=<onglet>[.<sous-onglet>]
    (ex. ?tab=matrices.traj, ?tab=settings.grid, ?tab=plan). Token inconnu -> ignoré. */
 const VIEW_TOKENS=["presentation","risks","measures","links","matrices","plan","report","settings"];
-function syncSeg(segId,mode){document.querySelectorAll("#"+segId+" button").forEach(x=>x.classList.toggle("active",x.dataset.mode===mode));}
+/* Sous-onglets : boutons à deux états. `aria-pressed` reflète la classe .active
+   (le motif « tab » complet imposerait de câbler des tabpanels pour chaque sous-vue). */
+function syncSegAria(){document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.classList.contains("active")?"true":"false"));}
+function syncSeg(segId,mode){document.querySelectorAll("#"+segId+" button").forEach(x=>x.classList.toggle("active",x.dataset.mode===mode));syncSegAria();}
 const SUBTABS={
   matrices:{tokens:["side","traj"],set:m=>{matrixMode=m;syncSeg("viewSeg",m);}},
   plan:{tokens:["due_date","status","responsible"],set:m=>{planMode=m;syncSeg("planSeg",m);}},
@@ -1538,6 +1690,13 @@ async function loadFromURLParam(){
   }
 }
 document.getElementById("btnSave").addEventListener("click",()=>presGuard(saveToFile));
+/* Ctrl+S / Cmd+S : sans cette interception, le navigateur enregistre le HTML de
+   l'application au lieu de l'analyse — un piège pour tout utilisateur habitué au réflexe. */
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==="s"){
+    e.preventDefault();presGuard(saveToFile);
+  }
+});
 function saveToFile(){
   analyse.metadata=analyse.metadata||{};analyse.metadata.updated_at=today();analyse.metadata.language=lang;
   const blob=new Blob([JSON.stringify(analyse,null,2)],{type:"application/vnd.rae+json"});
@@ -1569,6 +1728,14 @@ function normalize(d){
 /* ============================================================
    RENDU GLOBAL
    ============================================================ */
+/* Portée des en-têtes de tableau : posée après coup sur tous les tableaux rendus,
+   plutôt que dans chacune des ~15 fonctions qui en produisent. */
+function applyTableA11y(){
+  document.querySelectorAll("table").forEach(tb=>{
+    tb.querySelectorAll("thead th:not([scope])").forEach(th=>th.setAttribute("scope","col"));
+    tb.querySelectorAll("tbody th:not([scope])").forEach(th=>th.setAttribute("scope","row"));
+  });
+}
 function renderAll(){
   refreshFileState();
   renderPresentation();
@@ -1581,7 +1748,11 @@ function renderAll(){
   requestAnimationFrame(renderMatrices);
   // le rapport est lourd (SVG) : on ne le régénère que s'il est affiché
   if(document.getElementById("view-report").classList.contains("active"))renderReport();
+  applyTableA11y();
 }
+/* L'impression n'affiche que le rapport, quel que soit l'onglet courant (@media print) :
+   il faut donc le générer si l'utilisateur n'a jamais ouvert l'onglet Rapport. */
+window.addEventListener("beforeprint",()=>{renderReport();applyTableA11y();});
 function updateBadges(){
   document.getElementById("badgeRisks").textContent=analyse.risks.length;
   document.getElementById("badgeMeasures").textContent=analyse.measures.length;
@@ -1599,7 +1770,7 @@ document.getElementById("viewSeg").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   matrixMode=b.dataset.mode;
   document.querySelectorAll("#viewSeg button").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
+  b.classList.add("active");syncSegAria();
   requestAnimationFrame(renderMatrices);
 });
 
@@ -1664,7 +1835,7 @@ function buildGrid(container,mode){
     const sc=scoreOf(pl.value,gl.value), c=critFor(sc);
     const cell=document.createElement("div");cell.className="cell";
     cell.style.background=c.color;cell.style.borderRadius=arrondi+"px";cell.dataset.p=pl.value;cell.dataset.g=gl.value;
-    cell.innerHTML='<span class="score">'+sc+'</span><div class="chip-stack"></div>';
+    cell.innerHTML='<span class="score" style="color:'+onColor(c.color)+'">'+sc+'</span><div class="chip-stack"></div>';
     mtx.appendChild(cell);
     cellMap[pl.value+"-"+gl.value]=cell.querySelector(".chip-stack");
   }));
@@ -2466,18 +2637,26 @@ async function exportMatrix(blockEls,mode){
 const tip=document.getElementById("tooltip");
 let _dragging=false; // vrai pendant un glisser-déposer : masque les tooltips
 function attachTip(el,r,kind){
-  el.addEventListener("mousemove",e=>{
-    if(_dragging){tip.style.opacity=0;return;}
+  // Contenu de l'infobulle + version texte, qui sert de nom accessible à la pastille.
+  const build=()=>{
     let head,ev;
     if(kind==="initial"||kind==="start"){head=t("tip_initial");ev=r.initial_assessment;}
     else if(kind==="residual"||kind==="end"){head=t("tip_residual");ev=residual(r);}
     else{head=t("tip_unchanged");ev=r.initial_assessment;}
     const sc=scoreOf(ev.probability,ev.severity),c=critFor(sc);
-    tip.innerHTML='<b>'+esc(r.id)+' — '+esc(r.label)+'</b><br><span class="t-cat">'+esc(r.category||"")+'</span><br>'+
-      head+' · '+t("abbr_prob")+ev.probability+' × '+t("abbr_grav")+ev.severity+' = '+sc+' ('+esc(c.label)+')';
-    tip.style.opacity=1;tip.style.left=(e.clientX+14)+"px";tip.style.top=(e.clientY+14)+"px";
-  });
+    const cote=head+' · '+t("abbr_prob")+ev.probability+' × '+t("abbr_grav")+ev.severity+' = '+sc+' ('+c.label+')';
+    return {html:'<b>'+esc(r.id)+' — '+esc(r.label)+'</b><br><span class="t-cat">'+esc(r.category||"")+'</span><br>'+esc(cote),
+            text:r.id+" — "+r.label+(r.category?" ("+r.category+")":"")+". "+cote};
+  };
+  const show=(x,y)=>{tip.innerHTML=build().html;tip.style.opacity=1;tip.style.left=x+"px";tip.style.top=y+"px";};
+  el.addEventListener("mousemove",e=>{if(_dragging){tip.style.opacity=0;return;}show(e.clientX+14,e.clientY+14);});
   el.addEventListener("mouseleave",()=>tip.style.opacity=0);
+  /* Clavier et tactile : la pastille est atteignable et l'infobulle s'ouvre au focus.
+     Sans cela, l'information de la matrice n'existe qu'à la souris. */
+  el.tabIndex=0;
+  el.setAttribute("aria-label",build().text);
+  el.addEventListener("focus",()=>{const b=el.getBoundingClientRect();show(b.right+8,b.bottom+8);});
+  el.addEventListener("blur",()=>tip.style.opacity=0);
 }
 
 /* ============================================================
@@ -2592,8 +2771,8 @@ function renderReport(){
       const evi=r.initial_assessment,evr=residual(r),cci=critOfEval(evi),ccr=critOfEval(evr);
       const si=scoreOf(evi.probability,evi.severity),sr=scoreOf(evr.probability,evr.severity),mes=measuresOfRisk(r.id);
       h+='<tr><td>'+esc(r.id)+'</td><td>'+esc(r.label)+'</td><td>'+esc(r.category||"—")+'</td>'+
-        '<td><span class="rp-tag" style="background:'+cci.color+'">'+esc(cci.label)+' · '+si+'</span></td>'+
-        '<td><span class="rp-tag" style="background:'+ccr.color+'">'+esc(ccr.label)+' · '+sr+'</span></td>'+
+        '<td><span class="rp-tag" style="background:'+cci.color+';color:'+onColor(cci.color)+'">'+esc(cci.label)+' · '+si+'</span></td>'+
+        '<td><span class="rp-tag" style="background:'+ccr.color+';color:'+onColor(ccr.color)+'">'+esc(ccr.label)+' · '+sr+'</span></td>'+
         '<td>'+(mes.length?mes.map(esc).join(", "):"—")+'</td></tr>';
     });
     h+='</tbody></table></div>';
@@ -2718,7 +2897,7 @@ function renderPlanSummary(){
     '<div style="min-width:220px;flex:1"><div class="hint" style="margin-bottom:6px">'+esc(t("plan_progress"))+' — <b>'+prog+'%</b></div>'+
       '<div class="plan-bar"><div class="plan-bar-fill" style="width:'+prog+'%"></div></div></div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
-      STATUS_CODES.map(c=>{const col=STATUS_COLORS[c];return '<span class="tag" style="background:'+col.bg+';color:'+col.fg+'">'+esc(statusLabel(c))+' · '+cnt[c]+'</span>';}).join("")+
+      STATUS_CODES.map(c=>{const col=STATUS_COLORS[c];return '<span class="tag" style="background:'+col.bg+';color:'+onColor(col.bg)+'">'+esc(statusLabel(c))+' · '+cnt[c]+'</span>';}).join("")+
       (overdue?'<span class="tag" style="background:var(--danger);color:#fff">⚠ '+esc(t("plan_overdue_n",overdue))+'</span>':'')+
     '</div></div>';
 }
@@ -2743,7 +2922,7 @@ function renderPlanStatus(area,ms){
   ms.forEach(m=>{if(m.status in by)by[m.status].push(m);else (by["proposed"]=by["proposed"]||[]).push(m);});
   area.innerHTML='<div class="kanban">'+STATUS_CODES.map(c=>{
     const col=STATUS_COLORS[c], {withD,noD}=planSortByDate(by[c]), list=withD.concat(noD);
-    return '<div class="kanban-col" data-status="'+c+'"><h4><span class="tag" style="background:'+col.bg+';color:'+col.fg+'">'+esc(statusLabel(c))+'</span> <span class="muted">'+list.length+'</span></h4>'+
+    return '<div class="kanban-col" data-status="'+c+'"><h4><span class="tag" style="background:'+col.bg+';color:'+onColor(col.bg)+'">'+esc(statusLabel(c))+'</span> <span class="muted">'+list.length+'</span></h4>'+
       list.map(planCard).join("")+'</div>';
   }).join("")+'</div>';
 }
@@ -2788,7 +2967,7 @@ function renderPlan(){
     const m=id&&measureById(id);if(m&&st&&m.status!==st){m.status=st;markDirty();renderAll();}dragId=null;});
 })();
 document.getElementById("planSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
-  planMode=b.dataset.mode;document.querySelectorAll("#planSeg button").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderPlan();});
+  planMode=b.dataset.mode;document.querySelectorAll("#planSeg button").forEach(x=>x.classList.remove("active"));b.classList.add("active");syncSegAria();renderPlan();});
 
 /* ============================================================
    FILTRES & TRI DES LISTES (partagés : risques, mesures, plan)
@@ -2854,6 +3033,7 @@ function renderRisks(){
   const emptyEl=document.getElementById("risquesEmpty");
   if(!list.length){emptyEl.style.display="block";emptyEl.textContent=all.length?t("flt_none"):t("risks_empty");}
   else emptyEl.style.display="none";
+  setFltCount("cntRisks",list.length,all.length);
   list.forEach(r=>{
     const evi=r.initial_assessment, evr=residual(r);
     const ci=critOfEval(evi), cr=critOfEval(evr);
@@ -2867,12 +3047,12 @@ function renderRisks(){
       '<td><span class="id-badge">'+esc(r.id)+'</span></td>'+
       '<td><b>'+esc(r.label)+'</b></td>'+
       '<td class="muted">'+esc(r.category||"—")+'</td>'+
-      '<td><span class="tag" style="background:'+ci.color+'">'+esc(ci.label)+' · '+si+'</span></td>'+
-      '<td><span class="tag" style="background:'+cr.color+'">'+esc(cr.label)+' · '+sr+'</span></td>'+
+      '<td><span class="tag" style="background:'+ci.color+';color:'+onColor(ci.color)+'">'+esc(ci.label)+' · '+si+'</span></td>'+
+      '<td><span class="tag" style="background:'+cr.color+';color:'+onColor(cr.color)+'">'+esc(cr.label)+' · '+sr+'</span></td>'+
       '<td>'+(mes.length?mes.map(id=>measurePill(id)).join(" "):'<span class="muted">—</span>')+'</td>'+
       '<td>'+delta+'</td>'+
-      '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(r.id)+'">✎</button>'+
-        '<button class="btn icon sm" data-del-r="'+esc(r.id)+'">🗑</button></div></td>';
+      '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(r.id)+'"'+a11y("a11y_edit_risk",r.id)+'>✎</button>'+
+        '<button class="btn icon sm" data-del-r="'+esc(r.id)+'"'+a11y("a11y_del_risk",r.id)+'>🗑</button></div></td>';
     tr.addEventListener("click",e=>{if(e.target.closest("button"))return;openRiskModal(r.id);});
     tb.appendChild(tr);
   });
@@ -2966,8 +3146,8 @@ function openRiskModal(id){
   const upd=()=>{
     const ip=+val("f_ip"),ig=+val("f_ig"),rp=+val("f_rp"),rg=+val("f_rg");
     const si=scoreOf(ip,ig),ci=critFor(si),sr=scoreOf(rp,rg),cr=critFor(sr);
-    document.getElementById("prev_i").innerHTML=esc(t("score_prefix",si))+'<span class="tag" style="background:'+ci.color+'">'+esc(ci.label)+'</span>';
-    document.getElementById("prev_r").innerHTML=esc(t("score_prefix",sr))+'<span class="tag" style="background:'+cr.color+'">'+esc(cr.label)+'</span>';
+    document.getElementById("prev_i").innerHTML=esc(t("score_prefix",si))+'<span class="tag" style="background:'+ci.color+';color:'+onColor(ci.color)+'">'+esc(ci.label)+'</span>';
+    document.getElementById("prev_r").innerHTML=esc(t("score_prefix",sr))+'<span class="tag" style="background:'+cr.color+';color:'+onColor(cr.color)+'">'+esc(cr.label)+'</span>';
   };
   ["f_ip","f_ig","f_rp","f_rg"].forEach(id=>document.getElementById(id).addEventListener("change",upd));
   upd();
@@ -2986,7 +3166,7 @@ const STATUS_COLORS={
 function statusBadge(s){
   if(!s)return '<span class="muted">—</span>';
   const c=STATUS_COLORS[s],lbl=statusLabel(s);
-  return c?'<span class="tag" style="background:'+c.bg+';color:'+c.fg+'">'+esc(lbl)+'</span>':'<span class="pill">'+esc(lbl)+'</span>';
+  return c?'<span class="tag" style="background:'+c.bg+';color:'+onColor(c.bg)+'">'+esc(lbl)+'</span>':'<span class="pill">'+esc(lbl)+'</span>';
 }
 /* Pastille de code de mesure, colorée selon le statut, avec libellé + statut en infobulle */
 function measurePill(id){
@@ -2994,7 +3174,7 @@ function measurePill(id){
   const c=m&&m.status?STATUS_COLORS[m.status]:null;
   const statutLbl=m&&m.status?statusLabel(m.status):"";
   const title=(m?m.label:id)+(statutLbl?" — "+statutLbl:"");
-  const style=c?' style="background:'+c.bg+';color:'+c.fg+';border-color:'+c.bg+'"':"";
+  const style=c?' style="background:'+c.bg+';color:'+onColor(c.bg)+';border-color:'+c.bg+'"':"";
   return '<span class="pill"'+style+' title="'+esc(title)+'">'+esc(id)+'</span>';
 }
 const TYPES=["technical","organizational","preventive","detective","corrective","deterrent"];
@@ -3016,6 +3196,7 @@ function renderMeasures(){
   const emptyEl=document.getElementById("mesuresEmpty");
   if(!list.length){emptyEl.style.display="block";emptyEl.textContent=all.length?t("flt_none"):t("measures_empty");}
   else emptyEl.style.display="none";
+  setFltCount("cntMeasures",list.length,all.length);
   list.forEach(m=>{
     const risks=risksOfMeasure(m.id);
     const tr=document.createElement("tr");tr.style.cursor="pointer";
@@ -3026,8 +3207,8 @@ function renderMeasures(){
       '<td>'+statusBadge(m.status)+'</td>'+
       '<td class="muted">'+esc(m.responsible||"—")+'</td>'+
       '<td>'+(risks.length?risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join(" "):'<span class="muted">—</span>')+'</td>'+
-      '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(m.id)+'">✎</button>'+
-        '<button class="btn icon sm" data-del-m="'+esc(m.id)+'">🗑</button></div></td>';
+      '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(m.id)+'"'+a11y("a11y_edit_measure",m.id)+'>✎</button>'+
+        '<button class="btn icon sm" data-del-m="'+esc(m.id)+'"'+a11y("a11y_del_measure",m.id)+'>🗑</button></div></td>';
     tr.addEventListener("click",e=>{if(e.target.closest("button"))return;openMeasureModal(m.id);});
     tb.appendChild(tr);
   });
@@ -3104,6 +3285,7 @@ function setLinkMode(m){
   linkMode=m;
   document.querySelectorAll("#linksSeg button").forEach(b=>b.classList.toggle("active",b.dataset.mode===m));
   document.querySelectorAll("#view-links .lpanel").forEach(p=>{p.style.display=(p.dataset.lmode===m)?"":"none";});
+  syncSegAria();
 }
 document.getElementById("linksSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setLinkMode(b.dataset.mode);});
 
@@ -3115,14 +3297,15 @@ function renderCrosstab(){
   if(!analyse.risks.length||!analyse.measures.length){
     area.innerHTML='<div class="empty">'+esc(t("links_empty"))+'</div>';return;}
   let h='<table><thead><tr><th class="corner">'+esc(t("cross_corner"))+'</th>';
-  analyse.measures.forEach((m,i)=>h+='<th class="vert'+(i%2?' altcol':'')+'" title="'+esc(m.label)+'">'+esc(m.id)+' · '+esc(m.label)+'</th>');
+  analyse.measures.forEach((m,i)=>h+='<th scope="col" class="vert'+(i%2?' altcol':'')+'" title="'+esc(m.label)+'">'+esc(m.id)+' · '+esc(m.label)+'</th>');
   h+='</tr></thead><tbody>';
   analyse.risks.forEach(r=>{
-    h+='<tr><td class="rname"><span class="id-badge">'+esc(r.id)+'</span> '+esc(r.label)+'</td>';
+    h+='<tr><th scope="row" class="rname"><span class="id-badge">'+esc(r.id)+'</span> '+esc(r.label)+'</th>';
     analyse.measures.forEach((m,i)=>{
       const tr=treatmentOf(r.id,m.id);
       const mark=linkEnriched(tr)?'<span class="lmark" title="'+esc(t("link_has_data"))+'">●</span>':'';
-      h+='<td class="cb'+(i%2?' altcol':'')+'"><input type="checkbox" data-r="'+esc(r.id)+'" data-m="'+esc(m.id)+'"'+(tr?" checked":"")+'>'+mark+'</td>';
+      const nom=t("a11y_link_cell",r.id,r.label,m.id,m.label);
+      h+='<td class="cb'+(i%2?' altcol':'')+'"><label class="cbwrap"><input type="checkbox" data-r="'+esc(r.id)+'" data-m="'+esc(m.id)+'"'+(tr?" checked":"")+' aria-label="'+esc(nom)+'"></label>'+mark+'</td>';
     });
     h+='</tr>';
   });
@@ -3180,8 +3363,8 @@ function renderLinkDetails(){
       '<td>'+esc(m?m.label:"—")+'</td>'+
       '<td>'+esc(mdToText(tr.comment)||"—")+'</td>';
     cf.forEach(f=>{const dv=cfDisplayHTML(f,(tr.custom||{})[f.code]);h+='<td>'+(dv||"—")+'</td>';});
-    h+='<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'">✎</button>'+
-      '<button class="btn icon sm" data-del-l="'+key+'">🗑</button></div></td>';
+    h+='<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'"'+a11y("a11y_edit_link",tr.risk,tr.measure)+'>✎</button>'+
+      '<button class="btn icon sm" data-del-l="'+key+'"'+a11y("a11y_del_link",tr.risk,tr.measure)+'>🗑</button></div></td>';
     h+='</tr>';
   });
   h+='</tbody></table>';
@@ -3279,6 +3462,7 @@ function setParamMode(m){
   paramMode=m;
   document.querySelectorAll("#paramSeg button").forEach(b=>b.classList.toggle("active",b.dataset.pmode===m));
   document.querySelectorAll("#view-settings .ppanel").forEach(p=>{p.style.display=(p.dataset.pmode===m)?"":"none";});
+  syncSegAria();
 }
 document.getElementById("paramSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setParamMode(b.dataset.pmode);});
 function renderSettings(){
@@ -3341,10 +3525,10 @@ function renderCustomFields(){
       '<td class="muted">'+esc(cfTypeLabel(f.type))+'</td>'+
       '<td>'+(f.required?'✓':'<span class="muted">—</span>')+'</td>'+
       '<td><div class="actions">'+
-        '<button class="btn icon sm" data-cf-up="'+i+'"'+(i===0?" disabled":"")+'>▲</button>'+
-        '<button class="btn icon sm" data-cf-down="'+i+'"'+(i===list.length-1?" disabled":"")+'>▼</button>'+
-        '<button class="btn icon sm" data-cf-edit="'+i+'">✎</button>'+
-        '<button class="btn icon sm" data-cf-del="'+i+'">🗑</button></div></td>';
+        '<button class="btn icon sm" data-cf-up="'+i+'"'+(i===0?" disabled":"")+a11y("a11y_move_up",cfLabel(f))+'>▲</button>'+
+        '<button class="btn icon sm" data-cf-down="'+i+'"'+(i===list.length-1?" disabled":"")+a11y("a11y_move_down",cfLabel(f))+'>▼</button>'+
+        '<button class="btn icon sm" data-cf-edit="'+i+'"'+a11y("a11y_edit_field",cfLabel(f))+'>✎</button>'+
+        '<button class="btn icon sm" data-cf-del="'+i+'"'+a11y("a11y_del_field",cfLabel(f))+'>🗑</button></div></td>';
     tb.appendChild(tr);
   });
 }
@@ -3374,7 +3558,7 @@ function cfItemsRowsHTML(items,withColor){
     '<input placeholder="'+esc(t("cf_item_code"))+'" data-if="code" value="'+esc(it.code||"")+'" style="max-width:120px">'+
     '<input placeholder="'+esc(t("cf_item_label"))+'" data-if="lab" value="'+esc((it.label&&it.label[lang])||"")+'">'+
     (withColor?'<input type="color" data-if="color" title="'+esc(t("cf_item_color"))+'" value="'+esc(it.color||"#4c7dff")+'" style="width:42px;flex:none;padding:2px;height:34px">':'')+
-    '<button class="btn icon sm" style="flex:none" data-cfi-del="'+i+'" type="button">🗑</button></div>').join("");
+    '<button class="btn icon sm" style="flex:none" data-cfi-del="'+i+'" type="button"'+a11y("a11y_del_item",(it.label&&it.label[lang])||it.code||(i+1))+'>🗑</button></div>').join("");
 }
 // Options spécifiques à un type dans la modale de définition (multiple pour tags, couleur pour progress).
 function cfTypeOptsHTML(f){
@@ -3485,9 +3669,24 @@ function cfDisplay(f,v){
   return String(v);
 }
 // Couleur (texte contrasté) sur fond de tag.
-function cfTagFg(hex){hex=String(hex||"").replace("#","");if(hex.length===3)hex=hex.split("").map(c=>c+c).join("");
+/* Couleur de texte lisible sur un fond quelconque : on compare le contraste WCAG réel
+   du blanc et de l'encre sombre, et on garde le meilleur. L'ancienne heuristique de
+   luminosité perçue (seuil YIQ 150) laissait passer des badges à 1,88:1. */
+const ON_DARK="#ffffff", ON_LIGHT="#000000";
+function onColor(hex){
+  hex=String(hex||"").trim().replace("#","");
+  if(hex.length===3)hex=hex.split("").map(c=>c+c).join("");
   const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
-  if([r,g,b].some(isNaN))return "#fff";return (0.299*r+0.587*g+0.114*b)>150?"#111":"#fff";}
+  if([r,g,b].some(isNaN))return ON_DARK;
+  const lin=c=>{c/=255;return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4);};
+  const L=0.2126*lin(r)+0.7152*lin(g)+0.0722*lin(b);
+  // Contraste réel contre chacune des deux encres, luminance de l'encre comprise.
+  const lumOf=h=>{const v=String(h).replace("#","");
+    return 0.2126*lin(parseInt(v.slice(0,2),16))+0.7152*lin(parseInt(v.slice(2,4),16))+0.0722*lin(parseInt(v.slice(4,6),16));};
+  const cr=ink=>{const a=L+0.05,b=lumOf(ink)+0.05;return Math.max(a,b)/Math.min(a,b);};
+  return cr(ON_DARK)>=cr(ON_LIGHT) ? ON_DARK : ON_LIGHT;
+}
+const cfTagFg=onColor;  // alias historique (champs perso « tags »)
 /* Palettes de la barre de progression : jalons équirépartis (0→100 %), couleur interpolée
    en TSL/HSL (chemin de teinte le plus court). "accent" = couleur unique du thème. */
 const PROGRESS_PALETTES={
@@ -3532,7 +3731,7 @@ function palettePreviewBg(colors){
   if(!colors||!colors.length)return "var(--accent)";if(colors.length===1)return colors[0];
   const stops=[];for(let v=0;v<=100;v+=5)stops.push(paletteColor(colors,v)+" "+v+"%");
   return "linear-gradient(to right,"+stops.join(",")+")";}
-function cfColorRowHTML(hex){return '<div class="inline" data-cfc style="margin-bottom:6px"><input type="color" data-cfcv value="'+esc(hex||"#4c7dff")+'" style="width:48px;flex:none;padding:2px;height:34px"><button class="btn icon sm" style="flex:none" data-cfc-del type="button">🗑</button></div>';}
+function cfColorRowHTML(hex){return '<div class="inline" data-cfc style="margin-bottom:6px"><input type="color" data-cfcv value="'+esc(hex||"#4c7dff")+'" style="width:48px;flex:none;padding:2px;height:34px"><button class="btn icon sm" style="flex:none" data-cfc-del type="button"'+a11y("a11y_del_color")+'>🗑</button></div>';}
 function cfColorsRowsHTML(colors){colors=(colors&&colors.length)?colors:["#e53935","#43a047"];return colors.map(cfColorRowHTML).join("");}
 function cfCustomColorsFromDOM(){return [...document.querySelectorAll('#cfColors [data-cfcv]')].map(i=>i.value);}
 // Aperçu de la palette dans la modale de définition (lit l'état courant : palette + couleurs perso).
@@ -3722,7 +3921,7 @@ function renderAxis(elId,axis,key){
         '<div class="inline" style="margin-bottom:4px">'+
           '<input style="max-width:60px" type="number" value="'+n.value+'" data-axis="'+key+'" data-i="'+i+'" data-f="value" title="'+esc(t("ph_value"))+'">'+
           '<input value="'+esc(n.label)+'" data-axis="'+key+'" data-i="'+i+'" data-f="label" placeholder="'+esc(t("ph_label"))+'">'+
-          '<button class="btn icon sm" style="flex:none" data-axis-del="'+key+'" data-i="'+i+'">🗑</button>'+
+          '<button class="btn icon sm" style="flex:none" data-axis-del="'+key+'" data-i="'+i+'"'+a11y("a11y_del_level",n.label||n.value)+'>🗑</button>'+
         '</div>'+
         '<input value="'+esc(n.description||"")+'" data-axis="'+key+'" data-i="'+i+'" data-f="description" placeholder="'+esc(t("ph_desc_tip"))+'" style="font-size:12px">'+
       '</div>').join("");
@@ -3838,7 +4037,7 @@ function renderCrit(){
       '<td><input type="color" style="max-width:56px" value="'+esc(c.color)+'" data-crit="'+i+'" data-f="color"></td>'+
       '<td><select data-crit="'+i+'" data-f="acceptance">'+
         ["acceptable","tolerable","to_treat","unacceptable"].map(a=>'<option value="'+a+'"'+(c.acceptance===a?" selected":"")+'>'+esc(accLabel(a))+'</option>').join("")+'</select></td>'+
-      '<td><button class="btn icon sm" data-crit-del="'+i+'">🗑</button></td>';
+      '<td><button class="btn icon sm" data-crit-del="'+i+'"'+a11y("a11y_del_crit",c.label||c.code)+'>🗑</button></td>';
     tb.appendChild(tr);
   });
   checkCritCoverage();
@@ -4185,7 +4384,7 @@ const dynModals=[];
 function pushModal(title,bodyHtml,buttons){
   const bg=document.createElement("div");bg.className="modal-bg open";
   const modal=document.createElement("div");modal.className="modal";
-  modal.innerHTML='<header><h3></h3><button class="x">&times;</button></header><div class="body"></div>';
+  modal.innerHTML='<header><h3></h3><button class="x"'+a11y("a11y_close")+'>&times;</button></header><div class="body"></div>';
   modal.querySelector("h3").textContent=title||"";
   modal.querySelector(".body").innerHTML=bodyHtml;
   const foot=document.createElement("footer");modal.appendChild(foot);
@@ -4265,6 +4464,7 @@ function applyStaticI18n(){
   document.querySelectorAll("[data-i18n-html]").forEach(el=>{el.innerHTML=t(el.getAttribute("data-i18n-html"));});
   document.querySelectorAll("[data-i18n-title]").forEach(el=>{el.title=t(el.getAttribute("data-i18n-title"));});
   document.querySelectorAll("[data-i18n-ph]").forEach(el=>{el.placeholder=t(el.getAttribute("data-i18n-ph"));});
+  document.querySelectorAll("[data-i18n-label]").forEach(el=>{el.setAttribute("aria-label",t(el.getAttribute("data-i18n-label")));});
   const ls=document.getElementById("langSel");if(ls)ls.value=lang;
 }
 function setLang(l){
