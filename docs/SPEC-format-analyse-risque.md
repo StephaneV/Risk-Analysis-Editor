@@ -45,6 +45,7 @@ Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIO
 - Les **identifiants** (`id`) sont des chaînes non vides, uniques dans leur collection, stables dans le temps (voir §7).
 - Dans les tableaux de champs ci-dessous : **O** = obligatoire, **F** = facultatif.
 - Les clés inconnues d'un lecteur doivent être **ignorées silencieusement** (tolérance ascendante), jamais rejetées.
+- Les **champs de texte libre multi-lignes** (`description` et `comment` des risques, mesures et liens, `metadata.description`, `justification` des cotations, valeurs des champs personnalisés de type `textarea`) peuvent contenir du **Markdown** (sous-ensemble étendu : titres, gras/italique/barré, code, liens, listes, cases à cocher, citations, tableaux). Le stockage reste du **texte brut** : la mise en forme est appliquée à l'affichage. Un lecteur qui ne gère pas le Markdown peut afficher le texte tel quel sans perte de sens. Le **HTML brut n'est pas interprété** (il doit être échappé à l'affichage).
 
 ---
 
@@ -230,7 +231,8 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `min`, `max` | nombre / chaîne | F | Bornes : valeurs pour `integer`/`float` ; dates `AAAA-MM-JJ` pour `date` ; **longueur en caractères** pour `text`/`textarea`. |
 | `min_items`, `max_items` | entier | F | Nombre minimal / maximal d'items cochés pour `checklist`. |
 | `items` | tableau | Cond. | **Obligatoire** pour `select`, `checklist` et `tags`. Éléments de la liste (§4.6.2). |
-| `help` | objet | F | Texte d'aide multilingue (infobulle), même forme que `label`. |
+| `help` | objet | F | Texte d'aide **court** multilingue, affiché en **infobulle** sur le libellé. Même forme que `label`. |
+| `description` | objet | F | Texte **long** multilingue décrivant le champ, affiché **sous le contrôle de saisie**. Même forme que `label`. Distinct de `help`. |
 | `order` | entier | F | Ordre d'affichage parmi les champs d'une même cible. |
 
 Objet `items[]` (§4.6.2) :
