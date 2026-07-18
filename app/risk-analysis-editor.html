@@ -1669,10 +1669,13 @@ document.getElementById("tabs").addEventListener("keydown",e=>{
   const n=K==="first"?0:K==="last"?tabs.length-1:(i+K+tabs.length)%tabs.length;
   tabs[n].focus();activateView(tabs[n].dataset.view);
 });
-// Chaque vue est le panneau de son onglet (relation annoncée par les lecteurs d'écran).
+/* Chaque vue est le panneau de son onglet (relation annoncée par les lecteurs d'écran).
+   Pas de tabindex : le motif ARIA ne rend le panneau focalisable que s'il ne contient
+   aucun élément focalisable, ce qui n'est le cas d'aucune vue ici. L'ajouter créerait
+   un arrêt de tabulation parasite avant le premier champ. */
 document.querySelectorAll(".view").forEach(v=>{
   const tab=document.querySelector('.tab[aria-controls="'+v.id+'"]');if(!tab)return;
-  v.setAttribute("role","tabpanel");v.setAttribute("tabindex","0");
+  v.setAttribute("role","tabpanel");
   if(!tab.id)tab.id="tab-"+v.id;
   v.setAttribute("aria-labelledby",tab.id);
 });
