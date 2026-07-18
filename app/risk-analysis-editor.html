@@ -27,6 +27,7 @@
     --green-text:var(--green);--red-text:var(--red);--unchanged-text:var(--unchanged);
     --green-text-aa:#3fbf74;--red-text-aa:#f06a6a;--unchanged-text-aa:#9b85ff;
     --btn-bg:var(--accent);
+    --focus-ring:color-mix(in srgb,var(--accent) 45%,transparent);
     --danger:#d64545;--shadow:0 8px 30px rgba(0,0,0,.45);
   }
   :root[data-theme="light"]{  /* Thème CLAIR */
@@ -36,6 +37,7 @@
     --green-text:var(--green);--red-text:var(--red);--unchanged-text:var(--unchanged);
     --green-text-aa:#1f7a44;--red-text-aa:#b3383a;--unchanged-text-aa:#5b3fd6;
     --btn-bg:var(--accent);
+    --focus-ring:color-mix(in srgb,var(--accent) 35%,transparent);
     --danger:#d64545;--shadow:0 10px 28px rgba(35,50,85,.12);
   }
   /* Mode « contraste renforcé » (Paramètres › Affichage). Doit suivre les deux blocs de
@@ -114,28 +116,35 @@
   input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);
     color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
   /* ---------- Focus clavier ----------
-     Une seule apparence pour tout ce qui peut recevoir le focus : contour accentué de 2 px,
-     décalé de 2 px. Le contour épouse n'importe quelle forme sans avoir à accorder les
-     arrondis, et reste visible sur les fonds pleins de la couleur d'accent — ce qu'un halo
-     translucide de la même teinte ne ferait pas. `outline` ne décale pas la mise en page. */
-  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  /* Le contour du cadre Markdown est porté par l'enveloppe, pas par la zone de saisie :
-     posé sur le textarea, il serait rogné par overflow:hidden. Restreint à la saisie
-     (`:has`) pour que le focus sur la bascule œil n'entoure que le bouton. */
-  .md-wrap:has(>textarea:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
-  .md-wrap>textarea:focus-visible{outline:none}
+     Une seule apparence pour tout ce qui peut recevoir le focus : halo accentué de 3 px,
+     épousant l'arrondi de l'élément. `box-shadow` ne décale pas la mise en page. */
+  :focus-visible{outline:none;box-shadow:0 0 0 3px var(--focus-ring)}
+  /* Le halo du cadre Markdown est porté par l'enveloppe, pas par la zone de saisie : posé
+     sur le textarea, il serait rogné par overflow:hidden et ne laisserait qu'un trait sous
+     la saisie. Restreint à la saisie (`:has`) pour que le focus sur la bascule œil
+     n'entoure que le bouton. */
+  .md-wrap:has(>textarea:focus-visible){box-shadow:0 0 0 3px var(--focus-ring);border-color:var(--accent)}
+  .md-wrap>textarea:focus-visible{outline:none;box-shadow:none}
   /* Les champs signalent en plus le focus par leur bordure (utile à la souris comme au clavier). */
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   input:focus-visible,select:focus-visible,textarea:focus-visible{
-    outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+    outline:none;box-shadow:0 0 0 3px var(--focus-ring);border-color:var(--accent)}
+  /* Les pastilles de matrice portent déjà une ombre portée : on la conserve sous le halo. */
+  .chip:focus-visible{box-shadow:0 2px 5px rgba(0,0,0,.5),0 0 0 3px var(--focus-ring)}
+  /* En contraste forcé (Windows), les ombres ne sont pas rendues : on repasse au contour. */
+  @media (forced-colors: active){
+    :focus-visible,.md-wrap:has(>textarea:focus-visible){outline:2px solid Highlight;outline-offset:2px}
+  }
   textarea{resize:vertical;min-height:64px}
   input[type=color]{padding:2px;height:34px;cursor:pointer}
   .inline{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
   .inline>*{flex:1}
 
   /* ---------- Tableaux ---------- */
-  /* Les registres sont larges : sur écran étroit ils défilent au lieu d'être tronqués. */
-  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* Les registres sont larges : sur écran étroit ils défilent au lieu d'être tronqués.
+     Le retrait interne (compensé par la marge négative) laisse la place au halo de focus
+     des boutons de dernière colonne, qui serait sinon rogné par le conteneur. */
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:3px;margin:-3px}
   /* Compteur « N sur M », affiché seulement quand un filtre masque des lignes. */
   .flt-count{color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;align-self:center}
   table{width:100%;border-collapse:collapse;font-size:13px}
