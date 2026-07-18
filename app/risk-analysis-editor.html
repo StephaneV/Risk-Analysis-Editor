@@ -561,6 +561,14 @@
       <h2 data-i18n="cf_analysis_values">Champs de l'analyse</h2>
       <div class="grid2" id="cfAnalysisValues"></div>
     </div>
+
+    <!-- Barre d'actions : les saisies de l'onglet ne sont appliquées qu'à l'enregistrement (avec contrôle des champs). -->
+    <div class="card" id="presActions" style="display:flex;align-items:center;gap:10px">
+      <span class="caption" id="presHint" style="flex:1;margin:0" data-i18n="settings_general_pending">Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.</span>
+      <span id="presMsg" style="flex:1;text-align:left;color:var(--danger);font-size:12.5px;display:none"></span>
+      <button class="btn ghost" id="presCancel" data-i18n="btn_cancel" disabled>Annuler</button>
+      <button class="btn" id="presSave" data-i18n="btn_save_modal" disabled>Enregistrer</button>
+    </div>
   </section>
 
   <!-- ============ PARAMÈTRES ============ -->
@@ -831,6 +839,8 @@ const I18N = {
     btn_cancel:"Annuler", btn_save_modal:"Enregistrer", btn_ok:"OK", btn_confirm:"Confirmer", btn_close:"Fermer", dialog_error:"Erreur", dialog_confirm:"Confirmation",
     about_title:"À propos", about_subtitle:"Éditeur de matrices de risque · format .rae.json", about_version:"Version", about_credits:"Auteur", about_license:"Licence", about_github:"Voir le projet sur GitHub",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
+    pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
+    settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
     toast_new:"Nouvelle analyse créée.", err_invalid_file:"Fichier invalide : {0}", toast_loaded:"Analyse chargée.",
     err_read_file:"Impossible de lire le fichier : {0}", err_load_url:"Impossible de charger le fichier depuis l'URL « {0} » : {1}", toast_saved:"Fichier enregistré : {0}",
     vs_root:"racine non-objet", vs_format:"champ 'format' incorrect", vs_grid:"grille incomplète", vs_risks:"'risks' manquant",
@@ -990,6 +1000,8 @@ const I18N = {
     btn_cancel:"Cancel", btn_save_modal:"Save", btn_ok:"OK", btn_confirm:"Confirm", btn_close:"Close", dialog_error:"Error", dialog_confirm:"Confirmation",
     about_title:"About", about_subtitle:"Risk matrix editor · .rae.json format", about_version:"Version", about_credits:"Author", about_license:"License", about_github:"View the project on GitHub",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
+    pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
+    settings_general_pending:"Changes in this tab are applied only when you click Save.",
     toast_new:"New analysis created.", err_invalid_file:"Invalid file: {0}", toast_loaded:"Analysis loaded.",
     err_read_file:"Cannot read the file: {0}", err_load_url:"Could not load the file from URL \"{0}\": {1}", toast_saved:"File saved: {0}",
     vs_root:"root is not an object", vs_format:"invalid 'format' field", vs_grid:"incomplete grid", vs_risks:"'risks' missing",
@@ -1149,6 +1161,8 @@ const I18N = {
     btn_cancel:"Annulla", btn_save_modal:"Salva", btn_ok:"OK", btn_confirm:"Conferma", btn_close:"Chiudi", dialog_error:"Errore", dialog_confirm:"Conferma",
     about_title:"Informazioni", about_subtitle:"Editor di matrici di rischio · formato .rae.json", about_version:"Versione", about_credits:"Autore", about_license:"Licenza", about_github:"Vedi il progetto su GitHub",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
+    pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
+    settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
     toast_new:"Nuova analisi creata.", err_invalid_file:"File non valido: {0}", toast_loaded:"Analisi caricata.",
     err_read_file:"Impossibile leggere il file: {0}", err_load_url:"Impossibile caricare il file dall'URL « {0} »: {1}", toast_saved:"File salvato: {0}",
     vs_root:"radice non-oggetto", vs_format:"campo 'format' non valido", vs_grid:"griglia incompleta", vs_risks:"'risks' mancante",
@@ -1432,6 +1446,10 @@ function customFieldsFor(target){return customFields().filter(f=>f&&f.target===t
 // Active un onglet principal (bascule .tab/.view + rendu de la vue).
 function activateView(view){
   const tab=document.querySelector('.tab[data-view="'+view+'"]');if(!tab)return;
+  // Sortie de l'onglet Présentation avec une saisie non enregistrée : confirmation.
+  if(view!=="presentation"&&presPending&&
+     document.getElementById("view-presentation").classList.contains("active"))
+    return presGuard(()=>activateView(view));
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   tab.classList.add("active");
@@ -1472,11 +1490,11 @@ function applyTabParam(){
 /* ============================================================
    FICHIER : nouveau / charger / enregistrer
    ============================================================ */
-document.getElementById("btnNew").addEventListener("click",()=>{
+document.getElementById("btnNew").addEventListener("click",()=>presGuard(()=>{
   const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;dirty=false;isFresh=true;renderAll();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
-});
-document.getElementById("btnLoad").addEventListener("click",()=>document.getElementById("fileInput").click());
+}));
+document.getElementById("btnLoad").addEventListener("click",()=>presGuard(()=>document.getElementById("fileInput").click()));
 /* Le modèle interne ET le fichier .rae.json partagent les mêmes clés anglaises :
    aucune conversion. Charger = JSON.parse, enregistrer = JSON.stringify. */
 
@@ -1519,14 +1537,15 @@ async function loadFromURLParam(){
     alertModal(t("err_load_url",url,ex.message));
   }
 }
-document.getElementById("btnSave").addEventListener("click",()=>{
+document.getElementById("btnSave").addEventListener("click",()=>presGuard(saveToFile));
+function saveToFile(){
   analyse.metadata=analyse.metadata||{};analyse.metadata.updated_at=today();analyse.metadata.language=lang;
   const blob=new Blob([JSON.stringify(analyse,null,2)],{type:"application/vnd.rae+json"});
   const name=(slug(analyse.metadata.title)||"risk-analysis")+".rae.json";
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;
   document.body.appendChild(a);a.click();a.remove();
   currentFileName=name;dirty=false;refreshFileState();toast(t("toast_saved",name));
-});
+}
 
 function validateStructure(d){
   if(typeof d!=="object"||!d)return t("vs_root");
@@ -3209,6 +3228,19 @@ document.getElementById("btnExportLinks").addEventListener("click",exportLinksCS
 /* ============================================================
    VUE PRÉSENTATION — métadonnées documentaires + champs de l'analyse
    ============================================================ */
+let presPending=false; // modifications saisies dans l'onglet mais pas encore appliquées à l'analyse
+function presMsg(m){
+  const e=document.getElementById("presMsg"),h=document.getElementById("presHint");
+  if(e){e.textContent=m||"";e.style.display=m?"inline":"none";}
+  if(h)h.style.display=m?"none":"block";
+}
+function presSetPending(v){
+  presPending=!!v;
+  const s=document.getElementById("presSave"),c=document.getElementById("presCancel");
+  if(s)s.disabled=!presPending;
+  if(c)c.disabled=!presPending;
+  if(!presPending)presMsg("");
+}
 function renderPresentation(){
   const md=analyse.metadata;
   setVal("mTitle",md.title);setVal("mAuthor",md.author);setVal("mOrg",md.organization);
@@ -3216,6 +3248,25 @@ function renderPresentation(){
   document.getElementById("mStatus").value=md.status||"draft";
   renderCFAnalysis();
   enhanceTextareas(document.getElementById("view-presentation"));
+  presSetPending(false);
+}
+/* Applique la saisie de l'onglet à l'analyse. Renvoie false si un champ est invalide. */
+function presApply(){
+  const cc=cfCollect("analysis",document.getElementById("cfAnalysisValues"));
+  if(cc.error){presMsg(cc.error);return false;}
+  setMeta("title",val("mTitle"));setMeta("author",val("mAuthor"));setMeta("organization",val("mOrg"));
+  setMeta("scope",val("mScope"));setMeta("methodology_reference",val("mRef"));setMeta("revision",val("mRevision"));
+  setMeta("description",val("mDesc"));setMeta("status",val("mStatus"));
+  analyse.custom=cc.custom;
+  markDirty();renderAll();
+  return true;
+}
+document.getElementById("presSave").addEventListener("click",()=>{presMsg("");presApply();});
+document.getElementById("presCancel").addEventListener("click",renderPresentation);
+/* Garde-fou : prévient avant de perdre une saisie non enregistrée. onOk n'est appelé qu'après accord. */
+function presGuard(onOk){
+  if(!presPending)return onOk();
+  confirmModal(t("pres_confirm_leave"),()=>{renderPresentation();onOk();}); // renderPresentation remet les champs à l'état de l'analyse
 }
 
 /* ============================================================
@@ -3642,7 +3693,7 @@ document.addEventListener("click",e=>{const b=e.target.closest(".cf-tag");if(!b)
   e.preventDefault();const wrap=b.closest(".cf-tags");if(!wrap)return;
   if(wrap.dataset.cfmulti!=="1")wrap.querySelectorAll(".cf-tag.on").forEach(x=>{if(x!==b)x.classList.remove("on");});
   b.classList.toggle("on");
-  const af=b.closest("#cfAnalysisValues");if(af)cfSaveAnalysis(); // sauvegarde directe si champ de l'analyse
+  if(b.closest("#cfAnalysisValues"))presSetPending(true); // onglet Présentation : en attente d'enregistrement
 });
 document.addEventListener("input",e=>{const r=e.target;
   if(r&&r.matches&&r.matches('.cf-progress-edit input[type=range]')){const pv=+r.value;const o=r.parentNode.querySelector('.cf-progress-val');if(o)o.textContent=pv+' %';const cs=r.dataset.pcolors?r.dataset.pcolors.split(","):null;r.style.accentColor=cs&&cs.length?paletteColor(cs,pv):"var(--accent)";}});
@@ -3655,13 +3706,6 @@ document.addEventListener("click",e=>{
   if(add){e.preventDefault();const box=document.getElementById("cfColors");if(box){box.insertAdjacentHTML("beforeend",cfColorRowHTML("#4c7dff"));updatePalettePreview();}return;}
   const del=e.target.closest&&e.target.closest("[data-cfc-del]");
   if(del){e.preventDefault();const row=del.closest("[data-cfc]");if(row&&document.querySelectorAll('#cfColors [data-cfc]').length>1){row.remove();updatePalettePreview();}return;}});
-/* Enregistrement en direct des valeurs des champs de l'analyse (pas de bouton d'enregistrement). */
-function cfSaveAnalysis(){
-  const scope=document.getElementById("cfAnalysisValues");if(!scope)return;
-  const custom={};
-  customFieldsFor("analysis").forEach(f=>{const cont=scope.querySelector('[data-cf="'+f.code+'"]');const v=cfReadValue(cont,f);if(cfPresent(f,v))custom[f.code]=v;});
-  analyse.custom=custom;markDirty();
-}
 function renderCFAnalysis(){
   const card=document.getElementById("cfAnalysisCard"), scope=document.getElementById("cfAnalysisValues");
   if(!card||!scope)return;
@@ -3669,8 +3713,6 @@ function renderCFAnalysis(){
   card.style.display=fields.length?"block":"none";
   scope.innerHTML=fields.length?cfFieldsHTML("analysis",analyse.custom||{}):"";
 }
-document.getElementById("cfAnalysisValues").addEventListener("change",cfSaveAnalysis);
-document.getElementById("cfAnalysisValues").addEventListener("input",cfSaveAnalysis);
 
 function renderAxis(elId,axis,key){
   const el=document.getElementById(elId);
@@ -3685,19 +3727,13 @@ function renderAxis(elId,axis,key){
         '<input value="'+esc(n.description||"")+'" data-axis="'+key+'" data-i="'+i+'" data-f="description" placeholder="'+esc(t("ph_desc_tip"))+'" style="font-size:12px">'+
       '</div>').join("");
 }
-document.getElementById("view-presentation").addEventListener("input",e=>{
-  const t=e.target;
-  if(t.id==="mTitle")setMeta("title",t.value);
-  else if(t.id==="mAuthor")setMeta("author",t.value);
-  else if(t.id==="mOrg")setMeta("organization",t.value);
-  else if(t.id==="mScope")setMeta("scope",t.value);
-  else if(t.id==="mRef")setMeta("methodology_reference",t.value);
-  else if(t.id==="mRevision")setMeta("revision",t.value);
-  else if(t.id==="mDesc")setMeta("description",t.value);
-});
-document.getElementById("view-presentation").addEventListener("change",e=>{
-  if(e.target.id==="mStatus")setMeta("status",e.target.value);
-});
+/* Onglet Présentation : les saisies ne modifient plus l'analyse au fil de l'eau.
+   Toute frappe marque l'onglet « en attente » ; l'application se fait au clic sur Enregistrer,
+   après contrôle des champs personnalisés (cfValidate via cfCollect). */
+["input","change"].forEach(ev=>document.getElementById("view-presentation").addEventListener(ev,e=>{
+  if(e.target.closest("#presActions"))return;
+  presSetPending(true);
+}));
 document.getElementById("view-settings").addEventListener("input",e=>{
   const t=e.target;
   if(t.id==="cfgEspacement"){setDisplaySetting("cell_spacing",Math.max(0,Math.min(30,+t.value||0)));requestAnimationFrame(renderMatrices);}
@@ -4246,7 +4282,7 @@ document.getElementById("langSel").addEventListener("change",e=>setLang(e.target
 // Langue au démarrage (application vierge) : ?lang > localStorage > navigateur > anglais.
 lang=resolveLang(null,true);
 
-window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue="";}});
+window.addEventListener("beforeunload",e=>{if(dirty||presPending){e.preventDefault();e.returnValue="";}});
 let rzt;window.addEventListener("resize",()=>{clearTimeout(rzt);rzt=setTimeout(()=>{
   if(document.getElementById("view-matrices").classList.contains("active"))requestAnimationFrame(renderMatrices);},150);});
 
