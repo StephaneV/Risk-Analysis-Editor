@@ -7,8 +7,8 @@
     "status": "draft",
     "language": "en",
     "title": "Risk analysis — Information system",
-    "author": "S. Vinter",
-    "organization": "OMT",
+    "author": "C. Martin",
+    "organization": "ACME corp",
     "scope": "Information system — critical services",
     "methodology_reference": "internal (inspired by ISO 27005)"
   },

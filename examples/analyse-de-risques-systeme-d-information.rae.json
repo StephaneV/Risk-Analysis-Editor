@@ -7,8 +7,8 @@
     "status": "draft",
     "language": "fr",
     "title": "Analyse de risques — Système d'information",
-    "author": "S. Vinter",
-    "organization": "OMT",
+    "author": "C. Martin",
+    "organization": "ACME corp",
     "scope": "Système d'information — services critiques",
     "methodology_reference": "interne (inspiré ISO 27005)"
   },
