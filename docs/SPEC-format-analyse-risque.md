@@ -222,8 +222,9 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `code` | chaîne | O | Identifiant du champ, **unique**, stable. Sert de clé dans les objets `custom` et d'en-tête de colonne à l'export CSV. |
 | `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
-| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %). |
+| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
+| `pattern` | chaîne | F | Type `regexp` uniquement : expression régulière (syntaxe JavaScript) que la valeur doit respecter **en totalité** (ancrage implicite). Motif absent ou non compilable : aucun contrôle de format. |
 | `multiple` | booléen | F | Type `tags` uniquement : autorise la sélection de plusieurs étiquettes (sinon une seule). |
 | `palette` | chaîne | F | Type `progress` uniquement : palette de la barre. Couleur **interpolée en TSL** entre des jalons équirépartis de 0 à 100 %. Valeurs : `"accent"` (couleur unique du thème, défaut), `"red-green"`, `"red-orange-green"`, `"red-orange-yellow-green"`, `"white-black"`, `"custom"` (couleurs dans `colors`). |
 | `colors` | tableau | Cond. | Type `progress`, palette `"custom"` : jalons de couleur hex `#RRGGBB`, du premier (0 %) au dernier (100 %). Au moins un élément. |
@@ -253,6 +254,7 @@ Chaque objet `custom` associe un `code` de champ à sa valeur, selon le type :
 | `integer`, `float` | nombre |
 | `date` | chaîne `AAAA-MM-JJ` |
 | `text`, `textarea` | chaîne |
+| `url`, `email`, `tel`, `regexp` | chaîne |
 | `select` | `code` de l'item choisi |
 | `checklist` | tableau de `code` d'items |
 | `tags` | tableau de `code` d'items (même en sélection unique : un seul élément) |

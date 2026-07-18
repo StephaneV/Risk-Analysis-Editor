@@ -854,7 +854,11 @@ const I18N = {
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
-    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression",
+    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)",
+    cf_pattern:"Motif (expression régulière)", cf_pattern_ph:"ex. [A-Z]{2}-\\d{4}", cf_err_pattern:"Expression régulière invalide.",
+    cf_val_url:"« {0} » : URL invalide (elle doit commencer par http:// ou https://).",
+    cf_val_email:"« {0} » : adresse email invalide.", cf_val_tel:"« {0} » : numéro de téléphone invalide.",
+    cf_val_pattern:"« {0} » : la valeur ne respecte pas le format attendu.",
     cf_multiple:"Sélection multiple", cf_palette:"Palette de couleur", cf_palette_preview:"Aperçu", cf_item_color:"Couleur", cf_step:"Pas",
     cf_pal_colors:"Couleurs de la palette", cf_pal_add_color:"+ Ajouter une couleur", cf_err_colors:"Ajoutez au moins une couleur à la palette.",
     "pal.accent":"Couleur unique (accent)","pal.red-green":"Rouge → Vert","pal.red-orange-green":"Rouge → Orange → Vert","pal.red-orange-yellow-green":"Rouge → Orange → Jaune → Vert","pal.white-black":"Blanc → Noir","pal.custom":"Personnalisée",
@@ -1009,7 +1013,11 @@ const I18N = {
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
-    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar",
+    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)",
+    cf_pattern:"Pattern (regular expression)", cf_pattern_ph:"e.g. [A-Z]{2}-\\d{4}", cf_err_pattern:"Invalid regular expression.",
+    cf_val_url:"“{0}”: invalid URL (it must start with http:// or https://).",
+    cf_val_email:"“{0}”: invalid email address.", cf_val_tel:"“{0}”: invalid phone number.",
+    cf_val_pattern:"“{0}”: the value does not match the expected format.",
     cf_multiple:"Multiple selection", cf_palette:"Color palette", cf_palette_preview:"Preview", cf_item_color:"Color", cf_step:"Step",
     cf_pal_colors:"Palette colors", cf_pal_add_color:"+ Add a color", cf_err_colors:"Add at least one color to the palette.",
     "pal.accent":"Single color (accent)","pal.red-green":"Red → Green","pal.red-orange-green":"Red → Orange → Green","pal.red-orange-yellow-green":"Red → Orange → Yellow → Green","pal.white-black":"White → Black","pal.custom":"Custom",
@@ -1164,7 +1172,11 @@ const I18N = {
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
-    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento",
+    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)",
+    cf_pattern:"Modello (espressione regolare)", cf_pattern_ph:"es. [A-Z]{2}-\\d{4}", cf_err_pattern:"Espressione regolare non valida.",
+    cf_val_url:"« {0} »: URL non valido (deve iniziare con http:// o https://).",
+    cf_val_email:"« {0} »: indirizzo email non valido.", cf_val_tel:"« {0} »: numero di telefono non valido.",
+    cf_val_pattern:"« {0} »: il valore non rispetta il formato atteso.",
     cf_multiple:"Selezione multipla", cf_palette:"Tavolozza colori", cf_palette_preview:"Anteprima", cf_item_color:"Colore", cf_step:"Passo",
     cf_pal_colors:"Colori della tavolozza", cf_pal_add_color:"+ Aggiungi un colore", cf_err_colors:"Aggiungi almeno un colore alla tavolozza.",
     "pal.accent":"Colore unico (accento)","pal.red-green":"Rosso → Verde","pal.red-orange-green":"Rosso → Arancione → Verde","pal.red-orange-yellow-green":"Rosso → Arancione → Giallo → Verde","pal.white-black":"Bianco → Nero","pal.custom":"Personalizzata",
@@ -3238,7 +3250,18 @@ function renderSettings(){
 /* ============================================================
    CHAMPS PERSONNALISÉS — éditeur de définitions
    ============================================================ */
-const CF_TYPES=["boolean","integer","float","date","text","textarea","select","checklist","tags","progress"];
+const CF_TYPES=["boolean","integer","float","date","text","textarea","url","email","tel","regexp","select","checklist","tags","progress"];
+/* Formats des types contrôlés. Le téléphone reste permissif (usages FR et internationaux). */
+const CF_RE_URL=/^https?:\/\/[^\s]+$/i, CF_RE_EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, CF_RE_TEL=/^\+?[0-9][0-9\s().\-]{5,}$/;
+/* Motif d'un champ « regexp » : correspondance sur la totalité de la valeur.
+   Un motif invalide (fichier corrompu ou tiers) est ignoré plutôt que de casser l'application. */
+function cfPatternRe(f){if(!f||!f.pattern)return null;try{return new RegExp("^(?:"+f.pattern+")$");}catch(e){return null;}}
+/* Liens sûrs : uniquement http/https pour les URL ; mailto/tel construits à partir de la valeur. */
+function cfHref(f,v){const s=String(v||"").trim();
+  if(f.type==="url")return CF_RE_URL.test(s)?s:"";
+  if(f.type==="email")return CF_RE_EMAIL.test(s)?"mailto:"+s:"";
+  if(f.type==="tel"){const d=s.replace(/[^\d+]/g,"");return d?"tel:"+d:"";}
+  return "";}
 const CF_TARGETS=["analysis","risk","measure","link"];
 /* Affichage libellé/item : valeur de la LANGUE COURANTE, sinon le CODE (repli volontaire,
    sans essayer une autre langue). Les libellés se saisissent une langue à la fois. */
@@ -3304,6 +3327,8 @@ function cfItemsRowsHTML(items,withColor){
 }
 // Options spécifiques à un type dans la modale de définition (multiple pour tags, couleur pour progress).
 function cfTypeOptsHTML(f){
+  if(f.type==="regexp")return '<label class="field full"><span class="lab">'+esc(t("cf_pattern"))+'</span>'+
+    '<input id="cfPattern" placeholder="'+esc(t("cf_pattern_ph"))+'" value="'+esc(f.pattern||"")+'"></label>';
   if(f.type==="tags")return '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfMultiple" style="width:16px;height:16px;flex:none"'+(f.multiple?" checked":"")+'> '+esc(t("cf_multiple"))+'</label></label>';
   if(f.type==="progress"){const pal=progressPaletteId(f);
     return '<label class="field"><span class="lab">'+esc(t("cf_palette"))+'</span><select id="cfPalette">'+PROGRESS_PALETTE_IDS.map(id=>'<option value="'+id+'"'+(id===pal?" selected":"")+'>'+esc(t("pal."+id))+'</option>').join("")+'</select></label>'+
@@ -3363,6 +3388,8 @@ function openCustomFieldModal(idx){
       if(mi!=="")obj.min=(kind==="date")?mi:+mi;if(ma!=="")obj.max=(kind==="date")?ma:+ma;
       if(mi!==""&&ma!==""&&((kind==="date")?mi>ma:+mi>+ma)){modalMsg(t("cf_err_minmax"));return false;}
     }
+    if(type==="regexp"){const pat=val("cfPattern").trim();
+      if(pat){try{new RegExp(pat);}catch(e){modalMsg(t("cf_err_pattern"));return false;}obj.pattern=pat;}}
     if(type==="tags")obj.multiple=document.getElementById("cfMultiple").checked;
     if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";
       if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){modalMsg(t("cf_err_colors"));return false;}obj.colors=cols;}
@@ -3468,6 +3495,10 @@ function updatePalettePreview(){
 function cfDisplayHTML(f,v,rich){
   if(!cfHasVal(v))return "";
   if(f.type==="textarea")return rich?mdToHTML(v):esc(mdToText(v));
+  if(f.type==="url"||f.type==="email"||f.type==="tel"){
+    const href=cfHref(f,v);
+    return href?'<a href="'+esc(href)+'"'+(f.type==="url"?' target="_blank" rel="noopener"':'')+'>'+esc(v)+'</a>':esc(v);
+  }
   if(f.type==="tags"){const arr=Array.isArray(v)?v:[];
     return '<span class="cf-chips">'+arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code),col=(it&&it.color)||"#888";
       return '<span class="cf-chip" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(it?cfItemLabel(it):code)+'</span>';}).join("")+'</span>';}
@@ -3525,6 +3556,10 @@ function cfControlHTML(f,value){
     case "float": c='<input type="number" step="any" data-cfv'+minA+maxA+' value="'+(value!=null?esc(value):"")+'">';break;
     case "date": c='<input type="date" data-cfv'+minA+maxA+' value="'+esc(value||"")+'">';break;
     case "text": c='<input type="text" data-cfv'+(f.max!=null?' maxlength="'+f.max+'"':"")+' value="'+esc(value||"")+'">';break;
+    case "url": c='<input type="url" data-cfv placeholder="https://…" value="'+esc(value||"")+'">';break;
+    case "email": c='<input type="email" data-cfv placeholder="nom@exemple.fr" value="'+esc(value||"")+'">';break;
+    case "tel": c='<input type="tel" data-cfv placeholder="+33 1 23 45 67 89" value="'+esc(value||"")+'">';break;
+    case "regexp": c='<input type="text" data-cfv value="'+esc(value||"")+'"'+(f.pattern?' title="'+esc(f.pattern)+'"':"")+'>';break;
     case "textarea": full=true;c='<textarea data-cfv'+(f.max!=null?' maxlength="'+f.max+'"':"")+'>'+esc(value||"")+'</textarea>';break;
     case "select": c='<select data-cfv><option value="">—</option>'+(f.items||[]).map(it=>'<option value="'+esc(it.code)+'"'+(value===it.code?" selected":"")+'>'+esc(cfItemLabel(it))+'</option>').join("")+'</select>';break;
     case "checklist":{full=true;const vals=Array.isArray(value)?value:[];
@@ -3578,6 +3613,15 @@ function cfValidate(f,v){
   }else if(f.type==="checklist"){
     if(f.min_items!=null&&v.length<f.min_items)return t("cf_val_minitems",L,f.min_items);
     if(f.max_items!=null&&v.length>f.max_items)return t("cf_val_maxitems",L,f.max_items);
+  }else if(f.type==="url"){
+    if(!CF_RE_URL.test(String(v).trim()))return t("cf_val_url",L);
+  }else if(f.type==="email"){
+    if(!CF_RE_EMAIL.test(String(v).trim()))return t("cf_val_email",L);
+  }else if(f.type==="tel"){
+    if(!CF_RE_TEL.test(String(v).trim()))return t("cf_val_tel",L);
+  }else if(f.type==="regexp"){
+    const re=cfPatternRe(f); // motif absent ou invalide -> aucun contrôle
+    if(re&&!re.test(String(v)))return t("cf_val_pattern",L);
   }
   return null;
 }
