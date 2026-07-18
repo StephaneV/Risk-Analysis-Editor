@@ -1,0 +1,1503 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "DPIA — Occupational health service information system",
+    "description": "Data protection impact assessment (DPIA) of an occupational health service's information system, carried out with the CNIL PIA method (GDPR, art. 35). It covers the processing of occupational health records and the method's three feared events: unauthorized access to data, unwanted modification of data and data loss. The scope includes the business software, email, servers, workstations, printers and paper records. Severity and likelihood are rated on the CNIL four-level scales; residual risk accounts for existing or planned measures. This file is a fictional, illustrative demonstration analysis.",
+    "author": "M. Leroy",
+    "organization": "ACME SST",
+    "scope": "Occupational health service IS: health record software, email, servers, workstations, printers and paper records",
+    "methodology_reference": "DPIA — CNIL PIA method (GDPR art. 35)",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "en",
+    "created_at": "2026-07-18",
+    "updated_at": "2026-07-18"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Likelihood",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Negligible",
+          "description": "It does not seem possible for the selected risk sources to carry out the threat by exploiting the properties of the supporting assets."
+        },
+        {
+          "value": 2,
+          "label": "Limited",
+          "description": "It seems difficult for the selected risk sources to carry out the threat by exploiting the properties of the supporting assets."
+        },
+        {
+          "value": 3,
+          "label": "Significant",
+          "description": "It seems possible for the selected risk sources to carry out the threat by exploiting the properties of the supporting assets."
+        },
+        {
+          "value": 4,
+          "label": "Maximum",
+          "description": "It seems extremely easy for the selected risk sources to carry out the threat by exploiting the properties of the supporting assets."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Severity",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Negligible",
+          "description": "Data subjects will not be affected or may encounter a few inconveniences, which they will overcome without any problem."
+        },
+        {
+          "value": 2,
+          "label": "Limited",
+          "description": "Data subjects may encounter significant inconveniences, which they will be able to overcome despite a few difficulties."
+        },
+        {
+          "value": 3,
+          "label": "Significant",
+          "description": "Data subjects may encounter significant consequences, which they should be able to overcome, albeit with real and serious difficulties."
+        },
+        {
+          "value": 4,
+          "label": "Maximum",
+          "description": "Data subjects may encounter significant, or even irreversible, consequences which they may not overcome."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "negligeable",
+        "label": "Negligible",
+        "score_min": 1,
+        "score_max": 3,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Negligible risk: acceptable as is; existing measures are sufficient, to be re-examined during DPIA reviews."
+      },
+      {
+        "code": "limite",
+        "label": "Limited",
+        "score_min": 4,
+        "score_max": 6,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Limited risk: tolerable; additional measures are recommended based on a cost/benefit analysis."
+      },
+      {
+        "code": "important",
+        "label": "Significant",
+        "score_min": 7,
+        "score_max": 11,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Significant risk: must be treated; measures must be planned and tracked before or during the implementation of the processing."
+      },
+      {
+        "code": "maximal",
+        "label": "Maximum",
+        "score_min": 12,
+        "score_max": 16,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Maximum risk: unacceptable; priority treatment required. Without sufficient mitigation, prior consultation of the supervisory authority may be necessary."
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "R1",
+      "label": "Health record accessed by an unauthorized person",
+      "category": "Unauthorized access to data",
+      "description": "A staff member accesses a worker's occupational health record without authorization and without being involved in their follow-up (curiosity, personal connection). Threat: misuse of access rights in the business software.",
+      "comment": "Medical confidentiality requires strict separation between the medical team and administrative staff.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 4
+      },
+      "custom": {
+        "source": [
+          "interne"
+        ],
+        "supports": [
+          "dmst"
+        ],
+        "impacts": [
+          "secret",
+          "vie-privee",
+          "moral"
+        ]
+      }
+    },
+    {
+      "id": "R2",
+      "label": "Disclosure of medical information to the employer",
+      "category": "Unauthorized access to data",
+      "description": "Transmission to the employer of information covered by medical confidentiality (diagnosis, condition), beyond the fitness opinion and permissible recommendations. Threat: wrong recipient, poorly redacted document, managerial pressure.",
+      "comment": "Only the conclusions (fitness, workplace adjustments) may be shared with the employer.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 4
+      },
+      "custom": {
+        "source": [
+          "interne",
+          "erreur"
+        ],
+        "supports": [
+          "messagerie",
+          "impressions"
+        ],
+        "impacts": [
+          "secret",
+          "discrimination",
+          "vie-privee",
+          "moral"
+        ]
+      }
+    },
+    {
+      "id": "R3",
+      "label": "Theft or loss of a mobile device holding health data",
+      "category": "Unauthorized access to data",
+      "description": "Theft or loss of a laptop or removable media containing health data (reports, extracts). Threat: access to the data in the absence of encryption.",
+      "comment": "Regular travel to member companies' sites; mobile devices are exposed.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 4
+      },
+      "custom": {
+        "source": [
+          "externe",
+          "erreur"
+        ],
+        "supports": [
+          "postes"
+        ],
+        "impacts": [
+          "secret",
+          "vie-privee"
+        ]
+      }
+    },
+    {
+      "id": "R4",
+      "label": "Phishing of an email account",
+      "category": "Unauthorized access to data",
+      "description": "Compromise of a professional email account through phishing, giving access to exchanges containing health data (medical letters, reports).",
+      "comment": "Medical attachments still circulate by email despite instructions.",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 4
+      },
+      "custom": {
+        "source": [
+          "externe"
+        ],
+        "supports": [
+          "messagerie"
+        ],
+        "impacts": [
+          "secret",
+          "vie-privee",
+          "moral"
+        ]
+      }
+    },
+    {
+      "id": "R5",
+      "label": "Paper medical documents left accessible or not destroyed",
+      "category": "Unauthorized access to data",
+      "description": "Documents containing health data (appointment letters, reports, opinions) left on a shared printer, in an unlocked office, or discarded without secure destruction.",
+      "comment": "Shared printers and residual paper archives in the centres.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source": [
+          "interne",
+          "erreur"
+        ],
+        "supports": [
+          "impressions"
+        ],
+        "impacts": [
+          "secret",
+          "vie-privee"
+        ]
+      }
+    },
+    {
+      "id": "R6",
+      "label": "Data entry error or assignment to the wrong record",
+      "category": "Unwanted modification of data",
+      "description": "Medical observations, a fitness opinion or an examination recorded in another worker's file (namesake, wrong selection). Threat: loss of data accuracy.",
+      "comment": "Higher risk during examination campaigns and in cases of identical names.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source": [
+          "erreur",
+          "interne"
+        ],
+        "supports": [
+          "dmst"
+        ],
+        "impacts": [
+          "suivi",
+          "moral",
+          "discrimination"
+        ]
+      }
+    },
+    {
+      "id": "R7",
+      "label": "Data alteration following an intrusion",
+      "category": "Unwanted modification of data",
+      "description": "Modification or corruption of medical data following an intrusion into the IS or malware. Threat: undetected loss of record integrity.",
+      "comment": "Logging and backups make it possible to detect and roll back.",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 3
+      },
+      "custom": {
+        "source": [
+          "externe"
+        ],
+        "supports": [
+          "serveurs",
+          "dmst"
+        ],
+        "impacts": [
+          "suivi",
+          "secret",
+          "moral"
+        ]
+      }
+    },
+    {
+      "id": "R8",
+      "label": "Untraced modification of a fitness opinion",
+      "category": "Unwanted modification of data",
+      "description": "After-the-fact modification of a fitness opinion or recommendations, without logging or justification, making it impossible to reconstruct the medical decision.",
+      "comment": "Significant evidentiary issue in the event of an employment tribunal dispute.",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 3
+      },
+      "custom": {
+        "source": [
+          "interne"
+        ],
+        "supports": [
+          "dmst"
+        ],
+        "impacts": [
+          "discrimination",
+          "moral",
+          "suivi"
+        ]
+      }
+    },
+    {
+      "id": "R9",
+      "label": "Failure of the server hosting the business software",
+      "category": "Data loss",
+      "description": "Hardware or software failure of the server hosting the medical records, with no restoration possible within an acceptable time. Threat: prolonged unavailability of the records.",
+      "comment": "Medical follow-up and appointments blocked; statutory follow-up obligations hard to meet.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source": [
+          "nonhumaine"
+        ],
+        "supports": [
+          "serveurs",
+          "dmst"
+        ],
+        "impacts": [
+          "suivi"
+        ]
+      }
+    },
+    {
+      "id": "R10",
+      "label": "Ransomware encrypting records and backups",
+      "category": "Data loss",
+      "description": "Malicious encryption of servers and connected backups by ransomware, making medical records inaccessible. Threat: permanent loss in the absence of an offline backup.",
+      "comment": "Priority scenario: offline backups and restoration tests are essential.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "custom": {
+        "source": [
+          "externe"
+        ],
+        "supports": [
+          "serveurs",
+          "sauvegardes",
+          "dmst"
+        ],
+        "impacts": [
+          "suivi",
+          "secret",
+          "moral"
+        ]
+      }
+    },
+    {
+      "id": "R11",
+      "label": "Data loss during a migration of the business software",
+      "category": "Data loss",
+      "description": "Loss or corruption of part of the records during a migration or major upgrade of the business software (incomplete data migration).",
+      "comment": "Plan for a test dataset, reversibility and validation before switchover.",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 2
+      },
+      "custom": {
+        "source": [
+          "soustraitant",
+          "erreur"
+        ],
+        "supports": [
+          "dmst"
+        ],
+        "impacts": [
+          "suivi"
+        ]
+      }
+    },
+    {
+      "id": "R12",
+      "label": "Accidental deletion of a record",
+      "category": "Data loss",
+      "description": "Accidental deletion of a medical record or attachments by a user holding the rights, with no immediate restoration possible.",
+      "comment": "Deletion rights should be restricted and a recycle bin / retention enabled.",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 2
+      },
+      "custom": {
+        "source": [
+          "erreur",
+          "interne"
+        ],
+        "supports": [
+          "dmst"
+        ],
+        "impacts": [
+          "suivi"
+        ]
+      }
+    }
+  ],
+  "measures": [
+    {
+      "id": "M1",
+      "label": "Access rights and medical confidentiality partitioning",
+      "type": "organizational",
+      "status": "in_progress",
+      "responsible": "IT Manager — T. Colin",
+      "due_date": "2026-09-30",
+      "cost": "internal",
+      "description": "Separate access profiles (medical team / administrative staff), record access restricted to the health professionals involved in the follow-up, periodic review of rights.",
+      "comment": "Semi-annual review of access rights with the lead occupational physician.",
+      "custom": {
+        "avancement": 70,
+        "nature": [
+          "technique",
+          "organisationnelle"
+        ],
+        "objectif": [
+          "confidentialite"
+        ]
+      }
+    },
+    {
+      "id": "M2",
+      "label": "Multi-factor authentication (MFA) and password policy",
+      "type": "technical",
+      "status": "in_progress",
+      "responsible": "CISO — A. Fabre",
+      "due_date": "2026-10-31",
+      "cost": "≈ €8k/yr",
+      "description": "Multi-factor authentication for access to the business software and email, strong password policy, automatic session locking.",
+      "comment": "MFA deployed on email; extension to the business software under way.",
+      "custom": {
+        "avancement": 60,
+        "nature": [
+          "technique"
+        ],
+        "objectif": [
+          "confidentialite"
+        ]
+      }
+    },
+    {
+      "id": "M3",
+      "label": "Encryption of workstations and backups",
+      "type": "technical",
+      "status": "in_progress",
+      "responsible": "IT Manager — T. Colin",
+      "due_date": "2026-08-31",
+      "cost": "internal",
+      "description": "Full-disk encryption of desktops and laptops, encryption of removable media and backups.",
+      "comment": "Laptop encryption completed; desktops in progress.",
+      "custom": {
+        "avancement": 75,
+        "nature": [
+          "technique"
+        ],
+        "objectif": [
+          "confidentialite"
+        ]
+      }
+    },
+    {
+      "id": "M4",
+      "label": "Logging and monitoring of record access",
+      "type": "technical",
+      "status": "in_progress",
+      "responsible": "DPO — M. Leroy",
+      "due_date": "2026-11-30",
+      "cost": "≈ €5k",
+      "description": "Logging of consultations and changes to the medical record, retention of logs and periodic review of atypical access.",
+      "comment": "Quarterly access review; alerts on access outside the active caseload.",
+      "custom": {
+        "avancement": 40,
+        "nature": [
+          "technique",
+          "organisationnelle"
+        ],
+        "objectif": [
+          "tracabilite",
+          "confidentialite",
+          "integrite"
+        ]
+      }
+    },
+    {
+      "id": "M5",
+      "label": "Offline backups and restoration tests",
+      "type": "technical",
+      "status": "implemented",
+      "responsible": "IT Manager — T. Colin",
+      "due_date": "2026-07-31",
+      "cost": "≈ €12k/yr",
+      "description": "Daily backups following the 3-2-1 rule, including an offline or immutable copy, with documented restoration tests.",
+      "comment": "Semi-annual restoration test; last test successful.",
+      "custom": {
+        "avancement": 100,
+        "nature": [
+          "technique"
+        ],
+        "objectif": [
+          "disponibilite",
+          "integrite"
+        ]
+      }
+    },
+    {
+      "id": "M6",
+      "label": "Email security",
+      "type": "technical",
+      "status": "in_progress",
+      "responsible": "CISO — A. Fabre",
+      "due_date": "2026-12-15",
+      "cost": "≈ €6k/yr",
+      "description": "Anti-phishing and antivirus filtering, warning banner on external messages, secure messaging for medical exchanges, ban on unprotected medical attachments.",
+      "comment": "Secure messaging gateway being rolled out.",
+      "custom": {
+        "avancement": 45,
+        "nature": [
+          "technique",
+          "organisationnelle"
+        ],
+        "objectif": [
+          "confidentialite"
+        ]
+      }
+    },
+    {
+      "id": "M7",
+      "label": "Retention periods and record purging",
+      "type": "organizational",
+      "status": "planned",
+      "responsible": "DPO — M. Leroy",
+      "due_date": "2027-01-31",
+      "cost": "internal",
+      "description": "Application of the statutory retention periods for the occupational health record, automated purging and traceable intermediate archiving.",
+      "comment": "Rules to be configured in the business software; annual purge planned.",
+      "custom": {
+        "avancement": 30,
+        "nature": [
+          "juridique",
+          "organisationnelle"
+        ],
+        "objectif": [
+          "minimisation",
+          "droits"
+        ]
+      }
+    },
+    {
+      "id": "M8",
+      "label": "Worker information and exercise of rights",
+      "type": "organizational",
+      "status": "implemented",
+      "responsible": "DPO — M. Leroy",
+      "due_date": "2026-09-15",
+      "cost": "internal",
+      "description": "Information notice given at the appointment, GDPR notices, procedure for exercising rights (access, rectification, restriction) and register of requests.",
+      "comment": "Information notice revised; response times tracked monthly.",
+      "custom": {
+        "avancement": 100,
+        "nature": [
+          "juridique",
+          "organisationnelle"
+        ],
+        "objectif": [
+          "droits"
+        ]
+      }
+    },
+    {
+      "id": "M9",
+      "label": "Oversight of processors and the HDS host",
+      "type": "organizational",
+      "status": "in_progress",
+      "responsible": "Director — F. Aubert",
+      "due_date": "2026-10-15",
+      "cost": "≈ €4k",
+      "description": "Processing agreements compliant with GDPR Article 28, health data hosted by an HDS-certified provider, security and reversibility clauses, audits.",
+      "comment": "Host certification verified annually.",
+      "custom": {
+        "avancement": 65,
+        "nature": [
+          "juridique",
+          "organisationnelle"
+        ],
+        "objectif": [
+          "confidentialite",
+          "disponibilite"
+        ]
+      }
+    },
+    {
+      "id": "M10",
+      "label": "Physical security of premises and paper documents",
+      "type": "preventive",
+      "status": "in_progress",
+      "responsible": "Administrative Manager — N. Perrot",
+      "due_date": "2026-11-30",
+      "cost": "≈ €9k",
+      "description": "Lockable medical rooms, secure cabinets for paper files, badge-released secure printing, destruction by shredder or approved provider.",
+      "comment": "Badge printing deployed in two of the three centres.",
+      "custom": {
+        "avancement": 55,
+        "nature": [
+          "physique",
+          "organisationnelle"
+        ],
+        "objectif": [
+          "confidentialite"
+        ]
+      }
+    },
+    {
+      "id": "M11",
+      "label": "Patching, EDR and hardening of workstations and servers",
+      "type": "technical",
+      "status": "implemented",
+      "responsible": "IT Manager — T. Colin",
+      "due_date": "2026-08-15",
+      "cost": "≈ €10k/yr",
+      "description": "Deployment of security patches, EDR protection on workstations and servers, removal of local administrator rights, configuration hardening.",
+      "comment": "EDR deployed; monthly patching automated.",
+      "custom": {
+        "avancement": 100,
+        "nature": [
+          "technique"
+        ],
+        "objectif": [
+          "confidentialite",
+          "integrite",
+          "disponibilite"
+        ]
+      }
+    },
+    {
+      "id": "M12",
+      "label": "Awareness of medical confidentiality and data protection",
+      "type": "organizational",
+      "status": "in_progress",
+      "responsible": "DPO — M. Leroy",
+      "due_date": "2026-12-31",
+      "cost": "≈ €3k/yr",
+      "description": "Annual staff training on medical confidentiality, GDPR and security reflexes (phishing, paper documents, session locking), with attendance records.",
+      "comment": "Annual session; phishing module added this year.",
+      "custom": {
+        "avancement": 50,
+        "nature": [
+          "organisationnelle"
+        ],
+        "objectif": [
+          "confidentialite",
+          "integrite",
+          "droits"
+        ]
+      }
+    }
+  ],
+  "treatments": [
+    {
+      "risk": "R1",
+      "measure": "M1",
+      "comment": "Partitioned access rights prevent access by people not involved in the follow-up.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R1",
+      "measure": "M4",
+      "comment": "Logging detects atypical access and deters undue consultations.",
+      "custom": {
+        "effet": [
+          "detecte",
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R1",
+      "measure": "M12",
+      "comment": "Awareness of medical confidentiality reduces access out of curiosity.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R2",
+      "measure": "M12",
+      "comment": "Training clarifies what may be shared with the employer (fitness and recommendations only).",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R2",
+      "measure": "M6",
+      "comment": "Secure messaging and attachment control limit misdirected sending.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R2",
+      "measure": "M10",
+      "comment": "Secure printing prevents a medical document from being picked up by a third party.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R3",
+      "measure": "M3",
+      "comment": "Encryption makes the data unreadable if the device is stolen or lost.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R3",
+      "measure": "M11",
+      "comment": "Hardening and device locking limit exploitation of stolen equipment.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R4",
+      "measure": "M2",
+      "comment": "Multi-factor authentication blocks the use of stolen credentials.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R4",
+      "measure": "M6",
+      "comment": "Anti-phishing filtering reduces the number of malicious messages received.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "detecte"
+        ]
+      }
+    },
+    {
+      "risk": "R4",
+      "measure": "M12",
+      "comment": "Awareness improves staff detection of phishing attempts.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "detecte"
+        ]
+      }
+    },
+    {
+      "risk": "R5",
+      "measure": "M10",
+      "comment": "Locked cabinets, badge printing and secure destruction address the paper risk.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R5",
+      "measure": "M12",
+      "comment": "Awareness embeds good habits (collecting printouts immediately).",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R6",
+      "measure": "M4",
+      "comment": "Traceability makes it possible to identify and correct an entry assigned to the wrong record.",
+      "custom": {
+        "effet": [
+          "detecte",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R6",
+      "measure": "M12",
+      "comment": "Training on identity-verification procedures reduces assignment errors.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R7",
+      "measure": "M11",
+      "comment": "Patching and EDR reduce the likelihood of an intrusion leading to alteration.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R7",
+      "measure": "M5",
+      "comment": "Backups make it possible to restore altered data.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R7",
+      "measure": "M4",
+      "comment": "Logging makes it possible to detect the modification and trace its origin.",
+      "custom": {
+        "effet": [
+          "detecte"
+        ]
+      }
+    },
+    {
+      "risk": "R8",
+      "measure": "M4",
+      "comment": "Time-stamped logging makes any modification traceable and evidentiable.",
+      "custom": {
+        "effet": [
+          "detecte",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R8",
+      "measure": "M1",
+      "comment": "Restricting modification rights limits illegitimate changes.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R9",
+      "measure": "M5",
+      "comment": "Backups and restoration tests reduce the duration of record unavailability.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R9",
+      "measure": "M9",
+      "comment": "The host's commitments (availability, reversibility) frame the risk.",
+      "custom": {
+        "effet": [
+          "gravite",
+          "transfere"
+        ]
+      }
+    },
+    {
+      "risk": "R10",
+      "measure": "M5",
+      "comment": "Offline backups guarantee restoration even if data is encrypted.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R10",
+      "measure": "M11",
+      "comment": "EDR and patching reduce the likelihood of ransomware execution.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "detecte"
+        ]
+      }
+    },
+    {
+      "risk": "R10",
+      "measure": "M2",
+      "comment": "Strong authentication limits the compromise of remote access.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R11",
+      "measure": "M9",
+      "comment": "Reversibility and acceptance clauses govern the provider's data migration.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R11",
+      "measure": "M5",
+      "comment": "A full backup before switchover makes it possible to roll back.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R12",
+      "measure": "M5",
+      "comment": "Backups make it possible to restore an accidentally deleted record.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R12",
+      "measure": "M1",
+      "comment": "Restricting deletion rights reduces the risk of accidental erasure.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    }
+  ],
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels",
+        "en": "Frameworks"
+      },
+      "items": [
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD",
+            "en": "GDPR"
+          },
+          "color": "#e25631"
+        },
+        {
+          "code": "pia-cnil",
+          "label": {
+            "fr": "Méthode PIA (CNIL)",
+            "en": "CNIL PIA method"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "code-travail",
+          "label": {
+            "fr": "Code du travail",
+            "en": "French Labour Code"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "secret-medical",
+          "label": {
+            "fr": "Secret médical",
+            "en": "Medical confidentiality"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "hds",
+          "label": {
+            "fr": "Hébergeur HDS",
+            "en": "HDS health data host"
+          },
+          "color": "#f39c12"
+        }
+      ]
+    },
+    {
+      "code": "perimetre",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Périmètre",
+        "en": "Scope"
+      },
+      "items": [
+        {
+          "code": "dmst",
+          "label": {
+            "fr": "Logiciel métier (DMST)",
+            "en": "Health record software"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "messagerie",
+          "label": {
+            "fr": "Messagerie",
+            "en": "Email"
+          },
+          "color": "#10ac84"
+        },
+        {
+          "code": "serveurs",
+          "label": {
+            "fr": "Serveurs",
+            "en": "Servers"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "postes",
+          "label": {
+            "fr": "Postes de travail",
+            "en": "Workstations"
+          },
+          "color": "#ee5253"
+        },
+        {
+          "code": "impressions",
+          "label": {
+            "fr": "Imprimantes & papier",
+            "en": "Printers & paper"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "reseau",
+          "label": {
+            "fr": "Réseau",
+            "en": "Network"
+          },
+          "color": "#34495e"
+        },
+        {
+          "code": "sauvegardes",
+          "label": {
+            "fr": "Sauvegardes",
+            "en": "Backups"
+          },
+          "color": "#27ae60"
+        }
+      ]
+    },
+    {
+      "code": "source",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Source de risque",
+        "en": "Risk source"
+      },
+      "items": [
+        {
+          "code": "interne",
+          "label": {
+            "fr": "Personnel interne",
+            "en": "Internal staff"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "externe",
+          "label": {
+            "fr": "Attaquant externe",
+            "en": "External attacker"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "soustraitant",
+          "label": {
+            "fr": "Sous-traitant / hébergeur",
+            "en": "Processor / host"
+          },
+          "color": "#1abc9c"
+        },
+        {
+          "code": "erreur",
+          "label": {
+            "fr": "Erreur humaine",
+            "en": "Human error"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "nonhumaine",
+          "label": {
+            "fr": "Source non humaine (panne, sinistre)",
+            "en": "Non-human source (failure, disaster)"
+          },
+          "color": "#7f8c8d"
+        }
+      ]
+    },
+    {
+      "code": "supports",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Supports concernés",
+        "en": "Supporting assets"
+      },
+      "items": [
+        {
+          "code": "dmst",
+          "label": {
+            "fr": "Logiciel métier (DMST)",
+            "en": "Health record software"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "messagerie",
+          "label": {
+            "fr": "Messagerie",
+            "en": "Email"
+          },
+          "color": "#10ac84"
+        },
+        {
+          "code": "serveurs",
+          "label": {
+            "fr": "Serveurs",
+            "en": "Servers"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "postes",
+          "label": {
+            "fr": "Postes de travail",
+            "en": "Workstations"
+          },
+          "color": "#ee5253"
+        },
+        {
+          "code": "impressions",
+          "label": {
+            "fr": "Imprimantes & papier",
+            "en": "Printers & paper"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "reseau",
+          "label": {
+            "fr": "Réseau",
+            "en": "Network"
+          },
+          "color": "#34495e"
+        },
+        {
+          "code": "sauvegardes",
+          "label": {
+            "fr": "Sauvegardes",
+            "en": "Backups"
+          },
+          "color": "#27ae60"
+        }
+      ]
+    },
+    {
+      "code": "impacts",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "label": {
+        "fr": "Impacts sur les personnes",
+        "en": "Impacts on data subjects"
+      },
+      "items": [
+        {
+          "code": "secret",
+          "label": {
+            "fr": "Atteinte au secret médical",
+            "en": "Breach of medical confidentiality"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "vie-privee",
+          "label": {
+            "fr": "Atteinte à la vie privée",
+            "en": "Invasion of privacy"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "discrimination",
+          "label": {
+            "fr": "Discrimination à l'emploi",
+            "en": "Employment discrimination"
+          },
+          "color": "#d35400"
+        },
+        {
+          "code": "moral",
+          "label": {
+            "fr": "Préjudice moral",
+            "en": "Emotional harm"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "suivi",
+          "label": {
+            "fr": "Perte de suivi médical",
+            "en": "Loss of medical follow-up"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "financier",
+          "label": {
+            "fr": "Préjudice financier",
+            "en": "Financial harm"
+          },
+          "color": "#b7950b"
+        }
+      ]
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "palette": "red-orange-yellow-green",
+      "step": 5,
+      "order": 1,
+      "label": {
+        "fr": "Avancement",
+        "en": "Progress"
+      }
+    },
+    {
+      "code": "nature",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Nature de la mesure",
+        "en": "Type of measure"
+      },
+      "items": [
+        {
+          "code": "juridique",
+          "label": {
+            "fr": "Juridique",
+            "en": "Legal"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "organisationnelle",
+          "label": {
+            "fr": "Organisationnelle",
+            "en": "Organizational"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "technique",
+          "label": {
+            "fr": "Technique",
+            "en": "Technical"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "physique",
+          "label": {
+            "fr": "Physique",
+            "en": "Physical"
+          },
+          "color": "#7f8c8d"
+        }
+      ]
+    },
+    {
+      "code": "objectif",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "label": {
+        "fr": "Objectif de sécurité",
+        "en": "Security objective"
+      },
+      "items": [
+        {
+          "code": "confidentialite",
+          "label": {
+            "fr": "Confidentialité",
+            "en": "Confidentiality"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "integrite",
+          "label": {
+            "fr": "Intégrité",
+            "en": "Integrity"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "disponibilite",
+          "label": {
+            "fr": "Disponibilité",
+            "en": "Availability"
+          },
+          "color": "#27ae60"
+        },
+        {
+          "code": "tracabilite",
+          "label": {
+            "fr": "Traçabilité",
+            "en": "Traceability"
+          },
+          "color": "#34495e"
+        },
+        {
+          "code": "minimisation",
+          "label": {
+            "fr": "Minimisation",
+            "en": "Minimization"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "droits",
+          "label": {
+            "fr": "Droits des personnes",
+            "en": "Data subject rights"
+          },
+          "color": "#16a085"
+        }
+      ]
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Effet sur le risque",
+        "en": "Effect on risk"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité",
+            "en": "Reduces severity"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "detecte",
+          "label": {
+            "fr": "Détecte",
+            "en": "Detects"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "transfere",
+          "label": {
+            "fr": "Transfère",
+            "en": "Transfers"
+          },
+          "color": "#8e44ad"
+        }
+      ]
+    }
+  ],
+  "custom": {
+    "referentiels": [
+      "rgpd",
+      "pia-cnil",
+      "code-travail",
+      "secret-medical",
+      "hds"
+    ],
+    "perimetre": [
+      "dmst",
+      "messagerie",
+      "serveurs",
+      "postes",
+      "impressions",
+      "reseau",
+      "sauvegardes"
+    ]
+  }
+}
