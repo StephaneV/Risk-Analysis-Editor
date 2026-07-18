@@ -4,9 +4,9 @@
 
 Outil autonome de **construction et de visualisation de matrices de risque** — risque initial (brut) et risque résiduel (net) — avec un format de fichier ouvert et documenté, le `.rae.json`.
 
-### ▶️ [Ouvrir l'application](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📊 [Ouvrir un exemple d'analyse](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/analyse-de-risques-systeme-d-information.rae.json) · ⬇️ [Télécharger](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
+### ▶️ [Ouvrir l'application](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📊 [Ouvrir la démo EBIOS RM](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-systeme-d-information.rae.json) · ⬇️ [Télécharger](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
 
-*Aucune installation : l'outil s'exécute entièrement dans votre navigateur. L'exemple d'analyse est celui de la capture ci-dessous (8 risques, 7 mesures). Le téléchargement fournit **l'unique fichier HTML** de la [dernière version](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest) : double-cliquez-le pour travailler **hors-ligne**.*
+*Aucune installation : l'outil s'exécute entièrement dans votre navigateur. La **démo** ouvre une analyse de risques complète, inspirée d'EBIOS RM (12 risques, 11 mesures, ~20 liens), qui illustre les descriptions, notes, **tags** colorés, **barres de progression** et justifications de liens. Le téléchargement fournit **l'unique fichier HTML** de la [dernière version](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest) : double-cliquez-le pour travailler **hors-ligne**.*
 
 ![Vue Matrices › Trajectoire de l'analyse « Système d'information » (thème clair)](docs/images/capture-trajectoire.png)
 
@@ -74,7 +74,7 @@ Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risq
 |---|---|
 | [`app/`](app/) | L'application (`risk-analysis-editor.html`). |
 | [`docs/`](docs/) | Documentation technique : spécification du format, schéma JSON et stratégies de disposition. |
-| [`examples/`](examples/) | Analyses d'exemple au format `.rae.json` (français et anglais). |
+| [`examples/`](examples/) | Analyses d'exemple au format `.rae.json` (français et anglais), dont une **démo complète inspirée d'EBIOS RM** (`demo-ebios-rm-*.rae.json`) avec tags, barres de progression et liens enrichis. |
 
 ---
 

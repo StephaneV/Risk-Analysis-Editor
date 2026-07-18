@@ -1,0 +1,1292 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "Analyse de risques EBIOS RM — Système d'information",
+    "description": "Analyse de risques du système d'information conduite selon la méthode EBIOS RM (ANSSI), alignée sur ISO 27005. Elle couvre le socle de sécurité, l'identification des sources de risque et de leurs objectifs, les scénarios stratégiques et opérationnels, puis le plan de traitement. Le périmètre englobe le SI métier, l'hébergement, le parc de postes et les interconnexions avec les partenaires. Les cotations expriment la vraisemblance (probabilité) et la gravité (impact) sur une grille 4×4 ; le risque résiduel tient compte des mesures de sécurité en place ou planifiées. Ce fichier est une analyse de démonstration, illustrative et fictive.",
+    "author": "C. Martin",
+    "organization": "ACME corp",
+    "scope": "SI de gestion — services numériques critiques (métier, hébergement, postes, interconnexions partenaires)",
+    "methodology_reference": "EBIOS RM (ANSSI) — aligné ISO 27005",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "created_at": "2026-07-18",
+    "updated_at": "2026-07-18"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Vraisemblance",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Minime",
+          "description": "Vraisemblance minime : le scénario paraît difficilement réalisable ; la source de risque est peu susceptible d'agir ou le mode opératoire est très difficile à mettre en œuvre."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "Vraisemblance significative : le scénario paraît possible ; la source de risque peut agir et le mode opératoire reste réalisable avec un effort modéré."
+        },
+        {
+          "value": 3,
+          "label": "Forte",
+          "description": "Vraisemblance forte : le scénario a de bonnes chances de se produire ; la source de risque est motivée et outillée, le mode opératoire est réalisable sans difficulté majeure."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "Vraisemblance maximale : le scénario va très probablement se produire, voire de façon récurrente ; le mode opératoire est aisé et la source de risque déterminée."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Gravité",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Mineure",
+          "description": "Gravité mineure : aucun impact opérationnel notable ni sur la sécurité des personnes et des biens. L'organisation surmonte la situation sans difficulté."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "Gravité significative : dégradation des performances de l'activité, sans impact sur la sécurité des personnes et des biens. L'organisation surmonte la situation malgré quelques difficultés (mode dégradé)."
+        },
+        {
+          "value": 3,
+          "label": "Grave",
+          "description": "Gravité grave : forte dégradation des performances de l'activité, avec d'éventuels impacts significatifs sur la sécurité des personnes et des biens. L'organisation ne surmonte la situation qu'avec de sérieuses difficultés (mode très dégradé)."
+        },
+        {
+          "value": 4,
+          "label": "Critique",
+          "description": "Gravité critique : incapacité de l'organisation à assurer tout ou partie de son activité, avec d'éventuels impacts graves sur la sécurité des personnes et des biens. La survie de l'organisation peut être menacée."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Faible",
+        "score_min": 1,
+        "score_max": 3,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque faible : acceptable en l'état au regard des critères d'acceptation du risque ; à surveiller lors des revues."
+      },
+      {
+        "code": "modere",
+        "label": "Modéré",
+        "score_min": 4,
+        "score_max": 6,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque modéré : tolérable sous conditions ; des mesures de réduction sont à envisager selon une analyse coût/bénéfice."
+      },
+      {
+        "code": "eleve",
+        "label": "Élevé",
+        "score_min": 7,
+        "score_max": 11,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque élevé : doit être traité ; des mesures de sécurité sont planifiées et suivies pour le ramener à un niveau acceptable."
+      },
+      {
+        "code": "critique",
+        "label": "Critique",
+        "score_min": 12,
+        "score_max": 16,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque critique : inacceptable au regard des critères d'acceptation du risque ; traitement prioritaire et immédiat requis."
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "R1",
+      "label": "Fuite de données clients",
+      "category": "Cybersécurité",
+      "description": "Scénario : un attaquant exploite un compte à privilèges volé ou une vulnérabilité applicative pour exfiltrer la base de données clients. Chemin d'attaque : hameçonnage → mouvement latéral → accès à la base → exfiltration. Événement redouté : divulgation massive de données personnelles.",
+      "comment": "Actif le plus sensible du SI (RGPD). Surveillance renforcée des accès à privilèges et des volumes exfiltrés.",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 4
+      },
+      "custom": {
+        "source_risque": [
+          "cybercriminel",
+          "initie"
+        ],
+        "impacts": [
+          "donnees",
+          "juridique",
+          "reputation",
+          "financier"
+        ]
+      }
+    },
+    {
+      "id": "R2",
+      "label": "Panne du serveur principal",
+      "category": "Infrastructure",
+      "description": "Défaillance matérielle ou logicielle du serveur hébergeant les services critiques, entraînant une indisponibilité prolongée. Événement redouté : interruption des services métier.",
+      "comment": "Point de défaillance unique historique, en cours de fiabilisation via redondance et PRA.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source_risque": [
+          "environnement",
+          "erreur"
+        ],
+        "impacts": [
+          "operationnel",
+          "financier"
+        ]
+      }
+    },
+    {
+      "id": "R3",
+      "label": "Départ d'une compétence clé",
+      "category": "RH",
+      "description": "Départ non anticipé d'un expert détenant une connaissance critique peu documentée (administration d'une application métier). Événement redouté : perte de maîtrise et de continuité.",
+      "comment": "Dépendance à une personne (bus factor = 1) ; documentation et binômage en cours.",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source_risque": [
+          "erreur"
+        ],
+        "impacts": [
+          "operationnel"
+        ]
+      }
+    },
+    {
+      "id": "R4",
+      "label": "Non-conformité RGPD",
+      "category": "Conformité",
+      "description": "Traitements de données personnelles non conformes (base légale, durées de conservation, registre incomplet, encadrement des sous-traitants). Événement redouté : sanction de l'autorité de contrôle et perte de confiance.",
+      "comment": "Suivi par le DPO ; plan de mise en conformité en cours.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "custom": {
+        "source_risque": [
+          "erreur"
+        ],
+        "impacts": [
+          "juridique",
+          "financier",
+          "reputation",
+          "donnees"
+        ]
+      }
+    },
+    {
+      "id": "R5",
+      "label": "Retard d'un fournisseur critique",
+      "category": "Supply chain",
+      "description": "Défaillance ou retard d'un fournisseur critique (matériel, logiciel, service infogéré) impactant la disponibilité ou les délais. Événement redouté : rupture de la chaîne d'approvisionnement.",
+      "comment": "Dépendance forte à un fournisseur unique sur certains composants ; double sourcing engagé.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 2
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source_risque": [
+          "prestataire",
+          "environnement"
+        ],
+        "impacts": [
+          "operationnel",
+          "financier"
+        ]
+      }
+    },
+    {
+      "id": "R6",
+      "label": "Litige contractuel",
+      "category": "Juridique",
+      "description": "Différend contractuel avec un client ou un partenaire (interprétation d'un SLA, partage des responsabilités). Événement redouté : contentieux et coûts juridiques. Risque évalué comme tolérable.",
+      "comment": "Risque résiduel accepté (tolérable) : pas de mesure de réduction dédiée, revue annuelle. Illustration d'un risque toléré/accepté.",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source_risque": [
+          "concurrent"
+        ],
+        "impacts": [
+          "juridique",
+          "financier"
+        ]
+      }
+    },
+    {
+      "id": "R7",
+      "label": "Incendie du site",
+      "category": "Sûreté",
+      "description": "Sinistre physique (incendie) affectant le site hébergeant des équipements. Événement redouté : destruction d'actifs et indisponibilité prolongée.",
+      "comment": "Détection/extinction en place ; risque résiduel transféré via une police d'assurance.",
+      "initial_assessment": {
+        "probability": 1,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 3
+      },
+      "custom": {
+        "source_risque": [
+          "environnement"
+        ],
+        "impacts": [
+          "operationnel",
+          "humain",
+          "financier"
+        ]
+      }
+    },
+    {
+      "id": "R8",
+      "label": "Attaque par rançongiciel",
+      "category": "Cybersécurité",
+      "description": "Chiffrement malveillant du SI par un rançongiciel, souvent précédé d'une exfiltration (double extorsion). Chemin : accès initial (hameçonnage / VPN exposé) → élévation de privilèges → propagation → chiffrement. Événement redouté : arrêt du SI et demande de rançon.",
+      "comment": "Scénario prioritaire. Défense en profondeur : sauvegardes hors-ligne, EDR, SOC.",
+      "initial_assessment": {
+        "probability": 4,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "custom": {
+        "source_risque": [
+          "cybercriminel"
+        ],
+        "impacts": [
+          "operationnel",
+          "financier",
+          "donnees",
+          "reputation"
+        ]
+      }
+    },
+    {
+      "id": "R9",
+      "label": "Compromission via un prestataire",
+      "category": "Supply chain",
+      "description": "Attaque par rebond via un prestataire ou un composant tiers (mise à jour piégée, accès partenaire mal maîtrisé). Scénario stratégique EBIOS RM : une partie prenante devient un chemin d'attaque. Événement redouté : intrusion dans le SI via un tiers de confiance.",
+      "comment": "Renforcement du plan d'assurance sécurité fournisseurs et des audits tiers.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "custom": {
+        "source_risque": [
+          "prestataire",
+          "cybercriminel"
+        ],
+        "impacts": [
+          "operationnel",
+          "donnees",
+          "reputation"
+        ]
+      }
+    },
+    {
+      "id": "R10",
+      "label": "Espionnage / exfiltration ciblée",
+      "category": "Cybersécurité",
+      "description": "Campagne d'espionnage persistante (APT) visant des informations stratégiques, menée par une source structurée et outillée. Événement redouté : exfiltration discrète et durable de données sensibles.",
+      "comment": "Menace avancée : détection SOC et segmentation réseau prioritaires.",
+      "initial_assessment": {
+        "probability": 2,
+        "severity": 4
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 3
+      },
+      "custom": {
+        "source_risque": [
+          "etatique",
+          "cybercriminel"
+        ],
+        "impacts": [
+          "donnees",
+          "reputation",
+          "juridique"
+        ]
+      }
+    },
+    {
+      "id": "R11",
+      "label": "Déni de service (DDoS)",
+      "category": "Cybersécurité",
+      "description": "Saturation volumétrique ou applicative des services exposés sur Internet. Source hacktiviste ou cybercriminelle (extorsion). Événement redouté : indisponibilité des services en ligne.",
+      "comment": "Services exposés sur Internet ; protection anti-DDoS et CDN en place.",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 2,
+        "severity": 2
+      },
+      "custom": {
+        "source_risque": [
+          "hacktiviste",
+          "cybercriminel"
+        ],
+        "impacts": [
+          "operationnel",
+          "reputation",
+          "financier"
+        ]
+      }
+    },
+    {
+      "id": "R12",
+      "label": "Erreur de configuration cloud",
+      "category": "Cybersécurité",
+      "description": "Mauvaise configuration d'un service cloud (stockage rendu public, droits excessifs) exposant des données. Source : erreur humaine ou défaut de revue. Événement redouté : exposition accidentelle de données.",
+      "comment": "Renforcement de l'Infrastructure as Code et de la revue de configuration (CSPM).",
+      "initial_assessment": {
+        "probability": 3,
+        "severity": 3
+      },
+      "residual_assessment": {
+        "probability": 1,
+        "severity": 3
+      },
+      "custom": {
+        "source_risque": [
+          "erreur",
+          "prestataire"
+        ],
+        "impacts": [
+          "donnees",
+          "juridique",
+          "reputation"
+        ]
+      }
+    }
+  ],
+  "measures": [
+    {
+      "id": "M1",
+      "label": "Chiffrement + contrôle d'accès + DLP",
+      "type": "technical",
+      "status": "implemented",
+      "responsible": "RSSI — J. Moreau",
+      "due_date": "2025-11-30",
+      "cost": "≈ 45 k€/an",
+      "description": "Chiffrement des données au repos et en transit, gestion des accès à privilèges (moindre privilège, MFA) et prévention des fuites (DLP).",
+      "comment": "Socle en place ; revue annuelle des comptes à privilèges.",
+      "custom": {
+        "avancement": 100,
+        "fonction": [
+          "proteger",
+          "detecter"
+        ],
+        "domaine": [
+          "technique"
+        ]
+      }
+    },
+    {
+      "id": "M2",
+      "label": "Redondance + plan de reprise (PRA)",
+      "type": "technical",
+      "status": "in_progress",
+      "responsible": "Resp. Infra — M. Roux",
+      "due_date": "2026-09-30",
+      "cost": "≈ 60 k€",
+      "description": "Redondance des composants critiques et plan de reprise d'activité testé (bascule, RTO/RPO définis).",
+      "comment": "Bascule en cours de fiabilisation ; prochain test de PRA au T3.",
+      "custom": {
+        "avancement": 55,
+        "fonction": [
+          "proteger",
+          "retablir"
+        ],
+        "domaine": [
+          "technique"
+        ]
+      }
+    },
+    {
+      "id": "M3",
+      "label": "Documentation + binômage",
+      "type": "organizational",
+      "status": "planned",
+      "responsible": "DSI — A. Petit",
+      "due_date": "2026-12-15",
+      "cost": "interne",
+      "description": "Formalisation des procédures d'administration et mise en place de binômes pour réduire la dépendance aux personnes clés.",
+      "comment": "Cadrage réalisé ; déploiement planifié.",
+      "custom": {
+        "avancement": 15,
+        "fonction": [
+          "identifier",
+          "proteger"
+        ],
+        "domaine": [
+          "organisationnel"
+        ]
+      }
+    },
+    {
+      "id": "M4",
+      "label": "Audit + registre des traitements + DPO",
+      "type": "organizational",
+      "status": "implemented",
+      "responsible": "DPO — C. Lefèvre",
+      "due_date": "2025-10-31",
+      "cost": "≈ 30 k€/an",
+      "description": "Tenue du registre des traitements, désignation d'un DPO, audits de conformité RGPD réguliers et encadrement des sous-traitants.",
+      "comment": "Dispositif opérationnel ; audit de conformité annuel.",
+      "custom": {
+        "avancement": 100,
+        "fonction": [
+          "identifier",
+          "proteger"
+        ],
+        "domaine": [
+          "organisationnel",
+          "juridique"
+        ]
+      }
+    },
+    {
+      "id": "M5",
+      "label": "Double sourcing + stock tampon",
+      "type": "organizational",
+      "status": "in_progress",
+      "responsible": "Resp. Achats — S. Dubois",
+      "due_date": "2026-08-31",
+      "cost": "≈ 25 k€",
+      "description": "Diversification des fournisseurs critiques et constitution d'un stock tampon pour absorber les ruptures d'approvisionnement.",
+      "comment": "Second fournisseur en cours de qualification.",
+      "custom": {
+        "avancement": 60,
+        "fonction": [
+          "proteger",
+          "retablir"
+        ],
+        "domaine": [
+          "organisationnel"
+        ]
+      }
+    },
+    {
+      "id": "M6",
+      "label": "Détection + extinction + assurance",
+      "type": "preventive",
+      "status": "implemented",
+      "responsible": "Resp. Infra — M. Roux",
+      "due_date": "2025-09-30",
+      "cost": "≈ 20 k€/an",
+      "description": "Détection incendie, extinction automatique et transfert du risque résiduel via une police d'assurance.",
+      "comment": "Contrôles physiques et police d'assurance à jour.",
+      "custom": {
+        "avancement": 100,
+        "fonction": [
+          "detecter",
+          "retablir"
+        ],
+        "domaine": [
+          "physique"
+        ]
+      }
+    },
+    {
+      "id": "M7",
+      "label": "Sauvegardes hors-ligne + EDR + formation",
+      "type": "technical",
+      "status": "in_progress",
+      "responsible": "RSSI — J. Moreau",
+      "due_date": "2026-07-31",
+      "cost": "≈ 40 k€",
+      "description": "Sauvegardes immuables / hors-ligne (règle 3-2-1), EDR sur postes et serveurs, sensibilisation à l'hameçonnage.",
+      "comment": "EDR déployé à 80 % ; campagne de sensibilisation trimestrielle.",
+      "custom": {
+        "avancement": 70,
+        "fonction": [
+          "proteger",
+          "detecter",
+          "retablir"
+        ],
+        "domaine": [
+          "technique",
+          "organisationnel"
+        ]
+      }
+    },
+    {
+      "id": "M8",
+      "label": "Plan d'assurance sécurité fournisseurs + audits tiers",
+      "type": "organizational",
+      "status": "planned",
+      "responsible": "Resp. Achats — S. Dubois",
+      "due_date": "2026-11-30",
+      "cost": "≈ 15 k€",
+      "description": "Exigences de sécurité contractuelles (plan d'assurance sécurité), évaluation et audit des tiers, maîtrise des accès partenaires.",
+      "comment": "Modèle de PAS en cours de rédaction.",
+      "custom": {
+        "avancement": 20,
+        "fonction": [
+          "identifier",
+          "proteger"
+        ],
+        "domaine": [
+          "organisationnel",
+          "juridique"
+        ]
+      }
+    },
+    {
+      "id": "M9",
+      "label": "Segmentation réseau + SOC 24/7",
+      "type": "technical",
+      "status": "in_progress",
+      "responsible": "Resp. SOC — L. Girard",
+      "due_date": "2026-10-15",
+      "cost": "≈ 90 k€/an",
+      "description": "Cloisonnement du réseau (segmentation, filtrage) et supervision de sécurité continue (SOC / SIEM) avec détection des comportements anormaux.",
+      "comment": "SOC externalisé en place ; segmentation en cours d'extension.",
+      "custom": {
+        "avancement": 65,
+        "fonction": [
+          "detecter",
+          "repondre"
+        ],
+        "domaine": [
+          "technique"
+        ]
+      }
+    },
+    {
+      "id": "M10",
+      "label": "Protection anti-DDoS + CDN",
+      "type": "technical",
+      "status": "implemented",
+      "responsible": "Resp. Infra — M. Roux",
+      "due_date": "2025-12-15",
+      "cost": "≈ 18 k€/an",
+      "description": "Protection volumétrique anti-DDoS et diffusion via CDN pour absorber les pics et filtrer le trafic malveillant.",
+      "comment": "Service en place ; tests de charge réguliers.",
+      "custom": {
+        "avancement": 100,
+        "fonction": [
+          "proteger"
+        ],
+        "domaine": [
+          "technique"
+        ]
+      }
+    },
+    {
+      "id": "M11",
+      "label": "IaC + revue de configuration + CSPM",
+      "type": "technical",
+      "status": "planned",
+      "responsible": "DSI — A. Petit",
+      "due_date": "2027-01-31",
+      "cost": "≈ 22 k€",
+      "description": "Infrastructure as Code, revues de configuration et outil de posture cloud (CSPM) pour prévenir les expositions accidentelles.",
+      "comment": "POC CSPM prévu ; industrialisation IaC planifiée.",
+      "custom": {
+        "avancement": 10,
+        "fonction": [
+          "identifier",
+          "proteger",
+          "detecter"
+        ],
+        "domaine": [
+          "technique"
+        ]
+      }
+    }
+  ],
+  "treatments": [
+    {
+      "risk": "R1",
+      "measure": "M1",
+      "comment": "Chiffrement, moindre privilège et DLP réduisent la probabilité et l'ampleur d'une fuite.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R1",
+      "measure": "M4",
+      "comment": "La conformité RGPD et la minimisation limitent l'exposition des données personnelles.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R1",
+      "measure": "M9",
+      "comment": "Le SOC détecte les accès anormaux et les tentatives d'exfiltration.",
+      "custom": {
+        "effet": [
+          "detecte",
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R2",
+      "measure": "M2",
+      "comment": "La redondance et le PRA réduisent la durée d'indisponibilité.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R3",
+      "measure": "M3",
+      "comment": "Documentation et binômage réduisent la dépendance aux personnes clés.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R4",
+      "measure": "M4",
+      "comment": "Registre, DPO et audits assurent la conformité et réduisent le risque de sanction.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R4",
+      "measure": "M1",
+      "comment": "Le chiffrement contribue à la protection des données personnelles.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R5",
+      "measure": "M5",
+      "comment": "Double sourcing et stock tampon absorbent les ruptures d'approvisionnement.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R5",
+      "measure": "M8",
+      "comment": "Les audits tiers et le plan d'assurance sécurité réduisent la probabilité de défaillance fournisseur.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R7",
+      "measure": "M6",
+      "comment": "Détection et extinction limitent les dégâts ; l'assurance transfère le risque résiduel.",
+      "custom": {
+        "effet": [
+          "gravite",
+          "transfere"
+        ]
+      }
+    },
+    {
+      "risk": "R8",
+      "measure": "M7",
+      "comment": "Sauvegardes hors-ligne, EDR et formation limitent l'impact et la propagation.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite",
+          "detecte"
+        ]
+      }
+    },
+    {
+      "risk": "R8",
+      "measure": "M9",
+      "comment": "Le SOC détecte l'intrusion et accélère la réponse.",
+      "custom": {
+        "effet": [
+          "detecte",
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R8",
+      "measure": "M1",
+      "comment": "Le contrôle d'accès freine l'élévation de privilèges et la propagation.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R9",
+      "measure": "M8",
+      "comment": "Le plan d'assurance sécurité et les audits tiers réduisent le risque de compromission via un prestataire.",
+      "custom": {
+        "effet": [
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R9",
+      "measure": "M9",
+      "comment": "Le SOC surveille les accès partenaires et détecte les rebonds.",
+      "custom": {
+        "effet": [
+          "detecte",
+          "vraisemblance"
+        ]
+      }
+    },
+    {
+      "risk": "R10",
+      "measure": "M9",
+      "comment": "Segmentation et SOC détectent et ralentissent l'exfiltration ciblée.",
+      "custom": {
+        "effet": [
+          "detecte",
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R10",
+      "measure": "M1",
+      "comment": "Chiffrement et contrôle d'accès limitent la valeur des données exfiltrées.",
+      "custom": {
+        "effet": [
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R11",
+      "measure": "M10",
+      "comment": "La protection anti-DDoS absorbe la saturation et maintient le service.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "gravite"
+        ]
+      }
+    },
+    {
+      "risk": "R11",
+      "measure": "M9",
+      "comment": "Le SOC détecte l'attaque et coordonne la réponse.",
+      "custom": {
+        "effet": [
+          "detecte"
+        ]
+      }
+    },
+    {
+      "risk": "R12",
+      "measure": "M11",
+      "comment": "IaC et CSPM préviennent et détectent les erreurs de configuration.",
+      "custom": {
+        "effet": [
+          "vraisemblance",
+          "detecte"
+        ]
+      }
+    },
+    {
+      "risk": "R12",
+      "measure": "M4",
+      "comment": "Les audits vérifient la conformité des configurations.",
+      "custom": {
+        "effet": [
+          "detecte"
+        ]
+      }
+    }
+  ],
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels",
+        "en": "Frameworks"
+      },
+      "items": [
+        {
+          "code": "ebios-rm",
+          "label": {
+            "fr": "EBIOS RM",
+            "en": "EBIOS RM"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "iso-27005",
+          "label": {
+            "fr": "ISO 27005",
+            "en": "ISO 27005"
+          },
+          "color": "#4c7dff"
+        },
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD",
+            "en": "GDPR"
+          },
+          "color": "#e25631"
+        },
+        {
+          "code": "nis2",
+          "label": {
+            "fr": "NIS2",
+            "en": "NIS2"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "pssi",
+          "label": {
+            "fr": "PSSI",
+            "en": "ISSP"
+          },
+          "color": "#16a085"
+        }
+      ]
+    },
+    {
+      "code": "perimetre",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Périmètre",
+        "en": "Scope"
+      },
+      "items": [
+        {
+          "code": "si-metier",
+          "label": {
+            "fr": "SI métier",
+            "en": "Business IS"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "hebergement",
+          "label": {
+            "fr": "Hébergement",
+            "en": "Hosting"
+          },
+          "color": "#10ac84"
+        },
+        {
+          "code": "postes",
+          "label": {
+            "fr": "Postes de travail",
+            "en": "Workstations"
+          },
+          "color": "#ee5253"
+        },
+        {
+          "code": "interco",
+          "label": {
+            "fr": "Interconnexions partenaires",
+            "en": "Partner interconnections"
+          },
+          "color": "#f39c12"
+        }
+      ]
+    },
+    {
+      "code": "source_risque",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Source de risque",
+        "en": "Risk source"
+      },
+      "items": [
+        {
+          "code": "cybercriminel",
+          "label": {
+            "fr": "Cybercriminel",
+            "en": "Cybercriminal"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "etatique",
+          "label": {
+            "fr": "Étatique",
+            "en": "State-sponsored"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "hacktiviste",
+          "label": {
+            "fr": "Hacktiviste",
+            "en": "Hacktivist"
+          },
+          "color": "#d35400"
+        },
+        {
+          "code": "concurrent",
+          "label": {
+            "fr": "Concurrent",
+            "en": "Competitor"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "initie",
+          "label": {
+            "fr": "Initié malveillant",
+            "en": "Malicious insider"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "erreur",
+          "label": {
+            "fr": "Erreur humaine",
+            "en": "Human error"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "prestataire",
+          "label": {
+            "fr": "Prestataire",
+            "en": "Third party"
+          },
+          "color": "#1abc9c"
+        },
+        {
+          "code": "environnement",
+          "label": {
+            "fr": "Environnement",
+            "en": "Environmental"
+          },
+          "color": "#7f8c8d"
+        }
+      ]
+    },
+    {
+      "code": "impacts",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Impacts redoutés",
+        "en": "Feared impacts"
+      },
+      "items": [
+        {
+          "code": "financier",
+          "label": {
+            "fr": "Financier",
+            "en": "Financial"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "juridique",
+          "label": {
+            "fr": "Juridique / RGPD",
+            "en": "Legal / GDPR"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "reputation",
+          "label": {
+            "fr": "Réputation",
+            "en": "Reputation"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "operationnel",
+          "label": {
+            "fr": "Opérationnel",
+            "en": "Operational"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "humain",
+          "label": {
+            "fr": "Humain",
+            "en": "Human"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "donnees",
+          "label": {
+            "fr": "Données personnelles",
+            "en": "Personal data"
+          },
+          "color": "#16a085"
+        }
+      ]
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "palette": "red-orange-yellow-green",
+      "step": 5,
+      "order": 1,
+      "label": {
+        "fr": "Avancement",
+        "en": "Progress"
+      }
+    },
+    {
+      "code": "fonction",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Fonction de sécurité",
+        "en": "Security function"
+      },
+      "items": [
+        {
+          "code": "identifier",
+          "label": {
+            "fr": "Identifier",
+            "en": "Identify"
+          },
+          "color": "#34495e"
+        },
+        {
+          "code": "proteger",
+          "label": {
+            "fr": "Protéger",
+            "en": "Protect"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "detecter",
+          "label": {
+            "fr": "Détecter",
+            "en": "Detect"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "repondre",
+          "label": {
+            "fr": "Répondre",
+            "en": "Respond"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "retablir",
+          "label": {
+            "fr": "Rétablir",
+            "en": "Recover"
+          },
+          "color": "#27ae60"
+        }
+      ]
+    },
+    {
+      "code": "domaine",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "label": {
+        "fr": "Domaine",
+        "en": "Domain"
+      },
+      "items": [
+        {
+          "code": "technique",
+          "label": {
+            "fr": "Technique",
+            "en": "Technical"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "organisationnel",
+          "label": {
+            "fr": "Organisationnel",
+            "en": "Organizational"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "physique",
+          "label": {
+            "fr": "Physique",
+            "en": "Physical"
+          },
+          "color": "#7f8c8d"
+        },
+        {
+          "code": "juridique",
+          "label": {
+            "fr": "Juridique",
+            "en": "Legal"
+          },
+          "color": "#8e44ad"
+        }
+      ]
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Effet sur le risque",
+        "en": "Effect on risk"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité",
+            "en": "Reduces severity"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "detecte",
+          "label": {
+            "fr": "Détecte",
+            "en": "Detects"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "transfere",
+          "label": {
+            "fr": "Transfère",
+            "en": "Transfers"
+          },
+          "color": "#8e44ad"
+        }
+      ]
+    }
+  ],
+  "custom": {
+    "referentiels": [
+      "ebios-rm",
+      "iso-27005",
+      "rgpd",
+      "nis2",
+      "pssi"
+    ],
+    "perimetre": [
+      "si-metier",
+      "hebergement",
+      "postes",
+      "interco"
+    ]
+  }
+}

@@ -4,9 +4,9 @@
 
 Standalone tool for **building and visualizing risk matrices** — inherent (gross) risk and residual (net) risk — with an open, documented file format, `.rae.json`.
 
-### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📊 [Open a sample analysis](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/risk-analysis-information-system.rae.json) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
+### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📊 [Open the EBIOS RM demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-information-system.rae.json) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
 
-*No installation: the tool runs entirely in your browser. The sample analysis is the one shown in the screenshot below (8 risks, 7 measures). The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
+*No installation: the tool runs entirely in your browser. The **demo** opens a complete, EBIOS RM–inspired risk analysis (12 risks, 11 measures, ~20 links) showcasing descriptions, notes, colored **tags**, **progress bars** and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
 
 ![Matrices › Trajectory view of the "Information system" analysis (light theme)](docs/images/capture-trajectoire.png)
 
@@ -74,7 +74,7 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 |---|---|
 | [`app/`](app/) | The application (`risk-analysis-editor.html`). |
 | [`docs/`](docs/) | Technical documentation (in French): format specification, JSON schema and layout strategies. |
-| [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English). |
+| [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including a complete **EBIOS RM–inspired demo** (`demo-ebios-rm-*.rae.json`) with tags, progress bars and enriched links. |
 
 ---
 
