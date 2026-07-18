@@ -113,13 +113,21 @@
   label.field .lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
   input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);
     color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
-  /* Focus clavier : bordure accentuée + halo, qui ne déplace pas la mise en page.
-     Le halo est indispensable — le seul changement de couleur de bordure passe inaperçu. */
+  /* ---------- Focus clavier ----------
+     Une seule apparence pour tout ce qui peut recevoir le focus : contour accentué de 2 px,
+     décalé de 2 px. Le contour épouse n'importe quelle forme sans avoir à accorder les
+     arrondis, et reste visible sur les fonds pleins de la couleur d'accent — ce qu'un halo
+     translucide de la même teinte ne ferait pas. `outline` ne décale pas la mise en page. */
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* Le contour du cadre Markdown est porté par l'enveloppe, pas par la zone de saisie :
+     posé sur le textarea, il serait rogné par overflow:hidden. Restreint à la saisie
+     (`:has`) pour que le focus sur la bascule œil n'entoure que le bouton. */
+  .md-wrap:has(>textarea:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+  .md-wrap>textarea:focus-visible{outline:none}
+  /* Les champs signalent en plus le focus par leur bordure (utile à la souris comme au clavier). */
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   input:focus-visible,select:focus-visible,textarea:focus-visible{
-    border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
-  .tab:focus-visible,.seg button:focus-visible,.cf-tag:focus-visible,.chip:focus-visible{
-    outline:2px solid var(--accent);outline-offset:2px}
+    outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
   textarea{resize:vertical;min-height:64px}
   input[type=color]{padding:2px;height:34px;cursor:pointer}
   .inline{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
@@ -273,10 +281,11 @@
   .md img{max-width:100%}
   /* Zone de saisie Markdown : cadre unique englobant la saisie, l'aperçu et la bascule œil */
   .md-wrap{border:1px solid var(--border);border-radius:10px;background:var(--bg);overflow:hidden}
+  /* Focus signalé sur le cadre entier — saisie et pied compris (contour posé plus haut). */
   .md-wrap:focus-within{border-color:var(--accent)}
   /* Hauteur gérée automatiquement : la poignée native ferait doublon et gênerait la bascule œil. */
   .md-wrap>textarea{border:none;background:transparent;border-radius:0;display:block;resize:none}
-  .md-wrap>textarea:focus{outline:none}
+  .md-wrap>textarea:focus,.md-wrap>textarea:focus-visible{outline:none;box-shadow:none;border-color:transparent}
   .md-wrap>.md-preview{padding:9px 11px;font-size:13.5px;min-height:64px}
   .md-foot{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:0 8px 6px;
     font-size:11px;color:var(--muted);white-space:nowrap;user-select:none}
