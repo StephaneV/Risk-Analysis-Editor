@@ -681,11 +681,11 @@
       <label class="field" style="max-width:420px">
         <span class="lab" data-i18n="cfg_contrast">Mode</span>
         <select id="cfgContraste">
-          <option value="classic" data-i18n="contrast.classic">Classique — texte blanc (rendu d'origine)</option>
+          <option value="classic" data-i18n="contrast.classic">Classique — luminosité perçue (rendu d'origine)</option>
           <option value="wcag" data-i18n="contrast.wcag">Contraste renforcé — couleur calculée (WCAG AA)</option>
         </select>
       </label>
-      <div class="caption" data-i18n="cfg_contrast_hint">Le mode renforcé choisit automatiquement un texte noir ou blanc selon la couleur de fond, de façon à toujours atteindre 4,5:1. Il modifie l'aspect des badges rouges et bleus.</div>
+      <div class="caption" data-i18n="cfg_contrast_hint">Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.</div>
     </div>
 
     <!-- -------- Sous-onglet : Grille de cotation -------- -->
@@ -940,9 +940,9 @@ const I18N = {
     "cfg_contrast_title":"Lisibilité des étiquettes colorées",
     "cfg_contrast_caption":"Couleur du texte affiché sur les badges dont le fond provient des données (criticité, statut, étiquettes personnalisées, scores de la matrice).",
     "cfg_contrast":"Mode",
-    "contrast.classic":"Classique — texte blanc (rendu d'origine)",
+    "contrast.classic":"Classique — luminosité perçue (rendu d'origine)",
     "contrast.wcag":"Contraste renforcé — couleur calculée (WCAG AA)",
-    "cfg_contrast_hint":"Le mode renforcé choisit automatiquement un texte noir ou blanc selon la couleur de fond, de façon à toujours atteindre 4,5:1. Il modifie l'aspect des badges rouges et bleus.",
+    "cfg_contrast_hint":"Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -1133,9 +1133,9 @@ const I18N = {
     "cfg_contrast_title":"Readability of coloured labels",
     "cfg_contrast_caption":"Colour of the text shown on badges whose background comes from the data (criticality, status, custom tags, matrix scores).",
     "cfg_contrast":"Mode",
-    "contrast.classic":"Classic — white text (original rendering)",
+    "contrast.classic":"Classic — perceived brightness (original rendering)",
     "contrast.wcag":"Enhanced contrast — computed colour (WCAG AA)",
-    "cfg_contrast_hint":"The enhanced mode picks black or white text according to the background colour, so that 4.5:1 is always met. It changes the look of red and blue badges.",
+    "cfg_contrast_hint":"Classic: black or white text based on the perceived brightness of the background (historical threshold). Enhanced: choice based on the actual WCAG contrast, guaranteeing 4.5:1 on any background — this darkens the text of red and blue badges.",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1326,9 +1326,9 @@ const I18N = {
     "cfg_contrast_title":"Leggibilità delle etichette colorate",
     "cfg_contrast_caption":"Colore del testo sui badge il cui sfondo proviene dai dati (criticità, stato, etichette personalizzate, punteggi della matrice).",
     "cfg_contrast":"Modalità",
-    "contrast.classic":"Classica — testo bianco (resa originale)",
+    "contrast.classic":"Classica — luminosità percepita (resa originale)",
     "contrast.wcag":"Contrasto rafforzato — colore calcolato (WCAG AA)",
-    "cfg_contrast_hint":"La modalità rafforzata sceglie il testo nero o bianco in base al colore di sfondo, per raggiungere sempre 4,5:1. Modifica l'aspetto dei badge rossi e blu.",
+    "cfg_contrast_hint":"Classica: testo nero o bianco secondo la luminosità percepita dello sfondo (soglia storica). Rafforzata: scelta basata sul contrasto WCAG reale, che garantisce 4,5:1 su qualsiasi sfondo — scurisce il testo dei badge rossi e blu.",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -1880,7 +1880,7 @@ function buildGrid(container,mode){
     const sc=scoreOf(pl.value,gl.value), c=critFor(sc);
     const cell=document.createElement("div");cell.className="cell";
     cell.style.background=c.color;cell.style.borderRadius=arrondi+"px";cell.dataset.p=pl.value;cell.dataset.g=gl.value;
-    cell.innerHTML='<span class="score" style="color:'+badgeFg(c.color)+'">'+sc+'</span><div class="chip-stack"></div>';
+    cell.innerHTML='<span class="score" style="color:'+scoreFg(c.color)+'">'+sc+'</span><div class="chip-stack"></div>';
     mtx.appendChild(cell);
     cellMap[pl.value+"-"+gl.value]=cell.querySelector(".chip-stack");
   }));
@@ -3733,25 +3733,29 @@ function onColor(hex){
   return cr(ON_DARK)>=cr(ON_LIGHT) ? ON_DARK : ON_LIGHT;
 }
 /* Mode de rendu des étiquettes colorées (Paramètres › Affichage) :
-   - "classic" (défaut) : rendu d'origine — texte blanc sur les badges de criticité et de
-     statut, heuristique de luminosité perçue pour les étiquettes des champs personnalisés ;
+   - "classic" (défaut) : heuristique historique de luminosité perçue (YIQ, seuil 150),
+     appliquée à toutes les étiquettes dont le fond vient des données ;
    - "wcag" : couleur de texte calculée pour garantir au moins 4,5:1 sur n'importe quel fond. */
 function labelContrast(){
   const d=(typeof analyse!=="undefined"&&analyse&&analyse.extensions&&analyse.extensions.display)||{};
   return d.label_contrast==="wcag"?"wcag":"classic";
 }
 function applyContrastMode(){document.documentElement.setAttribute("data-contrast",labelContrast());}
-/* Badges dont le fond vient des données (criticité, statut, score de matrice). */
-function badgeFg(hex){return labelContrast()==="wcag"?onColor(hex):"#ffffff";}
-/* Étiquettes des champs personnalisés « tags » : l'ancien mode conserve l'heuristique YIQ. */
-function cfTagFg(hex){
-  if(labelContrast()==="wcag")return onColor(hex);
+/* Heuristique historique : luminosité perçue (YIQ), seuil 150. */
+function yiqFg(hex){
   let h=String(hex||"").replace("#","");
   if(h.length===3)h=h.split("").map(c=>c+c).join("");
   const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
   if([r,g,b].some(isNaN))return "#fff";
   return (0.299*r+0.587*g+0.114*b)>150?"#111":"#fff";
 }
+/* Toutes les étiquettes dont le fond vient des données : criticité, statut, pastilles de
+   mesure, étiquettes des champs personnalisés. Même règle pour toutes. */
+function badgeFg(hex){return labelContrast()==="wcag"?onColor(hex):yiqFg(hex);}
+const cfTagFg=badgeFg;  // alias historique (champs perso « tags »)
+/* Le score des cases de matrice reste en blanc atténué dans le mode classique :
+   il est décoratif et se superpose à une couleur déjà porteuse de sens. */
+function scoreFg(hex){return labelContrast()==="wcag"?onColor(hex):"#ffffff";}
 /* Palettes de la barre de progression : jalons équirépartis (0→100 %), couleur interpolée
    en TSL/HSL (chemin de teinte le plus court). "accent" = couleur unique du thème. */
 const PROGRESS_PALETTES={
