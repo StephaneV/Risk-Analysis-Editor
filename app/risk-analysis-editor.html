@@ -241,9 +241,19 @@
   .md tbody tr:last-child>td,.report .md tbody tr:last-child>td{border-bottom:none}
   .md a{color:var(--accent)}
   .md img{max-width:100%}
-  /* Aperçu Markdown sous les zones de saisie */
-  .md-bar{display:flex;justify-content:flex-end;margin-top:4px}
-  .md-preview{border:1px dashed var(--border);border-radius:8px;padding:8px 10px;background:var(--bg);min-height:64px;font-size:13.5px}
+  /* Zone de saisie Markdown : cadre unique englobant la saisie, l'aperçu et la bascule œil */
+  .md-wrap{border:1px solid var(--border);border-radius:10px;background:var(--bg);overflow:hidden}
+  .md-wrap:focus-within{border-color:var(--accent)}
+  /* Hauteur gérée automatiquement : la poignée native ferait doublon et gênerait la bascule œil. */
+  .md-wrap>textarea{border:none;background:transparent;border-radius:0;display:block;resize:none}
+  .md-wrap>textarea:focus{outline:none}
+  .md-wrap>.md-preview{padding:9px 11px;font-size:13.5px;min-height:64px}
+  .md-foot{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:0 8px 6px;
+    font-size:11px;color:var(--muted);white-space:nowrap;user-select:none}
+  .md-eye{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;border-radius:6px;
+    display:inline-flex;align-items:center;line-height:0}
+  .md-eye:hover{color:var(--text);background:var(--panel-2)}
+  .md-eye.on{color:var(--accent)}
   .cf-progress-val{font-size:13px;font-weight:700;min-width:46px;text-align:right}
 
   /* ---------- Plan d'action ---------- */
@@ -848,7 +858,7 @@ const I18N = {
     cf_multiple:"Sélection multiple", cf_palette:"Palette de couleur", cf_palette_preview:"Aperçu", cf_item_color:"Couleur", cf_step:"Pas",
     cf_pal_colors:"Couleurs de la palette", cf_pal_add_color:"+ Ajouter une couleur", cf_err_colors:"Ajoutez au moins une couleur à la palette.",
     "pal.accent":"Couleur unique (accent)","pal.red-green":"Rouge → Vert","pal.red-orange-green":"Rouge → Orange → Vert","pal.red-orange-yellow-green":"Rouge → Orange → Jaune → Vert","pal.white-black":"Blanc → Noir","pal.custom":"Personnalisée",
-    cf_label:"Libellé", cf_help:"Aide", cf_description:"Description", md_preview:"Aperçu", md_edit:"Éditer",
+    cf_label:"Libellé", cf_help:"Aide", cf_description:"Description", md_preview:"Aperçu", md_edit:"Éditer", md_supports:"Markdown pris en charge",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
     cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_label:"Libellé",
     cf_err_code:"Le code est obligatoire.", cf_err_code_dup:"Ce code de champ existe déjà.", cf_err_label:"Le libellé est obligatoire (au moins une langue).",
@@ -1003,7 +1013,7 @@ const I18N = {
     cf_multiple:"Multiple selection", cf_palette:"Color palette", cf_palette_preview:"Preview", cf_item_color:"Color", cf_step:"Step",
     cf_pal_colors:"Palette colors", cf_pal_add_color:"+ Add a color", cf_err_colors:"Add at least one color to the palette.",
     "pal.accent":"Single color (accent)","pal.red-green":"Red → Green","pal.red-orange-green":"Red → Orange → Green","pal.red-orange-yellow-green":"Red → Orange → Yellow → Green","pal.white-black":"White → Black","pal.custom":"Custom",
-    cf_label:"Label", cf_help:"Help", cf_description:"Description", md_preview:"Preview", md_edit:"Edit",
+    cf_label:"Label", cf_help:"Help", cf_description:"Description", md_preview:"Preview", md_edit:"Edit", md_supports:"Supports Markdown",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
     cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_label:"Label",
     cf_err_code:"Code is required.", cf_err_code_dup:"This field code already exists.", cf_err_label:"A label is required (at least one language).",
@@ -1158,7 +1168,7 @@ const I18N = {
     cf_multiple:"Selezione multipla", cf_palette:"Tavolozza colori", cf_palette_preview:"Anteprima", cf_item_color:"Colore", cf_step:"Passo",
     cf_pal_colors:"Colori della tavolozza", cf_pal_add_color:"+ Aggiungi un colore", cf_err_colors:"Aggiungi almeno un colore alla tavolozza.",
     "pal.accent":"Colore unico (accento)","pal.red-green":"Rosso → Verde","pal.red-orange-green":"Rosso → Arancione → Verde","pal.red-orange-yellow-green":"Rosso → Arancione → Giallo → Verde","pal.white-black":"Bianco → Nero","pal.custom":"Personalizzata",
-    cf_label:"Etichetta", cf_help:"Aiuto", cf_description:"Descrizione", md_preview:"Anteprima", md_edit:"Modifica",
+    cf_label:"Etichetta", cf_help:"Aiuto", cf_description:"Descrizione", md_preview:"Anteprima", md_edit:"Modifica", md_supports:"Markdown supportato",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
     cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_label:"Etichetta",
     cf_err_code:"Il codice è obbligatorio.", cf_err_code_dup:"Questo codice di campo esiste già.", cf_err_label:"È richiesta un'etichetta (almeno una lingua).",
@@ -1308,29 +1318,43 @@ function mdToHTML(src){
 }
 /* Zones de saisie : hauteur adaptée au contenu (bornée) + aperçu Markdown basculable.
    La zone d'import CSV (#impText) est exclue : ce n'est pas du texte rédigé. */
-const TA_MIN=64, TA_MAX=300;
+const TA_MIN=64, TA_MAX=360;
 function autoGrow(ta){
   if(!ta||ta.id==="impText")return;
   ta.style.height="auto";
   ta.style.height=Math.max(TA_MIN,Math.min(TA_MAX,ta.scrollHeight))+"px";
   ta.style.overflowY=ta.scrollHeight>TA_MAX?"auto":"hidden";
 }
+const MD_ICON_EYE='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const MD_ICON_EYE_OFF='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+/* Enveloppe chaque zone de saisie dans un cadre unique contenant la saisie, l'aperçu
+   Markdown et une bascule œil discrète en bas à droite. */
 function enhanceTextareas(scope){
   (scope||document).querySelectorAll("textarea").forEach(ta=>{
     if(ta.id==="impText")return;
+    if(!ta.dataset.mdReady){
+      ta.dataset.mdReady="1";
+      const wrap=document.createElement("div");wrap.className="md-wrap";
+      ta.parentNode.insertBefore(wrap,ta);wrap.appendChild(ta);
+      const prev=document.createElement("div");prev.className="md md-preview";prev.style.display="none";
+      const foot=document.createElement("div");foot.className="md-foot";
+      const hint=document.createElement("span");hint.textContent=t("md_supports");
+      const btn=document.createElement("button");btn.type="button";btn.className="md-eye";
+      btn.title=t("md_preview");btn.innerHTML=MD_ICON_EYE;
+      foot.appendChild(hint);foot.appendChild(btn);
+      wrap.appendChild(prev);wrap.appendChild(foot);
+      btn.addEventListener("click",()=>{
+        if(prev.style.display!=="none"){
+          prev.style.display="none";ta.style.display="";
+          btn.classList.remove("on");btn.innerHTML=MD_ICON_EYE;btn.title=t("md_preview");autoGrow(ta);
+        }else{
+          prev.innerHTML=mdToHTML(ta.value)||'<span class="muted">—</span>';
+          prev.style.display="";ta.style.display="none";
+          btn.classList.add("on");btn.innerHTML=MD_ICON_EYE_OFF;btn.title=t("md_edit");
+        }
+      });
+    }
     autoGrow(ta);
-    if(ta.dataset.mdReady)return;
-    ta.dataset.mdReady="1";
-    const prev=document.createElement("div");prev.className="md md-preview";prev.style.display="none";
-    const bar=document.createElement("div");bar.className="md-bar";
-    const btn=document.createElement("button");btn.type="button";btn.className="btn ghost sm";btn.textContent=t("md_preview");
-    bar.appendChild(btn);
-    ta.parentNode.insertBefore(prev,ta.nextSibling);
-    ta.parentNode.insertBefore(bar,prev.nextSibling);
-    btn.addEventListener("click",()=>{
-      if(prev.style.display!=="none"){prev.style.display="none";ta.style.display="";btn.textContent=t("md_preview");autoGrow(ta);}
-      else{prev.innerHTML=mdToHTML(ta.value)||'<span class="muted">—</span>';prev.style.display="";ta.style.display="none";btn.textContent=t("md_edit");}
-    });
   });
 }
 document.addEventListener("input",e=>{const ta=e.target;if(ta&&ta.tagName==="TEXTAREA")autoGrow(ta);});
