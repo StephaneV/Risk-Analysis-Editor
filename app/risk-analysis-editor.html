@@ -165,7 +165,9 @@
   input:focus-visible,select:focus-visible,textarea:focus-visible{
     outline:none;box-shadow:0 0 0 3px var(--focus-ring);border-color:var(--accent)}
   /* Les pastilles de matrice portent déjà une ombre portée : on la conserve sous le halo. */
-  .chip:focus-visible{box-shadow:0 2px 5px rgba(0,0,0,.5),0 0 0 3px var(--focus-ring)}
+  /* z-index : l'écart entre pastilles vaut 3 px, comme le halo — sans remontée, la pastille
+     voisine peindrait par-dessus l'anneau et le tronquerait. */
+  .chip:focus-visible{box-shadow:0 2px 5px rgba(0,0,0,.5),0 0 0 3px var(--focus-ring);position:relative;z-index:20}
   /* En contraste forcé (Windows), les ombres ne sont pas rendues : on repasse au contour. */
   @media (forced-colors: active){
     :focus-visible,.md-wrap:has(>textarea:focus-visible){outline:2px solid Highlight;outline-offset:2px}
@@ -263,6 +265,9 @@
     border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
     cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5);transition:transform .1s}
   .ov-chip:hover{transform:translate(-50%,-50%) scale(1.25);z-index:20}
+  /* Halo de focus : déclaré ici et non par la règle générale, car `.ov-chip` pose sa propre
+     ombre portée plus bas dans la feuille, à spécificité égale — elle l'emporterait. */
+  .ov-chip:focus-visible{box-shadow:0 2px 6px rgba(0,0,0,.5),0 0 0 3px var(--focus-ring);z-index:20}
   .ov-chip.start{background:rgba(10,14,24,.6);color:#fff;border:2px dashed rgba(255,255,255,.9)}
   .ov-chip.end{background:#0a0e18;color:#fff;border:2px solid #fff}
   .ov-chip.unchanged{background:var(--unchanged);color:#fff;border:2px solid #fff}
