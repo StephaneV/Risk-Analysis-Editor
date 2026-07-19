@@ -615,7 +615,7 @@
         <button class="btn ghost" id="btnExportLinks" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
       </div>
       <div class="lpanel" data-lmode="grid">
-        <div class="caption" style="margin:0 0 12px" data-i18n="links_caption">Cochez une case pour associer une mesure à un risque.</div>
+        <div class="caption" style="margin:0 0 12px" data-i18n="links_caption">Cochez une case pour associer une mesure à un risque. Au clavier : flèches pour se déplacer dans la grille, Espace pour cocher.</div>
         <div class="cross" id="crossArea"></div>
       </div>
       <div class="lpanel" data-lmode="details" style="display:none">
@@ -882,7 +882,7 @@ const I18N = {
     "status.proposed":"Proposée","status.planned":"Planifiée","status.in_progress":"En cours","status.implemented":"En place","status.abandoned":"Abandonnée",
     "type.technical":"Technique","type.organizational":"Organisationnelle","type.preventive":"Préventive","type.detective":"Détective","type.corrective":"Corrective","type.deterrent":"Dissuasive",
     measure_new:"Nouvelle mesure", f_measure_label:"Libellé de la mesure *", f_due_date:"Échéance", f_cost:"Coût estimé",
-    links_title:"Liens risques ↔ mesures", links_caption:"Cochez une case pour associer une mesure à un risque.",
+    links_title:"Liens risques ↔ mesures", links_caption:"Cochez une case pour associer une mesure à un risque. Au clavier : flèches pour se déplacer dans la grille, Espace pour cocher.",
     links_empty:"Il faut au moins un risque et une mesure pour établir des liens.", cross_corner:"Risque \\ Mesure",
     links_seg_grid:"Associations", links_seg_details:"Détails",
     links_details_empty:"Aucun lien. Créez des associations dans l'onglet Associations.",
@@ -1075,7 +1075,7 @@ const I18N = {
     "status.proposed":"Proposed","status.planned":"Planned","status.in_progress":"In progress","status.implemented":"Implemented","status.abandoned":"Abandoned",
     "type.technical":"Technical","type.organizational":"Organizational","type.preventive":"Preventive","type.detective":"Detective","type.corrective":"Corrective","type.deterrent":"Deterrent",
     measure_new:"New measure", f_measure_label:"Measure label *", f_due_date:"Due date", f_cost:"Estimated cost",
-    links_title:"Risk ↔ measure links", links_caption:"Tick a box to link a measure to a risk.",
+    links_title:"Risk ↔ measure links", links_caption:"Tick a box to link a measure to a risk. Keyboard: arrow keys to move within the grid, Space to tick.",
     links_empty:"At least one risk and one measure are needed to create links.", cross_corner:"Risk \\ Measure",
     links_seg_grid:"Associations", links_seg_details:"Details",
     links_details_empty:"No link yet. Create associations in the Associations sub-tab.",
@@ -1268,7 +1268,7 @@ const I18N = {
     "status.proposed":"Proposta","status.planned":"Pianificata","status.in_progress":"In corso","status.implemented":"Attuata","status.abandoned":"Abbandonata",
     "type.technical":"Tecnica","type.organizational":"Organizzativa","type.preventive":"Preventiva","type.detective":"Investigativa","type.corrective":"Correttiva","type.deterrent":"Dissuasiva",
     measure_new:"Nuova misura", f_measure_label:"Etichetta della misura *", f_due_date:"Scadenza", f_cost:"Costo stimato",
-    links_title:"Collegamenti rischi ↔ misure", links_caption:"Spunta una casella per associare una misura a un rischio.",
+    links_title:"Collegamenti rischi ↔ misure", links_caption:"Spunta una casella per associare una misura a un rischio. Da tastiera: frecce per spostarsi nella griglia, Spazio per selezionare.",
     links_empty:"Servono almeno un rischio e una misura per creare collegamenti.", cross_corner:"Rischio \\ Misura",
     links_seg_grid:"Associazioni", links_seg_details:"Dettagli",
     links_details_empty:"Nessun collegamento. Crea associazioni nella scheda Associazioni.",
@@ -3367,6 +3367,33 @@ document.getElementById("linksSeg").addEventListener("click",e=>{const b=e.targe
 
 function renderLinks(){renderCrosstab();renderLinkDetails();}
 
+/* ---------- Tableau croisé : navigation au clavier facon grille ----------
+   Un seul arrêt de tabulation pour toute la grille (tabindex mobile), puis déplacement
+   aux flèches, Origine/Fin en début et fin de ligne, Ctrl+Origine/Fin aux extrémités.
+   Sans cela la vue Liens imposait un arrêt de tabulation par case — 136 sur la démo. */
+let crossPos=null;       // {r,m} de la case courante, conservée d'un rendu à l'autre
+let crossRefocus=false;  // demande de restitution du focus après re-rendu de la grille
+const crossInputs=()=>[...document.querySelectorAll('#crossArea tbody input[type=checkbox]')];
+const crossGrid=()=>[...document.querySelectorAll('#crossArea tbody tr')]
+  .map(tr=>[...tr.querySelectorAll('input[type=checkbox]')]).filter(row=>row.length);
+function crossFind(pos){
+  if(!pos)return null;
+  return crossInputs().find(x=>x.dataset.r===pos.r&&x.dataset.m===pos.m)||null;
+}
+function crossSetCurrent(cb,focus){
+  if(!cb)return;
+  crossInputs().forEach(x=>x.tabIndex=-1);
+  cb.tabIndex=0;crossPos={r:cb.dataset.r,m:cb.dataset.m};
+  if(focus)cb.focus();
+}
+/* Appelé après chaque rendu : rétablit le tabindex mobile et, au besoin, le focus. */
+function crossApplyRoving(){
+  const all=crossInputs();if(!all.length){crossRefocus=false;return;}
+  const cur=crossFind(crossPos)||all[0];
+  crossSetCurrent(cur,crossRefocus);
+  crossRefocus=false;
+}
+
 // Sous-onglet Associations : tableau croisé à cocher (+ marqueur des liens enrichis).
 function renderCrosstab(){
   const area=document.getElementById("crossArea");
@@ -3387,11 +3414,43 @@ function renderCrosstab(){
   });
   h+='</tbody></table>';
   area.innerHTML=h;
+  crossApplyRoving();
+  // Le tableau entier est reconstruit à chaque bascule, y compris hors rendu global :
+  // on repose ici la portée des en-têtes plutôt que d'attendre le prochain renderAll.
+  applyTableA11y();
 }
+/* Déplacement aux flèches ; la case courante est la seule à porter tabindex=0. */
+document.getElementById("crossArea").addEventListener("keydown",e=>{
+  const cb=e.target.closest('input[type=checkbox]');if(!cb)return;
+  const grid=crossGrid();if(!grid.length)return;
+  let ri=-1,ci=-1;
+  grid.forEach((row,i)=>{const j=row.indexOf(cb);if(j>=0){ri=i;ci=j;}});
+  if(ri<0)return;
+  const R=grid.length,C=grid[ri].length;
+  let nr=ri,nc=ci;
+  switch(e.key){
+    case "ArrowRight":nc=Math.min(C-1,ci+1);break;
+    case "ArrowLeft" :nc=Math.max(0,ci-1);break;
+    case "ArrowDown" :nr=Math.min(R-1,ri+1);break;
+    case "ArrowUp"   :nr=Math.max(0,ri-1);break;
+    case "Home":if(e.ctrlKey){nr=0;nc=0;}else nc=0;break;
+    case "End" :if(e.ctrlKey){nr=R-1;nc=grid[R-1].length-1;}else nc=C-1;break;
+    default:return;
+  }
+  e.preventDefault();
+  crossSetCurrent(grid[nr][Math.min(nc,grid[nr].length-1)],true);
+});
+// Un clic (ou un focus) sur une case en fait la case courante.
+document.getElementById("crossArea").addEventListener("focusin",e=>{
+  const cb=e.target.closest('input[type=checkbox]');if(cb)crossSetCurrent(cb,false);
+});
 document.getElementById("crossArea").addEventListener("change",e=>{
   const cb=e.target.closest('input[type=checkbox]');if(!cb)return;
   const rid=cb.dataset.r,mid=cb.dataset.m;
-  const refresh=()=>{markDirty();renderCrosstab();renderLinkDetails();renderRisks();renderMeasures();updateBadges();};
+  crossSetCurrent(cb,false);
+  // Le re-rendu détruit la case : on demande la restitution du focus, mais seulement
+  // si la confirmation aboutit (sinon rien n'est re-rendu et le drapeau resterait armé).
+  const refresh=()=>{crossRefocus=true;markDirty();renderCrosstab();renderLinkDetails();renderRisks();renderMeasures();updateBadges();};
   if(cb.checked){
     cb.checked=false; // cocher = créer le lien : on attend la confirmation avant de créer
     confirmModal(t("confirm_add_link",rid,mid),()=>{
