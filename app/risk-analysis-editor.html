@@ -129,6 +129,10 @@
   label.field .lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
   /* Champ obligatoire : astérisque coloré, doublé par aria-required sur le contrôle. */
   .req{font-weight:700;margin-left:2px}
+  /* Réservé aux technologies d'assistance : présent dans l'arbre d'accessibilité,
+     invisible à l'écran (les titres de carte portent déjà l'information visuelle). */
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip-path:inset(50%);white-space:nowrap;border:0}
   .req-legend{color:var(--muted);font-size:11.5px;margin-bottom:10px}
   /* Sections repliables des modales longues : <details> natif (clavier et lecteurs d'écran). */
   .modal-sec{margin-top:18px;border-top:1px solid var(--border);padding-top:10px}
@@ -172,6 +176,16 @@
   /* Les registres sont larges : sur écran étroit ils défilent au lieu d'être tronqués.
      Le retrait interne (compensé par la marge négative) laisse la place au halo de focus
      des boutons de dernière colonne, qui serait sinon rogné par le conteneur. */
+  /* En-tête de carte : titre à gauche, actions à droite, qui passent à la ligne sur
+     écran étroit — sans quoi le dernier bouton déborde de la page. */
+  /* Bloc d'amorçage (analyse vierge). */
+  .card.start{border-color:var(--accent)}
+  .start-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 4px}
+  .start-steps{margin:12px 0 0;padding-left:20px;color:var(--muted);font-size:12.5px;line-height:1.7}
+  .start-steps li{padding-left:2px}
+  .card-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .card-head>.spacer{flex:1 1 0;min-width:0}
+  .card-head .btn{margin-right:0!important}
   .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:3px;margin:-3px;scroll-padding:6px}
   /* Compteur « N sur M », affiché seulement quand un filtre masque des lignes. */
   .flt-count{color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;align-self:center}
@@ -355,7 +369,9 @@
   tr[data-mid]:hover td,.plan-card[data-mid]:hover{background:var(--panel-2)}
 
   /* ---------- Liens crosstab ---------- */
-  .cross{overflow:auto;border:1px solid var(--border);border-radius:10px}
+  /* max-width : sans borne, le conteneur s'étire à la taille du tableau et pousse la page
+     au lieu de défiler. */
+  .cross{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:10px}
   .cross table{width:auto;border-collapse:collapse}
   .cross th,.cross td{border-bottom:1px solid var(--border)}
   .cross th.corner{position:sticky;left:0;z-index:3;background:var(--panel);text-align:left;
@@ -482,6 +498,8 @@
     .report{max-width:none}
     .report .rp-card{border:none;border-radius:0;padding:14px 0;margin:0 0 8px}
     .report tr,.report .rp-item{break-inside:avoid}
+    /* Les conteneurs à défilement n'ont aucun sens sur papier : ils tronqueraient. */
+    .table-scroll{overflow:visible!important;padding:0!important;margin:0!important}
   }
 </style>
 </head>
@@ -556,7 +574,7 @@
   <!-- ============ RISQUES ============ -->
   <section class="view" id="view-risks">
     <div class="card">
-      <div style="display:flex;align-items:center;margin-bottom:14px">
+      <div class="card-head">
         <div><h2 data-i18n="risks_title">Registre des risques</h2><div class="caption" style="margin:0" data-i18n="risks_caption">Cliquez sur un risque pour l'éditer.</div></div>
         <div class="spacer" style="flex:1"></div>
         <button class="btn ghost" id="btnImportRisks" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
@@ -569,6 +587,7 @@
         <span class="flt-count" id="cntRisks"></span>
       </div>
       <div class="table-scroll"><table id="risksTableEl">
+        <caption class="sr-only" data-i18n="risks_title">Registre des risques</caption>
         <thead><tr>
           <th data-sort="id"><span data-i18n="th_id">ID</span><span class="sort-ind"></span></th>
           <th data-sort="risk"><span data-i18n="th_risk">Risque</span><span class="sort-ind"></span></th>
@@ -588,7 +607,7 @@
   <!-- ============ MESURES ============ -->
   <section class="view" id="view-measures">
     <div class="card">
-      <div style="display:flex;align-items:center;margin-bottom:14px">
+      <div class="card-head">
         <div><h2 data-i18n="measures_title">Mesures de maîtrise</h2><div class="caption" style="margin:0" data-i18n="measures_caption">Actions réduisant la probabilité et/ou la gravité des risques.</div></div>
         <div class="spacer" style="flex:1"></div>
         <button class="btn ghost" id="btnImportMeasures" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
@@ -602,6 +621,7 @@
         <span class="flt-count" id="cntMeasures"></span>
       </div>
       <div class="table-scroll"><table id="measuresTableEl">
+        <caption class="sr-only" data-i18n="measures_title">Mesures de maîtrise</caption>
         <thead><tr>
           <th data-sort="id"><span data-i18n="th_id">ID</span><span class="sort-ind"></span></th>
           <th data-sort="measure"><span data-i18n="th_measure">Mesure</span><span class="sort-ind"></span></th>
@@ -645,7 +665,7 @@
   <!-- ============ LIENS ============ -->
   <section class="view" id="view-links">
     <div class="card">
-      <div style="display:flex;align-items:center;margin-bottom:14px">
+      <div class="card-head">
         <div class="seg" id="linksSeg">
           <button data-mode="grid" class="active" data-i18n="links_seg_grid">Associations</button>
           <button data-mode="details" data-i18n="links_seg_details">Détails</button>
@@ -667,6 +687,25 @@
 
   <!-- ============ PRÉSENTATION ============ -->
   <section class="view active" id="view-presentation">
+    <!-- Amorçage : visible tant que l'analyse est vierge. Disparaît dès le premier risque
+         saisi ou dès qu'un fichier est chargé. -->
+    <div class="card start" id="startCard" style="display:none">
+      <h2 data-i18n="start_title">Par où commencer</h2>
+      <div class="caption" data-i18n="start_intro">Une analyse de risques se construit dans l'ordre des onglets : cotez la grille, saisissez les risques, puis les mesures, associez-les, et lisez le résultat dans les matrices et le rapport.</div>
+      <div class="start-actions">
+        <button class="btn" id="startNew"><span data-i18n="start_blank">Commencer une analyse vierge</span></button>
+        <button class="btn ghost" id="startOpen"><span data-i18n="start_open">Charger un fichier .rae.json</span></button>
+        <button class="btn ghost" id="startDemo"><span data-i18n="start_demo">Ouvrir une analyse de démonstration</span></button>
+      </div>
+      <ol class="start-steps">
+        <li data-i18n="start_step1">Vérifiez la grille de cotation dans Paramètres (axes, niveaux de criticité).</li>
+        <li data-i18n="start_step2">Saisissez vos risques, puis vos mesures de maîtrise.</li>
+        <li data-i18n="start_step3">Associez mesures et risques dans l'onglet Liens.</li>
+        <li data-i18n="start_step4">Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.</li>
+      </ol>
+      <div class="caption" id="startNote" style="margin-top:10px"></div>
+    </div>
+
     <div class="card">
       <h2 data-i18n="settings_general">Informations générales</h2>
       <div class="caption" data-i18n="settings_general_caption">Métadonnées documentaires de l'analyse.</div>
@@ -785,7 +824,7 @@
       <div id="matrixEditor" style="display:none"></div>
 
       <h3 data-i18n="crit_title">Niveaux de criticité (zones colorées)</h3>
-      <div class="table-scroll"><table id="critTable">
+      <div class="table-scroll"><table id="critTable"><caption class="sr-only" data-i18n="crit_title">Niveaux de criticité</caption>
         <thead><tr><th data-i18n="th_label">Libellé</th><th data-i18n="th_code">Code</th><th data-i18n="th_score_min">Score min</th><th data-i18n="th_score_max">Score max</th><th data-i18n="th_color">Couleur</th><th data-i18n="th_acceptance">Acceptation</th><th></th></tr></thead>
         <tbody id="critBody"></tbody>
       </table></div>
@@ -796,7 +835,7 @@
     <!-- -------- Sous-onglet : Champs personnalisés -------- -->
     <div class="card ppanel" data-pmode="fields" style="display:none">
       <div class="caption" data-i18n="cf_caption">Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.</div>
-      <div class="table-scroll"><table id="cfTable">
+      <div class="table-scroll"><table id="cfTable"><caption class="sr-only" data-i18n="cf_section">Champs personnalisés</caption>
         <thead><tr><th data-i18n="cf_target">Cible</th><th data-i18n="cf_code">Code</th><th data-i18n="th_label">Libellé</th><th data-i18n="th_type">Type</th><th data-i18n="cf_required">Obligatoire</th><th></th></tr></thead>
         <tbody id="cfBody"></tbody>
       </table></div>
@@ -1024,6 +1063,16 @@ const I18N = {
     autosave_restore:"Restaurer",
     autosave_discard:"Ignorer",
     autosave_restored:"Analyse restaurée. Pensez à l'enregistrer.",
+    start_title:"Par où commencer",
+    start_intro:"Une analyse de risques se construit dans l'ordre des onglets : cotez la grille, saisissez les risques, puis les mesures, associez-les, et lisez le résultat dans les matrices et le rapport.",
+    start_blank:"Commencer une analyse vierge",
+    start_open:"Charger un fichier .rae.json",
+    start_demo:"Ouvrir une analyse de démonstration",
+    start_step1:"Vérifiez la grille de cotation dans Paramètres (axes, niveaux de criticité).",
+    start_step2:"Saisissez vos risques, puis vos mesures de maîtrise.",
+    start_step3:"Associez mesures et risques dans l'onglet Liens.",
+    start_step4:"Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.",
+    start_demo_failed:"Démonstration non accessible depuis ce mode d'ouverture. Utilisez « Charger un fichier .rae.json » et choisissez {0} dans le dossier examples/.",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -1230,6 +1279,16 @@ const I18N = {
     autosave_restore:"Restore",
     autosave_discard:"Discard",
     autosave_restored:"Analysis restored. Remember to save it.",
+    start_title:"Where to start",
+    start_intro:"A risk analysis is built in the order of the tabs: set the rating grid, enter the risks, then the measures, link them, and read the result in the matrices and the report.",
+    start_blank:"Start a blank analysis",
+    start_open:"Load a .rae.json file",
+    start_demo:"Open a demonstration analysis",
+    start_step1:"Check the rating grid in Settings (axes, criticality levels).",
+    start_step2:"Enter your risks, then your controls.",
+    start_step3:"Link measures and risks in the Links tab.",
+    start_step4:"Read the matrices, follow the Action plan, print the Report.",
+    start_demo_failed:"The demonstration cannot be reached in this opening mode. Use “Load a .rae.json file” and pick {0} from the examples/ folder.",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1436,6 +1495,16 @@ const I18N = {
     autosave_restore:"Ripristina",
     autosave_discard:"Ignora",
     autosave_restored:"Analisi ripristinata. Ricordati di salvarla.",
+    start_title:"Da dove cominciare",
+    start_intro:"Un'analisi dei rischi si costruisce nell'ordine delle schede: imposta la griglia, inserisci i rischi, poi le misure, collegali e leggi il risultato nelle matrici e nel rapporto.",
+    start_blank:"Iniziare un'analisi vuota",
+    start_open:"Carica un file .rae.json",
+    start_demo:"Apri un'analisi dimostrativa",
+    start_step1:"Verifica la griglia di valutazione in Impostazioni (assi, livelli di criticità).",
+    start_step2:"Inserisci i rischi, poi le misure di controllo.",
+    start_step3:"Collega misure e rischi nella scheda Collegamenti.",
+    start_step4:"Leggi le matrici, segui il Piano d'azione, stampa il Rapporto.",
+    start_demo_failed:"Dimostrazione non raggiungibile in questa modalità di apertura. Usa «Carica un file .rae.json» e scegli {0} nella cartella examples/.",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -2013,10 +2082,44 @@ function normalize(d){
    ============================================================ */
 /* Portée des en-têtes de tableau : posée après coup sur tous les tableaux rendus,
    plutôt que dans chacune des ~15 fonctions qui en produisent. */
+/* Les tableaux générés (rapport, détails des liens…) n'ont pas de conteneur à défilement
+   dans leur balisage : on les enveloppe après coup, sinon ils poussent la page sur écran
+   étroit. Idempotent : un tableau déjà enveloppé est ignoré. */
+function wrapTables(){
+  document.querySelectorAll("main table").forEach(tb=>{
+    if(tb.closest(".table-scroll")||tb.closest(".cross")||tb.closest(".mtx-edit"))return;
+    const d=document.createElement("div");d.className="table-scroll";
+    tb.parentNode.insertBefore(d,tb);d.appendChild(tb);
+  });
+}
 function applyTableA11y(){
+  wrapTables();
   document.querySelectorAll("table").forEach(tb=>{
     tb.querySelectorAll("thead th:not([scope])").forEach(th=>th.setAttribute("scope","col"));
     tb.querySelectorAll("tbody th:not([scope])").forEach(th=>th.setAttribute("scope","row"));
+    // Légende : reprise du titre qui précède le tableau, pour les tableaux générés
+    // (rapport, détails des liens…) qui n'en portent pas dans leur balisage.
+    if(!tb.querySelector("caption")){
+      /* Titre le plus proche précédant le tableau, cherché dans sa carte uniquement :
+         élargir au-delà ferait emprunter le titre d'une autre vue. */
+      const scope=tb.closest(".card")||tb.closest(".view");
+      let titre=null;
+      if(scope)[...scope.querySelectorAll("h1,h2,h3,h4")].forEach(h=>{
+        if(h.compareDocumentPosition(tb)&Node.DOCUMENT_POSITION_FOLLOWING)titre=h.textContent.trim();
+      });
+      // Certaines cartes n'ont pas de titre propre : on retombe sur le nom de l'onglet,
+      // déjà relié à la vue par aria-labelledby (badge de comptage retiré).
+      if(!titre){
+        const vue=tb.closest(".view"), lb=vue&&vue.getAttribute("aria-labelledby");
+        const ong=lb&&document.getElementById(lb);
+        if(ong)titre=ong.textContent.trim().replace(/\s*\d+\s*$/,"");
+      }
+      if(titre){
+        const c=document.createElement("caption");
+        c.className="sr-only";c.textContent=titre;
+        tb.insertBefore(c,tb.firstChild);
+      }
+    }
   });
 }
 function renderAll(){
@@ -3156,9 +3259,10 @@ function planRow(m){
     '<td>'+planCovered(m.id)+'</td></tr>';
 }
 function planTable(list){
-  return '<table><thead><tr><th>'+esc(t("th_id"))+'</th><th>'+esc(t("th_measure"))+'</th><th>'+esc(t("th_responsible"))+
+  // Conteneur à défilement : sur écran étroit le tableau défile au lieu de pousser la page.
+  return '<div class="table-scroll"><table><thead><tr><th>'+esc(t("th_id"))+'</th><th>'+esc(t("th_measure"))+'</th><th>'+esc(t("th_responsible"))+
     '</th><th>'+esc(t("f_due_date"))+'</th><th>'+esc(t("th_status"))+'</th><th>'+esc(t("th_covered_risks"))+'</th></tr></thead><tbody>'+
-    list.map(planRow).join("")+'</tbody></table>';
+    list.map(planRow).join("")+'</tbody></table></div>';
 }
 function planCard(m){
   const ov=isOverdue(m), risks=risksOfMeasure(m.id);
@@ -3658,7 +3762,7 @@ function renderCrosstab(){
   const area=document.getElementById("crossArea");
   if(!analyse.risks.length||!analyse.measures.length){
     area.innerHTML='<div class="empty">'+esc(t("links_empty"))+'</div>';return;}
-  let h='<table><thead><tr><th class="corner">'+esc(t("cross_corner"))+'</th>';
+  let h='<table><caption class="sr-only">'+esc(t("links_title"))+'</caption><thead><tr><th class="corner">'+esc(t("cross_corner"))+'</th>';
   analyse.measures.forEach((m,i)=>h+='<th scope="col" class="vert'+(i%2?' altcol':'')+'" title="'+esc(m.label)+'">'+esc(m.id)+' · '+esc(m.label)+'</th>');
   h+='</tr></thead><tbody>';
   analyse.risks.forEach(r=>{
@@ -3818,7 +3922,15 @@ function presSetPending(v){
   if(c)c.disabled=!presPending;
   if(!presPending)presMsg("");
 }
+/* Le bloc d'amorçage n'a de sens que sur une analyse encore vide : dès qu'un risque
+   ou une mesure existe, l'utilisateur sait où il est et le bloc s'efface. */
+function renderStartCard(){
+  const c=document.getElementById("startCard");if(!c)return;
+  const vide=!analyse.risks.length&&!analyse.measures.length;
+  c.style.display=vide?"":"none";
+}
 function renderPresentation(){
+  renderStartCard();
   const md=analyse.metadata;
   setVal("mTitle",md.title);setVal("mAuthor",md.author);setVal("mOrg",md.organization);
   setVal("mScope",md.scope);setVal("mRef",md.methodology_reference);setVal("mRevision",md.revision);setVal("mDesc",md.description);
@@ -4998,6 +5110,29 @@ document.addEventListener("mousedown",e=>{
   if(!e.target.closest(".menu-wrap"))closeMenu(false);
 });
 document.getElementById("miAbout").addEventListener("click",openAboutModal);
+
+/* ---------- Amorçage (bloc « Par où commencer ») ---------- */
+document.getElementById("startNew").addEventListener("click",()=>{
+  document.getElementById("startCard").style.display="none";
+  const ti=document.getElementById("mTitle");if(ti){ti.focus();ti.select();}
+});
+document.getElementById("startOpen").addEventListener("click",()=>presGuard(openFile));
+/* Les analyses de démonstration vivent à côté de l'application (dossier examples/).
+   En file://, certains navigateurs refusent la lecture d'un fichier voisin : on le dit
+   clairement plutôt que d'échouer en silence. */
+const DEMOS={fr:"demo-ebios-rm-systeme-d-information.rae.json",en:"demo-ebios-rm-information-system.rae.json",
+             it:"demo-ebios-rm-systeme-d-information.rae.json"};
+document.getElementById("startDemo").addEventListener("click",()=>presGuard(async()=>{
+  const nom=DEMOS[lang]||DEMOS.fr, note=document.getElementById("startNote");
+  note.textContent="";
+  try{
+    const resp=await fetch("../examples/"+nom,{cache:"no-store"});
+    if(!resp.ok)throw new Error("HTTP "+resp.status);
+    if(applyLoadedData(JSON.parse(await resp.text()),nom,false))toast(t("toast_loaded"));
+  }catch(ex){
+    note.textContent=t("start_demo_failed",nom);
+  }
+}));
 
 /* ============================================================
    INIT
