@@ -178,7 +178,8 @@
      des boutons de dernière colonne, qui serait sinon rogné par le conteneur. */
   /* En-tête de carte : titre à gauche, actions à droite, qui passent à la ligne sur
      écran étroit — sans quoi le dernier bouton déborde de la page. */
-  /* Bloc d'amorçage (analyse vierge). */
+  /* Bloc d'amorçage (analyse vierge) : seul visible dans l'onglet tant qu'il est affiché. */
+  #view-presentation.onboarding>.card:not(.start){display:none!important}
   .card.start{border-color:var(--accent)}
   .start-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 4px}
   .start-steps{margin:12px 0 0;padding-left:20px;color:var(--muted);font-size:12.5px;line-height:1.7}
@@ -877,6 +878,10 @@ let analyse = null;
 let dirty = false;
 let currentFileName = null;
 let isFresh = false; // vrai tant que l'analyse est la nouvelle analyse vierge (grille par défaut relocalisée au changement de langue)
+/* Bloc d'amorçage : réservé au tout premier affichage. Dès que l'utilisateur a agi
+   (saisie, chargement, « Nouveau »), il ne doit plus réapparaître — sinon supprimer le
+   dernier risque le ferait ressurgir par-dessus un formulaire déjà rempli. */
+let startDismissed = false;
 
 /* ============================================================
    INTERNATIONALISATION (i18n) — sélecteur de langue FR / EN / IT
@@ -1599,7 +1604,7 @@ function emptyAnalysis(lg){
 function today(){const d=new Date();const p=n=>String(n).padStart(2,"0");
   return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-function markDirty(){dirty=true;isFresh=false;refreshFileState();}
+function markDirty(){dirty=true;isFresh=false;startDismissed=true;refreshFileState();}
 
 /* ============================================================
    MARKDOWN (sous-ensemble GFM, sans dépendance)
@@ -1879,7 +1884,8 @@ const RAE_TYPES=[{description:"Analyse de risques (.rae.json)",accept:{"applicat
 
 function newAnalysis(){
   const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
-    dirty=false;isFresh=true;autosaveClear();renderAll();toast(t("toast_new"));};
+    dirty=false;isFresh=true;startDismissed=true;   // demande explicite : pas de mode d'emploi
+    autosaveClear();renderAll();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
 }
 /* Ouverture : par le sélecteur natif quand l'API est disponible (on obtient alors une
@@ -1907,6 +1913,7 @@ function applyLoadedData(data,name,withQuery){
   const err=validateStructure(data);
   if(err){alertModal(t("err_invalid_file",err));return false;}
   analyse=normalize(data);currentFileName=name||null;dirty=false;isFresh=false;
+  startDismissed=true;   // un chargement explicite vaut prise en main
   // Langue de l'interface au chargement : ?lang (si withQuery) > langue du fichier > localStorage > navigateur > anglais.
   const fileLang=analyse.metadata&&analyse.metadata.language;
   lang=resolveLang(fileLang,withQuery);
@@ -3922,12 +3929,18 @@ function presSetPending(v){
   if(c)c.disabled=!presPending;
   if(!presPending)presMsg("");
 }
-/* Le bloc d'amorçage n'a de sens que sur une analyse encore vide : dès qu'un risque
-   ou une mesure existe, l'utilisateur sait où il est et le bloc s'efface. */
+/* Bloc d'amorçage : affiché au tout premier affichage d'une analyse vide, et alors seul
+   — les autres cartes de l'onglet sont masquées, la barre d'onglets restant visible pour
+   que la structure de l'outil se lise d'emblée.
+   Il ne réapparaît pas après un « Nouveau », un chargement, ni la moindre modification :
+   à ce moment-là l'utilisateur a déjà l'application sous les yeux et sait où il est
+   (`startDismissed`, posé par markDirty et déclaré avec l'état du document). */
 function renderStartCard(){
-  const c=document.getElementById("startCard");if(!c)return;
-  const vide=!analyse.risks.length&&!analyse.measures.length;
-  c.style.display=vide?"":"none";
+  const c=document.getElementById("startCard"), v=document.getElementById("view-presentation");
+  if(!c||!v)return;
+  const montrer=!startDismissed && !analyse.risks.length && !analyse.measures.length;
+  c.style.display=montrer?"":"none";
+  v.classList.toggle("onboarding",montrer);
 }
 function renderPresentation(){
   renderStartCard();
@@ -5113,7 +5126,7 @@ document.getElementById("miAbout").addEventListener("click",openAboutModal);
 
 /* ---------- Amorçage (bloc « Par où commencer ») ---------- */
 document.getElementById("startNew").addEventListener("click",()=>{
-  document.getElementById("startCard").style.display="none";
+  startDismissed=true;renderStartCard();
   const ti=document.getElementById("mTitle");if(ti){ti.focus();ti.select();}
 });
 document.getElementById("startOpen").addEventListener("click",()=>presGuard(openFile));
