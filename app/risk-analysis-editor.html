@@ -187,6 +187,10 @@
   .tab[aria-disabled="true"]{opacity:.4;cursor:not-allowed}
   .tab[aria-disabled="true"]:hover{color:var(--muted)}
   .card.start{border-color:var(--accent)}
+  /* Création rapide dans les sections de liaison des modales. */
+  .quick-add{display:flex;gap:8px;margin-bottom:10px}
+  .quick-add input{flex:1;min-width:0}
+  .quick-add .btn{flex:none;white-space:nowrap}
   .start-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 4px}
   .start-steps{margin:12px 0 0;padding-left:20px;color:var(--muted);font-size:12.5px;line-height:1.7}
   .start-steps li{padding-left:2px}
@@ -1085,6 +1089,12 @@ const I18N = {
     start_step4:"Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.",
     start_demo_failed:"Démonstration non accessible depuis ce mode d'ouverture. Utilisez « Charger un fichier .rae.json » et choisissez {0} dans le dossier examples/.",
     start_locked:"Choisissez d'abord comment commencer ci-dessus.",
+    covered_risks_title:"Risques couverts",
+    no_risks_defined:"Aucun risque défini pour l'instant.",
+    quick_measure_ph:"Nouvelle mesure : intitulé…",
+    quick_risk_ph:"Nouveau risque : intitulé…",
+    quick_create_link:"Créer et lier",
+    quick_created:"{0} créé et lié : {1}",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -1302,6 +1312,12 @@ const I18N = {
     start_step4:"Read the matrices, follow the Action plan, print the Report.",
     start_demo_failed:"The demonstration cannot be reached in this opening mode. Use “Load a .rae.json file” and pick {0} from the examples/ folder.",
     start_locked:"First choose how to start above.",
+    covered_risks_title:"Covered risks",
+    no_risks_defined:"No risk defined yet.",
+    quick_measure_ph:"New measure: label…",
+    quick_risk_ph:"New risk: label…",
+    quick_create_link:"Create and link",
+    quick_created:"{0} created and linked: {1}",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1519,6 +1535,12 @@ const I18N = {
     start_step4:"Leggi le matrici, segui il Piano d'azione, stampa il Rapporto.",
     start_demo_failed:"Dimostrazione non raggiungibile in questa modalità di apertura. Usa «Carica un file .rae.json» e scegli {0} nella cartella examples/.",
     start_locked:"Scegli prima come iniziare qui sopra.",
+    covered_risks_title:"Rischi coperti",
+    no_risks_defined:"Nessun rischio definito finora.",
+    quick_measure_ph:"Nuova misura: etichetta…",
+    quick_risk_ph:"Nuovo rischio: etichetta…",
+    quick_create_link:"Crea e collega",
+    quick_created:"{0} creato e collegato: {1}",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -3576,16 +3598,9 @@ function openRiskModal(id){
         '<div class="hint" id="prev_r"></div>'+
       '</div>'+
     '</div>'+
-    modalSection(t("linked_measures_title"),
-      (analyse.measures.length?'<div class="sub-card" id="linkList">'+
-        analyse.measures.map(m=>{
-          const on=linked.has(m.id);
-          return '<div class="link-row"><input type="checkbox" data-mid="'+esc(m.id)+'"'+(on?" checked":"")+'>'+
-            '<span class="lname"><span class="id-badge">'+esc(m.id)+'</span> '+esc(m.label)+'</span></div>';
-        }).join("")+'</div>'
-       :'<div class="hint">'+esc(t("no_measures_defined"))+'</div>'),
+    modalSection(t("linked_measures_title"),linkSectionHTML("measure",linked),
       analyse.measures.length<=SEC_MAX_LINKS,
-      analyse.measures.length?linked.size+"/"+analyse.measures.length:null, "linkCount")+
+      linked.size+"/"+analyse.measures.length, "linkCount")+
     (customFieldsFor("risk").length
       ? modalSection(t("cf_section"),'<div class="grid2">'+cfFieldsHTML("risk",r.custom)+'</div>',
           customFieldsFor("risk").length<=SEC_MAX_CF, customFieldsFor("risk").length)
@@ -3607,12 +3622,15 @@ function openRiskModal(id){
     if(isNew)analyse.risks.push(obj);
     else{const i=analyse.risks.findIndex(x=>x.id===r.id);analyse.risks[i]=obj;
       if(newId!==r.id)analyse.treatments.forEach(t=>{if(t.risk===r.id)t.risk=newId;});}
-    // reconstruire les liens de ce risque en préservant note/champs perso des liens conservés
+    /* Liens de ce risque. On retire les décochés en place et on ajoute les nouveaux à la
+       fin : les liens conservés gardent leur position, donc l'ordre du fichier reste
+       stable d'un enregistrement à l'autre (diffs lisibles), et leur note comme leurs
+       champs personnalisés sont préservés puisqu'on ne les recrée pas. */
     const keep=new Set();
     document.querySelectorAll('#linkList input[type=checkbox]').forEach(cb=>{if(cb.checked)keep.add(cb.dataset.mid);});
-    const prevLinks=analyse.treatments.filter(t=>t.risk===obj.id);
-    analyse.treatments=analyse.treatments.filter(t=>t.risk!==obj.id);
-    keep.forEach(mid=>analyse.treatments.push(prevLinks.find(t=>t.measure===mid)||{risk:obj.id,measure:mid}));
+    analyse.treatments=analyse.treatments.filter(x=>x.risk!==obj.id||keep.has(x.measure));
+    keep.forEach(mid=>{if(!analyse.treatments.some(x=>x.risk===obj.id&&x.measure===mid))
+      analyse.treatments.push({risk:obj.id,measure:mid});});
     markDirty();renderAll();return true;
   });
 
@@ -3628,10 +3646,7 @@ function openRiskModal(id){
 
   /* Compteur « liées / total » de la section des mesures, tenu à jour à chaque case cochée
      — il reste ainsi lisible lorsque la section est repliée. */
-  const ll=document.getElementById("linkList"), lc=document.getElementById("linkCount");
-  if(ll&&lc)ll.addEventListener("change",()=>{
-    lc.textContent="("+ll.querySelectorAll('input[type=checkbox]:checked').length+"/"+analyse.measures.length+")";
-  });
+  refreshLinkCount();   // le suivi est assuré par l'écouteur global sur #linkList
 }
 
 /* ============================================================
@@ -3724,6 +3739,7 @@ function openMeasureModal(id){
   const isNew=!id;
   const m=isNew?{id:nextId(analyse.measures,"M"),label:"",type:"technical",status:"proposed"}
     :JSON.parse(JSON.stringify(measureById(id)));
+  const couverts=new Set(isNew?[]:risksOfMeasure(m.id));
   const body=reqLegend()+'<div class="grid2">'+
     '<label class="field"><span class="lab">'+esc(t("f_identifier"))+'</span><input id="f_id" value="'+esc(m.id)+'"></label>'+
     '<label class="field"><span class="lab">'+esc(t("th_status"))+'</span><select id="f_status">'+
@@ -3737,6 +3753,9 @@ function openMeasureModal(id){
     '<label class="field full"><span class="lab">'+esc(t("f_description"))+'</span><textarea id="f_desc">'+esc(m.description||"")+'</textarea></label>'+
     '<label class="field full"><span class="lab">'+esc(t("f_notes"))+'</span><textarea id="f_comment">'+esc(m.comment||"")+'</textarea></label>'+
     '</div>'+
+    modalSection(t("covered_risks_title"),linkSectionHTML("risk",couverts),
+      analyse.risks.length<=SEC_MAX_LINKS,
+      couverts.size+"/"+analyse.risks.length, "linkCount")+
     (customFieldsFor("measure").length
       ? modalSection(t("cf_section"),'<div class="grid2">'+cfFieldsHTML("measure",m.custom)+'</div>',
           customFieldsFor("measure").length<=SEC_MAX_CF, customFieldsFor("measure").length)
@@ -3754,6 +3773,13 @@ function openMeasureModal(id){
     if(isNew)analyse.measures.push(obj);
     else{const i=analyse.measures.findIndex(x=>x.id===m.id);analyse.measures[i]=obj;
       if(newId!==m.id)analyse.treatments.forEach(t=>{if(t.measure===m.id)t.measure=newId;});}
+    // Liens de cette mesure — même principe que la modale de risque : ordre du fichier
+    // préservé, notes et champs personnalisés des liens conservés intacts.
+    const keep=new Set();
+    document.querySelectorAll('#linkList input[type=checkbox]').forEach(cb=>{if(cb.checked)keep.add(cb.dataset.mid);});
+    analyse.treatments=analyse.treatments.filter(x=>x.measure!==obj.id||keep.has(x.risk));
+    keep.forEach(rid=>{if(!analyse.treatments.some(x=>x.risk===rid&&x.measure===obj.id))
+      analyse.treatments.push({risk:rid,measure:obj.id});});
     markDirty();renderAll();return true;
   });
 }
@@ -4431,6 +4457,68 @@ const REQ='<span class="req" aria-hidden="true">*</span>';
 const SEC_MAX_LINKS=8, SEC_MAX_CF=6;
 function reqLegend(){return '<div class="req-legend">'+esc(t("req_legend"))+'</div>';}
 /* Section repliable d'une modale. `open` : dépliée par défaut. */
+/* Section de liaison d'une modale : création rapide + liste à cocher.
+   Mutualisée entre « Mesures de maîtrise liées » (modale de risque) et « Risques couverts »
+   (modale de mesure) : même balisage, même comportement, un seul code à vérifier. */
+function linkSectionHTML(kind,liees){
+  // kind : "measure" -> on lie des mesures ; "risk" -> on lie des risques.
+  const items=(kind==="measure"?analyse.measures:analyse.risks);
+  const vide=(kind==="measure"?t("no_measures_defined"):t("no_risks_defined"));
+  const ph=(kind==="measure"?t("quick_measure_ph"):t("quick_risk_ph"));
+  const quick='<div class="quick-add">'+
+    '<input id="qaInput" data-qa="'+kind+'" placeholder="'+esc(ph)+'" aria-label="'+esc(ph)+'">'+
+    '<button type="button" class="btn ghost" id="qaBtn">'+esc(t("quick_create_link"))+'</button></div>';
+  const liste=items.length
+    ? '<div class="sub-card" id="linkList">'+items.map(x=>linkRowHTML(x,liees.has(x.id))).join("")+'</div>'
+    : '<div class="hint" id="linkList">'+esc(vide)+'</div>';
+  return quick+liste;
+}
+function linkRowHTML(x,coche){
+  return '<div class="link-row"><input type="checkbox" data-mid="'+esc(x.id)+'"'+(coche?" checked":"")+
+    ' aria-label="'+esc(x.id+" — "+x.label)+'">'+
+    '<span class="lname"><span class="id-badge">'+esc(x.id)+'</span> '+esc(x.label)+'</span></div>';
+}
+/* Compteur « liés / total » de la section, tenu à jour après chaque cochage ou création. */
+function refreshLinkCount(){
+  const lc=document.getElementById("linkCount"), ll=document.getElementById("linkList");
+  if(!lc||!ll)return;
+  const cases=ll.querySelectorAll('input[type=checkbox]');
+  lc.textContent="("+ll.querySelectorAll('input[type=checkbox]:checked').length+"/"+cases.length+")";
+}
+/* Création rapide : l'élément est créé immédiatement (acte explicite), coché, et reste
+   acquis même si la modale en cours est annulée — il est modifiable dans son registre. */
+function quickCreate(){
+  const inp=document.getElementById("qaInput");if(!inp)return;
+  const lib=inp.value.trim();if(!lib){inp.focus();return;}
+  const kind=inp.dataset.qa;
+  let obj;
+  if(kind==="measure"){
+    obj={id:nextId(analyse.measures,"M"),label:lib,type:"technical",status:"proposed"};
+    analyse.measures.push(obj);
+  }else{
+    const ev={probability:probabilityLevels()[0].value,severity:severityLevels()[0].value};
+    obj={id:nextId(analyse.risks,"R"),label:lib,
+      initial_assessment:Object.assign({},ev),residual_assessment:Object.assign({},ev)};
+    analyse.risks.push(obj);
+  }
+  // La liste peut être le message « aucun élément » : on la remplace par une vraie liste.
+  let ll=document.getElementById("linkList");
+  if(!ll.classList.contains("sub-card")){
+    const d=document.createElement("div");d.className="sub-card";d.id="linkList";
+    ll.parentNode.replaceChild(d,ll);ll=d;
+  }
+  ll.insertAdjacentHTML("beforeend",linkRowHTML(obj,true));
+  refreshLinkCount();
+  inp.value="";inp.focus();          // enchaînement possible sans reprendre la souris
+  markDirty();renderAll();           // l'élément apparaît aussitôt dans son registre
+  toast(t("quick_created",obj.id,lib));
+}
+document.addEventListener("click",e=>{if(e.target.closest("#qaBtn")){e.preventDefault();quickCreate();}});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target.id==="qaInput"){e.preventDefault();quickCreate();}
+});
+document.addEventListener("change",e=>{if(e.target.closest("#linkList"))refreshLinkCount();});
+
 function modalSection(titre,contenu,open,compte,idCompte){
   return '<details class="modal-sec"'+(open?" open":"")+'><summary>'+esc(titre)+
     (compte!=null?' <span class="count"'+(idCompte?' id="'+idCompte+'"':'')+'>('+esc(compte)+')</span>':'')+
