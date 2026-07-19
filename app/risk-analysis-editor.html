@@ -4470,6 +4470,50 @@ function openImportModal(kind){
    ============================================================ */
 let modalConfirm=null;
 function modalMsg(m){const e=document.getElementById("modalMsg");if(e)e.textContent=m||"";}
+
+/* ---------- Confinement du focus dans la modale du dessus ----------
+   Deux mécanismes complémentaires :
+   - `inert` sur tous les frères de la couche active : le fond devient inatteignable au
+     clavier ET à la souris, et disparaît de l'arbre d'accessibilité ;
+   - interception de Tab : le focus boucle à l'intérieur de la modale au lieu de sortir
+     vers la barre d'outils du navigateur.
+   Les deux tiennent compte de l'empilement (une confirmation par-dessus une modale
+   d'édition rend cette dernière inerte à son tour). */
+const FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function topLayer(){
+  if(dynModals.length)return dynModals[dynModals.length-1].bg;
+  const mb=document.getElementById("modalBg");
+  return mb&&mb.classList.contains("open")?mb:null;
+}
+function focusablesIn(root){
+  return [...root.querySelectorAll(FOCUSABLE)].filter(e=>e.offsetParent&&e.tabIndex>=0);
+}
+function refreshInert(){
+  const top=topLayer();
+  [...document.body.children].forEach(el=>{
+    if(el.tagName==="SCRIPT")return;
+    if(top&&el!==top)el.setAttribute("inert","");else el.removeAttribute("inert");
+  });
+}
+/* Focus initial : premier contrôle du corps, sinon des boutons de pied (cas des boîtes de
+   confirmation, dont le corps n'est que du texte) — la croix de fermeture en dernier recours. */
+function focusFirstIn(root){
+  for(const sel of [".body","footer",null]){
+    const zone=sel?root.querySelector(sel):root;
+    if(!zone)continue;
+    const list=focusablesIn(zone);
+    if(list.length){list[0].focus();return;}
+  }
+}
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Tab")return;
+  const top=topLayer();if(!top)return;
+  const list=focusablesIn(top);if(!list.length)return;
+  const first=list[0],last=list[list.length-1];
+  if(!top.contains(document.activeElement)){e.preventDefault();(e.shiftKey?last:first).focus();return;}
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+},true);
 function openModal(title,bodyHtml,onConfirm,okLabel){
   document.getElementById("modalTitle").textContent=title;
   document.getElementById("modalBody").innerHTML=bodyHtml;
@@ -4477,12 +4521,22 @@ function openModal(title,bodyHtml,onConfirm,okLabel){
     '<span id="modalMsg" style="flex:1;text-align:left;color:var(--danger);font-size:12.5px"></span>'+
     '<button class="btn ghost" id="modalCancel">'+esc(t("btn_cancel"))+'</button><button class="btn" id="modalOk">'+esc(okLabel||t("btn_save_modal"))+'</button>';
   modalConfirm=onConfirm;
-  document.getElementById("modalBg").classList.add("open");
+  const bg=document.getElementById("modalBg");
+  modalReturnFocus=document.activeElement;   // pour rendre le focus à la fermeture
+  bg.classList.add("open");
   document.getElementById("modalOk").onclick=()=>{modalMsg("");if(modalConfirm()!==false)closeModal();};
   document.getElementById("modalCancel").onclick=closeModal;
   enhanceTextareas(document.getElementById("modalBody")); // hauteur auto + aperçu Markdown
+  refreshInert();focusFirstIn(bg);
 }
-function closeModal(){document.getElementById("modalBg").classList.remove("open");modalConfirm=null;}
+let modalReturnFocus=null;
+function closeModal(){
+  document.getElementById("modalBg").classList.remove("open");modalConfirm=null;
+  refreshInert();
+  // Le focus revient sur l'élément qui a ouvert la modale (sinon il repart du haut de page).
+  if(modalReturnFocus&&document.body.contains(modalReturnFocus))modalReturnFocus.focus();
+  modalReturnFocus=null;
+}
 document.getElementById("modalX").onclick=closeModal;
 document.getElementById("modalBg").addEventListener("mousedown",e=>{if(e.target.id==="modalBg")closeModal();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dynModals.length&&document.getElementById("modalBg").classList.contains("open"))closeModal();});
@@ -4497,12 +4551,17 @@ function pushModal(title,bodyHtml,buttons){
   modal.querySelector(".body").innerHTML=bodyHtml;
   const foot=document.createElement("footer");modal.appendChild(foot);
   bg.appendChild(modal);document.body.appendChild(bg);
-  const entry={bg};dynModals.push(entry);
-  entry.close=()=>{const i=dynModals.indexOf(entry);if(i>=0)dynModals.splice(i,1);bg.remove();};
+  const entry={bg,retour:document.activeElement};dynModals.push(entry);
+  entry.close=()=>{
+    const i=dynModals.indexOf(entry);if(i>=0)dynModals.splice(i,1);
+    bg.remove();refreshInert();
+    if(entry.retour&&document.body.contains(entry.retour))entry.retour.focus();
+  };
   const api={close:entry.close};
   (buttons||[]).forEach(b=>{const btn=document.createElement("button");btn.className="btn"+(b.cls?" "+b.cls:"");btn.textContent=b.label;btn.onclick=()=>b.onClick(api);foot.appendChild(btn);});
   modal.querySelector(".x").onclick=entry.close;
   bg.addEventListener("mousedown",e=>{if(e.target===bg)entry.close();});
+  refreshInert();focusFirstIn(bg);
   return api;
 }
 function alertModal(message,title){
