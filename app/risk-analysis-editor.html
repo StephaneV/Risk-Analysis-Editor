@@ -209,6 +209,7 @@
     padding:2px 8px;font-size:11px;font-weight:700;color:var(--muted)}
   .tag{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;
     font-weight:700;color:#fff;white-space:nowrap}
+  .pill-list{display:flex;flex-wrap:wrap;gap:4px 5px}
   .pill{display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;
     background:var(--panel-2);border:1px solid var(--border);color:var(--muted)}
   .muted{color:var(--muted)}
@@ -3309,7 +3310,7 @@ let planMode="due_date";
 /* En retard : échéance passée ET mesure non finalisée (ni « en place » ni « abandonnée »). */
 function isOverdue(m){return !!(m.due_date && m.due_date<today() && m.status!=="implemented" && m.status!=="abandoned");}
 function planCovered(mid){const risks=risksOfMeasure(mid);
-  return risks.length?risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join(" "):'<span class="muted">—</span>';}
+  return risks.length?'<span class="pill-list">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join("")+'</span>':'<span class="muted">—</span>';}
 function planSortByDate(list){
   const withD=list.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:cmpId(a,b));
   const noD=list.filter(m=>!m.due_date).slice().sort(cmpId);
@@ -3341,7 +3342,7 @@ function planCard(m){
     ((m.due_date||m.responsible)?'<div class="muted" style="margin-top:4px;font-size:11px">'+
       (m.due_date?'<span'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(m.due_date)+(ov?' ⚠':'')+'</span>':'')+
       (m.due_date&&m.responsible?' · ':'')+(m.responsible?esc(m.responsible):'')+'</div>':'')+
-    (risks.length?'<div style="margin-top:5px">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join(" ")+'</div>':'')+
+    (risks.length?'<div class="pill-list" style="margin-top:5px">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join("")+'</div>':'')+
     customFieldsFor("measure").filter(f=>(f.type==="tags"||f.type==="progress")&&cfHasVal((m.custom||{})[f.code]))
       .map(f=>'<div style="margin-top:5px">'+cfDisplayHTML(f,(m.custom||{})[f.code])+'</div>').join("")+
   '</div>';
@@ -3539,7 +3540,7 @@ function renderRisks(){
       '<td class="muted">'+esc(r.category||"—")+'</td>'+
       '<td><span class="tag" style="background:'+ci.color+';color:'+badgeFg(ci.color)+'">'+esc(ci.label)+' · '+si+'</span></td>'+
       '<td><span class="tag" style="background:'+cr.color+';color:'+badgeFg(cr.color)+'">'+esc(cr.label)+' · '+sr+'</span></td>'+
-      '<td>'+(mes.length?mes.map(id=>measurePill(id)).join(" "):'<span class="muted">—</span>')+'</td>'+
+      '<td>'+(mes.length?'<span class="pill-list">'+mes.map(id=>measurePill(id)).join("")+'</span>':'<span class="muted">—</span>')+'</td>'+
       '<td>'+delta+'</td>'+
       '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(r.id)+'"'+a11y("a11y_edit_risk",r.id)+'>✎</button>'+
         '<button class="btn icon sm" data-del-r="'+esc(r.id)+'"'+a11y("a11y_del_risk",r.id)+'>🗑</button></div></td>';
@@ -3702,7 +3703,7 @@ function renderMeasures(){
       '<td class="muted">'+(m.type?esc(typeLabel(m.type)):"—")+'</td>'+
       '<td>'+statusBadge(m.status)+'</td>'+
       '<td class="muted">'+esc(m.responsible||"—")+'</td>'+
-      '<td>'+(risks.length?risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join(" "):'<span class="muted">—</span>')+'</td>'+
+      '<td>'+(risks.length?'<span class="pill-list">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join("")+'</span>':'<span class="muted">—</span>')+'</td>'+
       '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(m.id)+'"'+a11y("a11y_edit_measure",m.id)+'>✎</button>'+
         '<button class="btn icon sm" data-del-m="'+esc(m.id)+'"'+a11y("a11y_del_measure",m.id)+'>🗑</button></div></td>';
     tr.addEventListener("click",e=>{if(e.target.closest("button"))return;openMeasureModal(m.id);});
