@@ -1911,7 +1911,7 @@ function pickerOpts(base){
 function newAnalysis(){
   const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
     dirty=false;isFresh=true;startDismissed=true;   // demande explicite : pas de mode d'emploi
-    autosaveClear();renderAll();toast(t("toast_new"));};
+    autosaveClear();renderAll();goToPresentation();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
 }
 /* Ouverture : par le sélecteur natif quand l'API est disponible (on obtient alors une
@@ -1945,11 +1945,17 @@ function applyLoadedData(data,name,withQuery){
   lang=resolveLang(fileLang,withQuery);
   applyStaticI18n();
   renderAll();
-  /* On revient sur Présentation : au chargement, l'utilisateur doit d'abord voir de quelle
-     analyse il s'agit (titre, périmètre, auteur) avant d'entrer dans les registres.
-     Un ?tab= explicite reprend la main juste après, dans la séquence de démarrage. */
-  activateView("presentation");
+  goToPresentation();
   return true;
+}
+/* Retour au point de départ : onglet Présentation et haut de page. Au chargement comme
+   sur une nouvelle analyse, l'utilisateur doit d'abord voir de quelle analyse il s'agit
+   (titre, périmètre, auteur). Sans la remise à zéro du défilement, on hérite de la
+   position de la vue précédente et l'écran s'ouvre au milieu du formulaire.
+   Un ?tab= explicite reprend la main juste après, dans la séquence de démarrage. */
+function goToPresentation(){
+  activateView("presentation");
+  window.scrollTo(0,0);
 }
 
 document.getElementById("fileInput").addEventListener("change",e=>{
