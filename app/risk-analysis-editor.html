@@ -73,6 +73,20 @@
   .filestate b{color:var(--text)}
   .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:5px}
   .dot.dirty{background:var(--yellow)}
+  .filestate .linked{margin-left:5px;font-size:11px;cursor:help}
+  /* Menu déroulant de la barre supérieure (motif ARIA « menu »). */
+  .menu-wrap{position:relative;display:inline-flex}
+  .menu{position:absolute;top:calc(100% + 6px);right:0;z-index:60;min-width:236px;padding:6px;
+    background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);display:none}
+  .menu.open{display:block}
+  .menu button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:18px;
+    background:none;border:none;color:var(--text);font:inherit;font-size:13px;text-align:left;
+    padding:8px 10px;border-radius:7px;cursor:pointer;white-space:nowrap}
+  .menu button:hover{background:var(--panel-2)}
+  .menu button[disabled]{opacity:.45;cursor:default}
+  .menu button[disabled]:hover{background:none}
+  .menu .kbd{color:var(--muted);font-size:11px}
+  .menu hr{border:none;border-top:1px solid var(--border);margin:5px 2px}
 
   button{font-family:inherit}
   .btn{background:var(--btn-bg);color:#fff;border:none;border-radius:8px;padding:8px 14px;
@@ -478,7 +492,9 @@
 <div class="topbar">
   <h1 class="brand"><span class="brand-logo" id="brandLogo"></span><span data-i18n="brand">Risk Analysis Editor</span> <small data-i18n="brand_sub">· .rae.json</small></h1>
   <div class="spacer"></div>
-  <div class="filestate"><span class="dot" id="dirtyDot"></span><span id="fileLabel">nouvelle analyse</span></div>
+  <!-- État du fichier : pastille « modifié », nom, et marqueur de liaison — l'utilisateur
+       doit savoir si « Enregistrer » écrit dans son fichier ou en télécharge une copie. -->
+  <div class="filestate"><span class="dot" id="dirtyDot"></span><span id="fileLabel">nouvelle analyse</span><span class="linked" id="fileLinked" hidden>🔗</span></div>
   <select id="langSel" class="topsel" data-i18n-title="lang_title" title="Langue de l'interface">
     <option value="fr">🇫🇷 Français</option>
     <option value="en">🇬🇧 English</option>
@@ -488,9 +504,19 @@
     <option value="dark" data-i18n="theme_dark">🌙 Sombre</option>
     <option value="light" data-i18n="theme_light">☀️ Clair</option>
   </select>
-  <button class="btn ghost sm" id="btnAbout" data-i18n="about_title" data-i18n-title="about_title" title="À propos">À propos</button>
-  <button class="btn ghost sm" id="btnNew" data-i18n="btn_new">Nouveau</button>
-  <button class="btn ghost sm" id="btnLoad" data-i18n="btn_load">Charger…</button>
+  <div class="menu-wrap">
+    <button class="btn ghost sm" id="btnFile" aria-haspopup="menu" aria-expanded="false" aria-controls="fileMenu">
+      <span data-i18n="menu_file">Fichier</span> <span aria-hidden="true">▾</span></button>
+    <div class="menu" id="fileMenu" role="menu" data-i18n-label="menu_file">
+      <button type="button" role="menuitem" id="miNew"><span data-i18n="btn_new">Nouveau</span></button>
+      <button type="button" role="menuitem" id="miOpen"><span data-i18n="btn_load">Charger…</span><span class="kbd">Ctrl+O</span></button>
+      <hr>
+      <button type="button" role="menuitem" id="miSave"><span data-i18n="btn_save">Enregistrer</span><span class="kbd">Ctrl+S</span></button>
+      <button type="button" role="menuitem" id="miSaveAs"><span data-i18n="btn_save_as">Enregistrer sous…</span><span class="kbd">Ctrl+Maj+S</span></button>
+      <hr>
+      <button type="button" role="menuitem" id="miAbout"><span data-i18n="about_title">À propos</span></button>
+    </div>
+  </div>
   <button class="btn sm" id="btnSave" data-i18n="btn_save">Enregistrer</button>
   <input type="file" id="fileInput" accept=".json,.rae.json,application/json" style="display:none">
 </div>
@@ -988,6 +1014,16 @@ const I18N = {
     a11y_plan_card:"Mesure {0} — {1}. Statut : {2}.",
     plan_moved:"{0} déplacée vers « {1} ».",
     req_legend:"Les champs marqués d'un * sont obligatoires.",
+    menu_file:"Fichier",
+    btn_save_as:"Enregistrer sous…",
+    file_linked_tip:"Fichier relié : « Enregistrer » écrit directement dedans.",
+    err_write:"Impossible d'écrire le fichier : {0}",
+    err_write_denied:"Autorisation d'écriture refusée. Utilisez « Enregistrer sous… ».",
+    autosave_title:"Analyse non enregistrée retrouvée",
+    autosave_found:"Une analyse non enregistrée a été retrouvée :\n\n« {0} » — {1} risque(s), modifiée le {2}.\n\nLa restaurer ?",
+    autosave_restore:"Restaurer",
+    autosave_discard:"Ignorer",
+    autosave_restored:"Analyse restaurée. Pensez à l'enregistrer.",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -1184,6 +1220,16 @@ const I18N = {
     a11y_plan_card:"Measure {0} — {1}. Status: {2}.",
     plan_moved:"{0} moved to “{1}”.",
     req_legend:"Fields marked with * are required.",
+    menu_file:"File",
+    btn_save_as:"Save as…",
+    file_linked_tip:"Linked file: “Save” writes directly into it.",
+    err_write:"Could not write the file: {0}",
+    err_write_denied:"Write permission denied. Use “Save as…”.",
+    autosave_title:"Unsaved analysis found",
+    autosave_found:"An unsaved analysis was found:\n\n“{0}” — {1} risk(s), modified on {2}.\n\nRestore it?",
+    autosave_restore:"Restore",
+    autosave_discard:"Discard",
+    autosave_restored:"Analysis restored. Remember to save it.",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1380,6 +1426,16 @@ const I18N = {
     a11y_plan_card:"Misura {0} — {1}. Stato: {2}.",
     plan_moved:"{0} spostata in «{1}».",
     req_legend:"I campi contrassegnati con * sono obbligatori.",
+    menu_file:"File",
+    btn_save_as:"Salva con nome…",
+    file_linked_tip:"File collegato: «Salva» scrive direttamente al suo interno.",
+    err_write:"Impossibile scrivere il file: {0}",
+    err_write_denied:"Autorizzazione di scrittura negata. Usa «Salva con nome…».",
+    autosave_title:"Analisi non salvata ritrovata",
+    autosave_found:"È stata ritrovata un'analisi non salvata:\n\n«{0}» — {1} rischio/i, modificata il {2}.\n\nRipristinarla?",
+    autosave_restore:"Ripristina",
+    autosave_discard:"Ignora",
+    autosave_restored:"Analisi ripristinata. Ricordati di salvarla.",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -1618,6 +1674,11 @@ function mdToText(src){
 function refreshFileState(){
   document.getElementById("dirtyDot").className="dot"+(dirty?" dirty":"");
   document.getElementById("fileLabel").innerHTML=(currentFileName?"<b>"+esc(currentFileName)+"</b>":t("file_new"))+(dirty?" — "+t("file_modified"):"");
+  // Marqueur de liaison : « Enregistrer » écrit-il dans le fichier, ou télécharge-t-il une copie ?
+  const lk=document.getElementById("fileLinked");
+  if(lk){lk.hidden=!fileHandle;lk.title=t("file_linked_tip");lk.setAttribute("aria-label",t("file_linked_tip"));}
+  const ms=document.getElementById("miSave");
+  if(ms)ms.querySelector(".kbd").textContent="Ctrl+S";
 }
 function nextId(list,prefix){let n=1;const ids=new Set(list.map(x=>x.id));while(ids.has(prefix+n))n++;return prefix+n;}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
@@ -1740,11 +1801,35 @@ function applyTabParam(){
 /* ============================================================
    FICHIER : nouveau / charger / enregistrer
    ============================================================ */
-document.getElementById("btnNew").addEventListener("click",()=>presGuard(()=>{
-  const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;dirty=false;isFresh=true;renderAll();toast(t("toast_new"));};
+/* Référence au fichier ouvert (File System Access). Non nulle => « Enregistrer » écrit
+   directement dedans ; nulle => repli sur le téléchargement. Valable pour la session :
+   les références ne sont pas conservées d'une session à l'autre. */
+let fileHandle=null;
+const FS_OK=(typeof window.showSaveFilePicker==="function");
+const RAE_TYPES=[{description:"Analyse de risques (.rae.json)",accept:{"application/json":[".rae.json",".json"]}}];
+
+function newAnalysis(){
+  const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
+    dirty=false;isFresh=true;autosaveClear();renderAll();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
-}));
-document.getElementById("btnLoad").addEventListener("click",()=>presGuard(()=>document.getElementById("fileInput").click()));
+}
+/* Ouverture : par le sélecteur natif quand l'API est disponible (on obtient alors une
+   référence réutilisable), sinon par l'<input type=file> historique. */
+async function openFile(){
+  if(!FS_OK||!window.showOpenFilePicker){document.getElementById("fileInput").click();return;}
+  let h;
+  try{[h]=await window.showOpenFilePicker({types:RAE_TYPES,multiple:false});}
+  catch(e){return;}  // annulation utilisateur
+  try{
+    const f=await h.getFile();
+    if(applyLoadedData(JSON.parse(await f.text()),f.name,false)){fileHandle=h;refreshFileState();toast(t("toast_loaded"));}
+  }catch(ex){alertModal(t("err_read_file",ex.message));}
+}
+document.getElementById("miNew").addEventListener("click",()=>{closeMenu();presGuard(newAnalysis);});
+document.getElementById("miOpen").addEventListener("click",()=>{closeMenu();presGuard(openFile);});
+document.getElementById("miSave").addEventListener("click",()=>{closeMenu();presGuard(saveToFile);});
+document.getElementById("miSaveAs").addEventListener("click",()=>{closeMenu();presGuard(saveFileAs);});
+document.getElementById("miAbout").addEventListener("click",()=>closeMenu());  // l'ouverture est câblée plus bas
 /* Le modèle interne ET le fichier .rae.json partagent les mêmes clés anglaises :
    aucune conversion. Charger = JSON.parse, enregistrer = JSON.stringify. */
 
@@ -1788,20 +1873,120 @@ async function loadFromURLParam(){
   }
 }
 document.getElementById("btnSave").addEventListener("click",()=>presGuard(saveToFile));
-/* Ctrl+S / Cmd+S : sans cette interception, le navigateur enregistre le HTML de
-   l'application au lieu de l'analyse — un piège pour tout utilisateur habitué au réflexe. */
+/* Raccourcis fichier. Sans l'interception de Ctrl+S, le navigateur enregistrerait le HTML
+   de l'application au lieu de l'analyse — un piège pour qui a le réflexe. */
 document.addEventListener("keydown",e=>{
-  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==="s"){
-    e.preventDefault();presGuard(saveToFile);
-  }
+  if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
+  const k=e.key.toLowerCase();
+  if(k==="s"){e.preventDefault();presGuard(e.shiftKey?saveFileAs:saveToFile);}
+  else if(k==="o"&&!e.shiftKey){e.preventDefault();presGuard(openFile);}
 });
-function saveToFile(){
+
+/* Contenu à écrire. `updated_at` et `language` sont rafraîchis à chaque enregistrement. */
+function analysisBlob(){
   analyse.metadata=analyse.metadata||{};analyse.metadata.updated_at=today();analyse.metadata.language=lang;
-  const blob=new Blob([JSON.stringify(analyse,null,2)],{type:"application/vnd.rae+json"});
-  const name=(slug(analyse.metadata.title)||"risk-analysis")+".rae.json";
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;
-  document.body.appendChild(a);a.click();a.remove();
-  currentFileName=name;dirty=false;refreshFileState();toast(t("toast_saved",name));
+  return new Blob([JSON.stringify(analyse,null,2)],{type:"application/vnd.rae+json"});
+}
+function defaultFileName(){return (slug(analyse.metadata&&analyse.metadata.title)||"risk-analysis")+".rae.json";}
+/* L'autorisation d'écriture n'est acquise que pour la session : on la revérifie. */
+async function ensureWritable(h){
+  if(!h.queryPermission)return true;
+  const o={mode:"readwrite"};
+  if(await h.queryPermission(o)==="granted")return true;
+  return (await h.requestPermission(o))==="granted";
+}
+async function writeTo(h,blob){
+  const w=await h.createWritable();
+  await w.write(blob);await w.close();
+}
+/* Enregistrer : écrit dans le fichier relié s'il y en a un, propose « Enregistrer sous… »
+   à la première fois quand l'API est disponible, et retombe sinon sur le téléchargement. */
+async function saveToFile(){
+  if(fileHandle){
+    try{
+      if(!await ensureWritable(fileHandle)){alertModal(t("err_write_denied"));return;}
+      await writeTo(fileHandle,analysisBlob());
+      dirty=false;autosaveClear();refreshFileState();toast(t("toast_saved",currentFileName||fileHandle.name));
+    }catch(ex){alertModal(t("err_write",ex.message));}
+    return;
+  }
+  if(FS_OK){await saveFileAs();return;}
+  downloadCopy();
+}
+/* Enregistrer sous… : choisit un nouveau fichier et s'y relie pour les fois suivantes. */
+async function saveFileAs(){
+  if(!FS_OK){downloadCopy();return;}
+  let h;
+  try{h=await window.showSaveFilePicker({suggestedName:currentFileName||defaultFileName(),types:RAE_TYPES});}
+  catch(e){return;}  // annulation utilisateur
+  try{
+    await writeTo(h,analysisBlob());
+    fileHandle=h;currentFileName=h.name;dirty=false;autosaveClear();
+    refreshFileState();toast(t("toast_saved",currentFileName));
+  }catch(ex){alertModal(t("err_write",ex.message));}
+}
+/* Repli (Firefox, Safari) : téléchargement, comme avant. */
+function downloadCopy(){
+  const name=currentFileName||defaultFileName();
+  downloadBlob(analysisBlob(),name);
+  currentFileName=name;dirty=false;autosaveClear();refreshFileState();toast(t("toast_saved",name));
+}
+
+/* ============================================================
+   SAUVEGARDE AUTOMATIQUE (copie de secours locale)
+   Instantané périodique dans IndexedDB, proposé à la restauration au démarrage suivant.
+   Le fichier de l'utilisateur n'est jamais écrit sans action explicite de sa part :
+   il s'agit d'un filet contre le plantage ou la fermeture par mégarde, pas d'un
+   enregistrement. L'instantané est effacé dès que l'analyse est réellement enregistrée.
+   ============================================================ */
+const AS_DB="rae-autosave", AS_STORE="snap", AS_KEY="current", AS_EVERY=30000;
+function asDB(){
+  return new Promise((res,rej)=>{
+    let q;try{q=indexedDB.open(AS_DB,1);}catch(e){return rej(e);}
+    q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains(AS_STORE))d.createObjectStore(AS_STORE);};
+    q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);
+  });
+}
+function asTx(mode,fn){
+  return asDB().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(AS_STORE,mode), st=tx.objectStore(AS_STORE);
+    const r=fn(st);
+    tx.oncomplete=()=>{db.close();res(r&&r.result);};
+    tx.onerror=()=>{db.close();rej(tx.error);};
+  }));
+}
+async function autosaveWrite(){
+  if(!dirty||!analyse||isFresh)return;
+  try{
+    await asTx("readwrite",st=>st.put({
+      json:JSON.stringify(analyse), name:currentFileName||null,
+      at:new Date().toISOString(), risks:(analyse.risks||[]).length,
+      title:(analyse.metadata&&analyse.metadata.title)||""
+    },AS_KEY));
+  }catch(e){/* stockage indisponible (mode privé, quota) : la sauvegarde auto est un bonus */}
+}
+async function autosaveClear(){try{await asTx("readwrite",st=>st.delete(AS_KEY));}catch(e){}}
+async function autosaveRead(){try{return await asTx("readonly",st=>st.get(AS_KEY));}catch(e){return null;}}
+/* Périodique + au moment où l'onglet passe en arrière-plan ou se ferme : c'est là que
+   se jouent les vraies pertes, un simple minuteur ne suffit pas. */
+setInterval(autosaveWrite,AS_EVERY);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")autosaveWrite();});
+window.addEventListener("pagehide",autosaveWrite);
+/* Au démarrage : proposer la restauration, seulement si rien n'a été chargé par ailleurs. */
+async function autosaveOffer(){
+  if(!isFresh)return;                       // un fichier a été chargé (?file=, ?url=)
+  const s=await autosaveRead();
+  if(!s||!s.json)return;
+  let data;try{data=JSON.parse(s.json);}catch(e){return autosaveClear();}
+  const quand=String(s.at||"").replace("T"," ").slice(0,16);
+  confirmModal(t("autosave_found",s.title||t("file_new"),s.risks||0,quand),
+    ()=>{
+      if(applyLoadedData(data,s.name||null,false)){
+        dirty=true;isFresh=false;refreshFileState();toast(t("autosave_restored"));
+      }
+    },
+    {title:t("autosave_title"),okLabel:t("autosave_restore"),cancelLabel:t("autosave_discard"),
+     onNo:autosaveClear});   // « Ignorer » efface l'instantané, sinon il serait reproposé sans fin
 }
 
 function validateStructure(d){
@@ -4739,7 +4924,7 @@ function alertModal(message,title){
 function confirmModal(message,onYes,opts){
   opts=opts||{};
   pushModal(opts.title||t("dialog_confirm"),'<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>',
-    [{label:t("btn_cancel"),cls:"ghost",onClick:api=>api.close()},
+    [{label:opts.cancelLabel||t("btn_cancel"),cls:"ghost",onClick:api=>{api.close();if(opts.onNo)opts.onNo();}},
      {label:opts.okLabel||t("btn_confirm"),cls:opts.danger?"danger":"",onClick:api=>{api.close();if(onYes)onYes();}}],
     {role:"alertdialog"});
 }
@@ -4777,7 +4962,42 @@ function openAboutModal(){
     '</div>';
   pushModal(t("about_title"),body,[{label:t("btn_close"),onClick:api=>api.close()}]);
 }
-document.getElementById("btnAbout").addEventListener("click",openAboutModal);
+/* Menu « Fichier » de la barre supérieure (motif ARIA « menu ») : flèches pour circuler,
+   Échap pour refermer en rendant le focus au bouton, clic extérieur pour refermer. */
+function menuItems(){return [...document.querySelectorAll("#fileMenu button:not([disabled])")];}
+function closeMenu(rendreFocus){
+  const m=document.getElementById("fileMenu"), b=document.getElementById("btnFile");
+  if(!m.classList.contains("open"))return;
+  m.classList.remove("open");b.setAttribute("aria-expanded","false");
+  if(rendreFocus)b.focus();
+}
+function openMenu(){
+  const m=document.getElementById("fileMenu"), b=document.getElementById("btnFile");
+  // « Enregistrer sous… » n'a de sens que si l'API est disponible ; sinon c'est un doublon
+  // du téléchargement, déjà couvert par « Enregistrer ».
+  document.getElementById("miSaveAs").disabled=!FS_OK;
+  m.classList.add("open");b.setAttribute("aria-expanded","true");
+  const it=menuItems();if(it.length)it[0].focus();
+}
+document.getElementById("btnFile").addEventListener("click",()=>{
+  document.getElementById("fileMenu").classList.contains("open")?closeMenu(true):openMenu();
+});
+document.getElementById("fileMenu").addEventListener("keydown",e=>{
+  const it=menuItems(), i=it.indexOf(document.activeElement);
+  if(e.key==="Escape"){e.preventDefault();closeMenu(true);}
+  else if(e.key==="ArrowDown"){e.preventDefault();it[(i+1)%it.length].focus();}
+  else if(e.key==="ArrowUp"){e.preventDefault();it[(i-1+it.length)%it.length].focus();}
+  else if(e.key==="Home"){e.preventDefault();it[0].focus();}
+  else if(e.key==="End"){e.preventDefault();it[it.length-1].focus();}
+  else if(e.key==="Tab"){closeMenu(false);}
+});
+document.getElementById("btnFile").addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){e.preventDefault();openMenu();}
+});
+document.addEventListener("mousedown",e=>{
+  if(!e.target.closest(".menu-wrap"))closeMenu(false);
+});
+document.getElementById("miAbout").addEventListener("click",openAboutModal);
 
 /* ============================================================
    INIT
@@ -4825,7 +5045,7 @@ let rzt;window.addEventListener("resize",()=>{clearTimeout(rzt);rzt=setTimeout((
 applyStaticI18n();
 analyse=emptyAnalysis(lang);isFresh=true;
 renderAll();
-loadFromURLParam().finally(applyTabParam); // ?tab appliqué après un éventuel chargement ?file
+loadFromURLParam().finally(()=>{applyTabParam();autosaveOffer();}); // ?tab après un éventuel ?file, puis reprise éventuelle
 </script>
 </body>
 </html>
