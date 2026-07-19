@@ -113,6 +113,18 @@
   /* ---------- Formulaires ---------- */
   label.field{display:block;margin-bottom:12px}
   label.field .lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
+  /* Champ obligatoire : astérisque coloré, doublé par aria-required sur le contrôle. */
+  .req{color:var(--danger);font-weight:700;margin-left:2px}
+  .req-legend{color:var(--muted);font-size:11.5px;margin-bottom:10px}
+  /* Sections repliables des modales longues : <details> natif (clavier et lecteurs d'écran). */
+  .modal-sec{margin-top:18px;border-top:1px solid var(--border);padding-top:10px}
+  .modal-sec>summary{cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--muted);font-weight:600;list-style:none;display:flex;align-items:center;gap:6px;padding:2px 0}
+  .modal-sec>summary::-webkit-details-marker{display:none}
+  .modal-sec>summary::before{content:"▸";font-size:10px;transition:transform .12s}
+  .modal-sec[open]>summary::before{transform:rotate(90deg)}
+  .modal-sec>summary:hover{color:var(--text)}
+  .modal-sec>summary .count{font-weight:400;text-transform:none;letter-spacing:0}
   input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);
     color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
   /* ---------- Focus clavier ----------
@@ -973,6 +985,7 @@ const I18N = {
     "cfg_contrast_hint":"Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.",
     a11y_plan_card:"Mesure {0} — {1}. Statut : {2}.",
     plan_moved:"{0} déplacée vers « {1} ».",
+    req_legend:"Les champs marqués d'un * sont obligatoires.",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -1168,6 +1181,7 @@ const I18N = {
     "cfg_contrast_hint":"Classic: black or white text based on the perceived brightness of the background (historical threshold). Enhanced: choice based on the actual WCAG contrast, guaranteeing 4.5:1 on any background — this darkens the text of red and blue badges.",
     a11y_plan_card:"Measure {0} — {1}. Status: {2}.",
     plan_moved:"{0} moved to “{1}”.",
+    req_legend:"Fields marked with * are required.",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1363,6 +1377,7 @@ const I18N = {
     "cfg_contrast_hint":"Classica: testo nero o bianco secondo la luminosità percepita dello sfondo (soglia storica). Rafforzata: scelta basata sul contrasto WCAG reale, che garantisce 4,5:1 su qualsiasi sfondo — scurisce il testo dei badge rossi e blu.",
     a11y_plan_card:"Misura {0} — {1}. Stato: {2}.",
     plan_moved:"{0} spostata in «{1}».",
+    req_legend:"I campi contrassegnati con * sono obbligatori.",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -3199,10 +3214,11 @@ function openRiskModal(id){
 
   const pAxis=analyse.grid.vertical_axis, gAxis=analyse.grid.horizontal_axis;
   const body=
+    reqLegend()+
     '<div class="grid2">'+
       '<label class="field"><span class="lab">'+esc(t("f_identifier"))+'</span><input id="f_id" value="'+esc(r.id)+'"></label>'+
       '<label class="field"><span class="lab">'+esc(t("f_category"))+'</span><input id="f_cat" value="'+esc(r.category||"")+'"></label>'+
-      '<label class="field full"><span class="lab">'+esc(t("f_risk_label"))+'</span><input id="f_label" value="'+esc(r.label||"")+'"></label>'+
+      '<label class="field full"><span class="lab">'+esc(t("f_risk_label"))+REQ+'</span><input id="f_label" aria-required="true" value="'+esc(r.label||"")+'"></label>'+
       '<label class="field"><span class="lab">'+esc(t("f_owner"))+'</span><input id="f_prop" value="'+esc(r.owner||"")+'"></label>'+
       '<label class="field"><span class="lab">&nbsp;</span><span class="hint">'+esc(t("score_auto_hint"))+'</span></label>'+
       '<label class="field full"><span class="lab">'+esc(t("f_description"))+'</span><textarea id="f_desc">'+esc(r.description||"")+'</textarea></label>'+
@@ -3224,15 +3240,19 @@ function openRiskModal(id){
         '<div class="hint" id="prev_r"></div>'+
       '</div>'+
     '</div>'+
-    '<h3 style="margin-top:18px">'+esc(t("linked_measures_title"))+'</h3>'+
-    (analyse.measures.length?'<div class="sub-card" id="linkList">'+
-      analyse.measures.map(m=>{
-        const on=linked.has(m.id);
-        return '<div class="link-row"><input type="checkbox" data-mid="'+esc(m.id)+'"'+(on?" checked":"")+'>'+
-          '<span class="lname"><span class="id-badge">'+esc(m.id)+'</span> '+esc(m.label)+'</span></div>';
-      }).join("")+'</div>'
-     :'<div class="hint">'+esc(t("no_measures_defined"))+'</div>')+
-    (customFieldsFor("risk").length?'<h3 style="margin-top:18px">'+esc(t("cf_section"))+'</h3><div class="grid2">'+cfFieldsHTML("risk",r.custom)+'</div>':'');
+    modalSection(t("linked_measures_title"),
+      (analyse.measures.length?'<div class="sub-card" id="linkList">'+
+        analyse.measures.map(m=>{
+          const on=linked.has(m.id);
+          return '<div class="link-row"><input type="checkbox" data-mid="'+esc(m.id)+'"'+(on?" checked":"")+'>'+
+            '<span class="lname"><span class="id-badge">'+esc(m.id)+'</span> '+esc(m.label)+'</span></div>';
+        }).join("")+'</div>'
+       :'<div class="hint">'+esc(t("no_measures_defined"))+'</div>'),
+      analyse.measures.length<=SEC_MAX_LINKS, analyse.measures.length||null)+
+    (customFieldsFor("risk").length
+      ? modalSection(t("cf_section"),'<div class="grid2">'+cfFieldsHTML("risk",r.custom)+'</div>',
+          customFieldsFor("risk").length<=SEC_MAX_CF, customFieldsFor("risk").length)
+      : '');
 
   openModal((isNew?t("risk_new"):t("edit_prefix",r.id)),body,()=>{
     const lib=val("f_label").trim();if(!lib){modalMsg(t("err_label_required"));return false;}
@@ -3360,11 +3380,11 @@ function openMeasureModal(id){
   const isNew=!id;
   const m=isNew?{id:nextId(analyse.measures,"M"),label:"",type:"technical",status:"proposed"}
     :JSON.parse(JSON.stringify(measureById(id)));
-  const body='<div class="grid2">'+
+  const body=reqLegend()+'<div class="grid2">'+
     '<label class="field"><span class="lab">'+esc(t("f_identifier"))+'</span><input id="f_id" value="'+esc(m.id)+'"></label>'+
     '<label class="field"><span class="lab">'+esc(t("th_status"))+'</span><select id="f_status">'+
       STATUS_CODES.map(k=>'<option value="'+k+'"'+(m.status===k?" selected":"")+'>'+esc(statusLabel(k))+'</option>').join("")+'</select></label>'+
-    '<label class="field full"><span class="lab">'+esc(t("f_measure_label"))+'</span><input id="f_label" value="'+esc(m.label||"")+'"></label>'+
+    '<label class="field full"><span class="lab">'+esc(t("f_measure_label"))+REQ+'</span><input id="f_label" aria-required="true" value="'+esc(m.label||"")+'"></label>'+
     '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="f_type">'+
       TYPES.map(code=>'<option value="'+esc(code)+'"'+(m.type===code?" selected":"")+'>'+esc(typeLabel(code))+'</option>').join("")+'</select></label>'+
     '<label class="field"><span class="lab">'+esc(t("th_responsible"))+'</span><input id="f_resp" value="'+esc(m.responsible||"")+'"></label>'+
@@ -3373,7 +3393,10 @@ function openMeasureModal(id){
     '<label class="field full"><span class="lab">'+esc(t("f_description"))+'</span><textarea id="f_desc">'+esc(m.description||"")+'</textarea></label>'+
     '<label class="field full"><span class="lab">'+esc(t("f_notes"))+'</span><textarea id="f_comment">'+esc(m.comment||"")+'</textarea></label>'+
     '</div>'+
-    (customFieldsFor("measure").length?'<h3 style="margin-top:4px">'+esc(t("cf_section"))+'</h3><div class="grid2">'+cfFieldsHTML("measure",m.custom)+'</div>':'');
+    (customFieldsFor("measure").length
+      ? modalSection(t("cf_section"),'<div class="grid2">'+cfFieldsHTML("measure",m.custom)+'</div>',
+          customFieldsFor("measure").length<=SEC_MAX_CF, customFieldsFor("measure").length)
+      : '');
   openModal((isNew?t("measure_new"):t("edit_prefix",m.id)),body,()=>{
     const lib=val("f_label").trim();if(!lib){modalMsg(t("err_label_required"));return false;}
     const newId=val("f_id").trim()||m.id;
@@ -3758,10 +3781,10 @@ function openCustomFieldModal(idx){
   const body=
     '<div class="grid2">'+
       '<label class="field"><span class="lab">'+esc(t("cf_target"))+'</span><select id="cfTarget">'+opt(CF_TARGETS,f.target,cfTargetLabel)+'</select></label>'+
-      '<label class="field"><span class="lab">'+esc(t("cf_code"))+' *</span><input id="cfCode" value="'+esc(f.code)+'"></label>'+
+      '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="cfCode" aria-required="true" value="'+esc(f.code)+'"></label>'+
       '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="cfType">'+opt(CF_TYPES,f.type,cfTypeLabel)+'</select></label>'+
       '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
-      '<label class="field full"><span class="lab">'+esc(t("cf_label"))+'</span><input id="cfLab" value="'+esc(f.label[lang]||"")+'"></label>'+
+      '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="cfLab" aria-required="true" value="'+esc(f.label[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_help"))+'</span><input id="cfHelpTxt" value="'+esc(f.help[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_description"))+'</span><textarea id="cfDescTxt">'+esc((f.description&&f.description[lang])||"")+'</textarea></label>'+
     '</div>'+
@@ -3994,12 +4017,12 @@ function cfReportRows(target,values){
     return cfHasVal(v)?'<tr><td>'+esc(cfLabel(f))+'</td><td class="md">'+cfDisplayHTML(f,v,true)+'</td></tr>':"";}).join("");
 }
 function cfControlHTML(f,value){
-  const req=f.required?" *":"", help=cfHelp(f);
+  const req=f.required?REQ:"", help=cfHelp(f);
   const lab='<span class="lab"'+(help?' title="'+esc(help)+'" style="cursor:help"':'')+'>'+esc(cfLabel(f))+req+'</span>';
   const minA=(f.min!=null?' min="'+esc(f.min)+'"':""), maxA=(f.max!=null?' max="'+esc(f.max)+'"':"");
   const data='data-cf="'+esc(f.code)+'" data-cft="'+f.type+'"';
   if(f.type==="boolean")
-    return '<div class="cf-field" '+data+'><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:18px"'+(help?' title="'+esc(help)+'"':'')+'><input type="checkbox" data-cfv style="width:16px;height:16px;flex:none"'+(value===true?" checked":"")+'> '+esc(cfLabel(f)+req)+'</label></div>';
+    return '<div class="cf-field" '+data+'><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:18px"'+(help?' title="'+esc(help)+'"':'')+'><input type="checkbox" data-cfv'+(f.required?' aria-required="true"':'')+' style="width:16px;height:16px;flex:none"'+(value===true?" checked":"")+'> '+esc(cfLabel(f))+req+'</label></div>';
   let c="", full=false;
   switch(f.type){
     case "integer": c='<input type="number" step="1" data-cfv'+minA+maxA+' value="'+(value!=null?esc(value):"")+'">';break;
@@ -4023,6 +4046,18 @@ function cfControlHTML(f,value){
   const dsc=cfDescription(f);
   return '<div class="cf-field'+(full?" full":"")+'" '+data+'>'+lab+c+
     (dsc?'<div class="hint cf-desc">'+esc(dsc)+'</div>':'')+'</div>';
+}
+/* Marque un champ obligatoire : astérisque visible + aria-required sur le contrôle.
+   L'astérisque est aria-hidden, l'information étant déjà portée par aria-required. */
+const REQ='<span class="req" aria-hidden="true">*</span>';
+/* Au-delà de ces effectifs, la section est repliée à l'ouverture : la modale de risque
+   mesurait 957 px de haut sur la démo, l'essentiel étant ces deux listes. */
+const SEC_MAX_LINKS=8, SEC_MAX_CF=6;
+function reqLegend(){return '<div class="req-legend">'+esc(t("req_legend"))+'</div>';}
+/* Section repliable d'une modale. `open` : dépliée par défaut. */
+function modalSection(titre,contenu,open,compte){
+  return '<details class="modal-sec"'+(open?" open":"")+'><summary>'+esc(titre)+
+    (compte!=null?' <span class="count">('+compte+')</span>':'')+'</summary>'+contenu+'</details>';
 }
 function cfFieldsHTML(target,values){
   const fields=customFieldsFor(target);if(!fields.length)return "";
@@ -4580,14 +4615,21 @@ function modalMsg(m){const e=document.getElementById("modalMsg");if(e)e.textCont
      vers la barre d'outils du navigateur.
    Les deux tiennent compte de l'empilement (une confirmation par-dessus une modale
    d'édition rend cette dernière inerte à son tour). */
-const FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+const FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])';
 function topLayer(){
   if(dynModals.length)return dynModals[dynModals.length-1].bg;
   const mb=document.getElementById("modalBg");
   return mb&&mb.classList.contains("open")?mb:null;
 }
 function focusablesIn(root){
-  return [...root.querySelectorAll(FOCUSABLE)].filter(e=>e.offsetParent&&e.tabIndex>=0);
+  return [...root.querySelectorAll(FOCUSABLE)].filter(e=>{
+    if(e.tabIndex<0)return false;
+    const d=e.closest("details");
+    // Le contenu d'une section repliée n'est pas tabulable, mais son <summary> l'est.
+    // offsetParent ne suffit pas à le détecter : le navigateur conserve une boîte.
+    if(d&&!d.open)return e.tagName==="SUMMARY"&&e.parentElement===d;
+    return e.tagName==="SUMMARY"||!!e.offsetParent;
+  });
 }
 function refreshInert(){
   const top=topLayer();
@@ -4628,6 +4670,11 @@ function openModal(title,bodyHtml,onConfirm,okLabel){
   document.getElementById("modalOk").onclick=()=>{modalMsg("");if(modalConfirm()!==false)closeModal();};
   document.getElementById("modalCancel").onclick=closeModal;
   enhanceTextareas(document.getElementById("modalBody")); // hauteur auto + aperçu Markdown
+  // Une section repliée masque ses textarea : scrollHeight vaut 0 et la hauteur auto
+  // se calculerait au minimum. On la recalcule à l'ouverture de la section.
+  document.querySelectorAll("#modalBody .modal-sec").forEach(d=>{
+    d.addEventListener("toggle",()=>{if(d.open)d.querySelectorAll("textarea").forEach(autoGrow);});
+  });
   refreshInert();focusFirstIn(bg);
 }
 let modalReturnFocus=null;
