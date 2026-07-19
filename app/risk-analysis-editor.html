@@ -144,7 +144,7 @@
   /* Les registres sont larges : sur écran étroit ils défilent au lieu d'être tronqués.
      Le retrait interne (compensé par la marge négative) laisse la place au halo de focus
      des boutons de dernière colonne, qui serait sinon rogné par le conteneur. */
-  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:3px;margin:-3px}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:3px;margin:-3px;scroll-padding:6px}
   /* Compteur « N sur M », affiché seulement quand un filtre masque des lignes. */
   .flt-count{color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;align-self:center}
   table{width:100%;border-collapse:collapse;font-size:13px}
@@ -167,9 +167,16 @@
   /* ---------- Matrices ---------- */
   .matrix-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
   .export-bar{display:flex;gap:6px;justify-content:center;margin-top:12px}
-  .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  /* Pas d'overflow:hidden ici : il rognerait entièrement le halo de focus des boutons,
+     qui sont à fleur du groupe. Les angles sont donc portés par les boutons d'extrémité,
+     ce qui reproduit exactement l'aspect au repos. */
+  .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--border);border-radius:8px}
   .seg button{background:transparent;border:none;color:var(--muted);padding:7px 14px;font-size:12px;
     font-weight:600;cursor:pointer}
+  .seg button:first-child{border-radius:7px 0 0 7px}
+  .seg button:last-child{border-radius:0 7px 7px 0}
+  .seg button:only-child{border-radius:7px}
+  .seg button:focus-visible{position:relative;z-index:1}  /* le halo passe au-dessus des voisins */
   .seg button.active{background:var(--btn-bg);color:#fff}
   .matrices{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
   .matrix-block{flex:1;min-width:300px;max-width:560px}
@@ -353,7 +360,9 @@
   .modal header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;
     border-bottom:1px solid var(--border)}
   .modal header h3{margin:0;font-size:16px}
-  .modal .body{padding:20px 22px;max-height:65vh;overflow:auto}
+  /* scroll-padding : quand la tabulation ramène un champ dans la zone visible, le navigateur
+     l'aligne à ras du bord et rognerait son halo de focus. On lui réserve la marge. */
+  .modal .body{padding:20px 22px;max-height:65vh;overflow:auto;scroll-padding:6px}
   .modal footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)}
   .modal .x{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -4428,7 +4437,10 @@ function openImportModal(kind){
     '<div class="hint" style="margin-bottom:10px">'+hint+'</div>'+
     '<label class="field"><span class="lab">'+esc(t("import_paste"))+'</span><textarea id="impText" style="min-height:130px;font-family:ui-monospace,monospace;font-size:12px"></textarea></label>'+
     '<div class="inline" style="align-items:center;margin-bottom:4px">'+
-      '<label class="btn ghost sm" style="flex:none;cursor:pointer">'+esc(t("import_load_file"))+'<input type="file" id="impFile" accept=".csv,text/csv,text/plain" style="display:none"></label>'+
+      /* Un vrai <button> : un <label> n'est pas focalisable et l'input masqué sort de
+         l'ordre de tabulation — le contrôle devenait inatteignable au clavier. */
+      '<button type="button" class="btn ghost sm" id="impPick" style="flex:none">'+esc(t("import_load_file"))+'</button>'+
+      '<input type="file" id="impFile" accept=".csv,text/csv,text/plain" style="display:none">'+
       '<span class="hint" id="impInfo" style="flex:1"></span></div>'+
     '<div id="impPreview"></div>';
   const analyze=()=>{const txt=document.getElementById("impText").value;return isR?analyzeRisksCSV(txt):isL?analyzeLinksCSV(txt):analyzeMeasuresCSV(txt);};
@@ -4448,6 +4460,7 @@ function openImportModal(kind){
     if(res.errors.length)h+='<ul>'+res.errors.slice(0,8).map(e=>"<li>"+esc(e)+"</li>").join("")+(res.errors.length>8?"<li>…</li>":"")+'</ul>';
     h+='</div>';prev.innerHTML=h;};
   document.getElementById("impText").addEventListener("input",refresh);
+  document.getElementById("impPick").addEventListener("click",()=>document.getElementById("impFile").click());
   document.getElementById("impFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;
     document.getElementById("impInfo").textContent=f.name;
     const rd=new FileReader();rd.onload=()=>{document.getElementById("impText").value=rd.result;refresh();};rd.readAsText(f,"utf-8");});
