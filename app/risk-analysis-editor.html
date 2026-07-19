@@ -92,6 +92,9 @@
   .btn{background:var(--btn-bg);color:#fff;border:none;border-radius:8px;padding:8px 14px;
     font-size:13px;font-weight:600;cursor:pointer;transition:filter .15s;white-space:nowrap}
   .btn:hover{filter:brightness(1.12)}
+  /* Bouton indisponible : l'état doit se lire, sinon le clic sans effet est incompréhensible. */
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .btn[disabled]:hover{filter:none}
   .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
   .btn.ghost:hover{background:var(--panel-2)}
   .btn.sm{padding:5px 10px;font-size:12px}
@@ -1966,6 +1969,8 @@ document.getElementById("btnSave").addEventListener("click",()=>presGuard(saveTo
 document.addEventListener("keydown",e=>{
   if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
   const k=e.key.toLowerCase();
+  // Le raccourci ne doit pas contourner le grisage de l'amorçage.
+  if(k==="s"&&startLocked()){e.preventDefault();toast(t("start_locked"));return;}
   if(k==="s"){e.preventDefault();presGuard(e.shiftKey?saveFileAs:saveToFile);}
   else if(k==="o"&&!e.shiftKey){e.preventDefault();presGuard(openFile);}
 });
@@ -3962,7 +3967,16 @@ function renderStartCard(){
     tab.setAttribute("aria-disabled",bloque?"true":"false");
     if(bloque)tab.title=t("start_locked"); else tab.removeAttribute("title");
   });
+  /* Rien à enregistrer tant qu'aucune analyse n'est commencée : les commandes
+     d'enregistrement sont grisées, dans le menu comme dans la barre. */
+  [["btnSave",false],["miSave",false],["miSaveAs",true]].forEach(([id,besoinAPI])=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.disabled=montrer||(besoinAPI&&!FS_OK);
+    if(montrer)el.title=t("start_locked"); else el.removeAttribute("title");
+  });
 }
+/* L'amorçage est-il en cours ? (verrou des onglets et de l'enregistrement) */
+function startLocked(){const v=document.getElementById("view-presentation");return !!v&&v.classList.contains("onboarding");}
 function renderPresentation(){
   renderStartCard();
   const md=analyse.metadata;
@@ -5120,8 +5134,9 @@ function closeMenu(rendreFocus){
 function openMenu(){
   const m=document.getElementById("fileMenu"), b=document.getElementById("btnFile");
   // « Enregistrer sous… » n'a de sens que si l'API est disponible ; sinon c'est un doublon
-  // du téléchargement, déjà couvert par « Enregistrer ».
-  document.getElementById("miSaveAs").disabled=!FS_OK;
+  // du téléchargement, déjà couvert par « Enregistrer ». Grisé aussi pendant l'amorçage.
+  document.getElementById("miSaveAs").disabled=!FS_OK||startLocked();
+  document.getElementById("miSave").disabled=startLocked();
   m.classList.add("open");b.setAttribute("aria-expanded","true");
   const it=menuItems();if(it.length)it[0].focus();
 }
