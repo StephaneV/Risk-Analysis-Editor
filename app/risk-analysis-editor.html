@@ -114,14 +114,16 @@
   label.field{display:block;margin-bottom:12px}
   label.field .lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
   /* Champ obligatoire : astérisque coloré, doublé par aria-required sur le contrôle. */
-  .req{color:var(--danger);font-weight:700;margin-left:2px}
+  .req{font-weight:700;margin-left:2px}
   .req-legend{color:var(--muted);font-size:11.5px;margin-bottom:10px}
   /* Sections repliables des modales longues : <details> natif (clavier et lecteurs d'écran). */
   .modal-sec{margin-top:18px;border-top:1px solid var(--border);padding-top:10px}
   .modal-sec>summary{cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:.5px;
     color:var(--muted);font-weight:600;list-style:none;display:flex;align-items:center;gap:6px;padding:2px 0}
   .modal-sec>summary::-webkit-details-marker{display:none}
-  .modal-sec>summary::before{content:"▸";font-size:10px;transition:transform .12s}
+  .modal-sec>summary::before{content:"";width:0;height:0;flex:none;
+    border-left:7px solid currentColor;border-top:5px solid transparent;border-bottom:5px solid transparent;
+    transition:transform .12s;transform-origin:35% 50%}
   .modal-sec[open]>summary::before{transform:rotate(90deg)}
   .modal-sec>summary:hover{color:var(--text)}
   .modal-sec>summary .count{font-weight:400;text-transform:none;letter-spacing:0}
@@ -878,7 +880,7 @@ const I18N = {
     confirm_del_link:"Supprimer le lien {0} → {1} ?",
     confirm_add_link:"Créer le lien {0} → {1} ?",
     risk_new:"Nouveau risque", edit_prefix:"Éditer {0}",
-    f_identifier:"Identifiant", f_category:"Catégorie", f_risk_label:"Libellé du risque *", f_owner:"Propriétaire",
+    f_identifier:"Identifiant", f_category:"Catégorie", f_risk_label:"Libellé du risque", f_owner:"Propriétaire",
     score_auto_hint:"Le score et la couleur sont calculés automatiquement.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Évaluation initiale (brute)", eval_residual:"Évaluation résiduelle (nette)",
     f_justification:"Justification", f_assess_date:"Date de cotation", f_revision:"Révision",
@@ -893,7 +895,7 @@ const I18N = {
     confirm_del_level:"Supprimer le niveau « {0} » de l'axe ?", confirm_del_crit:"Supprimer le niveau de criticité « {0} » ?",
     "status.proposed":"Proposée","status.planned":"Planifiée","status.in_progress":"En cours","status.implemented":"En place","status.abandoned":"Abandonnée",
     "type.technical":"Technique","type.organizational":"Organisationnelle","type.preventive":"Préventive","type.detective":"Détective","type.corrective":"Corrective","type.deterrent":"Dissuasive",
-    measure_new:"Nouvelle mesure", f_measure_label:"Libellé de la mesure *", f_due_date:"Échéance", f_cost:"Coût estimé",
+    measure_new:"Nouvelle mesure", f_measure_label:"Libellé de la mesure", f_due_date:"Échéance", f_cost:"Coût estimé",
     links_title:"Liens risques ↔ mesures", links_caption:"Cochez une case pour associer une mesure à un risque. Au clavier : flèches pour se déplacer dans la grille, Espace pour cocher.",
     links_empty:"Il faut au moins un risque et une mesure pour établir des liens.", cross_corner:"Risque \\ Mesure",
     links_seg_grid:"Associations", links_seg_details:"Détails",
@@ -1074,7 +1076,7 @@ const I18N = {
     confirm_del_link:"Delete link {0} → {1}?",
     confirm_add_link:"Create link {0} → {1}?",
     risk_new:"New risk", edit_prefix:"Edit {0}",
-    f_identifier:"Identifier", f_category:"Category", f_risk_label:"Risk label *", f_owner:"Owner",
+    f_identifier:"Identifier", f_category:"Category", f_risk_label:"Risk label", f_owner:"Owner",
     score_auto_hint:"Score and color are computed automatically.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Initial assessment (gross)", eval_residual:"Residual assessment (net)",
     f_justification:"Justification", f_assess_date:"Assessment date", f_revision:"Revision",
@@ -1089,7 +1091,7 @@ const I18N = {
     confirm_del_level:"Delete the axis level “{0}”?", confirm_del_crit:"Delete the criticality level “{0}”?",
     "status.proposed":"Proposed","status.planned":"Planned","status.in_progress":"In progress","status.implemented":"Implemented","status.abandoned":"Abandoned",
     "type.technical":"Technical","type.organizational":"Organizational","type.preventive":"Preventive","type.detective":"Detective","type.corrective":"Corrective","type.deterrent":"Deterrent",
-    measure_new:"New measure", f_measure_label:"Measure label *", f_due_date:"Due date", f_cost:"Estimated cost",
+    measure_new:"New measure", f_measure_label:"Measure label", f_due_date:"Due date", f_cost:"Estimated cost",
     links_title:"Risk ↔ measure links", links_caption:"Tick a box to link a measure to a risk. Keyboard: arrow keys to move within the grid, Space to tick.",
     links_empty:"At least one risk and one measure are needed to create links.", cross_corner:"Risk \\ Measure",
     links_seg_grid:"Associations", links_seg_details:"Details",
@@ -1270,7 +1272,7 @@ const I18N = {
     confirm_del_link:"Eliminare il collegamento {0} → {1}?",
     confirm_add_link:"Creare il collegamento {0} → {1}?",
     risk_new:"Nuovo rischio", edit_prefix:"Modifica {0}",
-    f_identifier:"Identificatore", f_category:"Categoria", f_risk_label:"Etichetta del rischio *", f_owner:"Titolare",
+    f_identifier:"Identificatore", f_category:"Categoria", f_risk_label:"Etichetta del rischio", f_owner:"Titolare",
     score_auto_hint:"Il punteggio e il colore sono calcolati automaticamente.", f_description:"Descrizione", f_notes:"Note",
     eval_initial:"Valutazione iniziale (lorda)", eval_residual:"Valutazione residua (netta)",
     f_justification:"Motivazione", f_assess_date:"Data di valutazione", f_revision:"Revisione",
@@ -1285,7 +1287,7 @@ const I18N = {
     confirm_del_level:"Eliminare il livello « {0} » dell'asse?", confirm_del_crit:"Eliminare il livello di criticità « {0} »?",
     "status.proposed":"Proposta","status.planned":"Pianificata","status.in_progress":"In corso","status.implemented":"Attuata","status.abandoned":"Abbandonata",
     "type.technical":"Tecnica","type.organizational":"Organizzativa","type.preventive":"Preventiva","type.detective":"Investigativa","type.corrective":"Correttiva","type.deterrent":"Dissuasiva",
-    measure_new:"Nuova misura", f_measure_label:"Etichetta della misura *", f_due_date:"Scadenza", f_cost:"Costo stimato",
+    measure_new:"Nuova misura", f_measure_label:"Etichetta della misura", f_due_date:"Scadenza", f_cost:"Costo stimato",
     links_title:"Collegamenti rischi ↔ misure", links_caption:"Spunta una casella per associare una misura a un rischio. Da tastiera: frecce per spostarsi nella griglia, Spazio per selezionare.",
     links_empty:"Servono almeno un rischio e una misura per creare collegamenti.", cross_corner:"Rischio \\ Misura",
     links_seg_grid:"Associazioni", links_seg_details:"Dettagli",
@@ -3248,7 +3250,8 @@ function openRiskModal(id){
             '<span class="lname"><span class="id-badge">'+esc(m.id)+'</span> '+esc(m.label)+'</span></div>';
         }).join("")+'</div>'
        :'<div class="hint">'+esc(t("no_measures_defined"))+'</div>'),
-      analyse.measures.length<=SEC_MAX_LINKS, analyse.measures.length||null)+
+      analyse.measures.length<=SEC_MAX_LINKS,
+      analyse.measures.length?linked.size+"/"+analyse.measures.length:null, "linkCount")+
     (customFieldsFor("risk").length
       ? modalSection(t("cf_section"),'<div class="grid2">'+cfFieldsHTML("risk",r.custom)+'</div>',
           customFieldsFor("risk").length<=SEC_MAX_CF, customFieldsFor("risk").length)
@@ -3288,6 +3291,13 @@ function openRiskModal(id){
   };
   ["f_ip","f_ig","f_rp","f_rg"].forEach(id=>document.getElementById(id).addEventListener("change",upd));
   upd();
+
+  /* Compteur « liées / total » de la section des mesures, tenu à jour à chaque case cochée
+     — il reste ainsi lisible lorsque la section est repliée. */
+  const ll=document.getElementById("linkList"), lc=document.getElementById("linkCount");
+  if(ll&&lc)ll.addEventListener("change",()=>{
+    lc.textContent="("+ll.querySelectorAll('input[type=checkbox]:checked').length+"/"+analyse.measures.length+")";
+  });
 }
 
 /* ============================================================
@@ -4055,9 +4065,10 @@ const REQ='<span class="req" aria-hidden="true">*</span>';
 const SEC_MAX_LINKS=8, SEC_MAX_CF=6;
 function reqLegend(){return '<div class="req-legend">'+esc(t("req_legend"))+'</div>';}
 /* Section repliable d'une modale. `open` : dépliée par défaut. */
-function modalSection(titre,contenu,open,compte){
+function modalSection(titre,contenu,open,compte,idCompte){
   return '<details class="modal-sec"'+(open?" open":"")+'><summary>'+esc(titre)+
-    (compte!=null?' <span class="count">('+compte+')</span>':'')+'</summary>'+contenu+'</details>';
+    (compte!=null?' <span class="count"'+(idCompte?' id="'+idCompte+'"':'')+'>('+esc(compte)+')</span>':'')+
+    '</summary>'+contenu+'</details>';
 }
 function cfFieldsHTML(target,values){
   const fields=customFieldsFor(target);if(!fields.length)return "";
