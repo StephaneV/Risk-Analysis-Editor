@@ -1896,6 +1896,17 @@ function applyTabParam(){
 let fileHandle=null;
 const FS_OK=(typeof window.showSaveFilePicker==="function");
 const RAE_TYPES=[{description:"Analyse de risques (.rae.json)",accept:{"application/json":[".rae.json",".json"]}}];
+/* Dossier d'ouverture des sélecteurs de fichiers.
+   - `id` : le navigateur mémorise le dernier dossier utilisé pour cet identifiant, y
+     compris d'une session à l'autre — sans quoi il repart des Documents à chaque fois ;
+   - `startIn` : quand un fichier est déjà relié, on part de SON dossier, ce qui est le
+     comportement attendu pour « Enregistrer sous… ». Il l'emporte sur la mémoire de `id`. */
+const PICKER_ID="rae-analysis";
+function pickerOpts(base){
+  const o=Object.assign({id:PICKER_ID},base);
+  if(fileHandle)o.startIn=fileHandle;
+  return o;
+}
 
 function newAnalysis(){
   const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
@@ -1908,7 +1919,7 @@ function newAnalysis(){
 async function openFile(){
   if(!FS_OK||!window.showOpenFilePicker){document.getElementById("fileInput").click();return;}
   let h;
-  try{[h]=await window.showOpenFilePicker({types:RAE_TYPES,multiple:false});}
+  try{[h]=await window.showOpenFilePicker(pickerOpts({types:RAE_TYPES,multiple:false}));}
   catch(e){return;}  // annulation utilisateur
   try{
     const f=await h.getFile();
@@ -2014,7 +2025,7 @@ async function saveToFile(){
 async function saveFileAs(){
   if(!FS_OK){downloadCopy();return;}
   let h;
-  try{h=await window.showSaveFilePicker({suggestedName:currentFileName||defaultFileName(),types:RAE_TYPES});}
+  try{h=await window.showSaveFilePicker(pickerOpts({suggestedName:currentFileName||defaultFileName(),types:RAE_TYPES}));}
   catch(e){return;}  // annulation utilisateur
   try{
     await writeTo(h,analysisBlob());
