@@ -180,6 +180,9 @@
      écran étroit — sans quoi le dernier bouton déborde de la page. */
   /* Bloc d'amorçage (analyse vierge) : seul visible dans l'onglet tant qu'il est affiché. */
   #view-presentation.onboarding>.card:not(.start){display:none!important}
+  /* Onglets verrouillés pendant l'amorçage : l'indisponibilité doit être lisible. */
+  .tab[aria-disabled="true"]{opacity:.4;cursor:not-allowed}
+  .tab[aria-disabled="true"]:hover{color:var(--muted)}
   .card.start{border-color:var(--accent)}
   .start-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 4px}
   .start-steps{margin:12px 0 0;padding-left:20px;color:var(--muted);font-size:12.5px;line-height:1.7}
@@ -1078,6 +1081,7 @@ const I18N = {
     start_step3:"Associez mesures et risques dans l'onglet Liens.",
     start_step4:"Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.",
     start_demo_failed:"Démonstration non accessible depuis ce mode d'ouverture. Utilisez « Charger un fichier .rae.json » et choisissez {0} dans le dossier examples/.",
+    start_locked:"Choisissez d'abord comment commencer ci-dessus.",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -1294,6 +1298,7 @@ const I18N = {
     start_step3:"Link measures and risks in the Links tab.",
     start_step4:"Read the matrices, follow the Action plan, print the Report.",
     start_demo_failed:"The demonstration cannot be reached in this opening mode. Use “Load a .rae.json file” and pick {0} from the examples/ folder.",
+    start_locked:"First choose how to start above.",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1510,6 +1515,7 @@ const I18N = {
     start_step3:"Collega misure e rischi nella scheda Collegamenti.",
     start_step4:"Leggi le matrici, segui il Piano d'azione, stampa il Rapporto.",
     start_demo_failed:"Dimostrazione non raggiungibile in questa modalità di apertura. Usa «Carica un file .rae.json» e scegli {0} nella cartella examples/.",
+    start_locked:"Scegli prima come iniziare qui sopra.",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -1808,6 +1814,8 @@ function customFieldsFor(target){return customFields().filter(f=>f&&f.target===t
 // Active un onglet principal (bascule .tab/.view + rendu de la vue).
 function activateView(view){
   const tab=document.querySelector('.tab[data-view="'+view+'"]');if(!tab)return;
+  // Onglet verrouillé pendant l'amorçage : on le signale plutôt que d'ignorer en silence.
+  if(tab.getAttribute("aria-disabled")==="true"){toast(t("start_locked"));return;}
   // Sortie de l'onglet Présentation avec une saisie non enregistrée : confirmation.
   if(view!=="presentation"&&presPending&&
      document.getElementById("view-presentation").classList.contains("active"))
@@ -1831,7 +1839,8 @@ document.getElementById("tabs").addEventListener("click",e=>{
 /* Motif ARIA « tablist » : flèches ←/→ (et Origine/Fin) pour circuler entre les onglets. */
 document.getElementById("tabs").addEventListener("keydown",e=>{
   const K={ArrowRight:1,ArrowLeft:-1,Home:"first",End:"last"}[e.key];if(!K)return;
-  const tabs=[...document.querySelectorAll("#tabs .tab")];
+  // Les onglets verrouillés sont exclus du parcours aux flèches.
+  const tabs=[...document.querySelectorAll("#tabs .tab")].filter(x=>x.getAttribute("aria-disabled")!=="true");
   const i=tabs.indexOf(e.target.closest(".tab"));if(i<0)return;
   e.preventDefault();
   const n=K==="first"?0:K==="last"?tabs.length-1:(i+K+tabs.length)%tabs.length;
@@ -1867,6 +1876,9 @@ function applyTabParam(){
   if(!raw)return;
   const parts=raw.split("."),view=parts[0],sub=parts[1];
   if(VIEW_TOKENS.indexOf(view)<0)return;                 // onglet inconnu -> on garde l'atterrissage par défaut
+  // Demander un onglet dans l'URL est une intention explicite : elle lève l'amorçage,
+  // sinon l'onglet demandé serait verrouillé et la navigation resterait sans effet.
+  if(view!=="presentation"){startDismissed=true;renderStartCard();}
   const st=SUBTABS[view];
   if(sub&&st&&st.tokens.indexOf(sub)>=0)st.set(sub);      // sous-onglet valide -> appliqué avant le rendu de la vue
   activateView(view);
@@ -3941,6 +3953,15 @@ function renderStartCard(){
   const montrer=!startDismissed && !analyse.risks.length && !analyse.measures.length;
   c.style.display=montrer?"":"none";
   v.classList.toggle("onboarding",montrer);
+  /* Tant que l'amorçage est affiché, les autres onglets sont verrouillés — et cela doit
+     se voir : un onglet cliquable qui ne réagit pas serait incompréhensible. On garde
+     aria-disabled (plutôt que disabled) pour que l'onglet reste annoncé et atteignable,
+     avec l'explication du verrou. */
+  document.querySelectorAll("#tabs .tab").forEach(tab=>{
+    const bloque=montrer&&tab.dataset.view!=="presentation";
+    tab.setAttribute("aria-disabled",bloque?"true":"false");
+    if(bloque)tab.title=t("start_locked"); else tab.removeAttribute("title");
+  });
 }
 function renderPresentation(){
   renderStartCard();
