@@ -2889,7 +2889,9 @@ function renderManualTraj(mc){
   analyse.risks.forEach(r=>{const a=r.initial_assessment,b=residual(r);
     if(a.probability===b.probability&&a.severity===b.severity){
       const p=posFor(r,"initial");if(!p)return;const c=makeOvChip(r,"unchanged",size);
-      c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,"both");chipsEl.appendChild(c);return;}
+      // Même règle qu'en disposition automatique : déplacer un risque non réduit fixe sa
+      // cotation résiduelle et laisse l'initiale en place (cf. whichOfKind).
+      c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,"residual");chipsEl.appendChild(c);return;}
     const ps=posFor(r,"initial"),pe=posFor(r,"residual");
     if(ps){const cs=makeOvChip(r,"start",size);cs.style.left=ps.x+"px";cs.style.top=ps.y+"px";attachManualDrag(cs,mc,r,"initial");chipsEl.appendChild(cs);}
     if(pe){const ce=makeOvChip(r,"end",size);ce.style.left=pe.x+"px";ce.style.top=pe.y+"px";attachManualDrag(ce,mc,r,"residual");chipsEl.appendChild(ce);}
@@ -3166,8 +3168,11 @@ let _dragging=false; // vrai pendant un glisser-déposer : masque les tooltips
    ou pastille unique d'un risque non réduit, qui porte alors les deux cotations. */
 function whichOfKind(kind){
   if(kind==="start"||kind==="initial")return "initial";
-  if(kind==="end"||kind==="residual")return "residual";
-  return "both";   // "unchanged"
+  /* "unchanged" : risque non encore réduit, affiché par une pastille unique. Le déplacer
+     revient à dire « voilà où il se situera après traitement » : on modifie donc la
+     cotation résiduelle seule. Emporter aussi l'initiale effacerait l'évaluation d'origine,
+     qui est précisément le point de comparaison. Le geste fait naître la trajectoire. */
+  return "residual";   // "end", "residual" et "unchanged"
 }
 /* Texte de la nouvelle cotation, pour le retour après déplacement. */
 function cotationTexte(r,p,g){
