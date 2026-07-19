@@ -432,6 +432,10 @@
   .tt{position:fixed;pointer-events:none;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;
     padding:8px 12px;font-size:12px;z-index:200;box-shadow:var(--shadow);max-width:250px;opacity:0;transition:opacity .12s}
   .tt b{color:var(--text)}.tt .t-cat{color:var(--muted)}
+  /* Les étiquettes de statut (22 px) dépassent l'interligne de l'infobulle (17,4 px) :
+     sur des lignes consécutives elles se touchent. Étant en inline-flex, ce sont des
+     boîtes atomiques dont les marges verticales agrandissent bien la ligne. */
+  .tt .tag{margin:2px 0}
 
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
     background:var(--panel-3);border:1px solid var(--border);border-radius:10px;padding:12px 20px;
