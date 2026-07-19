@@ -1100,6 +1100,7 @@ const I18N = {
     quick_risk_ph:"Nouveau risque : intitulé…",
     quick_create_link:"Créer et lier",
     quick_created:"{0} créé et lié : {1}",
+    cell_moved:"{0} : {1} × {2} = {3} ({4})",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -1323,6 +1324,7 @@ const I18N = {
     quick_risk_ph:"New risk: label…",
     quick_create_link:"Create and link",
     quick_created:"{0} created and linked: {1}",
+    cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1546,6 +1548,7 @@ const I18N = {
     quick_risk_ph:"Nuovo rischio: etichetta…",
     quick_create_link:"Crea e collega",
     quick_created:"{0} creato e collegato: {1}",
+    cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -2427,7 +2430,9 @@ function makeChip(r,mode,size){
   const c=document.createElement("div");c.className="chip";c.textContent=String(r.id).replace(/^R/,"");
   if(size&&size!==BASE_CHIP){c.style.width=size+"px";c.style.height=size+"px";
     c.style.fontSize=Math.max(7,Math.round(size*0.46))+"px";c.style.borderWidth=(size<15?1:2)+"px";}
-  attachTip(c,r,mode);return c;
+  attachTip(c,r,mode);
+  attachCellDrag(c,r,mode);   // makeChip n'est utilisée que par les dispositions automatiques
+  return c;
 }
 function fitGrid(N,S,square){
   const per=BASE_CHIP+3,pad=6;
@@ -2540,7 +2545,9 @@ function drawTrajectories(mc){
       posOf[t.risk.id+"|"+t.kind]={x:pos.x,y:pos.y,size:lay.size};
       if(i<hiddenStart){
         const ch=makeOvChip(t.risk,t.kind,lay.size);
-        ch.style.left=pos.x+"px";ch.style.top=pos.y+"px";chips.appendChild(ch);
+        ch.style.left=pos.x+"px";ch.style.top=pos.y+"px";
+        attachCellDrag(ch,t.risk,t.kind);   // la disposition manuelle a son propre glisser
+        chips.appendChild(ch);
       }
     });
     if(lay.badge){
@@ -2757,6 +2764,34 @@ function commitManualDrop(mc,r,which,px,py){
   });
   markDirty();renderRisks();requestAnimationFrame(renderMatrices);
 }
+
+/* Déplacement au clavier : Ctrl+flèches sur la pastille focalisée. Vaut dans toutes les
+   dispositions, manuelle comprise, pour ne pas laisser une fonction réservée à la souris. */
+document.getElementById("view-matrices").addEventListener("keydown",e=>{
+  if(!e.ctrlKey||e.altKey||e.shiftKey)return;
+  const d={ArrowRight:[0,1],ArrowLeft:[0,-1],ArrowUp:[1,0],ArrowDown:[-1,0]}[e.key];
+  if(!d)return;
+  const chip=e.target.closest&&e.target.closest(".chip,.ov-chip");
+  if(!chip||!chip.dataset.rid)return;
+  const r=riskById(chip.dataset.rid);if(!r)return;
+  e.preventDefault();
+  const which=whichOfKind(chip.dataset.kind);
+  const ev=which==="residual"?residual(r):r.initial_assessment;
+  const ps=probabilityLevels().slice().sort((a,b)=>a.value-b.value);
+  const gs=severityLevels().slice().sort((a,b)=>a.value-b.value);
+  const ip=ps.findIndex(x=>x.value===ev.probability), ig=gs.findIndex(x=>x.value===ev.severity);
+  if(ip<0||ig<0)return;
+  const np=ps[Math.max(0,Math.min(ps.length-1,ip+d[0]))].value;
+  const ng=gs[Math.max(0,Math.min(gs.length-1,ig+d[1]))].value;
+  const rid=chip.dataset.rid, kind=chip.dataset.kind;
+  if(!setRiskCell(r,which,np,ng,true))return;   // déjà au bord de la grille
+  // Le redessin détruit la pastille : on la retrouve et on lui rend le focus.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const el=[...document.querySelectorAll("#view-matrices .chip,#view-matrices .ov-chip")]
+      .find(x=>x.dataset.rid===rid&&x.dataset.kind===kind);
+    if(el)el.focus();
+  }));
+});
 
 /* Rend une pastille déplaçable */
 function attachManualDrag(chip,mc,r,which){
@@ -2989,7 +3024,9 @@ function layoutTrajectoryGridOpt(mc){
     const ang=Math.atan2(by-ay,bx-ax),pad=rad+3;
     trajArrow(svg,ax+Math.cos(ang)*pad,ay+Math.sin(ang)*pad,bx-Math.cos(ang)*pad,by-Math.sin(ang)*pad,a.start.risk);});
   tokens.forEach(t=>{const c=makeOvChip(t.risk,t.kind,size);
-    c.style.left=(t.cx+t.dx)+"px";c.style.top=(t.cy+t.dy)+"px";chipsEl.appendChild(c);});
+    c.style.left=(t.cx+t.dx)+"px";c.style.top=(t.cy+t.dy)+"px";
+    attachCellDrag(c,t.risk,t.kind);   // disposition « flèches optimisées », la plus courante
+    chipsEl.appendChild(c);});
 }
 
 /* ---------- Export image (SVG → PNG → presse-papiers / fichier) ---------- */
@@ -3119,7 +3156,100 @@ async function exportMatrix(blockEls,mode){
 /* ---------- Tooltip ---------- */
 const tip=document.getElementById("tooltip");
 let _dragging=false; // vrai pendant un glisser-déposer : masque les tooltips
+/* Le « kind » d'une pastille dit sur quelle cotation elle agit :
+   vue Initial/Résiduel -> "initial"/"residual" ; vue Trajectoire -> départ, arrivée,
+   ou pastille unique d'un risque non réduit, qui porte alors les deux cotations. */
+function whichOfKind(kind){
+  if(kind==="start"||kind==="initial")return "initial";
+  if(kind==="end"||kind==="residual")return "residual";
+  return "both";   // "unchanged"
+}
+/* Texte de la nouvelle cotation, pour le retour après déplacement. */
+function cotationTexte(r,p,g){
+  const pl=probabilityLevels().find(x=>x.value===p), gl=severityLevels().find(x=>x.value===g);
+  const sc=scoreOf(p,g), c=critFor(sc);
+  return t("cell_moved",r.id,(pl&&pl.label)||p,(gl&&gl.label)||g,sc,c.label);
+}
+/* Déplace un risque vers la case (p,g). En disposition manuelle on lui attribue en plus
+   un emplacement libre dans la sous-grille ; dans les autres dispositions la position est
+   recalculée par la stratégie, il n'y a donc rien à mémoriser. */
+function setRiskCell(r,which,p,g,annoncer){
+  const applies=which==="both"?["initial","residual"]:[which];
+  let change=false;
+  applies.forEach(w=>{
+    ensureEval(r,w);
+    const ev=w==="initial"?r.initial_assessment:r.residual_assessment;
+    if(ev.probability!==p||ev.severity!==g)change=true;
+    ev.probability=p;ev.severity=g;
+    if(getArrangement()==="manual"){
+      const N=getGridStep(),c=Math.floor(N/2);
+      const [fc,fr]=nearestFreeSlot(p,g,w,r.id,c,c);
+      setPlace(r.id,w,fc,fr);
+    }
+  });
+  if(!change)return false;
+  markDirty();renderRisks();requestAnimationFrame(renderMatrices);
+  if(annoncer)toast(cotationTexte(r,p,g));
+  return true;
+}
+/* Rend la pastille déplaçable d'une case à l'autre (dispositions automatiques).
+   La pastille reste en place ; un fantôme suit le curseur, ce qui évite de remanier
+   la disposition de la case d'origine pendant le geste. */
+function attachCellDrag(chip,r,kind){
+  const which=whichOfKind(kind);
+  chip.style.cursor="grab";chip.style.touchAction="none";
+  chip.addEventListener("pointerdown",e=>{
+    if(e.button!==0)return;
+    e.preventDefault();e.stopPropagation();
+    // .matrix-container englobe la grille ET la couche de pastilles de la vue Trajectoire ;
+    // .matrix seul exclurait cette vue, où les pastilles vivent dans une couche à part.
+    const src=chip.closest(".matrix-container");if(!src)return;
+    const sx=e.clientX,sy=e.clientY;let moved=false,ghost=null;
+    try{chip.setPointerCapture(e.pointerId);}catch(_){}
+    _dragging=true;tip.style.opacity=0;
+    const creerGhost=()=>{
+      ghost=chip.cloneNode(true);
+      ghost.style.position="fixed";ghost.style.pointerEvents="none";ghost.style.zIndex=2000;
+      ghost.style.margin="0";ghost.style.opacity=".92";
+      document.body.appendChild(ghost);chip.style.opacity=".3";
+    };
+    const placerGhost=(x,y)=>{const b=chip.getBoundingClientRect();
+      ghost.style.left=(x-b.width/2)+"px";ghost.style.top=(y-b.height/2)+"px";};
+    const move=ev=>{
+      if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>3){moved=true;creerGhost();}
+      if(moved)placerGhost(ev.clientX,ev.clientY);
+    };
+    const finish=()=>{
+      chip.removeEventListener("pointermove",move);chip.removeEventListener("pointerup",up);
+      chip.removeEventListener("pointercancel",annuler);
+      document.removeEventListener("keydown",onKey,true);
+      try{chip.releasePointerCapture(e.pointerId);}catch(_){}
+      if(ghost)ghost.remove();
+      chip.style.opacity="";chip.style.cursor="grab";
+      _dragging=false;tip.style.opacity=0;
+    };
+    const annuler=()=>finish();   // rien n'est modifié : la pastille reprend sa place
+    const onKey=ev=>{if(ev.key==="Escape"){ev.preventDefault();ev.stopPropagation();annuler();}};
+    const up=ev=>{
+      const bouge=moved;
+      finish();
+      if(!bouge)return;
+      /* Case sous le curseur, cherchée par géométrie dans la matrice d'origine.
+         elementFromPoint ne convient pas : en vue Trajectoire une couche de pastilles
+         recouvre la grille et masquerait toujours les cases. Restreindre la recherche à
+         la matrice de départ interdit aussi de passer d'Initial à Résiduel. */
+      const cell=[...src.querySelectorAll(".cell")].find(c=>{const b=c.getBoundingClientRect();
+        return ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom;});
+      if(!cell)return;   // hors matrice : aucun changement
+      setRiskCell(r,which,+cell.dataset.p,+cell.dataset.g,true);
+    };
+    chip.addEventListener("pointermove",move);chip.addEventListener("pointerup",up);
+    chip.addEventListener("pointercancel",annuler);
+    document.addEventListener("keydown",onKey,true);
+  });
+}
 function attachTip(el,r,kind){
+  el.dataset.rid=r.id;el.dataset.kind=kind;   // repères pour le déplacement au clavier
   // Contenu de l'infobulle + version texte, qui sert de nom accessible à la pastille.
   const build=()=>{
     let head,ev;
