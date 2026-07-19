@@ -2733,8 +2733,18 @@ function cellFromPoint(mc,px,py){
   return best;
 }
 
+/* Le point de dépôt est-il dans la matrice ? (px,py sont relatifs au coin de .matrix)
+   On tolère les interstices entre cases — cellFromPoint rattrape la case la plus proche —
+   mais on refuse un dépôt hors du cadre : la pastille doit alors revenir à sa place. */
+function insideMatrix(mc,px,py){
+  const m=mc.querySelector(".matrix");if(!m)return false;
+  const r=m.getBoundingClientRect();
+  return px>=0&&py>=0&&px<=r.width&&py<=r.height;
+}
 /* Dépôt d'une pastille : édite l'évaluation (case) + la position fine (sous-grille) */
 function commitManualDrop(mc,r,which,px,py){
+  // Hors matrice : aucun changement, on redessine pour remettre la pastille à sa position.
+  if(!insideMatrix(mc,px,py)){requestAnimationFrame(renderMatrices);return;}
   const cell=cellFromPoint(mc,px,py);if(!cell){requestAnimationFrame(renderMatrices);return;}
   const N=getGridStep(),S=cell.S;
   let col=Math.max(0,Math.min(N-1,Math.round((px-cell.cx)/(S/N)+(N-1)/2)));
@@ -2760,14 +2770,28 @@ function attachManualDrag(chip,mc,r,which){
     _dragging=true;tip.style.opacity=0; // masquer les tooltips pendant le glisser
     const move=ev=>{if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>3)moved=true;
       chip.style.left=(ev.clientX-m.left)+"px";chip.style.top=(ev.clientY-m.top)+"px";};
-    const up=ev=>{
+    /* Fin du glisser : on démonte les écouteurs dans tous les cas (dépôt, Échap, annulation
+       du pointeur), pour ne pas laisser de gestionnaire actif après coup. */
+    const finish=()=>{
       chip.removeEventListener("pointermove",move);chip.removeEventListener("pointerup",up);
+      chip.removeEventListener("pointercancel",annuler);
+      document.removeEventListener("keydown",onKey,true);
       try{chip.releasePointerCapture(e.pointerId);}catch(_){}
       _dragging=false;tip.style.opacity=0;
+    };
+    // Abandon : rien n'est modifié, le redessin remet la pastille à sa position d'origine.
+    const annuler=()=>{finish();requestAnimationFrame(renderMatrices);};
+    /* Échap annule le déplacement en cours. En phase de capture avec arrêt de la
+       propagation : sinon la touche irait aussi fermer une modale ou un menu. */
+    const onKey=ev=>{if(ev.key==="Escape"){ev.preventDefault();ev.stopPropagation();annuler();}};
+    const up=ev=>{
+      finish();
       if(moved)commitManualDrop(mc,r,which,ev.clientX-m.left,ev.clientY-m.top);
       else{chip.style.cursor="grab";chip.style.zIndex="";}
     };
     chip.addEventListener("pointermove",move);chip.addEventListener("pointerup",up);
+    chip.addEventListener("pointercancel",annuler);
+    document.addEventListener("keydown",onKey,true);
   });
 }
 
