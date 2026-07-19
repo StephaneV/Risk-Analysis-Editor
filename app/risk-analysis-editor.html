@@ -1934,6 +1934,10 @@ function applyLoadedData(data,name,withQuery){
   lang=resolveLang(fileLang,withQuery);
   applyStaticI18n();
   renderAll();
+  /* On revient sur Présentation : au chargement, l'utilisateur doit d'abord voir de quelle
+     analyse il s'agit (titre, périmètre, auteur) avant d'entrer dans les registres.
+     Un ?tab= explicite reprend la main juste après, dans la séquence de démarrage. */
+  activateView("presentation");
   return true;
 }
 
