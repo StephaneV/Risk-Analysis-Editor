@@ -581,7 +581,7 @@
   <section class="view" id="view-plan">
     <div class="card">
       <h2 data-i18n="tab_plan">Plan d'action</h2>
-      <div class="caption" data-i18n="plan_caption">Suivi des mesures de maîtrise : échéances, statut et avancement.</div>
+      <div class="caption" data-i18n="plan_caption">Suivi des mesures de maîtrise : échéances, statut et avancement. Sur le tableau par statut, au clavier : Entrée pour ouvrir une mesure, Ctrl+flèches pour changer sa colonne.</div>
       <div id="planSummary"></div>
     </div>
     <div class="card">
@@ -971,6 +971,8 @@ const I18N = {
     "contrast.classic":"Classique — luminosité perçue (rendu d'origine)",
     "contrast.wcag":"Contraste renforcé — couleur calculée (WCAG AA)",
     "cfg_contrast_hint":"Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.",
+    a11y_plan_card:"Mesure {0} — {1}. Statut : {2}.",
+    plan_moved:"{0} déplacée vers « {1} ».",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
@@ -985,7 +987,7 @@ const I18N = {
     rp_summary:"Synthèse", rp_presentation:"Présentation", cf_yes:"Oui", cf_no:"Non", rp_created:"Date de création", rp_updated:"Dernière modification",
     rp_revision:"Révision", rp_value:"Valeur", rp_range:"Plage de score",
     rp_risk_details:"Détail des risques", rp_measure_details:"Détail des mesures", rp_link_details:"Détail des liens",
-    tab_plan:"Plan d'action", plan_caption:"Suivi des mesures de maîtrise : échéances, statut et avancement.",
+    tab_plan:"Plan d'action", plan_caption:"Suivi des mesures de maîtrise : échéances, statut et avancement. Sur le tableau par statut, au clavier : Entrée pour ouvrir une mesure, Ctrl+flèches pour changer sa colonne.",
     plan_view_echeance:"Échéancier", plan_view_statut:"Par statut", plan_view_responsable:"Par responsable",
     plan_progress:"Avancement", plan_overdue:"en retard", plan_overdue_n:"{0} en retard",
     plan_unassigned:"Non assigné", plan_no_due:"Sans échéance",
@@ -1164,6 +1166,8 @@ const I18N = {
     "contrast.classic":"Classic — perceived brightness (original rendering)",
     "contrast.wcag":"Enhanced contrast — computed colour (WCAG AA)",
     "cfg_contrast_hint":"Classic: black or white text based on the perceived brightness of the background (historical threshold). Enhanced: choice based on the actual WCAG contrast, guaranteeing 4.5:1 on any background — this darkens the text of red and blue badges.",
+    a11y_plan_card:"Measure {0} — {1}. Status: {2}.",
+    plan_moved:"{0} moved to “{1}”.",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
@@ -1178,7 +1182,7 @@ const I18N = {
     rp_summary:"Summary", rp_presentation:"Overview", cf_yes:"Yes", cf_no:"No", rp_created:"Created on", rp_updated:"Last updated",
     rp_revision:"Revision", rp_value:"Value", rp_range:"Score range",
     rp_risk_details:"Risk details", rp_measure_details:"Measure details", rp_link_details:"Link details",
-    tab_plan:"Action plan", plan_caption:"Follow-up of controls: due dates, status and progress.",
+    tab_plan:"Action plan", plan_caption:"Follow-up of controls: due dates, status and progress. On the status board, keyboard: Enter to open a measure, Ctrl+arrows to move it between columns.",
     plan_view_echeance:"Timeline", plan_view_statut:"By status", plan_view_responsable:"By owner",
     plan_progress:"Progress", plan_overdue:"overdue", plan_overdue_n:"{0} overdue",
     plan_unassigned:"Unassigned", plan_no_due:"No due date",
@@ -1357,6 +1361,8 @@ const I18N = {
     "contrast.classic":"Classica — luminosità percepita (resa originale)",
     "contrast.wcag":"Contrasto rafforzato — colore calcolato (WCAG AA)",
     "cfg_contrast_hint":"Classica: testo nero o bianco secondo la luminosità percepita dello sfondo (soglia storica). Rafforzata: scelta basata sul contrasto WCAG reale, che garantisce 4,5:1 su qualsiasi sfondo — scurisce il testo dei badge rossi e blu.",
+    a11y_plan_card:"Misura {0} — {1}. Stato: {2}.",
+    plan_moved:"{0} spostata in «{1}».",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
@@ -1371,7 +1377,7 @@ const I18N = {
     rp_summary:"Sintesi", rp_presentation:"Presentazione", cf_yes:"Sì", cf_no:"No", rp_created:"Data di creazione", rp_updated:"Ultima modifica",
     rp_revision:"Revisione", rp_value:"Valore", rp_range:"Intervallo di punteggio",
     rp_risk_details:"Dettaglio dei rischi", rp_measure_details:"Dettaglio delle misure", rp_link_details:"Dettaglio dei collegamenti",
-    tab_plan:"Piano d'azione", plan_caption:"Monitoraggio delle misure di controllo: scadenze, stato e avanzamento.",
+    tab_plan:"Piano d'azione", plan_caption:"Monitoraggio delle misure di controllo: scadenze, stato e avanzamento. Nella bacheca per stato, da tastiera: Invio per aprire una misura, Ctrl+frecce per spostarla di colonna.",
     plan_view_echeance:"Scadenzario", plan_view_statut:"Per stato", plan_view_responsable:"Per responsabile",
     plan_progress:"Avanzamento", plan_overdue:"in ritardo", plan_overdue_n:"{0} in ritardo",
     plan_unassigned:"Non assegnato", plan_no_due:"Senza scadenza",
@@ -2954,7 +2960,11 @@ function planTable(list){
 }
 function planCard(m){
   const ov=isOverdue(m), risks=risksOfMeasure(m.id);
-  return '<div class="plan-card'+(ov?" overdue":"")+'" data-mid="'+esc(m.id)+'" draggable="true" style="cursor:pointer"><div><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
+  /* Carte atteignable au clavier : Entrée/Espace ouvre la mesure, Ctrl+flèches la déplace
+     d'une colonne de statut à l'autre — le glisser-déposer n'est plus le seul moyen. */
+  const nom=t("a11y_plan_card",m.id,m.label,statusLabel(m.status||"proposed"));
+  return '<div class="plan-card'+(ov?" overdue":"")+'" data-mid="'+esc(m.id)+'" draggable="true" style="cursor:pointer"'+
+    ' tabindex="0" role="button" aria-label="'+esc(nom)+'"><div><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
     ((m.due_date||m.responsible)?'<div class="muted" style="margin-top:4px;font-size:11px">'+
       (m.due_date?'<span'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(m.due_date)+(ov?' ⚠':'')+'</span>':'')+
       (m.due_date&&m.responsible?' · ':'')+(m.responsible?esc(m.responsible):'')+'</div>':'')+
@@ -3001,6 +3011,18 @@ function renderPlanStatus(area,ms){
     return '<div class="kanban-col" data-status="'+c+'"><h4><span class="tag" style="background:'+col.bg+';color:'+badgeFg(col.bg)+'">'+esc(statusLabel(c))+'</span> <span class="muted">'+list.length+'</span></h4>'+
       list.map(planCard).join("")+'</div>';
   }).join("")+'</div>';
+  planApplyRefocus();
+}
+/* Le déplacement d'une carte re-rend toute la vue : on ramène le focus sur la carte
+   déplacée, et seulement si le focus a effectivement été perdu. */
+let planRefocus=null;
+function planApplyRefocus(){
+  if(!planRefocus)return;
+  const id=planRefocus;planRefocus=null;
+  const perdu=document.activeElement===document.body||!document.body.contains(document.activeElement);
+  if(!perdu)return;
+  const card=[...document.querySelectorAll("#planArea .plan-card")].find(c=>c.dataset.mid===id);
+  if(card)card.focus();
 }
 function renderPlanResponsible(area,ms){
   const groups={};
@@ -3031,6 +3053,25 @@ function renderPlan(){
   const area=document.getElementById("planArea");if(!area)return;
   let dragId=null;
   area.addEventListener("click",e=>{const el=e.target.closest("[data-mid]");if(el)openMeasureModal(el.dataset.mid);});
+  /* Alternative clavier au glisser-déposer (vue Par statut) :
+     Entrée/Espace ouvre la mesure, Ctrl+←/→ la fait changer de colonne. */
+  area.addEventListener("keydown",e=>{
+    const c=e.target.closest(".plan-card");if(!c)return;
+    const m=measureById(c.dataset.mid);if(!m)return;
+    if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){
+      e.preventDefault();planRefocus=m.id;openMeasureModal(m.id);return;
+    }
+    if(!e.ctrlKey||e.altKey||e.shiftKey)return;
+    const d=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0;
+    if(!d)return;
+    e.preventDefault();
+    const i=STATUS_CODES.indexOf(m.status||"proposed");
+    const j=Math.max(0,Math.min(STATUS_CODES.length-1,(i<0?0:i)+d));
+    if(j===i)return;
+    m.status=STATUS_CODES[j];planRefocus=m.id;
+    markDirty();renderAll();
+    toast(t("plan_moved",m.id,statusLabel(m.status)));   // #toast est une région live
+  });
   area.addEventListener("dragstart",e=>{const c=e.target.closest(".plan-card[draggable]");if(!c)return;
     dragId=c.dataset.mid;e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain",dragId);}catch(_){}c.classList.add("dragging");});
   area.addEventListener("dragend",e=>{const c=e.target.closest(".plan-card");if(c)c.classList.remove("dragging");
