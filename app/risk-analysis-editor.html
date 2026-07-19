@@ -775,9 +775,10 @@
   </section>
 </main>
 
-<!-- Modale générique -->
+<!-- Modale générique. role/aria-modal/aria-labelledby : la synthèse vocale annonce
+     « boîte de dialogue » et son titre à l'ouverture, et ignore le fond. -->
 <div class="modal-bg" id="modalBg">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <header><h3 id="modalTitle">Titre</h3><button class="x" id="modalX" data-i18n-label="a11y_close" data-i18n-title="a11y_close">&times;</button></header>
     <div class="body" id="modalBody"></div>
     <footer id="modalFooter"></footer>
@@ -4543,10 +4544,19 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dynModals.length&&
 
 /* ---------- Modales empilables (alerte / confirmation), créées dynamiquement ---------- */
 const dynModals=[];
-function pushModal(title,bodyHtml,buttons){
+let dynSeq=0;
+/* opts.role : "alertdialog" pour les messages qui interrompent l'utilisateur et attendent
+   une réponse (alerte, confirmation) ; "dialog" sinon. Le corps sert alors de description. */
+function pushModal(title,bodyHtml,buttons,opts){
+  opts=opts||{};
+  const n=++dynSeq, idT="dynTitle"+n, idB="dynBody"+n;
   const bg=document.createElement("div");bg.className="modal-bg open";
   const modal=document.createElement("div");modal.className="modal";
-  modal.innerHTML='<header><h3></h3><button class="x"'+a11y("a11y_close")+'>&times;</button></header><div class="body"></div>';
+  modal.setAttribute("role",opts.role||"dialog");
+  modal.setAttribute("aria-modal","true");
+  modal.setAttribute("aria-labelledby",idT);
+  modal.setAttribute("aria-describedby",idB);
+  modal.innerHTML='<header><h3 id="'+idT+'"></h3><button class="x"'+a11y("a11y_close")+'>&times;</button></header><div class="body" id="'+idB+'"></div>';
   modal.querySelector("h3").textContent=title||"";
   modal.querySelector(".body").innerHTML=bodyHtml;
   const foot=document.createElement("footer");modal.appendChild(foot);
@@ -4566,13 +4576,14 @@ function pushModal(title,bodyHtml,buttons){
 }
 function alertModal(message,title){
   pushModal(title||t("dialog_error"),'<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>',
-    [{label:t("btn_ok"),onClick:api=>api.close()}]);
+    [{label:t("btn_ok"),onClick:api=>api.close()}],{role:"alertdialog"});
 }
 function confirmModal(message,onYes,opts){
   opts=opts||{};
   pushModal(opts.title||t("dialog_confirm"),'<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>',
     [{label:t("btn_cancel"),cls:"ghost",onClick:api=>api.close()},
-     {label:opts.okLabel||t("btn_confirm"),cls:opts.danger?"danger":"",onClick:api=>{api.close();if(onYes)onYes();}}]);
+     {label:opts.okLabel||t("btn_confirm"),cls:opts.danger?"danger":"",onClick:api=>{api.close();if(onYes)onYes();}}],
+    {role:"alertdialog"});
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
