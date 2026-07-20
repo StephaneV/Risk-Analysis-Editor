@@ -2798,6 +2798,30 @@ document.getElementById("view-matrices").addEventListener("keydown",e=>{
   }));
 });
 
+/* Fantôme de glisser : la pastille d'origine reste en place, estompée, et une copie suit
+   le curseur. Mutualisé entre le glisser manuel et celui des dispositions automatiques,
+   pour que le geste ait la même apparence quelle que soit la disposition. */
+function dragGhost(chip){
+  let ghost=null;
+  return {
+    place(x,y){
+      if(!ghost){
+        ghost=chip.cloneNode(true);
+        ghost.style.position="fixed";ghost.style.pointerEvents="none";ghost.style.zIndex=2000;
+        ghost.style.margin="0";ghost.style.opacity=".92";
+        /* Les pastilles de matrice sont centrées par translate(-50%,-50%) : le clone
+           l'hériterait et se poserait une demi-pastille trop haut à gauche. La transition
+           est coupée de même, sinon le fantôme rattrape le curseur avec du retard. */
+        ghost.style.transform="none";ghost.style.transition="none";
+        document.body.appendChild(ghost);chip.style.opacity=".3";
+      }
+      const b=chip.getBoundingClientRect();
+      ghost.style.left=(x-b.width/2)+"px";ghost.style.top=(y-b.height/2)+"px";
+    },
+    remove(){if(ghost){ghost.remove();ghost=null;}chip.style.opacity="";}
+  };
+}
+
 /* Rend une pastille déplaçable */
 function attachManualDrag(chip,mc,r,which){
   chip.style.cursor="grab";chip.style.touchAction="none";
@@ -2805,11 +2829,14 @@ function attachManualDrag(chip,mc,r,which){
     e.preventDefault();e.stopPropagation();
     const m=mc.querySelector(".matrix").getBoundingClientRect();
     const sx=e.clientX,sy=e.clientY;let moved=false;
+    const ghost=dragGhost(chip);
     try{chip.setPointerCapture(e.pointerId);}catch(_){}
-    chip.style.cursor="grabbing";chip.style.zIndex=1000;
+    chip.style.cursor="grabbing";
     _dragging=true;tip.style.opacity=0; // masquer les tooltips pendant le glisser
-    const move=ev=>{if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>3)moved=true;
-      chip.style.left=(ev.clientX-m.left)+"px";chip.style.top=(ev.clientY-m.top)+"px";};
+    const move=ev=>{
+      if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>3)moved=true;
+      if(moved)ghost.place(ev.clientX,ev.clientY);
+    };
     /* Fin du glisser : on démonte les écouteurs dans tous les cas (dépôt, Échap, annulation
        du pointeur), pour ne pas laisser de gestionnaire actif après coup. */
     const finish=()=>{
@@ -2817,17 +2844,17 @@ function attachManualDrag(chip,mc,r,which){
       chip.removeEventListener("pointercancel",annuler);
       document.removeEventListener("keydown",onKey,true);
       try{chip.releasePointerCapture(e.pointerId);}catch(_){}
+      ghost.remove();chip.style.cursor="grab";
       _dragging=false;tip.style.opacity=0;
     };
-    // Abandon : rien n'est modifié, le redessin remet la pastille à sa position d'origine.
-    const annuler=()=>{finish();requestAnimationFrame(renderMatrices);};
+    // Abandon : la pastille n'a pas bougé, il n'y a donc rien à remettre en place.
+    const annuler=()=>finish();
     /* Échap annule le déplacement en cours. En phase de capture avec arrêt de la
        propagation : sinon la touche irait aussi fermer une modale ou un menu. */
     const onKey=ev=>{if(ev.key==="Escape"){ev.preventDefault();ev.stopPropagation();annuler();}};
     const up=ev=>{
       finish();
       if(moved)commitManualDrop(mc,r,which,ev.clientX-m.left,ev.clientY-m.top);
-      else{chip.style.cursor="grab";chip.style.zIndex="";}
     };
     chip.addEventListener("pointermove",move);chip.addEventListener("pointerup",up);
     chip.addEventListener("pointercancel",annuler);
@@ -3214,28 +3241,20 @@ function attachCellDrag(chip,r,kind){
     // .matrix-container englobe la grille ET la couche de pastilles de la vue Trajectoire ;
     // .matrix seul exclurait cette vue, où les pastilles vivent dans une couche à part.
     const src=chip.closest(".matrix-container");if(!src)return;
-    const sx=e.clientX,sy=e.clientY;let moved=false,ghost=null;
+    const sx=e.clientX,sy=e.clientY;let moved=false;
+    const ghost=dragGhost(chip);
     try{chip.setPointerCapture(e.pointerId);}catch(_){}
     _dragging=true;tip.style.opacity=0;
-    const creerGhost=()=>{
-      ghost=chip.cloneNode(true);
-      ghost.style.position="fixed";ghost.style.pointerEvents="none";ghost.style.zIndex=2000;
-      ghost.style.margin="0";ghost.style.opacity=".92";
-      document.body.appendChild(ghost);chip.style.opacity=".3";
-    };
-    const placerGhost=(x,y)=>{const b=chip.getBoundingClientRect();
-      ghost.style.left=(x-b.width/2)+"px";ghost.style.top=(y-b.height/2)+"px";};
     const move=ev=>{
-      if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>3){moved=true;creerGhost();}
-      if(moved)placerGhost(ev.clientX,ev.clientY);
+      if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>3)moved=true;
+      if(moved)ghost.place(ev.clientX,ev.clientY);
     };
     const finish=()=>{
       chip.removeEventListener("pointermove",move);chip.removeEventListener("pointerup",up);
       chip.removeEventListener("pointercancel",annuler);
       document.removeEventListener("keydown",onKey,true);
       try{chip.releasePointerCapture(e.pointerId);}catch(_){}
-      if(ghost)ghost.remove();
-      chip.style.opacity="";chip.style.cursor="grab";
+      ghost.remove();chip.style.cursor="grab";
       _dragging=false;tip.style.opacity=0;
     };
     const annuler=()=>finish();   // rien n'est modifié : la pastille reprend sa place
