@@ -2892,6 +2892,10 @@ function renderManualSide(mc,which){
     const ev=evalOf(r,which),c=cellCenterRel(mc,ev.probability,ev.severity);if(!c)return;
     const pl=getPlace(r.id,which)||{col:Math.floor(N/2),row:Math.floor(N/2)};
     const chip=makeOvChip(r,"end",size); // aspect plein normal (le pointillé est réservé à la vue Trajectoire)
+    /* "end" ne vaut que pour l'apparence : ici les deux matrices l'emploient, et data-kind
+       dirait donc « résiduel » des deux côtés. Le clavier n'a que ce repère pour savoir sur
+       quelle cotation agir (la souris, elle, reçoit `which` en paramètre) : on le rétablit. */
+    chip.dataset.kind=which;
     chip.style.left=(c.x+snapOff(pl.col,S,N))+"px";chip.style.top=(c.y+snapOff(pl.row,S,N))+"px";
     attachManualDrag(chip,mc,r,which);chipsEl.appendChild(chip);
   });
