@@ -2919,9 +2919,12 @@ function renderManualTraj(mc){
   // pastilles
   analyse.risks.forEach(r=>{const a=r.initial_assessment,b=residual(r);
     if(a.probability===b.probability&&a.severity===b.severity){
-      const p=posFor(r,"initial");if(!p)return;const c=makeOvChip(r,"unchanged",size);
-      // Même règle qu'en disposition automatique : déplacer un risque non réduit fixe sa
-      // cotation résiduelle et laisse l'initiale en place (cf. whichOfKind).
+      /* La pastille unique d'un risque non réduit EST sa pastille résiduelle : elle se
+         dessine à l'emplacement résiduel, et c'est cette cotation que le glisser modifie
+         (cf. whichOfKind). La dessiner à l'emplacement initial la figerait : un dépôt dans
+         la case de départ, ou la réunion des deux pastilles dans une même case, laisserait
+         la pastille là où elle était au lieu de suivre le geste. */
+      const p=posFor(r,"residual");if(!p)return;const c=makeOvChip(r,"unchanged",size);
       c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,"residual");chipsEl.appendChild(c);return;}
     const ps=posFor(r,"initial"),pe=posFor(r,"residual");
     if(ps){const cs=makeOvChip(r,"start",size);cs.style.left=ps.x+"px";cs.style.top=ps.y+"px";attachManualDrag(cs,mc,r,"initial");chipsEl.appendChild(cs);}
