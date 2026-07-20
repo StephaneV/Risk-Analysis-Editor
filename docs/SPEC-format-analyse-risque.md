@@ -224,6 +224,7 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
 | `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
+| `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** : `select`, `checklist`, `tags`, `boolean` ; ignoré pour les autres. Cf. § *Filtrage par champ personnalisé*. |
 | `pattern` | chaîne | F | Type `regexp` uniquement : expression régulière (syntaxe JavaScript) que la valeur doit respecter **en totalité** (ancrage implicite). Motif absent ou non compilable : aucun contrôle de format. |
 | `multiple` | booléen | F | Type `tags` uniquement : autorise la sélection de plusieurs étiquettes (sinon une seule). |
 | `palette` | chaîne | F | Type `progress` uniquement : palette de la barre. Couleur **interpolée en TSL** entre des jalons équirépartis de 0 à 100 %. Valeurs : `"accent"` (couleur unique du thème, défaut), `"red-green"`, `"red-orange-green"`, `"red-orange-yellow-green"`, `"white-black"`, `"custom"` (couleurs dans `colors`). |
@@ -282,6 +283,26 @@ Exemple :
 Un champ dont la définition a été supprimée peut laisser des valeurs orphelines dans `custom` : un lecteur les ignore.
 
 ---
+
+#### 4.6.4 Filtrage par champ personnalisé
+
+Un champ portant `"filterable": true` alimente une **liste de filtrage** dans les vues qui affichent l'objet ciblé :
+
+| `target` | Vues concernées |
+|---|---|
+| `risk` | Risques, Matrices, Liens |
+| `measure` | Mesures, Plan d'action, Liens |
+| `link` | Liens |
+
+L'option n'a de sens que pour les types à valeurs énumérables — `select`, `checklist`, `tags`, `boolean` — et est ignorée pour les autres.
+
+**Un état commun à toutes les vues.** Une valeur retenue s'applique partout où l'objet apparaît : filtrer les risques sur un champ restreint simultanément le registre, les matrices et les liens. Un lien n'est affiché que si son risque **et** sa mesure le sont également.
+
+**Règles de correspondance.** Pour `select`, la valeur de la fiche doit être égale au code retenu ; pour `checklist` et `tags`, elle doit figurer parmi les valeurs de la fiche ; pour `boolean`, « Non » retient également les fiches où la case n'a jamais été cochée.
+
+**Filtrage par l'adresse.** Le paramètre d'URL `?filter=code:valeur;code:valeur` applique un filtrage au démarrage — par exemple `?filter=evenement_redoute:acces;supports:messagerie`. Un couple par champ, séparés par des points-virgules ; codes et valeurs peuvent être encodés (`encodeURIComponent`). Les codes inconnus, les champs non filtrables et les valeurs hors liste sont **ignorés en silence**, afin qu'une adresse partagée continue d'ouvrir l'analyse après un renommage. L'adresse est tenue à jour lorsque l'utilisateur change un filtre, ce qui rend une vue filtrée partageable par simple copie.
+
+Le placement manuel des pastilles et l'évitement des collisions dans les matrices continuent de raisonner sur **tous** les risques : masquer une pastille ne déplace pas les autres.
 
 ## 5. Règles de cohérence et validation
 

@@ -1190,9 +1190,12 @@ const I18N = {
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
     flt_none:"Aucun résultat pour ce filtre.",
+    flt_by_field:"Filtrer par « {0} »", flt_field_all:"{0} : tout", flt_clear:"Réinitialiser les filtres",
     cf_section:"Champs personnalisés", cf_caption:"Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.",
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
+    cf_filterable:"Utilisable comme filtre",
+    cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées.",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)",
     cf_pattern:"Motif (expression régulière)", cf_pattern_ph:"ex. [A-Z]{2}-\\d{4}", cf_err_pattern:"Expression régulière invalide.",
@@ -1422,9 +1425,12 @@ const I18N = {
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
     flt_none:"No result for this filter.",
+    flt_by_field:"Filter by \"{0}\"", flt_field_all:"{0}: all", flt_clear:"Clear filters",
     cf_section:"Custom fields", cf_caption:"Define extra fields attached to the analysis, risks or measures.",
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
+    cf_filterable:"Usable as a filter",
+    cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types.",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)",
     cf_pattern:"Pattern (regular expression)", cf_pattern_ph:"e.g. [A-Z]{2}-\\d{4}", cf_err_pattern:"Invalid regular expression.",
@@ -1654,9 +1660,12 @@ const I18N = {
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
     flt_none:"Nessun risultato per questo filtro.",
+    flt_by_field:"Filtra per « {0} »", flt_field_all:"{0} : tutto", flt_clear:"Azzera i filtri",
     cf_section:"Campi personalizzati", cf_caption:"Definisci campi aggiuntivi associati all'analisi, ai rischi o alle misure.",
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
+    cf_filterable:"Utilizzabile come filtro",
+    cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi.",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)",
     cf_pattern:"Modello (espressione regolare)", cf_pattern_ph:"es. [A-Z]{2}-\\d{4}", cf_err_pattern:"Espressione regolare non valida.",
@@ -2211,6 +2220,7 @@ function pickerOpts(base){
 function newAnalysis(){
   const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
     dirty=false;isFresh=true;startDismissed=true;   // demande explicite : pas de mode d'emploi
+    cfFilterReset();cfFilterSyncURL();            // les filtres de l'analyse précédente n'ont plus d'objet
     autosaveClear();renderAll();goToPresentation();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
 }
@@ -2248,6 +2258,11 @@ function applyLoadedData(data,name,withQuery){
   if(err){alertModal(t("err_invalid_file",err));return false;}
   analyse=normalize(data);currentFileName=name||null;dirty=false;isFresh=false;
   startDismissed=true;   // un chargement explicite vaut prise en main
+  /* Les filtres portent sur les champs de l'analyse précédente : les conserver masquerait
+     des fiches sans raison visible. On repart à zéro, puis on applique ceux de l'adresse
+     quand le chargement vient d'un ?file= — l'adresse décrit alors l'analyse à afficher. */
+  cfFilterReset();
+  if(withQuery)cfFilterParseURL(); else cfFilterSyncURL();
   // Langue de l'interface au chargement : ?lang (si withQuery) > langue du fichier > localStorage > navigateur > anglais.
   const fileLang=analyse.metadata&&analyse.metadata.language;
   lang=resolveLang(fileLang,withQuery);
@@ -2531,6 +2546,9 @@ function applyTableA11y(){
 function renderAll(){
   refreshFileState();
   applyContrastMode();
+  // Les barres de filtres avant les vues : leur contenu dépend des champs déclarés
+  // filtrables, qui peuvent avoir changé (édition d'un champ, chargement d'un fichier).
+  renderCfFilters();
   renderPresentation();
   renderSettings();
   renderRisks();
@@ -2642,7 +2660,7 @@ function buildGrid(container,mode){
   if(mode!=="traj" && getArrangement()!=="manual"){
     // Regroupe les risques par case ; la disposition est appliquée après le layout (layoutStacks)
     const byCell={};
-    analyse.risks.forEach(r=>{
+    visibleRisks().forEach(r=>{
       const ev=mode==="initial"?r.initial_assessment:residual(r);
       const key=ev.probability+"-"+ev.severity;
       (byCell[key]=byCell[key]||[]).push(r);
@@ -2705,7 +2723,8 @@ function renderMatrices(){
   const area=document.getElementById("matrixArea");
   const legend=document.getElementById("matrixLegend");
   area.innerHTML="";
-  if(analyse.risks.length===0){area.innerHTML='<div class="empty">'+esc(t("matrix_empty"))+'</div>';legend.innerHTML="";return;}
+  // Aucun risque visible : le message d'absence vaut aussi quand un filtre masque tout.
+  if(visibleRisks().length===0){area.innerHTML='<div class="empty">'+esc(t(analyse.risks.length?"flt_none":"matrix_empty"))+'</div>';legend.innerHTML="";return;}
 
   if(matrixMode==="side"){
     renderArrangementBar("side");
@@ -2856,7 +2875,7 @@ function drawTrajectories(mc){
   // Regrouper les jetons (départ / arrivée / non-réduit) par case
   const cellTokens={};
   const push=(p,g,tok)=>{const k=p+"-"+g;(cellTokens[k]=cellTokens[k]||[]).push(tok);};
-  analyse.risks.forEach(r=>{
+  visibleRisks().forEach(r=>{
     const a=r.initial_assessment,b=residual(r);
     const moved=a.probability!==b.probability||a.severity!==b.severity;
     if(!moved){push(a.probability,a.severity,{risk:r,kind:"unchanged"});}
@@ -2896,7 +2915,7 @@ function drawTrajectories(mc){
   });
 
   // Flèches initiale → résiduelle, entre les positions réelles des pastilles
-  analyse.risks.forEach(r=>{
+  visibleRisks().forEach(r=>{
     const a=posOf[r.id+"|start"],b=posOf[r.id+"|end"];if(!a||!b)return;
     const ang=Math.atan2(b.y-a.y,b.x-a.x);
     trajArrow(svg, a.x+Math.cos(ang)*(a.size/2+3), a.y+Math.sin(ang)*(a.size/2+3), b.x-Math.cos(ang)*(b.size/2+3), b.y-Math.sin(ang)*(b.size/2+3), r);
@@ -3214,7 +3233,7 @@ function renderManualSide(mc,which){
   const anyCell=mc.querySelector(".cell");if(!anyCell)return;
   drawSnapGrid(mc);
   const S=anyCell.getBoundingClientRect().width,N=getGridStep(),size=manualChipSize(S,N);
-  analyse.risks.forEach(r=>{
+  visibleRisks().forEach(r=>{
     const ev=evalOf(r,which),c=cellCenterRel(mc,ev.probability,ev.severity);if(!c)return;
     const pl=getPlace(r.id,which)||{col:Math.floor(N/2),row:Math.floor(N/2)};
     const chip=makeOvChip(r,"end",size); // aspect plein normal (le pointillé est réservé à la vue Trajectoire)
@@ -3237,13 +3256,13 @@ function renderManualTraj(mc){
   const posFor=(r,w)=>{const ev=evalOf(r,w),c=cellCenterRel(mc,ev.probability,ev.severity);if(!c)return null;
     const pl=getPlace(r.id,w)||{col:Math.floor(N/2),row:Math.floor(N/2)};return {x:c.x+snapOff(pl.col,S,N),y:c.y+snapOff(pl.row,S,N)};};
   // flèches
-  analyse.risks.forEach(r=>{const a=r.initial_assessment,b=residual(r);
+  visibleRisks().forEach(r=>{const a=r.initial_assessment,b=residual(r);
     if(a.probability===b.probability&&a.severity===b.severity)return;
     const ps=posFor(r,"initial"),pe=posFor(r,"residual");if(!ps||!pe)return;
     const ang=Math.atan2(pe.y-ps.y,pe.x-ps.x),pad=rad+3;
     trajArrow(svg, ps.x+Math.cos(ang)*pad, ps.y+Math.sin(ang)*pad, pe.x-Math.cos(ang)*pad, pe.y-Math.sin(ang)*pad, r);});
   // pastilles
-  analyse.risks.forEach(r=>{const a=r.initial_assessment,b=residual(r);
+  visibleRisks().forEach(r=>{const a=r.initial_assessment,b=residual(r);
     if(a.probability===b.probability&&a.severity===b.severity){
       /* La pastille unique d'un risque non réduit EST sa pastille résiduelle : elle se
          dessine à l'emplacement résiduel, et c'est cette cotation que le glisser modifie
@@ -3273,7 +3292,7 @@ function layoutTrajectoryGridOpt(mc){
     const r=c.getBoundingClientRect();return{x:r.left-mtx.left+r.width/2,y:r.top-mtx.top+r.height/2};};
 
   const tokens=[],arrows=[];
-  analyse.risks.forEach(r=>{
+  visibleRisks().forEach(r=>{
     const a=r.initial_assessment,b=residual(r);
     const ca=center(a.probability,a.severity);if(!ca)return;
     if(a.probability===b.probability&&a.severity===b.severity){
@@ -3906,7 +3925,7 @@ function renderPlanSummary(){
 }
 function filteredPlanMeasures(){
   const st=listState.plan, q=normV(st.q);
-  return analyse.measures.filter(m=>{
+  return visibleMeasures().filter(m=>{
     if(st.status && (m.status||"")!==st.status)return false;
     if(st.resp && (m.responsible||"")!==st.resp)return false;
     if(st.overdue && !isOverdue(m))return false;
@@ -3951,7 +3970,7 @@ function renderPlanResponsible(area,ms){
 }
 function renderPlan(){
   const area=document.getElementById("planArea");if(!area)return;
-  const st=listState.plan, allM=analyse.measures;
+  const st=listState.plan, allM=visibleMeasures();
   fillSelect(document.getElementById("fltPlanStatus"),STATUS_CODES.filter(c=>allM.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),t("flt_status_all"),st.status);
   fillSelect(document.getElementById("fltPlanResp"),Array.from(new Set(allM.map(m=>m.responsible).filter(Boolean))).sort((a,b)=>a.localeCompare(b)).map(r=>[r,r]),t("flt_resp_all"),st.resp);
   const cb=document.getElementById("fltPlanOverdue");if(cb)cb.checked=st.overdue;
@@ -4012,6 +4031,162 @@ const listState={
   plan:{q:"",status:"",resp:"",overdue:false},
   links:{sort:"rid",dir:1} // défaut : code risque puis code mesure
 };
+/* ============================================================
+   FILTRAGE PAR CHAMP PERSONNALISÉ
+
+   Un champ à valeurs fermées (liste déroulante, liste à cocher, étiquettes, oui/non) peut
+   être déclaré « utilisable comme filtre ». Il apparaît alors dans la barre de filtres des
+   vues qui affichent l'entité correspondante.
+
+   L'état est **commun à toutes les vues** : filtrer les risques sur un champ restreint à la
+   fois le registre, les matrices et les liens. C'est ce qui permet de décrire le filtrage
+   d'une analyse entière dans une seule adresse, et d'éviter qu'une vue contredise l'autre.
+   ============================================================ */
+const CF_CLOSED=["select","checklist","tags","boolean"];   // types à valeurs énumérables
+function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
+function cfFilterableFields(target){
+  return customFieldsFor(target).filter(f=>f.filterable&&cfIsClosed(f.type));
+}
+/* Valeur retenue par champ ; une seule à la fois, comme les autres filtres de l'application. */
+let cfFilters={};
+function cfFilterCount(){return Object.keys(cfFilters).filter(k=>cfFilters[k]).length;}
+function cfFilterReset(){cfFilters={};}
+/* Valeurs proposées : les items du champ, ou Oui/Non pour un booléen. */
+function cfFilterChoices(f){
+  if(f.type==="boolean")return [["true",t("cf_yes")],["false",t("cf_no")]];
+  return (f.items||[]).map(it=>[it.code,cfItemLabel(it)]);
+}
+/* Une entité passe-t-elle les filtres de sa cible ?
+   - booléen : « Non » retient aussi les fiches où la case n'a jamais été cochée, ce qui
+     correspond à ce que l'utilisateur voit — une case décochée ;
+   - listes à cocher et étiquettes : la valeur doit figurer parmi celles retenues. */
+function cfEntityMatches(obj,target){
+  const fs=cfFilterableFields(target);
+  for(let i=0;i<fs.length;i++){
+    const f=fs[i], want=cfFilters[f.code];
+    if(!want)continue;
+    const v=obj&&obj.custom?obj.custom[f.code]:undefined;
+    if(f.type==="boolean"){if(String(v===true)!==want)return false;continue;}
+    if(Array.isArray(v)){if(v.indexOf(want)<0)return false;continue;}
+    if(String(v==null?"":v)!==want)return false;
+  }
+  return true;
+}
+/* Entités visibles. Le placement manuel et l'évitement des collisions continuent de
+   raisonner sur la totalité des risques : masquer une pastille ne doit pas déplacer les
+   autres, sans quoi la disposition changerait à chaque coup de filtre. */
+function visibleRisks(){return analyse.risks.filter(r=>cfEntityMatches(r,"risk"));}
+function visibleMeasures(){return analyse.measures.filter(m=>cfEntityMatches(m,"measure"));}
+/* Un lien n'est retenu que si son risque et sa mesure le sont également : un lien vers une
+   fiche masquée n'aurait plus de sens à l'écran. */
+function visibleTreatments(){
+  const vr=new Set(visibleRisks().map(r=>r.id)), vm=new Set(visibleMeasures().map(m=>m.id));
+  return analyse.treatments.filter(x=>vr.has(x.risk)&&vm.has(x.measure)&&cfEntityMatches(x,"link"));
+}
+
+/* ---- Barres de filtres ---- */
+/* Vue -> cibles dont les filtres y sont proposés. Les liens en proposent trois : la liste
+   des liens croise les trois entités, et n'afficher que les filtres de lien laisserait
+   l'utilisateur sans explication devant des lignes absentes. */
+const CF_FILTER_HOSTS=[
+  ["view-risks",["risk"]],
+  ["view-measures",["measure"]],
+  ["view-plan",["measure"]],
+  ["view-matrices",["risk"]],
+  ["view-links",["risk","measure","link"]]
+];
+/* La barre est créée à la volée : elle n'existe que si au moins un champ est filtrable,
+   et disparaît si l'option est retirée. */
+function cfFilterHost(viewId){
+  const vue=document.getElementById(viewId);if(!vue)return null;
+  let host=vue.querySelector(".cf-filterbar");
+  if(!host){
+    host=document.createElement("div");host.className="filterbar cf-filterbar";
+    /* Placée sous la barre de filtres existante quand il y en a une, en tête de vue sinon
+       (matrices, tableau croisé), pour rester au-dessus du contenu qu'elle restreint. */
+    const ref=vue.querySelector(".filterbar")||vue.querySelector(".matrix-toolbar");
+    if(ref&&ref.parentNode)ref.parentNode.insertBefore(host,ref.nextSibling);
+    else{const c=vue.querySelector(".card")||vue;c.insertBefore(host,c.firstChild);}
+  }
+  return host;
+}
+function renderCfFilters(){
+  /* Un champ peut avoir perdu l'option « filtrable », changé de type ou disparu : sa valeur
+     retenue n'a plus de sens et masquerait des fiches sans plus rien afficher pour
+     l'expliquer. On la purge avant de redessiner. */
+  const encoreFiltrables={};
+  ["risk","measure","link"].forEach(tg=>cfFilterableFields(tg).forEach(f=>{encoreFiltrables[f.code]=f;}));
+  let purge=false;
+  Object.keys(cfFilters).forEach(code=>{
+    const f=encoreFiltrables[code];
+    if(!f||!cfFilterChoices(f).some(c=>c[0]===cfFilters[code])){delete cfFilters[code];purge=true;}
+  });
+  // L'adresse ne doit pas conserver un filtre qui ne s'applique plus.
+  if(purge)cfFilterSyncURL();
+  CF_FILTER_HOSTS.forEach(([viewId,targets])=>{
+    const champs=[];targets.forEach(tg=>cfFilterableFields(tg).forEach(f=>champs.push(f)));
+    const vue=document.getElementById(viewId);if(!vue)return;
+    const existant=vue.querySelector(".cf-filterbar");
+    if(!champs.length){if(existant)existant.remove();return;}
+    const host=cfFilterHost(viewId);if(!host)return;
+    let h="";
+    champs.forEach(f=>{
+      const cur=cfFilters[f.code]||"";
+      h+='<select data-cf-flt="'+esc(f.code)+'" aria-label="'+esc(t("flt_by_field",cfLabel(f)))+'"'+
+         ' title="'+esc(t("flt_by_field",cfLabel(f)))+'">'+
+         '<option value="">'+esc(t("flt_field_all",cfLabel(f)))+'</option>'+
+         cfFilterChoices(f).map(([v,l])=>'<option value="'+esc(v)+'"'+(v===cur?" selected":"")+'>'+esc(l)+'</option>').join("")+
+         '</select>';
+    });
+    if(cfFilterCount())h+='<button type="button" class="btn ghost sm" id="cfFltClear-'+esc(viewId)+'" data-cf-flt-clear="1">'+esc(t("flt_clear"))+'</button>';
+    host.innerHTML=h;
+  });
+}
+document.addEventListener("change",e=>{
+  const sel=e.target.closest&&e.target.closest("select[data-cf-flt]");
+  if(!sel)return;
+  const code=sel.dataset.cfFlt;
+  if(sel.value)cfFilters[code]=sel.value;else delete cfFilters[code];
+  cfFilterSyncURL();renderAll();
+});
+document.addEventListener("click",e=>{
+  if(!e.target.closest||!e.target.closest("[data-cf-flt-clear]"))return;
+  cfFilterReset();cfFilterSyncURL();renderAll();
+});
+
+/* ---- Adresse ----
+   Format : ?filter=code:valeur;code:valeur — un couple par champ, séparés par des
+   points-virgules. Les codes inconnus et les valeurs hors liste sont ignorés en silence :
+   une adresse partagée doit continuer d'ouvrir l'analyse même si un champ a été renommé. */
+function cfFilterParseURL(){
+  let raw;
+  try{raw=new URLSearchParams(location.search).get("filter");}catch(e){return;}
+  if(!raw)return;
+  const connus={};
+  ["risk","measure","link"].forEach(tg=>cfFilterableFields(tg).forEach(f=>{connus[f.code]=f;}));
+  raw.split(";").forEach(part=>{
+    const i=part.indexOf(":");if(i<0)return;
+    const code=decodeURIComponent(part.slice(0,i)).trim();
+    const val=decodeURIComponent(part.slice(i+1)).trim();
+    const f=connus[code];if(!f||!val)return;
+    if(!cfFilterChoices(f).some(c=>c[0]===val))return;
+    cfFilters[code]=val;
+  });
+}
+/* L'adresse reflète le filtrage courant, de sorte qu'une vue filtrée se partage par
+   simple copie de l'URL. replaceState : pas d'entrée supplémentaire dans l'historique. */
+function cfFilterSyncURL(){
+  if(!window.history||!history.replaceState)return;
+  try{
+    const p=new URLSearchParams(location.search);
+    const actifs=Object.keys(cfFilters).filter(k=>cfFilters[k])
+      .map(k=>encodeURIComponent(k)+":"+encodeURIComponent(cfFilters[k]));
+    if(actifs.length)p.set("filter",actifs.join(";"));else p.delete("filter");
+    const qs=p.toString();
+    history.replaceState(null,"",location.pathname+(qs?"?"+qs:"")+location.hash);
+  }catch(e){}
+}
+
 function fillSelect(sel,pairs,allLabel,current){
   if(!sel)return;
   sel.innerHTML='<option value="">'+esc(allLabel)+'</option>'+pairs.map(p=>'<option value="'+esc(p[0])+'">'+esc(p[1])+'</option>').join("");
@@ -4053,7 +4228,9 @@ function linkCmp(col){return (a,b)=>{
    ============================================================ */
 function renderRisks(){
   const st=listState.risks, tb=document.getElementById("risksTable");tb.innerHTML="";
-  const all=analyse.risks;
+  // Les filtres par champ perso s'appliquent avant les filtres propres à la vue : le
+  // compteur « n sur N » compare alors ce qui est affiché à ce qui reste filtrable ici.
+  const all=visibleRisks();
   fillSelect(document.getElementById("fltRiskCat"),
     Array.from(new Set(all.map(r=>r.category).filter(Boolean))).sort((a,b)=>a.localeCompare(b)).map(c=>[c,c]),
     t("flt_cat_all"), st.cat);
@@ -4067,7 +4244,9 @@ function renderRisks(){
   const emptyEl=document.getElementById("risquesEmpty");
   if(!list.length){emptyEl.style.display="block";emptyEl.textContent=all.length?t("flt_none"):t("risks_empty");}
   else emptyEl.style.display="none";
-  setFltCount("cntRisks",list.length,all.length);
+  // Comparaison au total réel de l'analyse, et non au sous-ensemble déjà réduit par les
+  // filtres de champ perso : sinon « 5 sur 5 » masquerait le fait que 12 fiches sont écartées.
+  setFltCount("cntRisks",list.length,analyse.risks.length);
   list.forEach(r=>{
     const evi=r.initial_assessment, evr=residual(r);
     const ci=critOfEval(evi), cr=critOfEval(evr);
@@ -4225,7 +4404,7 @@ function measurePill(id){
 const TYPES=["technical","organizational","preventive","detective","corrective","deterrent"];
 function renderMeasures(){
   const st=listState.measures, tb=document.getElementById("measuresTable");tb.innerHTML="";
-  const all=analyse.measures;
+  const all=visibleMeasures();
   fillSelect(document.getElementById("fltMeasureType"),
     Array.from(new Set(all.map(m=>m.type).filter(Boolean))).sort().map(c=>[c,typeLabel(c)]), t("flt_type_all"), st.type);
   fillSelect(document.getElementById("fltMeasureStatus"),
@@ -4241,7 +4420,7 @@ function renderMeasures(){
   const emptyEl=document.getElementById("mesuresEmpty");
   if(!list.length){emptyEl.style.display="block";emptyEl.textContent=all.length?t("flt_none"):t("measures_empty");}
   else emptyEl.style.display="none";
-  setFltCount("cntMeasures",list.length,all.length);
+  setFltCount("cntMeasures",list.length,analyse.measures.length);
   list.forEach(m=>{
     const risks=risksOfMeasure(m.id);
     const tr=document.createElement("tr");tr.style.cursor="pointer";
@@ -4382,14 +4561,20 @@ function crossApplyRoving(){
 // Sous-onglet Associations : tableau croisé à cocher (+ marqueur des liens enrichis).
 function renderCrosstab(){
   const area=document.getElementById("crossArea");
-  if(!analyse.risks.length||!analyse.measures.length){
+  /* Le tableau croise les entités VISIBLES : filtrer les risques retire des lignes,
+     filtrer les mesures retire des colonnes. Le message d'absence distingue une analyse
+     vide d'un filtrage qui ne laisse rien. */
+  const risques=visibleRisks(), mesures=visibleMeasures();
+  if(!risques.length||!mesures.length){
+    if(analyse.risks.length&&analyse.measures.length){
+      area.innerHTML='<div class="empty">'+esc(t("flt_none"))+'</div>';return;}
     area.innerHTML='<div class="empty">'+esc(t("links_empty"))+'</div>';return;}
   let h='<table><caption class="sr-only">'+esc(t("links_title"))+'</caption><thead><tr><th class="corner">'+esc(t("cross_corner"))+'</th>';
-  analyse.measures.forEach((m,i)=>h+='<th scope="col" class="vert'+(i%2?' altcol':'')+'" title="'+esc(m.label)+'">'+esc(m.id)+' · '+esc(m.label)+'</th>');
+  mesures.forEach((m,i)=>h+='<th scope="col" class="vert'+(i%2?' altcol':'')+'" title="'+esc(m.label)+'">'+esc(m.id)+' · '+esc(m.label)+'</th>');
   h+='</tr></thead><tbody>';
-  analyse.risks.forEach(r=>{
+  risques.forEach(r=>{
     h+='<tr><th scope="row" class="rname"><span class="id-badge">'+esc(r.id)+'</span> '+esc(r.label)+'</th>';
-    analyse.measures.forEach((m,i)=>{
+    mesures.forEach((m,i)=>{
       const tr=treatmentOf(r.id,m.id);
       const mark=linkEnriched(tr)?'<span class="lmark" title="'+esc(t("link_has_data"))+'">●</span>':'';
       const nom=t("a11y_link_cell",r.id,r.label,m.id,m.label);
@@ -4536,7 +4721,8 @@ function renderLinkDetails(){
   const cf=customFieldsFor("link");
   const st=listState.links;
   const q=normV((document.getElementById("fltLinkQ").value||""));
-  let list=analyse.treatments.filter(tr=>{
+  // visibleTreatments() écarte déjà les liens dont le risque ou la mesure est filtré.
+  let list=visibleTreatments().filter(tr=>{
     if(!q)return true;
     const r=riskById(tr.risk),m=measureById(tr.measure);
     const hay=[tr.risk,tr.measure,r&&r.label,m&&m.label,tr.comment].concat(cf.map(f=>cfDisplay(f,(tr.custom||{})[f.code]))).join(" ");
@@ -4747,6 +4933,10 @@ function cfBoundKind(ty){ // 'num' | 'date' | 'len' | 'items' | null
   return null;
 }
 function renderCustomFields(){
+  /* Toute modification de la liste des champs (ajout, édition, suppression, réordonnancement)
+     passe par ici : c'est le point unique où reconstruire les barres de filtres, qui en
+     dépendent directement. */
+  renderCfFilters();
   const tb=document.getElementById("cfBody");if(!tb)return;tb.innerHTML="";
   const list=customFields();
   document.getElementById("cfEmpty").style.display=list.length?"none":"block";
@@ -4771,9 +4961,9 @@ document.getElementById("btnAddCF").addEventListener("click",()=>openCustomField
 document.getElementById("cfTable").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;const list=customFields();
   if(b.dataset.cfEdit!=null)return openCustomFieldModal(+b.dataset.cfEdit);
-  if(b.dataset.cfDel!=null){const i=+b.dataset.cfDel;confirmModal(t("cf_del_confirm"),()=>{list.splice(i,1);cfReindex();markDirty();renderCustomFields();},{danger:true});return;}
-  if(b.dataset.cfUp!=null){const i=+b.dataset.cfUp;if(i>0){[list[i-1],list[i]]=[list[i],list[i-1]];cfReindex();markDirty();renderCustomFields();}return;}
-  if(b.dataset.cfDown!=null){const i=+b.dataset.cfDown;if(i<list.length-1){[list[i+1],list[i]]=[list[i],list[i+1]];cfReindex();markDirty();renderCustomFields();}return;}
+  if(b.dataset.cfDel!=null){const i=+b.dataset.cfDel;confirmModal(t("cf_del_confirm"),()=>{list.splice(i,1);cfReindex();markDirty();renderAll();},{danger:true});return;}
+  if(b.dataset.cfUp!=null){const i=+b.dataset.cfUp;if(i>0){[list[i-1],list[i]]=[list[i],list[i-1]];cfReindex();markDirty();renderAll();}return;}
+  if(b.dataset.cfDown!=null){const i=+b.dataset.cfDown;if(i<list.length-1){[list[i+1],list[i]]=[list[i],list[i+1]];cfReindex();markDirty();renderAll();}return;}
 });
 /* ----- Modale de définition d'un champ ----- */
 function cfBoundsHTML(f){
@@ -4818,6 +5008,14 @@ function openCustomFieldModal(idx){
       '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="cfCode" aria-required="true" value="'+esc(f.code)+'"></label>'+
       '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="cfType">'+opt(CF_TYPES,f.type,cfTypeLabel)+'</select></label>'+
       '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
+      /* Filtrable : réservé aux types à valeurs fermées, seuls à pouvoir alimenter une liste
+         de choix. La ligne disparaît pour les autres types plutôt que d'être grisée sans
+         explication (cf. cfSyncFilterable). */
+      '<label class="field full" id="cfFiltWrap" style="display:'+(cfIsClosed(f.type)?"block":"none")+'">'+
+        '<label style="display:flex;align-items:center;gap:8px;font-size:13px">'+
+        '<input type="checkbox" id="cfFilterable" style="width:16px;height:16px;flex:none"'+(f.filterable?" checked":"")+'> '+
+        esc(t("cf_filterable"))+'</label>'+
+        '<span class="hint">'+esc(t("cf_filterable_help"))+'</span></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="cfLab" aria-required="true" value="'+esc(f.label[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_help"))+'</span><input id="cfHelpTxt" value="'+esc(f.help[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_description"))+'</span><textarea id="cfDescTxt">'+esc((f.description&&f.description[lang])||"")+'</textarea></label>'+
@@ -4843,6 +5041,9 @@ function openCustomFieldModal(idx){
     const label=Object.assign({},f.label);if(labVal)label[lang]=labVal;else delete label[lang];
     if(!Object.keys(label).length){modalMsg(t("cf_err_label"));return false;}
     const obj={code,target,type,required:document.getElementById("cfReq").checked,label};
+    // Filtrable : enregistré seulement s'il a un sens pour ce type, et seulement s'il est vrai.
+    const fc=document.getElementById("cfFilterable");
+    if(fc&&fc.checked&&cfIsClosed(type))obj.filterable=true;
     const helpVal=val("cfHelpTxt").trim(),help=Object.assign({},f.help);
     if(helpVal)help[lang]=helpVal;else delete help[lang];if(Object.keys(help).length)obj.help=help;
     const descVal=val("cfDescTxt").trim(),desc=Object.assign({},f.description||{});
@@ -4872,7 +5073,7 @@ function openCustomFieldModal(idx){
     }
     const list=customFields();
     if(isNew){obj.order=list.length;list.push(obj);}else{obj.order=list[idx].order!=null?list[idx].order:idx;list[idx]=obj;}
-    cfReindex();markDirty();renderCustomFields();return true;
+    cfReindex();markDirty();renderAll();return true;
   },isNew?t("btn_create"):null);
   // câblage post-ouverture
   const typeSel=document.getElementById("cfType");
@@ -4880,7 +5081,13 @@ function openCustomFieldModal(idx){
     document.getElementById("cfBounds").innerHTML=cfBoundsHTML(f);
     document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
     const w=document.getElementById("cfItemsWrap");w.style.display=cfNeedsItems(f.type)?"block":"none";
-    document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");};
+    document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");
+    /* Un type sans valeurs fermées ne peut pas servir de filtre : on masque l'option et on
+       la décoche, pour ne pas enregistrer un réglage devenu sans objet. */
+    const fw=document.getElementById("cfFiltWrap"), fc=document.getElementById("cfFilterable");
+    const ok=cfIsClosed(f.type);
+    if(fw)fw.style.display=ok?"block":"none";
+    if(fc&&!ok)fc.checked=false;};
   typeSel.addEventListener("change",refreshType);
   // proposition auto du code depuis le libellé (langue courante), à la sortie du champ (si le code est encore vide)
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
@@ -5971,7 +6178,15 @@ let rzt;window.addEventListener("resize",()=>{clearTimeout(rzt);rzt=setTimeout((
 applyStaticI18n();
 analyse=emptyAnalysis(lang);isFresh=true;
 renderAll();
-loadFromURLParam().finally(()=>{applyTabParam();autosaveOffer();}); // ?tab après un éventuel ?file, puis reprise éventuelle
+/* ?tab après un éventuel ?file, puis reprise éventuelle.
+   ?filter est appliqué ici aussi : l'analyse peut venir d'ailleurs que d'un ?file (fichier
+   d'exemple déjà chargé, instantané restauré), et les champs filtrables n'existent qu'une
+   fois l'analyse en place. */
+loadFromURLParam().finally(()=>{
+  cfFilterParseURL();
+  if(cfFilterCount())renderAll();
+  applyTabParam();autosaveOffer();
+});
 </script>
 </body>
 </html>
