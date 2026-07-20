@@ -903,7 +903,7 @@
     <div class="card ppanel" data-pmode="fields" style="display:none">
       <div class="caption" data-i18n="cf_caption">Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.</div>
       <div class="table-scroll"><table id="cfTable"><caption class="sr-only" data-i18n="cf_section">Champs personnalisés</caption>
-        <thead><tr><th data-i18n="cf_target">Cible</th><th data-i18n="cf_code">Code</th><th data-i18n="th_label">Libellé</th><th data-i18n="th_type">Type</th><th data-i18n="cf_required">Obligatoire</th><th></th></tr></thead>
+        <thead><tr><th data-i18n="cf_target">Cible</th><th data-i18n="cf_code">Code</th><th data-i18n="th_label">Libellé</th><th data-i18n="th_type">Type</th><th data-i18n="cf_required">Obligatoire</th><th data-i18n="cf_filterable">Utilisable comme filtre</th><th></th></tr></thead>
         <tbody id="cfBody"></tbody>
       </table></div>
       <div class="empty" id="cfEmpty" style="display:none" data-i18n="cf_none">Aucun champ personnalisé défini.</div>
@@ -1196,6 +1196,7 @@ const I18N = {
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     cf_filterable:"Utilisable comme filtre",
     cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées.",
+    cf_filterable_na:"Sans objet pour ce type de champ.",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)",
     cf_pattern:"Motif (expression régulière)", cf_pattern_ph:"ex. [A-Z]{2}-\\d{4}", cf_err_pattern:"Expression régulière invalide.",
@@ -1431,6 +1432,7 @@ const I18N = {
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     cf_filterable:"Usable as a filter",
     cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types.",
+    cf_filterable_na:"Not applicable to this field type.",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)",
     cf_pattern:"Pattern (regular expression)", cf_pattern_ph:"e.g. [A-Z]{2}-\\d{4}", cf_err_pattern:"Invalid regular expression.",
@@ -1666,6 +1668,7 @@ const I18N = {
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     cf_filterable:"Utilizzabile come filtro",
     cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi.",
+    cf_filterable_na:"Non applicabile a questo tipo di campo.",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)",
     cf_pattern:"Modello (espressione regolare)", cf_pattern_ph:"es. [A-Z]{2}-\\d{4}", cf_err_pattern:"Espressione regolare non valida.",
@@ -4172,6 +4175,10 @@ function cfFilterParseURL(){
     if(!cfFilterChoices(f).some(c=>c[0]===val))return;
     cfFilters[code]=val;
   });
+  /* L'adresse est réécrite à partir de ce qui a réellement été retenu : elle ne doit pas
+     continuer d'annoncer un filtre écarté (champ inconnu, non filtrable, valeur périmée),
+     que l'utilisateur croirait actif en lisant la barre d'adresse. */
+  cfFilterSyncURL();
 }
 /* L'adresse reflète le filtrage courant, de sorte qu'une vue filtrée se partage par
    simple copie de l'URL. replaceState : pas d'entrée supplémentaire dans l'historique. */
@@ -4948,6 +4955,11 @@ function renderCustomFields(){
       '<td><b>'+esc(cfLabel(f))+'</b></td>'+
       '<td class="muted">'+esc(cfTypeLabel(f.type))+'</td>'+
       '<td>'+(f.required?'✓':'<span class="muted">—</span>')+'</td>'+
+      /* Trois états à distinguer : coché, décoché, et « sans objet » pour un type ouvert —
+         qui ne peut pas alimenter une liste de valeurs, quoi qu'on coche. */
+      '<td>'+(cfIsClosed(f.type)
+        ? (f.filterable?'✓':'<span class="muted">—</span>')
+        : '<span class="muted" title="'+esc(t("cf_filterable_na"))+'">·</span>')+'</td>'+
       '<td><div class="actions">'+
         '<button class="btn icon sm" data-cf-up="'+i+'"'+(i===0?" disabled":"")+a11y("a11y_move_up",cfLabel(f))+'>▲</button>'+
         '<button class="btn icon sm" data-cf-down="'+i+'"'+(i===list.length-1?" disabled":"")+a11y("a11y_move_down",cfLabel(f))+'>▼</button>'+
