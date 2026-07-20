@@ -238,7 +238,9 @@
   .matrix-block{flex:1;min-width:300px;max-width:560px}
   .matrix-block h4{text-align:center;font-size:13px;margin:0 0 4px;font-weight:600}
   .matrix-block .matrix-sub{text-align:center;color:var(--muted);font-size:12px;margin:0 0 12px;font-weight:500}
-  .matrix-wrap{display:flex;gap:10px}
+  /* Aucun texte sélectionnable dans la grille : un glisser de pastille surligne sinon le
+     score des cases et le numéro des pastilles au passage du curseur. */
+  .matrix-wrap{display:flex;gap:10px;-webkit-user-select:none;user-select:none}
   .y-axis{display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;
     transform:rotate(180deg);color:var(--muted);font-size:11px;font-weight:600;
     letter-spacing:.5px;text-transform:uppercase}
