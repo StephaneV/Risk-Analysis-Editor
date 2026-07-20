@@ -2731,8 +2731,9 @@ function renderMatrices(){
   const area=document.getElementById("matrixArea");
   const legend=document.getElementById("matrixLegend");
   area.innerHTML="";
-  /* Décompte des risques, auxquels s'ajoute celui des mesures lorsqu'un filtre les réduit —
-     le bloc de statistiques en affiche le nombre, qui ne doit pas baisser sans explication. */
+  /* Décompte des risques, auxquels s'ajoute celui des mesures dès qu'elles sont réduites —
+     directement, ou par propagation depuis un filtre de risque ou de lien. Le bloc de
+     statistiques en affiche le nombre, qui ne doit pas baisser sans explication. */
   const nvR=visibleRisks().length, nvM=visibleMeasures().length;
   setFilterInfo("matrices", nvM<analyse.measures.length
     ? t("flt_results_named",t("tab_risks"),nvR,analyse.risks.length)+" · "+
@@ -4095,17 +4096,38 @@ function cfEntityMatches(obj,target){
   }
   return true;
 }
-/* Entités visibles. Le placement manuel et l'évitement des collisions continuent de
-   raisonner sur la totalité des risques : masquer une pastille ne doit pas déplacer les
-   autres, sans quoi la disposition changerait à chaque coup de filtre. */
-function visibleRisks(){return analyse.risks.filter(r=>cfEntityMatches(r,"risk"));}
-function visibleMeasures(){return analyse.measures.filter(m=>cfEntityMatches(m,"measure"));}
-/* Un lien n'est retenu que si son risque et sa mesure le sont également : un lien vers une
-   fiche masquée n'aurait plus de sens à l'écran. */
-function visibleTreatments(){
-  const vr=new Set(visibleRisks().map(r=>r.id)), vm=new Set(visibleMeasures().map(m=>m.id));
-  return analyse.treatments.filter(x=>vr.has(x.risk)&&vm.has(x.measure)&&cfEntityMatches(x,"link"));
+/* ---- Entités visibles : les critères se conjuguent, et se propagent le long des liens ----
+
+   Filtrer n'est pas seulement écarter les fiches d'une famille : c'est restreindre la
+   partie de l'analyse dont on veut parler. Un filtre de risque retient donc les risques
+   correspondants, les liens qui en partent, et les seules mesures qui les traitent — et
+   symétriquement pour un filtre de mesure ou de lien. Tous les critères actifs valent
+   simultanément (ET), jamais l'un ou l'autre.
+
+   La propagation n'a lieu que dans le sens où elle a un sens : sans filtre de mesure ni de
+   lien, un risque dépourvu de mesure reste affiché — il n'est écarté par aucun critère.
+   Un seul passage suffit à atteindre le point fixe : les ensembles réduits ne contiennent
+   plus que des extrémités de liens eux-mêmes retenus. */
+function cfVisibleSets(){
+  const actif=tg=>cfFilterableFields(tg).some(f=>cfFilters[f.code]);
+  const aR=actif("risk"), aM=actif("measure"), aL=actif("link");
+  const R=new Set(analyse.risks.filter(r=>!aR||cfEntityMatches(r,"risk")).map(r=>r.id));
+  const M=new Set(analyse.measures.filter(m=>!aM||cfEntityMatches(m,"measure")).map(m=>m.id));
+  // Liens retenus : ceux qui satisfont leurs propres critères ET dont les deux extrémités
+  // sont retenues.
+  const L=analyse.treatments.filter(x=>(!aL||cfEntityMatches(x,"link"))&&R.has(x.risk)&&M.has(x.measure));
+  if(aM||aL){const gardes=new Set(L.map(x=>x.risk));
+    [...R].forEach(id=>{if(!gardes.has(id))R.delete(id);});}
+  if(aR||aL){const gardes=new Set(L.map(x=>x.measure));
+    [...M].forEach(id=>{if(!gardes.has(id))M.delete(id);});}
+  return {risks:R,measures:M,links:L};
 }
+/* Le placement manuel et l'évitement des collisions continuent de raisonner sur la
+   totalité des risques : masquer une pastille ne doit pas déplacer les autres, sans quoi
+   la disposition changerait à chaque coup de filtre. */
+function visibleRisks(){const v=cfVisibleSets();return analyse.risks.filter(r=>v.risks.has(r.id));}
+function visibleMeasures(){const v=cfVisibleSets();return analyse.measures.filter(m=>v.measures.has(m.id));}
+function visibleTreatments(){return cfVisibleSets().links;}
 
 /* ---- Barres de filtres ----
 
@@ -4159,13 +4181,13 @@ function natifActif(id){
   const el=document.getElementById(id);if(!el)return false;
   return el.type==="checkbox"?!!el.checked:!!(el.value||"").trim();
 }
-function barreActive(b){
-  if(b.natifs.some(natifActif))return true;
-  return b.cibles.some(tg=>cfFilterableFields(tg).some(f=>cfFilters[f.code]));
-}
-/* Réinitialisation : ce qui agit sur CETTE barre, et rien d'autre — ses contrôles natifs et
-   les champs perso de ses cibles. Les champs perso étant partagés, l'effet déborde sur les
-   autres vues : c'est le prix d'un filtrage cohérent d'un onglet à l'autre. */
+/* Les critères se propageant le long des liens, un filtre posé sur n'importe quelle famille
+   restreint toutes les vues : l'état « filtré » est donc global, et non propre à la barre. */
+function barreActive(b){return b.natifs.some(natifActif)||cfFilterCount()>0;}
+/* Réinitialisation : les contrôles natifs de cette barre, et TOUS les champs personnalisés.
+   Se limiter aux cibles de la barre laisserait en place un filtre d'une autre famille qui,
+   par propagation, continuerait de masquer des fiches ici — un bouton « réinitialiser » qui
+   ne rétablit pas tout serait pire que pas de bouton. */
 function filterBarReset(cle){
   const b=filterBarDef(cle);if(!b)return;
   /* L'évènement doit être celui que le contrôle écoute : « change » pour une liste
@@ -4175,7 +4197,7 @@ function filterBarReset(cle){
     const change=(el.tagName==="SELECT"||el.type==="checkbox");
     if(el.type==="checkbox")el.checked=false;else el.value="";
     el.dispatchEvent(new Event(change?"change":"input",{bubbles:true}));});
-  b.cibles.forEach(tg=>cfFilterableFields(tg).forEach(f=>{delete cfFilters[f.code];}));
+  cfFilterReset();
   cfFilterSyncURL();renderAll();
 }
 /* Décompte et bouton, publiés par la fonction de rendu de chaque vue : elle seule connaît

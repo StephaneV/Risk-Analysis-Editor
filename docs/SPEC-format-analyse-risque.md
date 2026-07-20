@@ -301,7 +301,17 @@ L'option n'a de sens que si deux conditions sont réunies, et elle est ignorée 
 
 Un fichier portant `"filterable": true` hors de ces conditions reste valide : la propriété est simplement sans effet.
 
-**Un état commun à toutes les vues.** Une valeur retenue s'applique partout où l'objet apparaît : filtrer les risques sur un champ restreint simultanément le registre, les matrices et les liens. Un lien n'est affiché que si son risque **et** sa mesure le sont également.
+**Un état commun à toutes les vues.** Une valeur retenue s'applique partout où l'objet apparaît : filtrer les risques sur un champ restreint simultanément le registre, les matrices, les statistiques et les liens.
+
+**Conjonction et propagation le long des liens.** Tous les critères actifs valent **simultanément** (ET), et chacun se **propage** aux entités liées :
+
+- un filtre de **risque** retient les risques correspondants, les liens qui en partent, et les seules mesures qui traitent ces risques ;
+- un filtre de **mesure** retient les mesures correspondantes, les liens qui y aboutissent, et les seuls risques traités par ces mesures ;
+- un filtre de **lien** retient les liens correspondants, et les seules extrémités (risques et mesures) de ces liens.
+
+La propagation n'a lieu que dans le sens où elle en a un : sans filtre de mesure ni de lien, un risque dépourvu de lien reste affiché — aucun critère ne l'écarte. Dès qu'un filtre de mesure ou de lien est actif, ce même risque disparaît, faute de lien retenu pour le rattacher.
+
+Le bouton **Réinitialiser** efface tous les filtres personnalisés, quelle que soit la barre d'où il est actionné : un filtre d'une autre famille continuerait sinon, par propagation, de masquer des fiches dans la vue courante.
 
 **Règles de correspondance.** Pour `select`, la valeur de la fiche doit être égale au code retenu ; pour `checklist` et `tags`, elle doit figurer parmi les valeurs de la fiche ; pour `boolean`, « Non » retient également les fiches où la case n'a jamais été cochée.
 
