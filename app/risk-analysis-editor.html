@@ -2968,9 +2968,23 @@ function layoutTrajectoryGridOpt(mc){
   const vByCol={},hByRow={};
   arrows.forEach(a=>{if(a.type==="V")(vByCol[a.start.g]=vByCol[a.start.g]||[]).push(a);
     else if(a.type==="H")(hByRow[a.start.p]=hByRow[a.start.p]||[]).push(a);});
-  let maxV=1,maxH=1,maxCell=1;
-  Object.values(vByCol).forEach(l=>maxV=Math.max(maxV,l.length));
-  Object.values(hByRow).forEach(l=>maxH=Math.max(maxH,l.length));
+  /* Largeur de couloir nécessaire dans une colonne (ou une ligne) : deux flèches droites
+     n'ont besoin de sous-colonnes distinctes que si elles se recouvrent. Compter toutes les
+     flèches de la colonne surestime le besoin et rétrécit les pastilles sans raison — deux
+     flèches qui se suivent sans se chevaucher partagent très bien la même sous-colonne.
+     Se toucher en un seul niveau ne compte pas : les deux pastilles sont alors dans la même
+     case, où elles occupent déjà des emplacements distincts. */
+  function profondeurRecouvrement(parCouloir,axe){
+    let m=1;
+    Object.values(parCouloir).forEach(l=>{
+      const iv=l.map(a=>{const u=a.start[axe],v=a.end[axe];return [Math.min(u,v),Math.max(u,v)];});
+      iv.forEach(x=>{const n=iv.filter(y=>Math.max(x[0],y[0])<Math.min(x[1],y[1])).length;if(n>m)m=n;});
+    });
+    return m;
+  }
+  const maxV=profondeurRecouvrement(vByCol,"p");   // flèche verticale : elle court sur la probabilité
+  const maxH=profondeurRecouvrement(hByRow,"g");   // flèche horizontale : sur la gravité
+  let maxCell=1;
   Object.values(cells).forEach(l=>maxCell=Math.max(maxCell,l.length));
   const gap=3, needed=Math.ceil(Math.sqrt(maxCell));
   const Kmax=Math.max(2,Math.floor((S-6+gap)/(9+gap))); // pastille min ~9px
