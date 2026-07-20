@@ -105,7 +105,7 @@
         "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "progress"] },
         "pattern": { "type": "string", "description": "Type regexp : expression régulière que la valeur doit respecter en totalité." },
         "required": { "type": "boolean" },
-        "filterable": { "type": "boolean", "description": "Si true, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé (risques, mesures, liens, matrices, plan d'action). Réservé aux types à valeurs fermées : select, checklist, tags, boolean." },
+        "filterable": { "type": "boolean", "description": "Si true, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé (risques, mesures, liens, matrices, plan d'action). Réservé aux types à valeurs fermées (select, checklist, tags, boolean) et aux cibles risk, measure, link : un champ rattaché à l'analyse ne peut pas être filtrable. Sans effet ailleurs." },
         "multiple": { "type": "boolean", "description": "Type tags : autorise la sélection de plusieurs valeurs (sinon une seule)." },
         "palette": { "enum": ["accent", "red-green", "red-orange-green", "red-orange-yellow-green", "white-black", "custom"], "description": "Type progress : palette de la barre. Couleur interpolée (TSL) entre les jalons équirépartis ; \"accent\" = couleur unique du thème ; \"custom\" = couleurs définies dans `colors`." },
         "colors": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1, "description": "Type progress, palette \"custom\" : jalons de couleur (hex #RRGGBB), du premier (0 %) au dernier (100 %)." },

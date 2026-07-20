@@ -224,7 +224,7 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
 | `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
-| `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** : `select`, `checklist`, `tags`, `boolean` ; ignoré pour les autres. Cf. § *Filtrage par champ personnalisé*. |
+| `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** (`select`, `checklist`, `tags`, `boolean`) **et aux cibles `risk`, `measure`, `link`** ; ignoré ailleurs. Cf. § *Filtrage par champ personnalisé*. |
 | `pattern` | chaîne | F | Type `regexp` uniquement : expression régulière (syntaxe JavaScript) que la valeur doit respecter **en totalité** (ancrage implicite). Motif absent ou non compilable : aucun contrôle de format. |
 | `multiple` | booléen | F | Type `tags` uniquement : autorise la sélection de plusieurs étiquettes (sinon une seule). |
 | `palette` | chaîne | F | Type `progress` uniquement : palette de la barre. Couleur **interpolée en TSL** entre des jalons équirépartis de 0 à 100 %. Valeurs : `"accent"` (couleur unique du thème, défaut), `"red-green"`, `"red-orange-green"`, `"red-orange-yellow-green"`, `"white-black"`, `"custom"` (couleurs dans `colors`). |
@@ -294,7 +294,12 @@ Un champ portant `"filterable": true` alimente une **liste de filtrage** dans le
 | `measure` | Mesures, Plan d'action, Liens |
 | `link` | Liens |
 
-L'option n'a de sens que pour les types à valeurs énumérables — `select`, `checklist`, `tags`, `boolean` — et est ignorée pour les autres.
+L'option n'a de sens que si deux conditions sont réunies, et elle est ignorée sinon :
+
+- le **type** est à valeurs énumérables — `select`, `checklist`, `tags`, `boolean` — seul cas où une liste de choix peut être construite ;
+- la **cible** est `risk`, `measure` ou `link`. Un champ rattaché à l'**analyse** (`"target": "analysis"`) ne peut pas être filtrable : il n'y a qu'une analyse, il n'y a rien à trier.
+
+Un fichier portant `"filterable": true` hors de ces conditions reste valide : la propriété est simplement sans effet.
 
 **Un état commun à toutes les vues.** Une valeur retenue s'applique partout où l'objet apparaît : filtrer les risques sur un champ restreint simultanément le registre, les matrices et les liens. Un lien n'est affiché que si son risque **et** sa mesure le sont également.
 

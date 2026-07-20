@@ -1195,8 +1195,8 @@ const I18N = {
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     cf_filterable:"Utilisable comme filtre",
-    cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées.",
-    cf_filterable_na:"Sans objet pour ce type de champ.",
+    cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées, et aux champs rattachés aux risques, aux mesures ou aux liens.",
+    cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées, hors champs de l'analyse.",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)",
     cf_pattern:"Motif (expression régulière)", cf_pattern_ph:"ex. [A-Z]{2}-\\d{4}", cf_err_pattern:"Expression régulière invalide.",
@@ -1431,8 +1431,8 @@ const I18N = {
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     cf_filterable:"Usable as a filter",
-    cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types.",
-    cf_filterable_na:"Not applicable to this field type.",
+    cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types, on risk, measure or link fields.",
+    cf_filterable_na:"Not applicable: restricted to closed-value types, excluding analysis fields.",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)",
     cf_pattern:"Pattern (regular expression)", cf_pattern_ph:"e.g. [A-Z]{2}-\\d{4}", cf_err_pattern:"Invalid regular expression.",
@@ -1667,8 +1667,8 @@ const I18N = {
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     cf_filterable:"Utilizzabile come filtro",
-    cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi.",
-    cf_filterable_na:"Non applicabile a questo tipo di campo.",
+    cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi, sui campi di rischio, misura o collegamento.",
+    cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi, esclusi i campi dell'analisi.",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)",
     cf_pattern:"Modello (espressione regolare)", cf_pattern_ph:"es. [A-Z]{2}-\\d{4}", cf_err_pattern:"Espressione regolare non valida.",
@@ -4047,8 +4047,13 @@ const listState={
    ============================================================ */
 const CF_CLOSED=["select","checklist","tags","boolean"];   // types à valeurs énumérables
 function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
+/* L'option « utilisable comme filtre » a-t-elle un sens pour ce champ ?
+   - le type doit être à valeurs fermées, seul à pouvoir alimenter une liste de choix ;
+   - la cible ne peut pas être l'analyse : il n'y en a qu'une, il n'y a rien à trier.
+   Condition unique, partagée par la modale, le tableau des paramètres et le filtrage. */
+function cfFilterOptionApplies(target,type){return cfIsClosed(type)&&target!=="analysis";}
 function cfFilterableFields(target){
-  return customFieldsFor(target).filter(f=>f.filterable&&cfIsClosed(f.type));
+  return customFieldsFor(target).filter(f=>f.filterable&&cfFilterOptionApplies(f.target,f.type));
 }
 /* Valeur retenue par champ ; une seule à la fois, comme les autres filtres de l'application. */
 let cfFilters={};
@@ -4955,9 +4960,9 @@ function renderCustomFields(){
       '<td><b>'+esc(cfLabel(f))+'</b></td>'+
       '<td class="muted">'+esc(cfTypeLabel(f.type))+'</td>'+
       '<td>'+(f.required?'✓':'<span class="muted">—</span>')+'</td>'+
-      /* Trois états à distinguer : coché, décoché, et « sans objet » pour un type ouvert —
-         qui ne peut pas alimenter une liste de valeurs, quoi qu'on coche. */
-      '<td>'+(cfIsClosed(f.type)
+      /* Trois états à distinguer : coché, décoché, et « sans objet » — type ouvert, qui ne
+         peut pas alimenter une liste de valeurs, ou champ de l'analyse, qui n'a rien à trier. */
+      '<td>'+(cfFilterOptionApplies(f.target,f.type)
         ? (f.filterable?'✓':'<span class="muted">—</span>')
         : '<span class="muted" title="'+esc(t("cf_filterable_na"))+'">·</span>')+'</td>'+
       '<td><div class="actions">'+
@@ -5023,7 +5028,7 @@ function openCustomFieldModal(idx){
       /* Filtrable : réservé aux types à valeurs fermées, seuls à pouvoir alimenter une liste
          de choix. La ligne disparaît pour les autres types plutôt que d'être grisée sans
          explication (cf. cfSyncFilterable). */
-      '<label class="field full" id="cfFiltWrap" style="display:'+(cfIsClosed(f.type)?"block":"none")+'">'+
+      '<label class="field full" id="cfFiltWrap" style="display:'+(cfFilterOptionApplies(f.target,f.type)?"block":"none")+'">'+
         '<label style="display:flex;align-items:center;gap:8px;font-size:13px">'+
         '<input type="checkbox" id="cfFilterable" style="width:16px;height:16px;flex:none"'+(f.filterable?" checked":"")+'> '+
         esc(t("cf_filterable"))+'</label>'+
@@ -5055,7 +5060,7 @@ function openCustomFieldModal(idx){
     const obj={code,target,type,required:document.getElementById("cfReq").checked,label};
     // Filtrable : enregistré seulement s'il a un sens pour ce type, et seulement s'il est vrai.
     const fc=document.getElementById("cfFilterable");
-    if(fc&&fc.checked&&cfIsClosed(type))obj.filterable=true;
+    if(fc&&fc.checked&&cfFilterOptionApplies(target,type))obj.filterable=true;
     const helpVal=val("cfHelpTxt").trim(),help=Object.assign({},f.help);
     if(helpVal)help[lang]=helpVal;else delete help[lang];if(Object.keys(help).length)obj.help=help;
     const descVal=val("cfDescTxt").trim(),desc=Object.assign({},f.description||{});
@@ -5094,12 +5099,20 @@ function openCustomFieldModal(idx){
     document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
     const w=document.getElementById("cfItemsWrap");w.style.display=cfNeedsItems(f.type)?"block":"none";
     document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");
-    /* Un type sans valeurs fermées ne peut pas servir de filtre : on masque l'option et on
-       la décoche, pour ne pas enregistrer un réglage devenu sans objet. */
+    cfSyncFilterOption();};
+  /* L'option de filtrage suit le type ET la cible : on la masque et on la décoche dès
+     qu'elle perd son sens, pour ne pas enregistrer un réglage sans effet. */
+  const cfSyncFilterOption=()=>{
     const fw=document.getElementById("cfFiltWrap"), fc=document.getElementById("cfFilterable");
-    const ok=cfIsClosed(f.type);
+    const ok=cfFilterOptionApplies(document.getElementById("cfTarget").value,document.getElementById("cfType").value);
     if(fw)fw.style.display=ok?"block":"none";
-    if(fc&&!ok)fc.checked=false;};
+    if(fc&&!ok)fc.checked=false;
+  };
+  document.getElementById("cfTarget").addEventListener("change",cfSyncFilterOption);
+  /* À l'ouverture aussi : un fichier peut porter filterable=true sur un champ où l'option
+     n'a aucun effet (champ d'analyse, type ouvert). La case ne doit pas rester cochée sous
+     le voile, prête à réapparaître cochée au premier changement de cible. */
+  cfSyncFilterOption();
   typeSel.addEventListener("change",refreshType);
   // proposition auto du code depuis le libellé (langue courante), à la sortie du champ (si le code est encore vide)
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
