@@ -387,6 +387,22 @@
     background:var(--panel);text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45)}
   .dropzone .dz-title{font-size:19px;font-weight:800;color:var(--text)}
   .dropzone .dz-sub{margin-top:6px;font-size:13px;color:var(--muted)}
+  /* Complétion (propriétaire, responsable, catégorie). La liste flotte au-dessus du
+     formulaire : aucun conteneur intermédiaire ne doit la rogner (voir attachCompletion). */
+  .cbx{position:relative}
+  .cbx-list{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;margin:0;padding:4px;
+    list-style:none;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;
+    box-shadow:0 14px 34px rgba(0,0,0,.5);max-height:236px;overflow:auto}
+  .cbx-list[hidden]{display:none}
+  .cbx-opt{padding:7px 9px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    font-size:13.5px}
+  .cbx-opt[aria-selected="true"]{background:var(--accent);color:#fff}
+  .cbx-opt .cbx-n{margin-left:auto;font-size:11px;color:var(--muted);flex:none}
+  .cbx-opt[aria-selected="true"] .cbx-n{color:#dbe6ff}
+  /* La portion correspondante est soulignée en plus d'être colorée : la couleur seule ne
+     doit pas porter l'information (WCAG 1.4.1). */
+  .cbx-opt mark{background:transparent;color:var(--accent);font-weight:700;text-decoration:underline}
+  .cbx-opt[aria-selected="true"] mark{color:#fff}
   .cf-progress-val{font-size:13px;font-weight:700;min-width:46px;text-align:right}
 
   /* ---------- Plan d'action ---------- */
@@ -906,6 +922,9 @@
 
 <div class="tt" id="tooltip"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- Annonces de la complétion : le nombre de propositions doit parvenir aux lecteurs
+     d'écran sans s'afficher, le toast étant réservé aux messages visibles. -->
+<div class="sr-only" id="cbxLive" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
@@ -991,6 +1010,8 @@ const I18N = {
     confirm_add_link:"Créer le lien {0} → {1} ?",
     risk_new:"Nouveau risque", edit_prefix:"Éditer {0}",
     f_identifier:"Identifiant", f_category:"Catégorie", f_risk_label:"Libellé du risque", f_owner:"Propriétaire",
+    cbx_people:"Personnes déjà saisies", cbx_category:"Catégories déjà saisies",
+    cbx_count:"{0} proposition(s) ; utilisez les flèches", cbx_none:"Aucune proposition",
     score_auto_hint:"Le score et la couleur sont calculés automatiquement.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Évaluation initiale (brute)", eval_residual:"Évaluation résiduelle (nette)",
     f_justification:"Justification", f_assess_date:"Date de cotation", f_revision:"Révision",
@@ -1225,6 +1246,8 @@ const I18N = {
     confirm_add_link:"Create link {0} → {1}?",
     risk_new:"New risk", edit_prefix:"Edit {0}",
     f_identifier:"Identifier", f_category:"Category", f_risk_label:"Risk label", f_owner:"Owner",
+    cbx_people:"People already entered", cbx_category:"Categories already entered",
+    cbx_count:"{0} suggestion(s); use the arrow keys", cbx_none:"No suggestion",
     score_auto_hint:"Score and color are computed automatically.", f_description:"Description", f_notes:"Notes",
     eval_initial:"Initial assessment (gross)", eval_residual:"Residual assessment (net)",
     f_justification:"Justification", f_assess_date:"Assessment date", f_revision:"Revision",
@@ -1454,6 +1477,8 @@ const I18N = {
     confirm_add_link:"Creare il collegamento {0} → {1}?",
     risk_new:"Nuovo rischio", edit_prefix:"Modifica {0}",
     f_identifier:"Identificatore", f_category:"Categoria", f_risk_label:"Etichetta del rischio", f_owner:"Titolare",
+    cbx_people:"Persone già inserite", cbx_category:"Categorie già inserite",
+    cbx_count:"{0} proposta/e; usa le frecce", cbx_none:"Nessuna proposta",
     score_auto_hint:"Il punteggio e il colore sono calcolati automaticamente.", f_description:"Descrizione", f_notes:"Note",
     eval_initial:"Valutazione iniziale (lorda)", eval_residual:"Valutazione residua (netta)",
     f_justification:"Motivazione", f_assess_date:"Data di valutazione", f_revision:"Revisione",
@@ -1845,6 +1870,185 @@ function refreshFileState(){
   const ms=document.getElementById("miSave");
   if(ms)ms.querySelector(".kbd").textContent="Ctrl+S";
 }
+/* ============================================================
+   COMPLÉTION DES CHAMPS LIBRES RÉCURRENTS
+   (propriétaire d'un risque, responsable d'une mesure, catégorie d'un risque)
+
+   Principe : les propositions sont recalculées à partir des fiches de l'analyse, jamais
+   stockées. Un nom disparaît dès qu'aucune fiche ne le porte — rien à entretenir, et le
+   format .rae.json n'a pas besoin d'une clé supplémentaire. La saisie reste entièrement
+   libre : la liste propose, elle n'impose pas.
+   ============================================================ */
+
+/* Réglages du comportement. Regroupés ici pour être ajustés sans relire le composant ;
+   ce ne sont pas des préférences utilisateur, il n'y a pas d'interface pour les changer. */
+const COMPLETION={
+  /* Où la saisie doit-elle se retrouver dans la proposition ?
+       "contains" : n'importe où — « moine » trouve « André Lemoine ». Le plus tolérant,
+                    et le plus utile quand on retient le nom de famille d'une personne
+                    saisie « Prénom Nom ».
+       "prefix"   : au tout début seulement — le plus prévisible, mais « lemoine » ne
+                    trouve rien si la valeur commence par le prénom.
+       "word"     : au début d'un mot — compromis entre les deux. */
+  match:"contains",
+  /* Ordre des propositions.
+       "usage" : les valeurs les plus portées par les fiches d'abord. Sur une analyse
+                 réelle, quelques noms reviennent constamment : les remonter épargne
+                 le parcours de la liste.
+       "alpha" : ordre alphabétique, plus stable d'une saisie à l'autre. */
+  sort:"usage",
+  /* Nombre de caractères saisis avant de proposer quoi que ce soit.
+     0 = proposer dès le champ vide (avec ouverture au focus, la liste s'ouvre seule).
+     Augmenter si le vivier devient assez grand pour que la liste complète soit inutile. */
+  minChars:0,
+  /* Plafond de propositions affichées. Au-delà, la liste devient un pensum à parcourir
+     et il vaut mieux continuer à taper pour affiner. */
+  maxItems:8,
+  /* Rendre le filtrage insensible aux accents et à la casse : « andre » trouve « André ».
+     Indispensable en français, où l'accent est souvent omis à la saisie rapide. */
+  ignoreAccents:true,
+  /* Ouvrir la liste dès que le champ reçoit le focus, sans attendre une frappe. Fait
+     découvrir la fonction ; masque en revanche le formulaire sous le champ. */
+  openOnFocus:true,
+  /* Afficher, à droite de chaque proposition, le nombre de fiches qui la portent. Aide à
+     repérer la graphie retenue quand deux variantes coexistent (« M. Dupont » / « Dupont »). */
+  showCount:true
+};
+
+/* Normalisation utilisée pour comparer, jamais pour afficher. La décomposition NFD sépare
+   la lettre de son accent, que l'on retire ensuite : la longueur des chaînes est préservée,
+   ce dont dépend le calcul de la portion à surligner. */
+function cbxNorm(s){
+  s=String(s==null?"":s).toLowerCase();
+  return COMPLETION.ignoreAccents ? s.normalize("NFD").replace(/[̀-ͯ]/g,"") : s;
+}
+/* Viviers. « people » est commun aux propriétaires et aux responsables : c'est la même
+   population, et les séparer priverait chaque champ de la moitié des noms connus.
+   « category » reste à part : une catégorie de risque n'est pas un nom de personne. */
+function cbxPool(source){
+  const m=new Map();
+  const ajout=v=>{v=String(v==null?"":v).trim();if(v)m.set(v,(m.get(v)||0)+1);};
+  if(source==="people"){
+    analyse.risks.forEach(r=>ajout(r.owner));
+    analyse.measures.forEach(x=>ajout(x.responsible));
+  }else if(source==="category"){
+    analyse.risks.forEach(r=>ajout(r.category));
+  }
+  return [...m.entries()].map(([value,n])=>({value,n}));
+}
+function cbxFilter(source,saisie){
+  const q=cbxNorm(String(saisie==null?"":saisie).trim());
+  if(q.length<COMPLETION.minChars)return [];
+  let l=cbxPool(source);
+  if(q)l=l.filter(x=>{
+    const n=cbxNorm(x.value);
+    if(COMPLETION.match==="prefix")return n.indexOf(q)===0;
+    if(COMPLETION.match==="word")return n.split(/[\s'’-]+/).some(w=>w.indexOf(q)===0);
+    return n.indexOf(q)>=0;
+  });
+  l.sort((a,b)=>COMPLETION.sort==="alpha"
+    ? a.value.localeCompare(b.value,lang)
+    : (b.n-a.n)||a.value.localeCompare(b.value,lang));
+  // Inutile de proposer ce qui est déjà écrit mot pour mot dans le champ.
+  l=l.filter(x=>cbxNorm(x.value)!==q);
+  return l.slice(0,COMPLETION.maxItems);
+}
+/* Surlignage de la portion correspondante, sur le texte d'origine (accents compris). */
+function cbxMark(value,saisie){
+  const q=cbxNorm(String(saisie==null?"":saisie).trim());
+  if(!q)return esc(value);
+  const i=cbxNorm(value).indexOf(q);
+  if(i<0)return esc(value);
+  return esc(value.slice(0,i))+"<mark>"+esc(value.slice(i,i+q.length))+"</mark>"+esc(value.slice(i+q.length));
+}
+
+/* Une seule liste ouverte à la fois : elles flottent au-dessus du formulaire et deux jeux
+   de propositions superposés se lisent comme un seul, avec des doublons apparents. On ne
+   s'en remet pas au blur, qui ne se déclenche pas dans tous les contextes. */
+const cbxOuverts=[];
+/* Équipe un <input> déjà présent dans le DOM. L'appel se fait après openModal, ce qui évite
+   de compliquer les gabarits HTML des fiches. */
+function attachCompletion(input,source,libelleListe){
+  if(!input||input.dataset.cbx)return null;
+  input.dataset.cbx="1";
+  const box=document.createElement("div");box.className="cbx";
+  input.parentNode.insertBefore(box,input);box.appendChild(input);
+  const list=document.createElement("ul");
+  list.className="cbx-list";list.id=input.id+"-cbx";list.hidden=true;
+  list.setAttribute("role","listbox");list.setAttribute("aria-label",libelleListe||"");
+  box.appendChild(list);
+  input.setAttribute("role","combobox");
+  input.setAttribute("aria-expanded","false");
+  input.setAttribute("aria-controls",list.id);
+  input.setAttribute("aria-autocomplete","list");
+  input.setAttribute("autocomplete","off");
+
+  let items=[],idx=-1,ouvert=false;
+  const live=document.getElementById("cbxLive");
+  const annoncer=n=>{if(live)live.textContent=n?t("cbx_count",n):t("cbx_none");};
+  function fermer(){
+    ouvert=false;idx=-1;list.hidden=true;
+    // Vider : une liste masquée qui garde ses options laisse un arbre d'accessibilité
+    // périmé, que les technologies d'assistance peuvent encore parcourir.
+    list.innerHTML="";
+    input.setAttribute("aria-expanded","false");input.removeAttribute("aria-activedescendant");
+  }
+  function dessiner(){
+    cbxOuverts.forEach(c=>{if(c.input!==input)c.fermer();});
+    items=cbxFilter(source,input.value);
+    if(!items.length){fermer();annoncer(0);return;}
+    list.innerHTML=items.map((x,i)=>
+      '<li class="cbx-opt" role="option" id="'+esc(list.id)+'-o'+i+'" aria-selected="false">'+
+        '<span>'+cbxMark(x.value,input.value)+'</span>'+
+        (COMPLETION.showCount?'<span class="cbx-n">'+x.n+'</span>':'')+
+      '</li>').join("");
+    list.hidden=false;ouvert=true;
+    input.setAttribute("aria-expanded","true");
+    idx=-1;input.removeAttribute("aria-activedescendant");
+    annoncer(items.length);
+  }
+  function viser(n){
+    if(!ouvert)return;
+    [...list.children].forEach(li=>li.setAttribute("aria-selected","false"));
+    idx=(n+items.length)%items.length;
+    const li=list.children[idx];
+    li.setAttribute("aria-selected","true");
+    input.setAttribute("aria-activedescendant",li.id);
+    const lb=li.getBoundingClientRect(),cb=list.getBoundingClientRect();
+    if(lb.bottom>cb.bottom)list.scrollTop+=lb.bottom-cb.bottom;
+    if(lb.top<cb.top)list.scrollTop-=cb.top-lb.top;
+  }
+  function retenir(i){
+    const x=items[i];if(!x)return;
+    input.value=x.value;fermer();
+    input.dispatchEvent(new Event("input",{bubbles:true}));   // l'onglet Présentation écoute
+    input.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  input.addEventListener("input",dessiner);
+  input.addEventListener("focus",()=>{if(COMPLETION.openOnFocus)dessiner();});
+  input.addEventListener("blur",()=>setTimeout(fermer,120));  // laisser passer le clic sur une option
+  input.addEventListener("keydown",e=>{
+    if(e.key==="ArrowDown"){e.preventDefault();if(!ouvert){dessiner();if(ouvert)viser(0);}else viser(idx+1);return;}
+    if(e.key==="ArrowUp"){e.preventDefault();if(ouvert)viser(idx<0?items.length-1:idx-1);return;}
+    if(e.key==="Enter"&&ouvert&&idx>=0){e.preventDefault();retenir(idx);return;}
+    /* Échap ferme la liste et s'arrête là : sans stopPropagation, la même touche fermerait
+       aussi la fiche, et la saisie en cours serait perdue. */
+    if(e.key==="Escape"&&ouvert){e.preventDefault();e.stopPropagation();fermer();return;}
+    if(e.key==="Tab")fermer();   // Tab quitte le champ sans rien retenir : la frappe fait foi
+  });
+  list.addEventListener("mousedown",e=>{
+    const li=e.target.closest(".cbx-opt");if(!li)return;
+    e.preventDefault();   // ne pas déplacer le focus avant d'avoir lu la valeur
+    retenir([...list.children].indexOf(li));
+  });
+  const api={input,fermer,dessiner};
+  /* Chaque ouverture de fiche reconstruit ses champs : on oublie les instances dont le
+     champ a quitté le document, sinon la liste enfle à chaque édition. */
+  for(let i=cbxOuverts.length-1;i>=0;i--)if(!cbxOuverts[i].input.isConnected)cbxOuverts.splice(i,1);
+  cbxOuverts.push(api);
+  return api;
+}
+
 function nextId(list,prefix){let n=1;const ids=new Set(list.map(x=>x.id));while(ids.has(prefix+n))n++;return prefix+n;}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),4000);}
@@ -3961,6 +4165,10 @@ function openRiskModal(id){
   // Le libellé décrit ce qui va se produire : « Créer » à l'ajout, « Valider » à l'édition.
   },isNew?t("btn_create"):null);
 
+  // Complétion : vivier des personnes (commun avec les responsables de mesures), et des catégories.
+  attachCompletion(document.getElementById("f_prop"),"people",t("cbx_people"));
+  attachCompletion(document.getElementById("f_cat"),"category",t("cbx_category"));
+
   // aperçus dynamiques du score/criticité
   const upd=()=>{
     const ip=+val("f_ip"),ig=+val("f_ig"),rp=+val("f_rp"),rg=+val("f_rg");
@@ -4109,6 +4317,8 @@ function openMeasureModal(id){
       analyse.treatments.push({risk:rid,measure:obj.id});});
     markDirty();renderAll();return true;
   },isNew?t("btn_create"):null);
+  // Même vivier que le propriétaire d'un risque : c'est la même population.
+  attachCompletion(document.getElementById("f_resp"),"people",t("cbx_people"));
 }
 
 /* ============================================================
