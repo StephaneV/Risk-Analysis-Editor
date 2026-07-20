@@ -98,6 +98,13 @@
   .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
   .btn.ghost:hover{background:var(--panel-2)}
   .btn.sm{padding:5px 10px;font-size:12px}
+  /* Bouton « Enregistrer » de la barre : plein quand des modifications attendent d'être
+     écrites, en retrait sinon. Valider une fiche fait donc réagir la barre du haut, ce qui
+     montre que la saisie est reportée dans l'analyse mais pas encore dans le fichier.
+     Le contraste plein/contour porte seul le message : une pastille supplémentaire ferait
+     doublon avec le repère de la barre d'état, sans atteindre 3:1 sur le fond du bouton. */
+  #btnSave:not(.pending){background:transparent;border:1px solid var(--border);color:var(--text)}
+  #btnSave:not(.pending):hover{background:var(--panel-2)}
   .btn.danger{background:var(--danger)}
   .btn.icon{padding:5px 9px;background:var(--panel-2);border:1px solid var(--border);color:var(--text)}
   .btn.icon:hover{background:var(--panel-3)}
@@ -762,7 +769,7 @@
 
     <!-- Barre d'actions : les saisies de l'onglet ne sont appliquées qu'à l'enregistrement (avec contrôle des champs). -->
     <div class="card" id="presActions" style="display:flex;align-items:center;gap:10px">
-      <span class="caption" id="presHint" style="flex:1;margin:0" data-i18n="settings_general_pending">Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.</span>
+      <span class="caption" id="presHint" style="flex:1;margin:0" data-i18n="settings_general_pending">Les modifications de cet onglet ne sont appliquées qu'après un clic sur Valider.</span>
       <span id="presMsg" style="flex:1;text-align:left;color:var(--danger);font-size:12.5px;display:none"></span>
       <button class="btn ghost" id="presCancel" data-i18n="btn_cancel" disabled>Annuler</button>
       <button class="btn" id="presSave" data-i18n="btn_save_modal" disabled>Enregistrer</button>
@@ -946,6 +953,7 @@ const I18N = {
     theme_dark:"🌙 Sombre", theme_light:"☀️ Clair",
     transpose_short:"⇄ Transposer", transpose_top_title:"Transposer les axes (échanger horizontal / vertical)",
     btn_new:"Nouveau", btn_load:"Charger…", btn_save:"Enregistrer",
+    save_pending_tip:"Écrire les modifications dans le fichier .rae.json", save_clean_tip:"Aucune modification à enregistrer",
     tab_presentation:"Présentation", tab_matrices:"Matrices", tab_risks:"Risques", tab_measures:"Mesures", tab_links:"Liens", tab_settings:"Paramètres",
     seg_side:"Initial / Résiduel", seg_traj:"Trajectoire",
     hint_side:"Deux matrices : positions avant et après mesures.",
@@ -1053,7 +1061,11 @@ const I18N = {
     import_val_range:"valeur « {0} » hors échelle", import_level_unknown:"niveau « {0} » inconnu", import_status_unknown:"statut « {0} » inconnu",
     import_pi:"Probabilité initiale", import_gi:"Gravité initiale", import_pr:"Probabilité résiduelle", import_gr:"Gravité résiduelle",
     sep_tab:"tab", no_label:"(sans libellé)",
-    btn_cancel:"Annuler", btn_save_modal:"Enregistrer", btn_ok:"OK", btn_confirm:"Confirmer", btn_close:"Fermer", dialog_error:"Erreur", dialog_confirm:"Confirmation",
+    /* btn_save_modal : validation d'une fiche ou de l'onglet Présentation. Le mot doit se
+       distinguer de btn_save (barre du haut), qui écrit le fichier : l'un reporte la saisie
+       dans l'analyse en mémoire — et crée l'état « modifié » — quand l'autre le résout. */
+    btn_cancel:"Annuler", btn_save_modal:"Valider", btn_ok:"OK", btn_confirm:"Confirmer", btn_close:"Fermer", dialog_error:"Erreur", dialog_confirm:"Confirmation",
+    btn_create:"Créer",
     about_title:"À propos", about_subtitle:"Éditeur de matrices de risque · format .rae.json", about_version:"Version", about_credits:"Auteur", about_license:"Licence", about_github:"Voir le projet sur GitHub",
     skip_to_content:"Aller au contenu",
     nav_sections:"Sections de l'analyse",
@@ -1120,8 +1132,10 @@ const I18N = {
     cell_moved:"{0} : {1} × {2} = {3} ({4})",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
     confirm_load:"Charger une autre analyse ? Les modifications non enregistrées seront perdues.",
-    pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
-    settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
+    pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas validées. Elles seront perdues. Continuer ?",
+    /* Ces textes nomment le bouton de l'onglet : ils doivent suivre btn_save_modal, et non
+       parler d'enregistrement, qui désigne l'écriture du fichier. */
+    settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Valider.",
     toast_new:"Nouvelle analyse créée.", err_invalid_file:"Fichier invalide : {0}", toast_loaded:"Analyse chargée.",
     err_read_file:"Impossible de lire le fichier : {0}", err_load_url:"Impossible de charger le fichier depuis l'URL « {0} » : {1}", toast_saved:"Fichier enregistré : {0}",
     drop_title:"Déposez pour charger", drop_sub:"Un fichier .rae.json",
@@ -1173,6 +1187,7 @@ const I18N = {
     theme_dark:"🌙 Dark", theme_light:"☀️ Light",
     transpose_short:"⇄ Transpose", transpose_top_title:"Transpose axes (swap horizontal / vertical)",
     btn_new:"New", btn_load:"Load…", btn_save:"Save",
+    save_pending_tip:"Write the changes to the .rae.json file", save_clean_tip:"No changes to save",
     tab_presentation:"Overview", tab_matrices:"Matrices", tab_risks:"Risks", tab_measures:"Measures", tab_links:"Links", tab_settings:"Settings",
     seg_side:"Initial / Residual", seg_traj:"Trajectory",
     hint_side:"Two matrices: positions before and after measures.",
@@ -1280,7 +1295,8 @@ const I18N = {
     import_val_range:"value “{0}” out of range", import_level_unknown:"level “{0}” unknown", import_status_unknown:"status “{0}” unknown",
     import_pi:"Initial probability", import_gi:"Initial severity", import_pr:"Residual probability", import_gr:"Residual severity",
     sep_tab:"tab", no_label:"(no label)",
-    btn_cancel:"Cancel", btn_save_modal:"Save", btn_ok:"OK", btn_confirm:"Confirm", btn_close:"Close", dialog_error:"Error", dialog_confirm:"Confirmation",
+    btn_cancel:"Cancel", btn_save_modal:"Confirm", btn_ok:"OK", btn_confirm:"Confirm", btn_close:"Close", dialog_error:"Error", dialog_confirm:"Confirmation",
+    btn_create:"Create",
     about_title:"About", about_subtitle:"Risk matrix editor · .rae.json format", about_version:"Version", about_credits:"Author", about_license:"License", about_github:"View the project on GitHub",
     skip_to_content:"Skip to content",
     nav_sections:"Analysis sections",
@@ -1347,8 +1363,8 @@ const I18N = {
     cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
     confirm_load:"Load another analysis? Unsaved changes will be lost.",
-    pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
-    settings_general_pending:"Changes in this tab are applied only when you click Save.",
+    pres_confirm_leave:"Changes in the Overview tab are not confirmed. They will be lost. Continue?",
+    settings_general_pending:"Changes in this tab are applied only when you click Confirm.",
     toast_new:"New analysis created.", err_invalid_file:"Invalid file: {0}", toast_loaded:"Analysis loaded.",
     err_read_file:"Cannot read the file: {0}", err_load_url:"Could not load the file from URL \"{0}\": {1}", toast_saved:"File saved: {0}",
     drop_title:"Drop to load", drop_sub:"A .rae.json file",
@@ -1400,6 +1416,7 @@ const I18N = {
     theme_dark:"🌙 Scuro", theme_light:"☀️ Chiaro",
     transpose_short:"⇄ Trasponi", transpose_top_title:"Trasponi gli assi (scambia orizzontale / verticale)",
     btn_new:"Nuovo", btn_load:"Carica…", btn_save:"Salva",
+    save_pending_tip:"Scrivi le modifiche nel file .rae.json", save_clean_tip:"Nessuna modifica da salvare",
     tab_presentation:"Presentazione", tab_matrices:"Matrici", tab_risks:"Rischi", tab_measures:"Misure", tab_links:"Collegamenti", tab_settings:"Impostazioni",
     seg_side:"Iniziale / Residuo", seg_traj:"Traiettoria",
     hint_side:"Due matrici: posizioni prima e dopo le misure.",
@@ -1507,7 +1524,8 @@ const I18N = {
     import_val_range:"valore « {0} » fuori scala", import_level_unknown:"livello « {0} » sconosciuto", import_status_unknown:"stato « {0} » sconosciuto",
     import_pi:"Probabilità iniziale", import_gi:"Gravità iniziale", import_pr:"Probabilità residua", import_gr:"Gravità residua",
     sep_tab:"tab", no_label:"(senza etichetta)",
-    btn_cancel:"Annulla", btn_save_modal:"Salva", btn_ok:"OK", btn_confirm:"Conferma", btn_close:"Chiudi", dialog_error:"Errore", dialog_confirm:"Conferma",
+    btn_cancel:"Annulla", btn_save_modal:"Conferma", btn_ok:"OK", btn_confirm:"Conferma", btn_close:"Chiudi", dialog_error:"Errore", dialog_confirm:"Conferma",
+    btn_create:"Crea",
     about_title:"Informazioni", about_subtitle:"Editor di matrici di rischio · formato .rae.json", about_version:"Versione", about_credits:"Autore", about_license:"Licenza", about_github:"Vedi il progetto su GitHub",
     skip_to_content:"Vai al contenuto",
     nav_sections:"Sezioni dell'analisi",
@@ -1574,8 +1592,8 @@ const I18N = {
     cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
     confirm_load:"Caricare un'altra analisi? Le modifiche non salvate andranno perse.",
-    pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
-    settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
+    pres_confirm_leave:"Le modifiche della scheda Presentazione non sono confermate. Andranno perse. Continuare?",
+    settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Conferma.",
     toast_new:"Nuova analisi creata.", err_invalid_file:"File non valido: {0}", toast_loaded:"Analisi caricata.",
     err_read_file:"Impossibile leggere il file: {0}", err_load_url:"Impossibile caricare il file dall'URL « {0} »: {1}", toast_saved:"File salvato: {0}",
     drop_title:"Rilascia per caricare", drop_sub:"Un file .rae.json",
@@ -1810,12 +1828,20 @@ function mdToText(src){
     .replace(/\*\*|__|~~/g,"").replace(/(^|[^*\w])\*([^*\n]+)\*/g,"$1$2")
     .replace(/\s*\n\s*/g," ").trim();
 }
+/* Infobulle du bouton « Enregistrer » de la barre. Deux appelants — l'état du fichier et
+   le verrou d'amorçage, qui réécrit les titres — d'où une expression unique. */
+function saveTip(){return dirty?t("save_pending_tip"):t("save_clean_tip");}
 function refreshFileState(){
   document.getElementById("dirtyDot").className="dot"+(dirty?" dirty":"");
   document.getElementById("fileLabel").innerHTML=(currentFileName?"<b>"+esc(currentFileName)+"</b>":t("file_new"))+(dirty?" — "+t("file_modified"):"");
   // Marqueur de liaison : « Enregistrer » écrit-il dans le fichier, ou télécharge-t-il une copie ?
   const lk=document.getElementById("fileLinked");
   if(lk){lk.hidden=!fileHandle;lk.title=t("file_linked_tip");lk.setAttribute("aria-label",t("file_linked_tip"));}
+  /* Le bouton de la barre porte l'état : plein et pastillé tant que des modifications
+     ne sont pas écrites. C'est le signal qui distingue « Valider » (dans l'analyse) de
+     « Enregistrer » (dans le fichier), sans une ligne d'explication. */
+  const bs=document.getElementById("btnSave");
+  if(bs){bs.classList.toggle("pending",!!dirty);bs.title=saveTip();}
   const ms=document.getElementById("miSave");
   if(ms)ms.querySelector(".kbd").textContent="Ctrl+S";
 }
@@ -3932,7 +3958,8 @@ function openRiskModal(id){
     keep.forEach(mid=>{if(!analyse.treatments.some(x=>x.risk===obj.id&&x.measure===mid))
       analyse.treatments.push({risk:obj.id,measure:mid});});
     markDirty();renderAll();return true;
-  });
+  // Le libellé décrit ce qui va se produire : « Créer » à l'ajout, « Valider » à l'édition.
+  },isNew?t("btn_create"):null);
 
   // aperçus dynamiques du score/criticité
   const upd=()=>{
@@ -4081,7 +4108,7 @@ function openMeasureModal(id){
     keep.forEach(rid=>{if(!analyse.treatments.some(x=>x.risk===rid&&x.measure===obj.id))
       analyse.treatments.push({risk:rid,measure:obj.id});});
     markDirty();renderAll();return true;
-  });
+  },isNew?t("btn_create"):null);
 }
 
 /* ============================================================
@@ -4319,7 +4346,10 @@ function renderStartCard(){
   [["btnSave",false],["miSave",false],["miSaveAs",true]].forEach(([id,besoinAPI])=>{
     const el=document.getElementById(id);if(!el)return;
     el.disabled=montrer||(besoinAPI&&!FS_OK);
-    if(montrer)el.title=t("start_locked"); else el.removeAttribute("title");
+    // Le bouton de la barre porte son propre état : on le rétablit au lieu de l'effacer.
+    if(montrer)el.title=t("start_locked");
+    else if(id==="btnSave")el.title=saveTip();
+    else el.removeAttribute("title");
   });
 }
 /* L'amorçage est-il en cours ? (verrou des onglets et de l'enregistrement) */
@@ -4541,7 +4571,7 @@ function openCustomFieldModal(idx){
     const list=customFields();
     if(isNew){obj.order=list.length;list.push(obj);}else{obj.order=list[idx].order!=null?list[idx].order:idx;list[idx]=obj;}
     cfReindex();markDirty();renderCustomFields();return true;
-  });
+  },isNew?t("btn_create"):null);
   // câblage post-ouverture
   const typeSel=document.getElementById("cfType");
   const refreshType=()=>{syncItems();f.type=typeSel.value;
@@ -4927,8 +4957,9 @@ function renderAxis(elId,axis,key){
       '</div>').join("");
 }
 /* Onglet Présentation : les saisies ne modifient plus l'analyse au fil de l'eau.
-   Toute frappe marque l'onglet « en attente » ; l'application se fait au clic sur Enregistrer,
-   après contrôle des champs personnalisés (cfValidate via cfCollect). */
+   Toute frappe marque l'onglet « en attente » ; l'application se fait au clic sur Valider,
+   après contrôle des champs personnalisés (cfValidate via cfCollect). Valider reporte la
+   saisie dans l'analyse ; écrire le fichier reste l'affaire d'Enregistrer, dans la barre. */
 ["input","change"].forEach(ev=>document.getElementById("view-presentation").addEventListener(ev,e=>{
   if(e.target.closest("#presActions"))return;
   presSetPending(true);
