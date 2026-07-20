@@ -1119,6 +1119,7 @@ const I18N = {
     quick_created:"{0} créé et lié : {1}",
     cell_moved:"{0} : {1} × {2} = {3} ({4})",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
+    confirm_load:"Charger une autre analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas enregistrées. Elles seront perdues. Continuer ?",
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
     toast_new:"Nouvelle analyse créée.", err_invalid_file:"Fichier invalide : {0}", toast_loaded:"Analyse chargée.",
@@ -1345,6 +1346,7 @@ const I18N = {
     quick_created:"{0} created and linked: {1}",
     cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
+    confirm_load:"Load another analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not saved. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
     toast_new:"New analysis created.", err_invalid_file:"Invalid file: {0}", toast_loaded:"Analysis loaded.",
@@ -1571,6 +1573,7 @@ const I18N = {
     quick_created:"{0} creato e collegato: {1}",
     cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
+    confirm_load:"Caricare un'altra analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono salvate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
     toast_new:"Nuova analisi creata.", err_invalid_file:"File non valido: {0}", toast_loaded:"Analisi caricata.",
@@ -1967,9 +1970,17 @@ function newAnalysis(){
     autosaveClear();renderAll();goToPresentation();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
 }
+/* Remplacer l'analyse en cours fait perdre les modifications non enregistrées : on demande
+   confirmation, comme le fait Fichier > Nouveau avec sa propre formulation. Placé au plus
+   près de l'action plutôt que sur chaque appelant, pour qu'aucun point d'entrée ne l'oublie. */
+function dirtyGuard(onOk){
+  if(!dirty)return onOk();
+  confirmModal(t("confirm_load"),onOk);
+}
 /* Ouverture : par le sélecteur natif quand l'API est disponible (on obtient alors une
    référence réutilisable), sinon par l'<input type=file> historique. */
-async function openFile(){
+function openFile(){dirtyGuard(openFilePicker);}
+async function openFilePicker(){
   if(!FS_OK||!window.showOpenFilePicker){document.getElementById("fileInput").click();return;}
   let h;
   try{[h]=await window.showOpenFilePicker(pickerOpts({types:RAE_TYPES,multiple:false}));}
@@ -2065,14 +2076,14 @@ document.getElementById("fileInput").addEventListener("change",e=>{
     let pHandle=null;
     const it=e.dataTransfer.items&&e.dataTransfer.items[0];
     if(FS_OK&&it&&it.getAsFileSystemHandle){try{pHandle=it.getAsFileSystemHandle();}catch(_){}}
-    presGuard(async()=>{
+    presGuard(()=>dirtyGuard(async()=>{
       try{
         if(!applyLoadedData(JSON.parse(await f.text()),f.name,false))return;
         let h=null;try{h=await pHandle;}catch(_){}
         if(h&&h.kind==="file"){fileHandle=h;refreshFileState();}
         toast(t("toast_loaded"));
       }catch(ex){alertModal(t("err_read_file",ex.message));}
-    });
+    }));
   });
 })();
 
