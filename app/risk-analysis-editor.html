@@ -2975,6 +2975,15 @@ function layoutTrajectoryGridOpt(mc){
   let K=Math.max(maxV,maxH,needed)+1;                    // +1 : marge pour laisser passer les flèches
   if(K>Kmax)K=Math.max(needed,Kmax);
   K=Math.max(2,K);
+  /* Sous-grille de taille impaire : une sous-grille paire n'a pas d'emplacement central,
+     et un jeton isolé se pose alors à une demi-case du centre, entre quatre emplacements
+     rigoureusement à égalité — aucune pondération ne peut les départager. On agrandit d'un
+     cran, ou on réduit si la place manque, à condition de garder de quoi loger les jetons
+     d'une même case et les couloirs des flèches droites. */
+  if(K%2===0){
+    if(K+1<=Kmax)K++;
+    else if(K-1>=3&&K-1>=Math.max(maxV,maxH,needed))K--;
+  }
   const size=Math.max(8,Math.min(BASE_CHIP,Math.floor((S-6-(K-1)*gap)/K))),step=size+gap,rad=size/2;
   const cInd=(K-1)/2, off=k=>(k-cInd)*step;
   const posX=t=>t.cx+off(t.sj), posY=t=>t.cy+off(t.si);
