@@ -370,6 +370,16 @@
     display:inline-flex;align-items:center;line-height:0}
   .md-eye:hover{color:var(--text);background:var(--panel-2)}
   .md-eye.on{color:var(--accent)}
+  /* Zone de dépôt d'un .rae.json : voile plein écran, purement indicatif — il ne capte
+     aucun événement, c'est la fenêtre qui reçoit le dépôt. */
+  .dropzone{position:fixed;inset:0;z-index:9000;display:none;pointer-events:none;
+    align-items:center;justify-content:center;background:rgba(10,14,24,.62);
+    -webkit-user-select:none;user-select:none}
+  .dropzone.on{display:flex}
+  .dropzone .dz-box{border:3px dashed var(--accent);border-radius:16px;padding:28px 46px;
+    background:var(--panel);text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+  .dropzone .dz-title{font-size:19px;font-weight:800;color:var(--text)}
+  .dropzone .dz-sub{margin-top:6px;font-size:13px;color:var(--muted)}
   .cf-progress-val{font-size:13px;font-weight:700;min-width:46px;text-align:right}
 
   /* ---------- Plan d'action ---------- */
@@ -1113,6 +1123,8 @@ const I18N = {
     settings_general_pending:"Les modifications de cet onglet ne sont appliquées qu'après un clic sur Enregistrer.",
     toast_new:"Nouvelle analyse créée.", err_invalid_file:"Fichier invalide : {0}", toast_loaded:"Analyse chargée.",
     err_read_file:"Impossible de lire le fichier : {0}", err_load_url:"Impossible de charger le fichier depuis l'URL « {0} » : {1}", toast_saved:"Fichier enregistré : {0}",
+    drop_title:"Déposez pour charger", drop_sub:"Un fichier .rae.json",
+    err_drop_type:"« {0} » n'est pas un fichier .rae.json. Déposez une analyse de risques.",
     vs_root:"racine non-objet", vs_format:"champ 'format' incorrect", vs_grid:"grille incomplète", vs_risks:"'risks' manquant",
     stat_risks:"Risques", stat_measures:"Mesures", stat_reduced:"Risques réduits",
     stat_distribution:"Répartition par criticité (initial → résiduel)",
@@ -1337,6 +1349,8 @@ const I18N = {
     settings_general_pending:"Changes in this tab are applied only when you click Save.",
     toast_new:"New analysis created.", err_invalid_file:"Invalid file: {0}", toast_loaded:"Analysis loaded.",
     err_read_file:"Cannot read the file: {0}", err_load_url:"Could not load the file from URL \"{0}\": {1}", toast_saved:"File saved: {0}",
+    drop_title:"Drop to load", drop_sub:"A .rae.json file",
+    err_drop_type:"\"{0}\" is not a .rae.json file. Drop a risk analysis.",
     vs_root:"root is not an object", vs_format:"invalid 'format' field", vs_grid:"incomplete grid", vs_risks:"'risks' missing",
     stat_risks:"Risks", stat_measures:"Measures", stat_reduced:"Reduced risks",
     stat_distribution:"Distribution by criticality (initial → residual)",
@@ -1561,6 +1575,8 @@ const I18N = {
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Salva.",
     toast_new:"Nuova analisi creata.", err_invalid_file:"File non valido: {0}", toast_loaded:"Analisi caricata.",
     err_read_file:"Impossibile leggere il file: {0}", err_load_url:"Impossibile caricare il file dall'URL « {0} »: {1}", toast_saved:"File salvato: {0}",
+    drop_title:"Rilascia per caricare", drop_sub:"Un file .rae.json",
+    err_drop_type:"« {0} » non è un file .rae.json. Rilascia un'analisi dei rischi.",
     vs_root:"radice non-oggetto", vs_format:"campo 'format' non valido", vs_grid:"griglia incompleta", vs_risks:"'risks' mancante",
     stat_risks:"Rischi", stat_measures:"Misure", stat_reduced:"Rischi ridotti",
     stat_distribution:"Distribuzione per criticità (iniziale → residuo)",
@@ -2006,6 +2022,59 @@ document.getElementById("fileInput").addEventListener("change",e=>{
   rd.readAsText(f);
   e.target.value="";
 });
+
+/* ------------------------------------------------------------------
+   Dépôt d'un .rae.json sur la fenêtre — équivalent de « Charger… ».
+   La fenêtre entière est la cible : viser une zone précise n'apporterait rien et
+   obligerait à chercher où déposer. On ignore les glissers qui ne portent pas de
+   fichier, sinon le glisser-déposer des cartes du Plan d'action, qui remonte
+   jusqu'ici, ferait apparaître le voile à chaque déplacement de carte.
+   ------------------------------------------------------------------ */
+(function(){
+  const dz=document.createElement("div");
+  dz.className="dropzone";dz.setAttribute("aria-hidden","true");
+  dz.innerHTML='<div class="dz-box"><div class="dz-title"></div><div class="dz-sub"></div></div>';
+  document.body.appendChild(dz);
+  const porteFichier=e=>!!e.dataTransfer&&[...(e.dataTransfer.types||[])].indexOf("Files")>=0;
+  /* Pendant qu'une modale est ouverte, on n'affiche pas le voile et on ne charge rien :
+     remplacer l'analyse sous une fiche en cours d'édition laisserait cette fiche
+     rattachée à un objet qui n'existe plus. Sans voile, aucune promesse n'est faite. */
+  const dispo=()=>!topLayer();
+  let profondeur=0;   // dragenter/dragleave se déclenchent aussi entre éléments internes
+  const montrer=()=>{
+    dz.querySelector(".dz-title").textContent=t("drop_title");
+    dz.querySelector(".dz-sub").textContent=t("drop_sub");
+    dz.classList.add("on");
+  };
+  const cacher=()=>{profondeur=0;dz.classList.remove("on");};
+  window.addEventListener("dragenter",e=>{if(!porteFichier(e)||!dispo())return;
+    e.preventDefault();profondeur++;montrer();});
+  window.addEventListener("dragover",e=>{if(!porteFichier(e)||!dispo())return;
+    e.preventDefault();e.dataTransfer.dropEffect="copy";});
+  window.addEventListener("dragleave",e=>{if(!porteFichier(e))return;
+    if(--profondeur<=0)cacher();});
+  window.addEventListener("drop",e=>{
+    if(!porteFichier(e))return;          // glisser interne (cartes du Plan) : on ne s'en mêle pas
+    e.preventDefault();cacher();
+    if(!dispo())return;
+    const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(!f)return;
+    if(!/\.json$/i.test(f.name)){alertModal(t("err_drop_type",f.name));return;}
+    /* La référence au fichier doit être demandée maintenant : les items du transfert
+       sont neutralisés dès la fin du gestionnaire. On l'obtient quand le navigateur
+       le permet, pour que « Enregistrer » écrive ensuite dans le fichier déposé. */
+    let pHandle=null;
+    const it=e.dataTransfer.items&&e.dataTransfer.items[0];
+    if(FS_OK&&it&&it.getAsFileSystemHandle){try{pHandle=it.getAsFileSystemHandle();}catch(_){}}
+    presGuard(async()=>{
+      try{
+        if(!applyLoadedData(JSON.parse(await f.text()),f.name,false))return;
+        let h=null;try{h=await pHandle;}catch(_){}
+        if(h&&h.kind==="file"){fileHandle=h;refreshFileState();}
+        toast(t("toast_loaded"));
+      }catch(ex){alertModal(t("err_read_file",ex.message));}
+    });
+  });
+})();
 
 // Chargement depuis un paramètre d'URL : ...?file=<url> (alias ?url=)
 async function loadFromURLParam(){
