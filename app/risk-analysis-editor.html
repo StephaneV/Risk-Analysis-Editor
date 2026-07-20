@@ -476,6 +476,17 @@
      sur des lignes consécutives elles se touchent. Étant en inline-flex, ce sont des
      boîtes atomiques dont les marges verticales agrandissent bien la ligne. */
   .tt .tag{margin:2px 0}
+  /* Carte de survol du tableau croisé : plus large que l'infobulle des matrices, qui ne
+     porte qu'une cotation, car elle décrit deux fiches et le contenu du lien. */
+  .tt.tt-link{max-width:340px;padding:10px 13px;font-size:12.5px}
+  .tt-link .l-line{display:flex;gap:7px;align-items:baseline}
+  .tt-link .l-line+.l-line{margin-top:5px}
+  .tt-link .l-sub{color:var(--muted);font-size:11.5px;margin:2px 0 0 26px}
+  .tt-link hr{border:none;border-top:1px solid var(--border);margin:9px 0}
+  .tt-link .l-none{color:var(--muted);font-style:italic}
+  .tt-link .l-note{white-space:pre-wrap;max-height:76px;overflow:hidden}
+  .tt-link .l-cf{margin-top:5px}
+  .tt-link .l-cf b{color:var(--muted);font-weight:600}
 
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
     background:var(--panel-3);border:1px solid var(--border);border-radius:10px;padding:12px 20px;
@@ -1032,6 +1043,7 @@ const I18N = {
     links_seg_grid:"Associations", links_seg_details:"Détails",
     links_details_empty:"Aucun lien. Créez des associations dans l'onglet Associations.",
     link_has_data:"Ce lien contient une note ou des champs personnalisés.",
+    link_none:"Non liés", link_bare:"Lien sans note ni champ personnalisé",
     link_title:"Lien {0} → {1}",
     settings_general:"Informations générales", settings_general_caption:"Métadonnées documentaires de l'analyse.",
     f_title:"Titre", f_author:"Auteur", f_org:"Organisation", f_scope:"Périmètre", f_methodology:"Référence méthodologique",
@@ -1268,6 +1280,7 @@ const I18N = {
     links_seg_grid:"Associations", links_seg_details:"Details",
     links_details_empty:"No link yet. Create associations in the Associations sub-tab.",
     link_has_data:"This link has a note or custom fields.",
+    link_none:"Not linked", link_bare:"Link with no note or custom field",
     link_title:"Link {0} → {1}",
     settings_general:"General information", settings_general_caption:"Document metadata of the analysis.",
     f_title:"Title", f_author:"Author", f_org:"Organization", f_scope:"Scope", f_methodology:"Methodology reference",
@@ -1499,6 +1512,7 @@ const I18N = {
     links_seg_grid:"Associazioni", links_seg_details:"Dettagli",
     links_details_empty:"Nessun collegamento. Crea associazioni nella scheda Associazioni.",
     link_has_data:"Questo collegamento ha una nota o campi personalizzati.",
+    link_none:"Non collegati", link_bare:"Collegamento senza nota né campo personalizzato",
     link_title:"Collegamento {0} → {1}",
     settings_general:"Informazioni generali", settings_general_caption:"Metadati documentali dell'analisi.",
     f_title:"Titolo", f_author:"Autore", f_org:"Organizzazione", f_scope:"Ambito", f_methodology:"Riferimento metodologico",
@@ -4390,6 +4404,84 @@ function renderCrosstab(){
   // on repose ici la portée des en-têtes plutôt que d'attendre le prochain renderAll.
   applyTableA11y();
 }
+/* ------------------------------------------------------------------
+   Carte de survol du tableau croisé.
+
+   Le tableau croisé est le seul endroit où le contenu d'un lien (note, champs
+   personnalisés) reste invisible : la case ne montre qu'une case à cocher et une pastille
+   « ce lien contient quelque chose ». Il fallait ouvrir la fiche pour savoir quoi.
+   La carte le dit au survol, et rappelle de quel risque et de quelle mesure il s'agit —
+   sur une grille large, retrouver sa ligne et sa colonne est déjà un effort.
+   ------------------------------------------------------------------ */
+/* Résumé d'une fiche : identifiant, libellé, puis les qualités secondaires en dessous. */
+function crossFicheHTML(id,label,sous){
+  return '<div class="l-line"><span class="id-badge">'+esc(id)+'</span><span>'+esc(label||"")+'</span></div>'+
+    (sous?'<div class="l-sub">'+esc(sous)+'</div>':'');
+}
+function crossCardHTML(rid,mid){
+  const r=riskById(rid), m=measureById(mid), tr=treatmentOf(rid,mid);
+  if(!r||!m)return "";
+  const sousR=[r.category,r.owner].filter(Boolean).join(" · ");
+  const sousM=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,
+               m.responsible,m.due_date].filter(Boolean).join(" · ");
+  let h=crossFicheHTML(r.id,r.label,sousR)+crossFicheHTML(m.id,m.label,sousM)+"<hr>";
+  if(!tr)return h+'<div class="l-none">'+esc(t("link_none"))+'</div>';
+  let det="";
+  if(tr.comment){
+    /* La note est du Markdown : on l'aplatit en texte. Une carte de survol n'est pas le
+       lieu d'un rendu enrichi, et la couper au milieu d'une balise produirait du bruit. */
+    const txt=mdToText(tr.comment).replace(/\s+/g," ").trim();
+    det+='<div class="l-note">'+esc(txt.length>220?txt.slice(0,220)+"…":txt)+'</div>';
+  }
+  customFieldsFor("link").forEach(f=>{
+    const v=tr.custom&&tr.custom[f.code];
+    if(!cfHasVal(v))return;
+    det+='<div class="l-cf"><b>'+esc(cfLabel(f))+' : </b>'+cfDisplayHTML(f,v,false)+'</div>';
+  });
+  return h+(det||'<div class="l-none">'+esc(t("link_bare"))+'</div>');
+}
+/* Survol et focus : la carte doit exister aussi au clavier, sinon l'information n'est
+   accessible qu'à la souris — le tableau croisé est déjà navigable aux flèches. */
+(function(){
+  const area=document.getElementById("crossArea");
+  const cle=el=>{const cb=el&&el.closest?el.closest("td.cb"):null;
+    const i=cb&&cb.querySelector("input[type=checkbox]");
+    return i?{rid:i.dataset.r,mid:i.dataset.m}:null;};
+  const montrer=(k,x,y)=>{
+    /* Rien pendant qu'une modale est ouverte : cocher une case demande confirmation, et la
+       carte resterait posée au-dessus de la boîte de dialogue, qu'elle n'éclaire en rien. */
+    if(topLayer())return;
+    const html=crossCardHTML(k.rid,k.mid);if(!html)return;
+    tip.classList.add("tt-link");tip.innerHTML=html;tip.style.opacity=1;
+    /* Rester dans la fenêtre : sur les dernières colonnes, une carte de 340 px posée à
+       droite du curseur sortirait de l'écran et deviendrait illisible. */
+    tip.style.left="0px";tip.style.top="0px";
+    const b=tip.getBoundingClientRect();
+    const gx=Math.min(x,window.innerWidth-b.width-8), gy=Math.min(y,window.innerHeight-b.height-8);
+    tip.style.left=Math.max(8,gx)+"px";tip.style.top=Math.max(8,gy)+"px";
+  };
+  const cacher=()=>{tip.style.opacity=0;tip.classList.remove("tt-link");};
+  area.addEventListener("mousemove",e=>{
+    const k=cle(e.target);
+    if(!k){cacher();return;}
+    montrer(k,e.clientX+16,e.clientY+16);
+  });
+  area.addEventListener("mouseleave",cacher);
+  // Un clic peut faire surgir une confirmation : on retire la carte tout de suite, le
+  // prochain mouvement de souris la rétablira si elle a encore lieu d'être.
+  area.addEventListener("mousedown",cacher);
+  area.addEventListener("focusin",e=>{
+    const k=cle(e.target);if(!k)return;
+    const b=e.target.getBoundingClientRect();montrer(k,b.right+10,b.bottom+10);
+  });
+  area.addEventListener("focusout",cacher);
+  // Cocher ou décocher change le contenu de la carte : on la redessine sous le curseur.
+  area.addEventListener("change",e=>{
+    const k=cle(e.target);if(!k||tip.style.opacity!=="1")return;
+    const b=tip.getBoundingClientRect();montrer(k,b.left,b.top);
+  });
+})();
+
 /* Déplacement aux flèches ; la case courante est la seule à porter tabindex=0. */
 document.getElementById("crossArea").addEventListener("keydown",e=>{
   const cb=e.target.closest('input[type=checkbox]');if(!cb)return;
