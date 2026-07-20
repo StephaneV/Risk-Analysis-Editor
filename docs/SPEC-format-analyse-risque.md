@@ -301,7 +301,7 @@ L'option n'a de sens que si deux conditions sont réunies, et elle est ignorée 
 
 Un fichier portant `"filterable": true` hors de ces conditions reste valide : la propriété est simplement sans effet.
 
-**Un état commun à toutes les vues.** Une valeur retenue s'applique partout où l'objet apparaît : filtrer les risques sur un champ restreint simultanément le registre, les matrices, les statistiques et les liens.
+**Un état commun à toutes les vues.** Une valeur retenue s'applique partout où l'objet apparaît : filtrer les risques sur un champ restreint simultanément le registre, les matrices, les statistiques et les liens. Comme les critères se propagent (voir ci-dessous), **chaque barre de filtres propose l'ensemble des champs filtrables** — risque, mesure et lien confondus —, quel que soit l'onglet : un filtre de mesure a un effet sur l'onglet Risques, il doit donc pouvoir y être posé.
 
 **Conjonction et propagation le long des liens.** Tous les critères actifs valent **simultanément** (ET), et chacun se **propage** aux entités liées :
 

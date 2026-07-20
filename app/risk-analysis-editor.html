@@ -4138,27 +4138,32 @@ function visibleTreatments(){return cfVisibleSets().links;}
    Deux éléments sont présents dans toutes les barres, dès qu'un critère quelconque est
    actif : le décompte « x sur y » et le bouton de réinitialisation. Sans eux, une vue
    filtrée se confond avec une analyse pauvre — c'est ce qui manquait au Plan d'action,
-   aux Matrices et à Liens › Détails. */
+   aux Matrices et à Liens › Détails.
+
+   Chaque barre propose TOUS les champs filtrables — risque, mesure et lien confondus — quel
+   que soit l'onglet. Les critères se propageant le long des liens, un filtre de mesure agit
+   sur le registre des risques comme sur les statistiques : le proposer là où il produit un
+   effet, c'est le proposer partout. Seuls les contrôles natifs (recherche, catégorie…)
+   restent propres à leur vue. */
 const FILTER_BARS=[
-  {cle:"risks",    vue:"view-risks",    panneau:null,                     cibles:["risk"],
+  {cle:"risks",    vue:"view-risks",    panneau:null,
    natifs:["fltRiskQ","fltRiskCat"]},
-  {cle:"measures", vue:"view-measures", panneau:null,                     cibles:["measure"],
+  {cle:"measures", vue:"view-measures", panneau:null,
    natifs:["fltMeasureQ","fltMeasureType","fltMeasureStatus"]},
-  {cle:"plan",     vue:"view-plan",     panneau:null,                     cibles:["measure"],
+  {cle:"plan",     vue:"view-plan",     panneau:null,
    natifs:["fltPlanQ","fltPlanStatus","fltPlanResp","fltPlanOverdue"]},
-  /* Matrices : les risques pour les pastilles, mais aussi les mesures — le bloc de
-     statistiques en haut de l'onglet en affiche le décompte. Une barre doit proposer, et
-     savoir réinitialiser, tout ce qui agit sur sa vue. */
-  {cle:"matrices", vue:"view-matrices", panneau:null,                     cibles:["risk","measure"],
+  {cle:"matrices", vue:"view-matrices", panneau:null,
    natifs:[]},
-  /* Tableau croisé : les filtres de LIEN n'y sont pas proposés — une case cochée reste une
-     case cochée, il n'y aurait rien à masquer. Seuls les risques (lignes) et les mesures
-     (colonnes) s'y filtrent. */
-  {cle:"cross",    vue:"view-links",    panneau:'[data-lmode="grid"]',    cibles:["risk","measure"],
+  {cle:"cross",    vue:"view-links",    panneau:'[data-lmode="grid"]',
    natifs:[]},
-  {cle:"details",  vue:"view-links",    panneau:'[data-lmode="details"]', cibles:["risk","measure","link"],
+  {cle:"details",  vue:"view-links",    panneau:'[data-lmode="details"]',
    natifs:["fltLinkQ"]}
 ];
+/* Tous les champs filtrables, dans un ordre stable (risque, puis mesure, puis lien). */
+function cfAllFilterableFields(){
+  const l=[];["risk","measure","link"].forEach(tg=>cfFilterableFields(tg).forEach(f=>l.push(f)));
+  return l;
+}
 function filterBarDef(cle){return FILTER_BARS.filter(b=>b.cle===cle)[0];}
 /* Conteneur de la barre : celui du gabarit s'il existe, créé sinon (matrices, tableau
    croisé). Placé au-dessus du contenu qu'il restreint. */
@@ -4227,9 +4232,9 @@ function renderFilterBars(){
   // L'adresse ne doit pas conserver un filtre qui ne s'applique plus.
   if(purge)cfFilterSyncURL();
 
+  const champs=cfAllFilterableFields();   // les mêmes dans toutes les barres
   FILTER_BARS.forEach(b=>{
     const host=filterBarHost(b);if(!host)return;
-    const champs=[];b.cibles.forEach(tg=>cfFilterableFields(tg).forEach(f=>champs.push(f)));
     /* Les contrôles natifs viennent du gabarit : on ne réécrit que nos propres éléments,
        repérés par attribut, et on les crée une fois pour toutes à la bonne place. */
     let zone=host.querySelector("[data-flt-cf]");
