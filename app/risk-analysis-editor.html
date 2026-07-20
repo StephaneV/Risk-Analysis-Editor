@@ -2591,13 +2591,17 @@ document.getElementById("viewSeg").addEventListener("click",e=>{
 
 function renderStats(){
   const el=document.getElementById("stats");
-  const nR=analyse.risks.length, nM=analyse.measures.length;
+  /* Ce bloc appartient à l'onglet Matrices : il décrit ce que la matrice montre, et doit
+     donc suivre le filtrage. Des chiffres portant sur toute l'analyse au-dessus d'une
+     matrice filtrée se liraient comme un désaccord entre les deux. */
+  const risques=visibleRisks(), mesures=visibleMeasures();
+  const nR=risques.length, nM=mesures.length;
   // répartition criticité initiale vs résiduelle
   const cats=analyse.grid.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
   const count=(which)=>{const c={};cats.forEach(x=>c[x.code]=0);
-    analyse.risks.forEach(r=>{const ev=which==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
+    risques.forEach(r=>{const ev=which==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
   const ci=count("i"), cr=count("r");
-  const treated=analyse.risks.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+  const treated=risques.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
   el.innerHTML=
     '<div class="stat"><div class="n">'+nR+'</div><div class="l">'+t("stat_risks")+'</div></div>'+
     '<div class="stat"><div class="n">'+nM+'</div><div class="l">'+t("stat_measures")+'</div></div>'+
@@ -2727,7 +2731,13 @@ function renderMatrices(){
   const area=document.getElementById("matrixArea");
   const legend=document.getElementById("matrixLegend");
   area.innerHTML="";
-  setFilterCount("matrices",visibleRisks().length,analyse.risks.length);
+  /* Décompte des risques, auxquels s'ajoute celui des mesures lorsqu'un filtre les réduit —
+     le bloc de statistiques en affiche le nombre, qui ne doit pas baisser sans explication. */
+  const nvR=visibleRisks().length, nvM=visibleMeasures().length;
+  setFilterInfo("matrices", nvM<analyse.measures.length
+    ? t("flt_results_named",t("tab_risks"),nvR,analyse.risks.length)+" · "+
+      t("flt_results_named",t("tab_measures"),nvM,analyse.measures.length)
+    : t("flt_results",nvR,analyse.risks.length));
   // Aucun risque visible : le message d'absence vaut aussi quand un filtre masque tout.
   if(visibleRisks().length===0){area.innerHTML='<div class="empty">'+esc(t(analyse.risks.length?"flt_none":"matrix_empty"))+'</div>';legend.innerHTML="";return;}
 
@@ -4114,7 +4124,10 @@ const FILTER_BARS=[
    natifs:["fltMeasureQ","fltMeasureType","fltMeasureStatus"]},
   {cle:"plan",     vue:"view-plan",     panneau:null,                     cibles:["measure"],
    natifs:["fltPlanQ","fltPlanStatus","fltPlanResp","fltPlanOverdue"]},
-  {cle:"matrices", vue:"view-matrices", panneau:null,                     cibles:["risk"],
+  /* Matrices : les risques pour les pastilles, mais aussi les mesures — le bloc de
+     statistiques en haut de l'onglet en affiche le décompte. Une barre doit proposer, et
+     savoir réinitialiser, tout ce qui agit sur sa vue. */
+  {cle:"matrices", vue:"view-matrices", panneau:null,                     cibles:["risk","measure"],
    natifs:[]},
   /* Tableau croisé : les filtres de LIEN n'y sont pas proposés — une case cochée reste une
      case cochée, il n'y aurait rien à masquer. Seuls les risques (lignes) et les mesures
