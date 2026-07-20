@@ -651,7 +651,6 @@
       <div class="filterbar">
         <input type="search" id="fltRiskQ" data-i18n-label="flt_search_risks" data-i18n-ph="flt_search" placeholder="Rechercher…">
         <select id="fltRiskCat" data-i18n-label="flt_by_category"></select>
-        <span class="flt-count" id="cntRisks"></span>
       </div>
       <div class="table-scroll"><table id="risksTableEl">
         <caption class="sr-only" data-i18n="risks_title">Registre des risques</caption>
@@ -685,7 +684,6 @@
         <input type="search" id="fltMeasureQ" data-i18n-label="flt_search_measures" data-i18n-ph="flt_search" placeholder="Rechercher…">
         <select id="fltMeasureType" data-i18n-label="flt_by_type"></select>
         <select id="fltMeasureStatus" data-i18n-label="flt_by_status"></select>
-        <span class="flt-count" id="cntMeasures"></span>
       </div>
       <div class="table-scroll"><table id="measuresTableEl">
         <caption class="sr-only" data-i18n="measures_title">Mesures de maîtrise</caption>
@@ -1126,6 +1124,7 @@ const I18N = {
     a11y_close:"Fermer",
     a11y_link_cell:"Associer le risque {0} « {1} » à la mesure {2} « {3} »",
     flt_results:"{0} sur {1}",
+    flt_results_named:"{0} : {1} sur {2}",
     "cfg_contrast_title":"Lisibilité des étiquettes colorées",
     "cfg_contrast_caption":"Couleur du texte affiché sur les badges dont le fond provient des données (criticité, statut, étiquettes personnalisées, scores de la matrice).",
     "cfg_contrast":"Mode",
@@ -1364,6 +1363,7 @@ const I18N = {
     a11y_close:"Close",
     a11y_link_cell:"Link risk {0} \"{1}\" to measure {2} \"{3}\"",
     flt_results:"{0} of {1}",
+    flt_results_named:"{0}: {1} of {2}",
     "cfg_contrast_title":"Readability of coloured labels",
     "cfg_contrast_caption":"Colour of the text shown on badges whose background comes from the data (criticality, status, custom tags, matrix scores).",
     "cfg_contrast":"Mode",
@@ -1600,6 +1600,7 @@ const I18N = {
     a11y_close:"Chiudi",
     a11y_link_cell:"Collega il rischio {0} «{1}» alla misura {2} «{3}»",
     flt_results:"{0} su {1}",
+    flt_results_named:"{0} : {1} su {2}",
     "cfg_contrast_title":"Leggibilità delle etichette colorate",
     "cfg_contrast_caption":"Colore del testo sui badge il cui sfondo proviene dai dati (criticità, stato, etichette personalizzate, punteggi della matrice).",
     "cfg_contrast":"Modalità",
@@ -2551,7 +2552,7 @@ function renderAll(){
   applyContrastMode();
   // Les barres de filtres avant les vues : leur contenu dépend des champs déclarés
   // filtrables, qui peuvent avoir changé (édition d'un champ, chargement d'un fichier).
-  renderCfFilters();
+  renderFilterBars();
   renderPresentation();
   renderSettings();
   renderRisks();
@@ -2726,6 +2727,7 @@ function renderMatrices(){
   const area=document.getElementById("matrixArea");
   const legend=document.getElementById("matrixLegend");
   area.innerHTML="";
+  setFilterCount("matrices",visibleRisks().length,analyse.risks.length);
   // Aucun risque visible : le message d'absence vaut aussi quand un filtre masque tout.
   if(visibleRisks().length===0){area.innerHTML='<div class="empty">'+esc(t(analyse.risks.length?"flt_none":"matrix_empty"))+'</div>';legend.innerHTML="";return;}
 
@@ -3977,9 +3979,12 @@ function renderPlan(){
   fillSelect(document.getElementById("fltPlanStatus"),STATUS_CODES.filter(c=>allM.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),t("flt_status_all"),st.status);
   fillSelect(document.getElementById("fltPlanResp"),Array.from(new Set(allM.map(m=>m.responsible).filter(Boolean))).sort((a,b)=>a.localeCompare(b)).map(r=>[r,r]),t("flt_resp_all"),st.resp);
   const cb=document.getElementById("fltPlanOverdue");if(cb)cb.checked=st.overdue;
-  if(!allM.length){document.getElementById("planSummary").innerHTML="";area.innerHTML='<div class="empty">'+esc(t("plan_empty"))+'</div>';return;}
+  if(!allM.length){document.getElementById("planSummary").innerHTML="";
+    setFilterCount("plan",0,analyse.measures.length);
+    area.innerHTML='<div class="empty">'+esc(t(analyse.measures.length?"flt_none":"plan_empty"))+'</div>';return;}
   renderPlanSummary(); // synthèse globale (non filtrée)
   const list=filteredPlanMeasures();
+  setFilterCount("plan",list.length,analyse.measures.length);
   if(!list.length){area.innerHTML='<div class="empty">'+esc(t("flt_none"))+'</div>';return;}
   if(planMode==="status")renderPlanStatus(area,list);
   else if(planMode==="responsible")renderPlanResponsible(area,list);
@@ -4092,33 +4097,88 @@ function visibleTreatments(){
   return analyse.treatments.filter(x=>vr.has(x.risk)&&vm.has(x.measure)&&cfEntityMatches(x,"link"));
 }
 
-/* ---- Barres de filtres ---- */
-/* Vue -> cibles dont les filtres y sont proposés. Les liens en proposent trois : la liste
-   des liens croise les trois entités, et n'afficher que les filtres de lien laisserait
-   l'utilisateur sans explication devant des lignes absentes. */
-const CF_FILTER_HOSTS=[
-  ["view-risks",["risk"]],
-  ["view-measures",["measure"]],
-  ["view-plan",["measure"]],
-  ["view-matrices",["risk"]],
-  ["view-links",["risk","measure","link"]]
+/* ---- Barres de filtres ----
+
+   Une barre par panneau qui liste une entité. Filtres natifs (recherche, catégorie, statut…)
+   et listes de champs personnalisés vivent dans la MÊME barre et se combinent : chaque
+   critère retire des fiches, aucun ne prend le pas sur un autre.
+
+   Deux éléments sont présents dans toutes les barres, dès qu'un critère quelconque est
+   actif : le décompte « x sur y » et le bouton de réinitialisation. Sans eux, une vue
+   filtrée se confond avec une analyse pauvre — c'est ce qui manquait au Plan d'action,
+   aux Matrices et à Liens › Détails. */
+const FILTER_BARS=[
+  {cle:"risks",    vue:"view-risks",    panneau:null,                     cibles:["risk"],
+   natifs:["fltRiskQ","fltRiskCat"]},
+  {cle:"measures", vue:"view-measures", panneau:null,                     cibles:["measure"],
+   natifs:["fltMeasureQ","fltMeasureType","fltMeasureStatus"]},
+  {cle:"plan",     vue:"view-plan",     panneau:null,                     cibles:["measure"],
+   natifs:["fltPlanQ","fltPlanStatus","fltPlanResp","fltPlanOverdue"]},
+  {cle:"matrices", vue:"view-matrices", panneau:null,                     cibles:["risk"],
+   natifs:[]},
+  /* Tableau croisé : les filtres de LIEN n'y sont pas proposés — une case cochée reste une
+     case cochée, il n'y aurait rien à masquer. Seuls les risques (lignes) et les mesures
+     (colonnes) s'y filtrent. */
+  {cle:"cross",    vue:"view-links",    panneau:'[data-lmode="grid"]',    cibles:["risk","measure"],
+   natifs:[]},
+  {cle:"details",  vue:"view-links",    panneau:'[data-lmode="details"]', cibles:["risk","measure","link"],
+   natifs:["fltLinkQ"]}
 ];
-/* La barre est créée à la volée : elle n'existe que si au moins un champ est filtrable,
-   et disparaît si l'option est retirée. */
-function cfFilterHost(viewId){
-  const vue=document.getElementById(viewId);if(!vue)return null;
-  let host=vue.querySelector(".cf-filterbar");
+function filterBarDef(cle){return FILTER_BARS.filter(b=>b.cle===cle)[0];}
+/* Conteneur de la barre : celui du gabarit s'il existe, créé sinon (matrices, tableau
+   croisé). Placé au-dessus du contenu qu'il restreint. */
+function filterBarHost(b){
+  const vue=document.getElementById(b.vue);if(!vue)return null;
+  const racine=b.panneau?vue.querySelector(b.panneau):vue;
+  if(!racine)return null;
+  let host=racine.querySelector(".filterbar");
   if(!host){
-    host=document.createElement("div");host.className="filterbar cf-filterbar";
-    /* Placée sous la barre de filtres existante quand il y en a une, en tête de vue sinon
-       (matrices, tableau croisé), pour rester au-dessus du contenu qu'elle restreint. */
-    const ref=vue.querySelector(".filterbar")||vue.querySelector(".matrix-toolbar");
-    if(ref&&ref.parentNode)ref.parentNode.insertBefore(host,ref.nextSibling);
-    else{const c=vue.querySelector(".card")||vue;c.insertBefore(host,c.firstChild);}
+    host=document.createElement("div");host.className="filterbar";
+    const ref=racine.querySelector(".matrix-toolbar");
+    if(ref&&ref.parentNode===racine)racine.insertBefore(host,ref.nextSibling);
+    else racine.insertBefore(host,racine.firstChild);
   }
   return host;
 }
-function renderCfFilters(){
+/* Un contrôle natif est-il actif ? Une case à cocher l'est si elle est cochée, les autres
+   si elles portent une valeur. */
+function natifActif(id){
+  const el=document.getElementById(id);if(!el)return false;
+  return el.type==="checkbox"?!!el.checked:!!(el.value||"").trim();
+}
+function barreActive(b){
+  if(b.natifs.some(natifActif))return true;
+  return b.cibles.some(tg=>cfFilterableFields(tg).some(f=>cfFilters[f.code]));
+}
+/* Réinitialisation : ce qui agit sur CETTE barre, et rien d'autre — ses contrôles natifs et
+   les champs perso de ses cibles. Les champs perso étant partagés, l'effet déborde sur les
+   autres vues : c'est le prix d'un filtrage cohérent d'un onglet à l'autre. */
+function filterBarReset(cle){
+  const b=filterBarDef(cle);if(!b)return;
+  /* L'évènement doit être celui que le contrôle écoute : « change » pour une liste
+     déroulante ou une case à cocher, « input » pour une zone de saisie. Se tromper vide le
+     contrôle à l'écran sans toucher l'état interne, que le rendu suivant restaure. */
+  b.natifs.forEach(id=>{const el=document.getElementById(id);if(!el)return;
+    const change=(el.tagName==="SELECT"||el.type==="checkbox");
+    if(el.type==="checkbox")el.checked=false;else el.value="";
+    el.dispatchEvent(new Event(change?"change":"input",{bubbles:true}));});
+  b.cibles.forEach(tg=>cfFilterableFields(tg).forEach(f=>{delete cfFilters[f.code];}));
+  cfFilterSyncURL();renderAll();
+}
+/* Décompte et bouton, publiés par la fonction de rendu de chaque vue : elle seule connaît
+   le nombre réellement affiché après tous les critères. */
+function setFilterInfo(cle,texte){
+  const b=filterBarDef(cle);if(!b)return;
+  const host=filterBarHost(b);if(!host)return;
+  const actif=barreActive(b);
+  const cnt=host.querySelector("[data-flt-count]");
+  if(cnt)cnt.textContent=actif?texte:"";
+  const btn=host.querySelector("[data-flt-reset]");
+  if(btn)btn.hidden=!actif;
+}
+function setFilterCount(cle,montres,total){setFilterInfo(cle,t("flt_results",montres,total));}
+
+function renderFilterBars(){
   /* Un champ peut avoir perdu l'option « filtrable », changé de type ou disparu : sa valeur
      retenue n'a plus de sens et masquerait des fiches sans plus rien afficher pour
      l'expliquer. On la purge avant de redessiner. */
@@ -4131,35 +4191,47 @@ function renderCfFilters(){
   });
   // L'adresse ne doit pas conserver un filtre qui ne s'applique plus.
   if(purge)cfFilterSyncURL();
-  CF_FILTER_HOSTS.forEach(([viewId,targets])=>{
-    const champs=[];targets.forEach(tg=>cfFilterableFields(tg).forEach(f=>champs.push(f)));
-    const vue=document.getElementById(viewId);if(!vue)return;
-    const existant=vue.querySelector(".cf-filterbar");
-    if(!champs.length){if(existant)existant.remove();return;}
-    const host=cfFilterHost(viewId);if(!host)return;
-    let h="";
-    champs.forEach(f=>{
+
+  FILTER_BARS.forEach(b=>{
+    const host=filterBarHost(b);if(!host)return;
+    const champs=[];b.cibles.forEach(tg=>cfFilterableFields(tg).forEach(f=>champs.push(f)));
+    /* Les contrôles natifs viennent du gabarit : on ne réécrit que nos propres éléments,
+       repérés par attribut, et on les crée une fois pour toutes à la bonne place. */
+    let zone=host.querySelector("[data-flt-cf]");
+    if(!zone){zone=document.createElement("span");zone.setAttribute("data-flt-cf","");
+      zone.style.display="contents";host.appendChild(zone);}
+    zone.innerHTML=champs.map(f=>{
       const cur=cfFilters[f.code]||"";
-      h+='<select data-cf-flt="'+esc(f.code)+'" aria-label="'+esc(t("flt_by_field",cfLabel(f)))+'"'+
-         ' title="'+esc(t("flt_by_field",cfLabel(f)))+'">'+
-         '<option value="">'+esc(t("flt_field_all",cfLabel(f)))+'</option>'+
-         cfFilterChoices(f).map(([v,l])=>'<option value="'+esc(v)+'"'+(v===cur?" selected":"")+'>'+esc(l)+'</option>').join("")+
-         '</select>';
-    });
-    if(cfFilterCount())h+='<button type="button" class="btn ghost sm" id="cfFltClear-'+esc(viewId)+'" data-cf-flt-clear="1">'+esc(t("flt_clear"))+'</button>';
-    host.innerHTML=h;
+      return '<select data-cf-flt="'+esc(f.code)+'" aria-label="'+esc(t("flt_by_field",cfLabel(f)))+'"'+
+        ' title="'+esc(t("flt_by_field",cfLabel(f)))+'">'+
+        '<option value="">'+esc(t("flt_field_all",cfLabel(f)))+'</option>'+
+        cfFilterChoices(f).map(function(c){return '<option value="'+esc(c[0])+'"'+(c[0]===cur?" selected":"")+'>'+esc(c[1])+'</option>';}).join("")+
+        '</select>';
+    }).join("");
+    let cnt=host.querySelector("[data-flt-count]");
+    if(!cnt){cnt=document.createElement("span");cnt.className="flt-count";
+      cnt.setAttribute("data-flt-count","");host.appendChild(cnt);}
+    let btn=host.querySelector("[data-flt-reset]");
+    if(!btn){btn=document.createElement("button");btn.type="button";btn.className="btn ghost sm";
+      btn.setAttribute("data-flt-reset",b.cle);host.appendChild(btn);}
+    btn.textContent=t("flt_clear");btn.dataset.fltReset=b.cle;
+    // Une barre sans aucun contrôle (matrices ou tableau croisé sans champ filtrable)
+    // n'a pas lieu d'occuper de la place.
+    host.hidden=!b.natifs.length&&!champs.length;
+    setFilterInfo(b.cle,cnt.textContent);
   });
 }
+document.addEventListener("click",e=>{
+  const b=e.target.closest&&e.target.closest("[data-flt-reset]");
+  if(!b)return;
+  filterBarReset(b.dataset.fltReset);
+});
 document.addEventListener("change",e=>{
   const sel=e.target.closest&&e.target.closest("select[data-cf-flt]");
   if(!sel)return;
   const code=sel.dataset.cfFlt;
   if(sel.value)cfFilters[code]=sel.value;else delete cfFilters[code];
   cfFilterSyncURL();renderAll();
-});
-document.addEventListener("click",e=>{
-  if(!e.target.closest||!e.target.closest("[data-cf-flt-clear]"))return;
-  cfFilterReset();cfFilterSyncURL();renderAll();
 });
 
 /* ---- Adresse ----
@@ -4258,7 +4330,7 @@ function renderRisks(){
   else emptyEl.style.display="none";
   // Comparaison au total réel de l'analyse, et non au sous-ensemble déjà réduit par les
   // filtres de champ perso : sinon « 5 sur 5 » masquerait le fait que 12 fiches sont écartées.
-  setFltCount("cntRisks",list.length,analyse.risks.length);
+  setFilterCount("risks",list.length,analyse.risks.length);
   list.forEach(r=>{
     const evi=r.initial_assessment, evr=residual(r);
     const ci=critOfEval(evi), cr=critOfEval(evr);
@@ -4432,7 +4504,7 @@ function renderMeasures(){
   const emptyEl=document.getElementById("mesuresEmpty");
   if(!list.length){emptyEl.style.display="block";emptyEl.textContent=all.length?t("flt_none"):t("measures_empty");}
   else emptyEl.style.display="none";
-  setFltCount("cntMeasures",list.length,analyse.measures.length);
+  setFilterCount("measures",list.length,analyse.measures.length);
   list.forEach(m=>{
     const risks=risksOfMeasure(m.id);
     const tr=document.createElement("tr");tr.style.cursor="pointer";
@@ -4577,6 +4649,10 @@ function renderCrosstab(){
      filtrer les mesures retire des colonnes. Le message d'absence distingue une analyse
      vide d'un filtrage qui ne laisse rien. */
   const risques=visibleRisks(), mesures=visibleMeasures();
+  // Une grille se lit en deux dimensions : un seul nombre ne dirait pas laquelle est réduite.
+  setFilterInfo("cross",
+    t("flt_results_named",t("tab_risks"),risques.length,analyse.risks.length)+" · "+
+    t("flt_results_named",t("tab_measures"),mesures.length,analyse.measures.length));
   if(!risques.length||!mesures.length){
     if(analyse.risks.length&&analyse.measures.length){
       area.innerHTML='<div class="empty">'+esc(t("flt_none"))+'</div>';return;}
@@ -4729,7 +4805,8 @@ document.getElementById("crossArea").addEventListener("change",e=>{
 // Sous-onglet Détails : registre des liens existants (note + champs perso), éditable via modale.
 function renderLinkDetails(){
   const area=document.getElementById("linkDetailsArea");
-  if(!analyse.treatments.length){area.innerHTML='<div class="empty">'+esc(t("links_details_empty"))+'</div>';return;}
+  if(!analyse.treatments.length){setFilterCount("details",0,0);
+    area.innerHTML='<div class="empty">'+esc(t("links_details_empty"))+'</div>';return;}
   const cf=customFieldsFor("link");
   const st=listState.links;
   const q=normV((document.getElementById("fltLinkQ").value||""));
@@ -4739,6 +4816,7 @@ function renderLinkDetails(){
     const r=riskById(tr.risk),m=measureById(tr.measure);
     const hay=[tr.risk,tr.measure,r&&r.label,m&&m.label,tr.comment].concat(cf.map(f=>cfDisplay(f,(tr.custom||{})[f.code]))).join(" ");
     return normV(hay).indexOf(q)>=0;});
+  setFilterCount("details",list.length,analyse.treatments.length);
   list=list.slice().sort(linkCmp(st.sort));if(st.dir<0)list.reverse();
   const ind=col=>'<span class="sort-ind">'+(st.sort===col?(st.dir<0?"▼":"▲"):"")+'</span>';
   const sth=(col,label)=>'<th data-sort="'+col+'">'+esc(label)+ind(col)+'</th>';
@@ -4948,7 +5026,7 @@ function renderCustomFields(){
   /* Toute modification de la liste des champs (ajout, édition, suppression, réordonnancement)
      passe par ici : c'est le point unique où reconstruire les barres de filtres, qui en
      dépendent directement. */
-  renderCfFilters();
+  renderFilterBars();
   const tb=document.getElementById("cfBody");if(!tb)return;tb.innerHTML="";
   const list=customFields();
   document.getElementById("cfEmpty").style.display=list.length?"none":"block";
