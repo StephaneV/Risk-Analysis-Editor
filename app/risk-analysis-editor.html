@@ -3893,10 +3893,13 @@ function metaStatusLabel(v){return v?(t("meta_status."+v)!=="meta_status."+v?t("
 /* Rend les matrices hors-écran (dans le rapport, palette claire) et renvoie le SVG d'export.
    mode : 'side' (Initial + Résiduel) | 'traj' (Trajectoire). */
 function reportMatrixSVG(mode){
-  const host=document.getElementById("reportBody");
+  /* Conteneur de mesure ancré sur <body>, PAS sur #reportBody : ce dernier vit dans
+     l'onglet Rapport (.view en display:none tant qu'il n'a pas été affiché), où toute
+     mesure getBoundingClientRect vaut 0 — l'export Word depuis un autre onglet
+     produisait alors des matrices effondrées. Hors écran via left:-99999px. */
   const holder=document.createElement("div");
   holder.style.cssText="position:absolute;left:-99999px;top:0;width:860px;background:#ffffff";
-  host.appendChild(holder);
+  document.body.appendChild(holder);
   const legend=document.createElement("div");legend.className="legend";
   let blocks;
   if(mode==="side"){
