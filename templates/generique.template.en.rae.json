@@ -1,0 +1,130 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "Generic template",
+    "description": "Neutral skeleton: probability × impact grid over five levels (score = product) and four criticality levels, **with no imposed custom field**. A starting point for a risk analysis not following a specific method.",
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "methodology_reference": "Risk analysis — generic 5×5 grid",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "en",
+    "kind": "template"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Probability",
+      "description": "Probability of the risk occurring.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Very low",
+          "description": "Very unlikely."
+        },
+        {
+          "value": 2,
+          "label": "Low",
+          "description": "Unlikely."
+        },
+        {
+          "value": 3,
+          "label": "Medium",
+          "description": "Plausible."
+        },
+        {
+          "value": 4,
+          "label": "High",
+          "description": "Likely."
+        },
+        {
+          "value": 5,
+          "label": "Very high",
+          "description": "Almost certain."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Impact",
+      "description": "Extent of consequences if it occurs.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Very low",
+          "description": "Insignificant consequences."
+        },
+        {
+          "value": 2,
+          "label": "Low",
+          "description": "Minor consequences."
+        },
+        {
+          "value": 3,
+          "label": "Medium",
+          "description": "Notable consequences."
+        },
+        {
+          "value": 4,
+          "label": "High",
+          "description": "Serious consequences."
+        },
+        {
+          "value": 5,
+          "label": "Very high",
+          "description": "Major consequences."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Low",
+        "score_min": 1,
+        "score_max": 4,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Low risk: acceptable, to be monitored."
+      },
+      {
+        "code": "moyen",
+        "label": "Medium",
+        "score_min": 5,
+        "score_max": 10,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Medium risk: tolerable under conditions; reduction to consider."
+      },
+      {
+        "code": "eleve",
+        "label": "High",
+        "score_min": 11,
+        "score_max": 16,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "High risk: treatment expected."
+      },
+      {
+        "code": "critique",
+        "label": "Critical",
+        "score_min": 17,
+        "score_max": 25,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Critical risk: unacceptable as is; priority treatment."
+      }
+    ]
+  },
+  "custom_fields": [],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

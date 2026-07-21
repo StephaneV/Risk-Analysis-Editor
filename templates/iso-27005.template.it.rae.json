@@ -1,0 +1,461 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "Modello ISO/IEC 27005",
+    "description": "Scheletro di valutazione del rischio secondo **ISO/IEC 27005**. Griglia verosimiglianza × impatto su cinque livelli (punteggio = prodotto), con campi personalizzati orientati a beni, minacce e vulnerabilità.\n\nDa completare: ambito e criteri di accettazione, identificazione di beni, minacce e vulnerabilità, stima e valutazione del rischio, e scelta delle opzioni di trattamento.",
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "methodology_reference": "ISO/IEC 27005 — Gestione dei rischi per la sicurezza delle informazioni",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "it",
+    "kind": "template"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Verosimiglianza",
+      "description": "Probabilità che lo scenario di rischio si verifichi.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Molto bassa",
+          "description": "Molto improbabile nel periodo considerato."
+        },
+        {
+          "value": 2,
+          "label": "Bassa",
+          "description": "Poco probabile."
+        },
+        {
+          "value": 3,
+          "label": "Media",
+          "description": "Realizzazione plausibile."
+        },
+        {
+          "value": 4,
+          "label": "Alta",
+          "description": "Realizzazione probabile."
+        },
+        {
+          "value": 5,
+          "label": "Molto alta",
+          "description": "Realizzazione quasi certa."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Impatto",
+      "description": "Conseguenze per l'organizzazione in caso di realizzazione.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Trascurabile",
+          "description": "Conseguenze insignificanti per l'organizzazione."
+        },
+        {
+          "value": 2,
+          "label": "Basso",
+          "description": "Conseguenze minori, assorbite senza difficoltà."
+        },
+        {
+          "value": 3,
+          "label": "Medio",
+          "description": "Conseguenze notevoli ma gestibili."
+        },
+        {
+          "value": 4,
+          "label": "Importante",
+          "description": "Conseguenze serie, difficilmente reversibili."
+        },
+        {
+          "value": 5,
+          "label": "Critico",
+          "description": "Conseguenze gravi, che mettono a rischio l'attività."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Basso",
+        "score_min": 1,
+        "score_max": 4,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Rischio basso: accettabile, da monitorare."
+      },
+      {
+        "code": "moyen",
+        "label": "Medio",
+        "score_min": 5,
+        "score_max": 10,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Rischio medio: tollerabile a condizioni; valutare la riduzione."
+      },
+      {
+        "code": "eleve",
+        "label": "Elevato",
+        "score_min": 11,
+        "score_max": 16,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Rischio elevato: trattamento previsto."
+      },
+      {
+        "code": "critique",
+        "label": "Critico",
+        "score_min": 17,
+        "score_max": 25,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Rischio critico: inaccettabile così com'è; trattamento prioritario."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels",
+        "en": "Frameworks",
+        "it": "Riferimenti"
+      },
+      "items": [
+        {
+          "code": "iso-27005",
+          "label": {
+            "fr": "ISO 27005",
+            "en": "ISO 27005",
+            "it": "ISO 27005"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "iso-27001",
+          "label": {
+            "fr": "ISO 27001",
+            "en": "ISO 27001",
+            "it": "ISO 27001"
+          },
+          "color": "#4c7dff"
+        },
+        {
+          "code": "iso-27002",
+          "label": {
+            "fr": "ISO 27002",
+            "en": "ISO 27002",
+            "it": "ISO 27002"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD",
+            "en": "GDPR",
+            "it": "GDPR"
+          },
+          "color": "#e25631"
+        }
+      ]
+    },
+    {
+      "code": "perimetre",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 2,
+      "label": {
+        "fr": "Périmètre",
+        "en": "Scope",
+        "it": "Ambito"
+      }
+    },
+    {
+      "code": "critere_acceptation",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 3,
+      "label": {
+        "fr": "Critères d'acceptation du risque",
+        "en": "Risk acceptance criteria",
+        "it": "Criteri di accettazione del rischio"
+      }
+    },
+    {
+      "code": "actif",
+      "target": "risk",
+      "type": "text",
+      "order": 1,
+      "label": {
+        "fr": "Actif concerné",
+        "en": "Affected asset",
+        "it": "Bene interessato"
+      }
+    },
+    {
+      "code": "type_actif",
+      "target": "risk",
+      "type": "select",
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Type d'actif",
+        "en": "Asset type",
+        "it": "Tipo di bene"
+      },
+      "items": [
+        {
+          "code": "primaire",
+          "label": {
+            "fr": "Actif primaire (information, processus)",
+            "en": "Primary asset (information, process)",
+            "it": "Bene primario (informazione, processo)"
+          }
+        },
+        {
+          "code": "support",
+          "label": {
+            "fr": "Actif support (matériel, logiciel, réseau, personne, site)",
+            "en": "Supporting asset (hardware, software, network, person, site)",
+            "it": "Bene di supporto (hardware, software, rete, persona, sito)"
+          }
+        }
+      ]
+    },
+    {
+      "code": "menace",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "filterable": true,
+      "label": {
+        "fr": "Menace",
+        "en": "Threat",
+        "it": "Minaccia"
+      },
+      "items": [
+        {
+          "code": "acces-na",
+          "label": {
+            "fr": "Accès non autorisé",
+            "en": "Unauthorised access",
+            "it": "Accesso non autorizzato"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "compromission-info",
+          "label": {
+            "fr": "Compromission d'informations",
+            "en": "Compromise of information",
+            "it": "Compromissione di informazioni"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "defaillance",
+          "label": {
+            "fr": "Défaillance technique",
+            "en": "Technical failure",
+            "it": "Guasto tecnico"
+          },
+          "color": "#7f8c8d"
+        },
+        {
+          "code": "actions-na",
+          "label": {
+            "fr": "Actions non autorisées",
+            "en": "Unauthorised actions",
+            "it": "Azioni non autorizzate"
+          },
+          "color": "#a04000"
+        },
+        {
+          "code": "compromission-fct",
+          "label": {
+            "fr": "Compromission de fonctions",
+            "en": "Compromise of functions",
+            "it": "Compromissione di funzioni"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "dommages",
+          "label": {
+            "fr": "Dommages physiques",
+            "en": "Physical damage",
+            "it": "Danni fisici"
+          },
+          "color": "#b9770e"
+        },
+        {
+          "code": "naturel",
+          "label": {
+            "fr": "Événement naturel",
+            "en": "Natural event",
+            "it": "Evento naturale"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "perte-service",
+          "label": {
+            "fr": "Perte de services essentiels",
+            "en": "Loss of essential services",
+            "it": "Perdita di servizi essenziali"
+          },
+          "color": "#1f618d"
+        }
+      ]
+    },
+    {
+      "code": "vulnerabilite",
+      "target": "risk",
+      "type": "text",
+      "order": 4,
+      "label": {
+        "fr": "Vulnérabilité exploitée",
+        "en": "Exploited vulnerability",
+        "it": "Vulnerabilità sfruttata"
+      }
+    },
+    {
+      "code": "option_traitement",
+      "target": "risk",
+      "type": "select",
+      "order": 5,
+      "filterable": true,
+      "label": {
+        "fr": "Option de traitement",
+        "en": "Treatment option",
+        "it": "Opzione di trattamento"
+      },
+      "items": [
+        {
+          "code": "reduire",
+          "label": {
+            "fr": "Réduire (modifier)",
+            "en": "Reduce (modify)",
+            "it": "Ridurre (modificare)"
+          }
+        },
+        {
+          "code": "accepter",
+          "label": {
+            "fr": "Accepter (maintenir)",
+            "en": "Accept (retain)",
+            "it": "Accettare (mantenere)"
+          }
+        },
+        {
+          "code": "eviter",
+          "label": {
+            "fr": "Éviter (supprimer)",
+            "en": "Avoid (remove)",
+            "it": "Evitare (eliminare)"
+          }
+        },
+        {
+          "code": "partager",
+          "label": {
+            "fr": "Partager (transférer)",
+            "en": "Share (transfer)",
+            "it": "Condividere (trasferire)"
+          }
+        }
+      ]
+    },
+    {
+      "code": "proprietaire_risque",
+      "target": "risk",
+      "type": "text",
+      "order": 6,
+      "label": {
+        "fr": "Propriétaire du risque",
+        "en": "Risk owner",
+        "it": "Titolare del rischio"
+      }
+    },
+    {
+      "code": "reference_controle",
+      "target": "measure",
+      "type": "text",
+      "order": 1,
+      "label": {
+        "fr": "Réf. mesure (ISO 27002)",
+        "en": "Control ref. (ISO 27002)",
+        "it": "Rif. controllo (ISO 27002)"
+      },
+      "description": {
+        "fr": "Référence de la mesure de sécurité applicable, p. ex. A.8.16.",
+        "en": "Reference of the applicable security control, e.g. A.8.16.",
+        "it": "Riferimento del controllo di sicurezza applicabile, es. A.8.16."
+      }
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "order": 2,
+      "label": {
+        "fr": "Avancement",
+        "en": "Progress",
+        "it": "Avanzamento"
+      },
+      "palette": "red-orange-green",
+      "step": 10
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Effet attendu",
+        "en": "Expected effect",
+        "it": "Effetto atteso"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood",
+            "it": "Riduce la verosimiglianza"
+          },
+          "color": "#2471a3"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit l'impact",
+            "en": "Reduces impact",
+            "it": "Riduce l'impatto"
+          },
+          "color": "#b9770e"
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

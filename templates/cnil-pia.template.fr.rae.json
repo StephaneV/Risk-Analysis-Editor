@@ -2,16 +2,16 @@
   "format": "risk-analysis-editor",
   "version": "1.0",
   "metadata": {
+    "title": "Modèle AIPD — CNIL PIA",
+    "description": "Squelette d'**Analyse d'Impact sur la Protection des Données** selon la méthode **CNIL PIA**. Grille à quatre niveaux dont le niveau de risque est défini **par cellule** (et non par produit), et champs personnalisés propres à la démarche.\n\nÀ compléter : contexte et sous-traitants, puis pour chaque événement redouté (accès illégitime, modification non désirée, indisponibilité) les scénarios, leur cotation initiale et résiduelle, et le plan d'action.",
     "author": "",
     "organization": "",
     "scope": "",
+    "methodology_reference": "Méthode CNIL PIA (Privacy Impact Assessment)",
     "revision": "1.0",
     "status": "draft",
     "language": "fr",
-    "kind": "template",
-    "title": "Modèle AIPD — CNIL PIA",
-    "description": "Squelette d'**Analyse d'Impact sur la Protection des Données** selon la méthode **CNIL PIA**. Grille à quatre niveaux dont le niveau de risque est défini **par cellule** (et non par produit), et champs personnalisés propres à la démarche.\n\nÀ compléter : contexte et sous-traitants, puis pour chaque événement redouté (accès illégitime, modification non désirée, indisponibilité) les scénarios, leur cotation initiale et résiduelle, et le plan d'action.",
-    "methodology_reference": "Méthode CNIL PIA (Privacy Impact Assessment)"
+    "kind": "template"
   },
   "grid": {
     "vertical_axis": {
@@ -145,7 +145,9 @@
       "type": "text",
       "order": 1,
       "label": {
-        "fr": "Responsable du traitement"
+        "fr": "Responsable du traitement",
+        "en": "Data controller",
+        "it": "Titolare del trattamento"
       }
     },
     {
@@ -154,10 +156,14 @@
       "type": "textarea",
       "order": 2,
       "label": {
-        "fr": "Sous-traitants"
+        "fr": "Sous-traitants",
+        "en": "Processors",
+        "it": "Responsabili del trattamento"
       },
       "description": {
-        "fr": "Sous-traitants au sens de l'article 28 du RGPD (ou équivalent), et objet de leur intervention."
+        "fr": "Sous-traitants au sens de l'article 28 du RGPD (ou équivalent), et objet de leur intervention.",
+        "en": "Processors within the meaning of Article 28 GDPR (or equivalent), and the purpose of their involvement.",
+        "it": "Responsabili del trattamento ai sensi dell'articolo 28 GDPR (o equivalente), e oggetto del loro intervento."
       }
     },
     {
@@ -166,7 +172,9 @@
       "type": "textarea",
       "order": 3,
       "label": {
-        "fr": "Référentiels applicables"
+        "fr": "Référentiels applicables",
+        "en": "Applicable frameworks",
+        "it": "Riferimenti applicabili"
       }
     },
     {
@@ -175,7 +183,9 @@
       "type": "textarea",
       "order": 4,
       "label": {
-        "fr": "Avis du DPO"
+        "fr": "Avis du DPO",
+        "en": "DPO opinion",
+        "it": "Parere del DPO"
       }
     },
     {
@@ -184,10 +194,14 @@
       "type": "textarea",
       "order": 5,
       "label": {
-        "fr": "Mesures existantes"
+        "fr": "Mesures existantes",
+        "en": "Existing measures",
+        "it": "Misure esistenti"
       },
       "description": {
-        "fr": "Catalogue des mesures déjà en place, tenues hors du registre des mesures (réservé aux actions du plan d'action)."
+        "fr": "Catalogue des mesures déjà en place, tenues hors du registre des mesures (réservé aux actions du plan d'action).",
+        "en": "Catalogue of measures already in place, kept out of the measures register (reserved for action-plan items).",
+        "it": "Catalogo delle misure già in atto, tenute fuori dal registro delle misure (riservato alle azioni del piano d'azione)."
       }
     },
     {
@@ -198,25 +212,33 @@
       "required": true,
       "filterable": true,
       "label": {
-        "fr": "Événement redouté"
+        "fr": "Événement redouté",
+        "en": "Feared event",
+        "it": "Evento temuto"
       },
       "items": [
         {
           "code": "acces",
           "label": {
-            "fr": "Accès illégitime à des données"
+            "fr": "Accès illégitime à des données",
+            "en": "Illegitimate access to data",
+            "it": "Accesso illegittimo ai dati"
           }
         },
         {
           "code": "modif",
           "label": {
-            "fr": "Modification non désirée de données"
+            "fr": "Modification non désirée de données",
+            "en": "Unwanted modification of data",
+            "it": "Modifica indesiderata dei dati"
           }
         },
         {
           "code": "indispo",
           "label": {
-            "fr": "Indisponibilité ou disparition de données"
+            "fr": "Indisponibilité ou disparition de données",
+            "en": "Unavailability or loss of data",
+            "it": "Indisponibilità o perdita di dati"
           }
         }
       ]
@@ -229,41 +251,53 @@
       "order": 2,
       "filterable": true,
       "label": {
-        "fr": "Sources de risque"
+        "fr": "Sources de risque",
+        "en": "Risk sources",
+        "it": "Fonti di rischio"
       },
       "items": [
         {
           "code": "interne-mal",
           "label": {
-            "fr": "Source interne malveillante"
+            "fr": "Source interne malveillante",
+            "en": "Malicious internal source",
+            "it": "Fonte interna malevola"
           },
           "color": "#922b21"
         },
         {
           "code": "interne-acc",
           "label": {
-            "fr": "Source interne accidentelle"
+            "fr": "Source interne accidentelle",
+            "en": "Accidental internal source",
+            "it": "Fonte interna accidentale"
           },
           "color": "#e67e22"
         },
         {
           "code": "externe",
           "label": {
-            "fr": "Source externe"
+            "fr": "Source externe",
+            "en": "External source",
+            "it": "Fonte esterna"
           },
           "color": "#c0392b"
         },
         {
           "code": "prestataire",
           "label": {
-            "fr": "Prestataire"
+            "fr": "Prestataire",
+            "en": "Third party",
+            "it": "Fornitore"
           },
           "color": "#1abc9c"
         },
         {
           "code": "environnement",
           "label": {
-            "fr": "Environnement / matériel"
+            "fr": "Environnement / matériel",
+            "en": "Environmental / hardware",
+            "it": "Ambiente / hardware"
           },
           "color": "#7f8c8d"
         }
@@ -277,48 +311,62 @@
       "order": 3,
       "filterable": true,
       "label": {
-        "fr": "Supports concernés"
+        "fr": "Supports concernés",
+        "en": "Affected assets",
+        "it": "Supporti interessati"
       },
       "items": [
         {
           "code": "materiel",
           "label": {
-            "fr": "Matériel"
+            "fr": "Matériel",
+            "en": "Hardware",
+            "it": "Hardware"
           },
           "color": "#2e86de"
         },
         {
           "code": "logiciel",
           "label": {
-            "fr": "Logiciel"
+            "fr": "Logiciel",
+            "en": "Software",
+            "it": "Software"
           },
           "color": "#148f77"
         },
         {
           "code": "canal-info",
           "label": {
-            "fr": "Canal informatique"
+            "fr": "Canal informatique",
+            "en": "Digital channel",
+            "it": "Canale informatico"
           },
           "color": "#1f618d"
         },
         {
           "code": "papier",
           "label": {
-            "fr": "Support papier"
+            "fr": "Support papier",
+            "en": "Paper",
+            "it": "Supporto cartaceo"
           },
           "color": "#b9770e"
         },
         {
           "code": "canal-papier",
           "label": {
-            "fr": "Canal papier"
+            "fr": "Canal papier",
+            "en": "Paper channel",
+            "it": "Canale cartaceo"
           },
           "color": "#ca6f1e"
         },
         {
           "code": "personne",
           "label": {
-            "fr": "Personne"
+            "fr": "Personne",
+            "en": "Person",
+            "it": "Persona"
           },
           "color": "#af7ac5"
         }
@@ -332,27 +380,35 @@
       "order": 4,
       "filterable": true,
       "label": {
-        "fr": "Impacts sur les personnes"
+        "fr": "Impacts sur les personnes",
+        "en": "Impacts on individuals",
+        "it": "Impatti sulle persone"
       },
       "items": [
         {
           "code": "corporel",
           "label": {
-            "fr": "Corporel"
+            "fr": "Corporel",
+            "en": "Physical",
+            "it": "Fisico"
           },
           "color": "#c0392b"
         },
         {
           "code": "materiel-imp",
           "label": {
-            "fr": "Matériel"
+            "fr": "Matériel",
+            "en": "Material",
+            "it": "Materiale"
           },
           "color": "#b7950b"
         },
         {
           "code": "moral",
           "label": {
-            "fr": "Moral"
+            "fr": "Moral",
+            "en": "Moral",
+            "it": "Morale"
           },
           "color": "#6c3483"
         }
@@ -365,25 +421,33 @@
       "order": 1,
       "filterable": true,
       "label": {
-        "fr": "Origine"
+        "fr": "Origine",
+        "en": "Origin",
+        "it": "Origine"
       },
       "items": [
         {
           "code": "complementaire",
           "label": {
-            "fr": "Mesure complémentaire"
+            "fr": "Mesure complémentaire",
+            "en": "Additional measure",
+            "it": "Misura aggiuntiva"
           }
         },
         {
           "code": "ajustement",
           "label": {
-            "fr": "Ajustement d'une mesure existante"
+            "fr": "Ajustement d'une mesure existante",
+            "en": "Adjustment of an existing measure",
+            "it": "Adeguamento di una misura esistente"
           }
         },
         {
           "code": "principe",
           "label": {
-            "fr": "Principe fondamental"
+            "fr": "Principe fondamental",
+            "en": "Fundamental principle",
+            "it": "Principio fondamentale"
           }
         }
       ]
@@ -395,10 +459,14 @@
       "order": 2,
       "filterable": true,
       "label": {
-        "fr": "Bloquante"
+        "fr": "Bloquante",
+        "en": "Blocking",
+        "it": "Bloccante"
       },
       "description": {
-        "fr": "Action à mettre en œuvre au plus vite : le traitement ne peut être conduit sans elle."
+        "fr": "Action à mettre en œuvre au plus vite : le traitement ne peut être conduit sans elle.",
+        "en": "Action to implement as soon as possible: the processing cannot proceed without it.",
+        "it": "Azione da attuare al più presto: il trattamento non può procedere senza di essa."
       }
     },
     {
@@ -409,20 +477,26 @@
       "order": 1,
       "filterable": true,
       "label": {
-        "fr": "Effet attendu"
+        "fr": "Effet attendu",
+        "en": "Expected effect",
+        "it": "Effetto atteso"
       },
       "items": [
         {
           "code": "vraisemblance",
           "label": {
-            "fr": "Réduit la vraisemblance"
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood",
+            "it": "Riduce la verosimiglianza"
           },
           "color": "#2471a3"
         },
         {
           "code": "gravite",
           "label": {
-            "fr": "Réduit la gravité"
+            "fr": "Réduit la gravité",
+            "en": "Reduces severity",
+            "it": "Riduce la gravità"
           },
           "color": "#b9770e"
         }

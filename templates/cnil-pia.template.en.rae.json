@@ -1,0 +1,510 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "DPIA template — CNIL PIA",
+    "description": "**Data Protection Impact Assessment** skeleton following the **CNIL PIA** method. Four-level grid whose risk level is defined **per cell** (not by product), with custom fields specific to the approach.\n\nTo complete: context and processors, then for each feared event (illegitimate access, unwanted modification, unavailability) the scenarios, their initial and residual rating, and the action plan.",
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "methodology_reference": "CNIL PIA method (Privacy Impact Assessment)",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "en",
+    "kind": "template"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Likelihood",
+      "description": "Possibility that a risk occurs, given asset vulnerabilities and risk sources.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Negligible",
+          "description": "It does not seem possible for the threat to occur."
+        },
+        {
+          "value": 2,
+          "label": "Limited",
+          "description": "It seems difficult for risk sources to carry out the threat."
+        },
+        {
+          "value": 3,
+          "label": "Significant",
+          "description": "It seems possible for risk sources to carry out the threat."
+        },
+        {
+          "value": 4,
+          "label": "Maximum",
+          "description": "It seems extremely easy for risk sources to carry out the threat."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Severity",
+      "description": "Extent of the risk, assessed against potential impacts on data subjects.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Negligible",
+          "description": "Data subjects will not be affected or will overcome minor inconveniences without difficulty."
+        },
+        {
+          "value": 2,
+          "label": "Limited",
+          "description": "Data subjects may face significant inconveniences, surmountable despite difficulties."
+        },
+        {
+          "value": 3,
+          "label": "Significant",
+          "description": "Data subjects may face significant consequences, surmountable but with real difficulties."
+        },
+        {
+          "value": 4,
+          "label": "Maximum",
+          "description": "Data subjects may face significant, even irreversible consequences they might not overcome."
+        }
+      ]
+    },
+    "score": {
+      "method": "matrix",
+      "matrix": [
+        [
+          1,
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          2,
+          3
+        ],
+        [
+          2,
+          2,
+          3,
+          4
+        ],
+        [
+          3,
+          3,
+          4,
+          4
+        ]
+      ]
+    },
+    "criticality_levels": [
+      {
+        "code": "negligeable",
+        "label": "Negligible",
+        "score_min": 1,
+        "score_max": 1,
+        "color": "#8CC63E",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Negligible risk level per the PIA method."
+      },
+      {
+        "code": "limite",
+        "label": "Limited",
+        "score_min": 2,
+        "score_max": 2,
+        "color": "#FFF166",
+        "acceptance": "acceptable",
+        "order": 2,
+        "description": "Limited risk level per the PIA method."
+      },
+      {
+        "code": "important",
+        "label": "Significant",
+        "score_min": 3,
+        "score_max": 3,
+        "color": "#F2B33D",
+        "acceptance": "tolerable",
+        "order": 3,
+        "description": "Significant risk level: reduction measures are expected."
+      },
+      {
+        "code": "maximal",
+        "label": "Maximum",
+        "score_min": 4,
+        "score_max": 4,
+        "color": "#E8291C",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Maximum risk level: the processing cannot be carried out as is."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "responsable_traitement",
+      "target": "analysis",
+      "type": "text",
+      "order": 1,
+      "label": {
+        "fr": "Responsable du traitement",
+        "en": "Data controller",
+        "it": "Titolare del trattamento"
+      }
+    },
+    {
+      "code": "sous_traitants",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 2,
+      "label": {
+        "fr": "Sous-traitants",
+        "en": "Processors",
+        "it": "Responsabili del trattamento"
+      },
+      "description": {
+        "fr": "Sous-traitants au sens de l'article 28 du RGPD (ou équivalent), et objet de leur intervention.",
+        "en": "Processors within the meaning of Article 28 GDPR (or equivalent), and the purpose of their involvement.",
+        "it": "Responsabili del trattamento ai sensi dell'articolo 28 GDPR (o equivalente), e oggetto del loro intervento."
+      }
+    },
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 3,
+      "label": {
+        "fr": "Référentiels applicables",
+        "en": "Applicable frameworks",
+        "it": "Riferimenti applicabili"
+      }
+    },
+    {
+      "code": "avis_dpo",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 4,
+      "label": {
+        "fr": "Avis du DPO",
+        "en": "DPO opinion",
+        "it": "Parere del DPO"
+      }
+    },
+    {
+      "code": "mesures_existantes",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 5,
+      "label": {
+        "fr": "Mesures existantes",
+        "en": "Existing measures",
+        "it": "Misure esistenti"
+      },
+      "description": {
+        "fr": "Catalogue des mesures déjà en place, tenues hors du registre des mesures (réservé aux actions du plan d'action).",
+        "en": "Catalogue of measures already in place, kept out of the measures register (reserved for action-plan items).",
+        "it": "Catalogo delle misure già in atto, tenute fuori dal registro delle misure (riservato alle azioni del piano d'azione)."
+      }
+    },
+    {
+      "code": "evenement_redoute",
+      "target": "risk",
+      "type": "select",
+      "order": 1,
+      "required": true,
+      "filterable": true,
+      "label": {
+        "fr": "Événement redouté",
+        "en": "Feared event",
+        "it": "Evento temuto"
+      },
+      "items": [
+        {
+          "code": "acces",
+          "label": {
+            "fr": "Accès illégitime à des données",
+            "en": "Illegitimate access to data",
+            "it": "Accesso illegittimo ai dati"
+          }
+        },
+        {
+          "code": "modif",
+          "label": {
+            "fr": "Modification non désirée de données",
+            "en": "Unwanted modification of data",
+            "it": "Modifica indesiderata dei dati"
+          }
+        },
+        {
+          "code": "indispo",
+          "label": {
+            "fr": "Indisponibilité ou disparition de données",
+            "en": "Unavailability or loss of data",
+            "it": "Indisponibilità o perdita di dati"
+          }
+        }
+      ]
+    },
+    {
+      "code": "sources_risque",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Sources de risque",
+        "en": "Risk sources",
+        "it": "Fonti di rischio"
+      },
+      "items": [
+        {
+          "code": "interne-mal",
+          "label": {
+            "fr": "Source interne malveillante",
+            "en": "Malicious internal source",
+            "it": "Fonte interna malevola"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "interne-acc",
+          "label": {
+            "fr": "Source interne accidentelle",
+            "en": "Accidental internal source",
+            "it": "Fonte interna accidentale"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "externe",
+          "label": {
+            "fr": "Source externe",
+            "en": "External source",
+            "it": "Fonte esterna"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "prestataire",
+          "label": {
+            "fr": "Prestataire",
+            "en": "Third party",
+            "it": "Fornitore"
+          },
+          "color": "#1abc9c"
+        },
+        {
+          "code": "environnement",
+          "label": {
+            "fr": "Environnement / matériel",
+            "en": "Environmental / hardware",
+            "it": "Ambiente / hardware"
+          },
+          "color": "#7f8c8d"
+        }
+      ]
+    },
+    {
+      "code": "supports",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "filterable": true,
+      "label": {
+        "fr": "Supports concernés",
+        "en": "Affected assets",
+        "it": "Supporti interessati"
+      },
+      "items": [
+        {
+          "code": "materiel",
+          "label": {
+            "fr": "Matériel",
+            "en": "Hardware",
+            "it": "Hardware"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "logiciel",
+          "label": {
+            "fr": "Logiciel",
+            "en": "Software",
+            "it": "Software"
+          },
+          "color": "#148f77"
+        },
+        {
+          "code": "canal-info",
+          "label": {
+            "fr": "Canal informatique",
+            "en": "Digital channel",
+            "it": "Canale informatico"
+          },
+          "color": "#1f618d"
+        },
+        {
+          "code": "papier",
+          "label": {
+            "fr": "Support papier",
+            "en": "Paper",
+            "it": "Supporto cartaceo"
+          },
+          "color": "#b9770e"
+        },
+        {
+          "code": "canal-papier",
+          "label": {
+            "fr": "Canal papier",
+            "en": "Paper channel",
+            "it": "Canale cartaceo"
+          },
+          "color": "#ca6f1e"
+        },
+        {
+          "code": "personne",
+          "label": {
+            "fr": "Personne",
+            "en": "Person",
+            "it": "Persona"
+          },
+          "color": "#af7ac5"
+        }
+      ]
+    },
+    {
+      "code": "impacts",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 4,
+      "filterable": true,
+      "label": {
+        "fr": "Impacts sur les personnes",
+        "en": "Impacts on individuals",
+        "it": "Impatti sulle persone"
+      },
+      "items": [
+        {
+          "code": "corporel",
+          "label": {
+            "fr": "Corporel",
+            "en": "Physical",
+            "it": "Fisico"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "materiel-imp",
+          "label": {
+            "fr": "Matériel",
+            "en": "Material",
+            "it": "Materiale"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "moral",
+          "label": {
+            "fr": "Moral",
+            "en": "Moral",
+            "it": "Morale"
+          },
+          "color": "#6c3483"
+        }
+      ]
+    },
+    {
+      "code": "origine",
+      "target": "measure",
+      "type": "select",
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Origine",
+        "en": "Origin",
+        "it": "Origine"
+      },
+      "items": [
+        {
+          "code": "complementaire",
+          "label": {
+            "fr": "Mesure complémentaire",
+            "en": "Additional measure",
+            "it": "Misura aggiuntiva"
+          }
+        },
+        {
+          "code": "ajustement",
+          "label": {
+            "fr": "Ajustement d'une mesure existante",
+            "en": "Adjustment of an existing measure",
+            "it": "Adeguamento di una misura esistente"
+          }
+        },
+        {
+          "code": "principe",
+          "label": {
+            "fr": "Principe fondamental",
+            "en": "Fundamental principle",
+            "it": "Principio fondamentale"
+          }
+        }
+      ]
+    },
+    {
+      "code": "bloquante",
+      "target": "measure",
+      "type": "boolean",
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Bloquante",
+        "en": "Blocking",
+        "it": "Bloccante"
+      },
+      "description": {
+        "fr": "Action à mettre en œuvre au plus vite : le traitement ne peut être conduit sans elle.",
+        "en": "Action to implement as soon as possible: the processing cannot proceed without it.",
+        "it": "Azione da attuare al più presto: il trattamento non può procedere senza di essa."
+      }
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Effet attendu",
+        "en": "Expected effect",
+        "it": "Effetto atteso"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood",
+            "it": "Riduce la verosimiglianza"
+          },
+          "color": "#2471a3"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité",
+            "en": "Reduces severity",
+            "it": "Riduce la gravità"
+          },
+          "color": "#b9770e"
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

@@ -2,16 +2,16 @@
   "format": "risk-analysis-editor",
   "version": "1.0",
   "metadata": {
+    "title": "Modèle générique",
+    "description": "Squelette neutre : grille probabilité × impact sur cinq niveaux (score = produit) et quatre niveaux de criticité, **sans champ personnalisé imposé**. Point de départ pour une analyse de risques ne suivant pas une méthode particulière.",
     "author": "",
     "organization": "",
     "scope": "",
+    "methodology_reference": "Analyse de risques — grille générique 5×5",
     "revision": "1.0",
     "status": "draft",
     "language": "fr",
-    "kind": "template",
-    "title": "Modèle générique",
-    "description": "Squelette neutre : grille probabilité × impact sur cinq niveaux (score = produit) et quatre niveaux de criticité, **sans champ personnalisé imposé**. Point de départ pour une analyse de risques ne suivant pas une méthode particulière.",
-    "methodology_reference": "Analyse de risques — grille générique 5×5"
+    "kind": "template"
   },
   "grid": {
     "vertical_axis": {

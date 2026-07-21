@@ -1,0 +1,130 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "Modello generico",
+    "description": "Scheletro neutro: griglia probabilità × impatto su cinque livelli (punteggio = prodotto) e quattro livelli di criticità, **senza campi personalizzati imposti**. Punto di partenza per un'analisi dei rischi non legata a un metodo specifico.",
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "methodology_reference": "Analisi dei rischi — griglia generica 5×5",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "it",
+    "kind": "template"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Probabilità",
+      "description": "Probabilità che il rischio si verifichi.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Molto bassa",
+          "description": "Molto improbabile."
+        },
+        {
+          "value": 2,
+          "label": "Bassa",
+          "description": "Poco probabile."
+        },
+        {
+          "value": 3,
+          "label": "Media",
+          "description": "Plausibile."
+        },
+        {
+          "value": 4,
+          "label": "Alta",
+          "description": "Probabile."
+        },
+        {
+          "value": 5,
+          "label": "Molto alta",
+          "description": "Quasi certa."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Impatto",
+      "description": "Entità delle conseguenze in caso di accadimento.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Molto basso",
+          "description": "Conseguenze insignificanti."
+        },
+        {
+          "value": 2,
+          "label": "Basso",
+          "description": "Conseguenze minori."
+        },
+        {
+          "value": 3,
+          "label": "Medio",
+          "description": "Conseguenze notevoli."
+        },
+        {
+          "value": 4,
+          "label": "Elevato",
+          "description": "Conseguenze serie."
+        },
+        {
+          "value": 5,
+          "label": "Molto elevato",
+          "description": "Conseguenze gravi."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Basso",
+        "score_min": 1,
+        "score_max": 4,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Rischio basso: accettabile, da monitorare."
+      },
+      {
+        "code": "moyen",
+        "label": "Medio",
+        "score_min": 5,
+        "score_max": 10,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Rischio medio: tollerabile a condizioni; valutare la riduzione."
+      },
+      {
+        "code": "eleve",
+        "label": "Elevato",
+        "score_min": 11,
+        "score_max": 16,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Rischio elevato: trattamento previsto."
+      },
+      {
+        "code": "critique",
+        "label": "Critico",
+        "score_min": 17,
+        "score_max": 25,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Rischio critico: inaccettabile così com'è; trattamento prioritario."
+      }
+    ]
+  },
+  "custom_fields": [],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

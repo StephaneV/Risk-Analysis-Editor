@@ -1,0 +1,581 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "Modèle EBIOS RM (ANSSI)",
+    "description": "Squelette d'analyse selon **EBIOS Risk Manager** (ANSSI). Grille de vraisemblance × gravité, niveaux de risque et champs personnalisés préconfigurés.\n\nÀ compléter : valeurs métier et biens supports (atelier 1), sources de risque et objectifs visés (atelier 2), scénarios stratégiques (atelier 3) puis opérationnels (atelier 4), et le traitement (atelier 5).",
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "methodology_reference": "EBIOS Risk Manager (ANSSI)",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "kind": "template"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Vraisemblance",
+      "description": "Possibilité que le scénario se réalise, au regard des sources de risque et des modes opératoires.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Minime",
+          "description": "La source de risque ne devrait pas agir, ou le mode opératoire est très difficile à mettre en œuvre."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "La source de risque pourrait agir ; le mode opératoire reste réalisable avec un effort modéré."
+        },
+        {
+          "value": 3,
+          "label": "Forte",
+          "description": "La source de risque a de bonnes raisons d'agir et le mode opératoire est accessible."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "La source de risque va très probablement agir ; le mode opératoire est trivial."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Gravité",
+      "description": "Ampleur des conséquences pour l'organisation et les personnes.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Mineure",
+          "description": "Aucun impact opérationnel ou juridique notable ; gêne surmontable."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "Impact réel mais maîtrisable, sans conséquence durable."
+        },
+        {
+          "value": 3,
+          "label": "Grave",
+          "description": "Impact important, difficilement réversible, sur l'activité ou les personnes."
+        },
+        {
+          "value": 4,
+          "label": "Critique",
+          "description": "Impact majeur, potentiellement irréversible, mettant en cause la pérennité ou la sécurité."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Faible",
+        "score_min": 1,
+        "score_max": 3,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque faible : acceptable en l'état, à surveiller lors des revues."
+      },
+      {
+        "code": "modere",
+        "label": "Modéré",
+        "score_min": 4,
+        "score_max": 6,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque modéré : tolérable sous conditions ; des mesures de réduction sont à envisager."
+      },
+      {
+        "code": "eleve",
+        "label": "Élevé",
+        "score_min": 7,
+        "score_max": 11,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque élevé : un traitement est attendu pour ramener le risque à un niveau acceptable."
+      },
+      {
+        "code": "critique",
+        "label": "Critique",
+        "score_min": 12,
+        "score_max": 16,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque critique : inacceptable en l'état ; traitement prioritaire requis."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels",
+        "en": "Frameworks",
+        "it": "Riferimenti"
+      },
+      "items": [
+        {
+          "code": "ebios-rm",
+          "label": {
+            "fr": "EBIOS RM",
+            "en": "EBIOS RM",
+            "it": "EBIOS RM"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "iso-27005",
+          "label": {
+            "fr": "ISO 27005",
+            "en": "ISO 27005",
+            "it": "ISO 27005"
+          },
+          "color": "#4c7dff"
+        },
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD",
+            "en": "GDPR",
+            "it": "GDPR"
+          },
+          "color": "#e25631"
+        },
+        {
+          "code": "nis2",
+          "label": {
+            "fr": "NIS2",
+            "en": "NIS2",
+            "it": "NIS2"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "pssi",
+          "label": {
+            "fr": "PSSI",
+            "en": "ISSP",
+            "it": "PSSI"
+          },
+          "color": "#16a085"
+        }
+      ]
+    },
+    {
+      "code": "socle_securite",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 2,
+      "label": {
+        "fr": "Socle de sécurité",
+        "en": "Security baseline",
+        "it": "Base di sicurezza"
+      },
+      "description": {
+        "fr": "Référentiels applicables, écarts identifiés et justification (atelier 1).",
+        "en": "Applicable frameworks, identified gaps and justification (workshop 1).",
+        "it": "Riferimenti applicabili, scostamenti individuati e giustificazione (workshop 1)."
+      }
+    },
+    {
+      "code": "type_scenario",
+      "target": "risk",
+      "type": "select",
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Type de scénario",
+        "en": "Scenario type",
+        "it": "Tipo di scenario"
+      },
+      "items": [
+        {
+          "code": "strategique",
+          "label": {
+            "fr": "Scénario stratégique",
+            "en": "Strategic scenario",
+            "it": "Scenario strategico"
+          }
+        },
+        {
+          "code": "operationnel",
+          "label": {
+            "fr": "Scénario opérationnel",
+            "en": "Operational scenario",
+            "it": "Scenario operativo"
+          }
+        }
+      ]
+    },
+    {
+      "code": "source_risque",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Source de risque",
+        "en": "Risk source",
+        "it": "Fonte di rischio"
+      },
+      "items": [
+        {
+          "code": "etatique",
+          "label": {
+            "fr": "Étatique",
+            "en": "State-sponsored",
+            "it": "Statale"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "cybercriminel",
+          "label": {
+            "fr": "Cybercriminel",
+            "en": "Cybercriminal",
+            "it": "Cybercriminale"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "terroriste",
+          "label": {
+            "fr": "Terroriste",
+            "en": "Terrorist",
+            "it": "Terrorista"
+          },
+          "color": "#7b241c"
+        },
+        {
+          "code": "activiste",
+          "label": {
+            "fr": "Activiste idéologique",
+            "en": "Ideological activist",
+            "it": "Attivista ideologico"
+          },
+          "color": "#d35400"
+        },
+        {
+          "code": "officine",
+          "label": {
+            "fr": "Officine spécialisée",
+            "en": "Specialised firm",
+            "it": "Struttura specializzata"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "amateur",
+          "label": {
+            "fr": "Amateur",
+            "en": "Amateur",
+            "it": "Dilettante"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "vengeur",
+          "label": {
+            "fr": "Vengeur",
+            "en": "Avenger",
+            "it": "Vendicatore"
+          },
+          "color": "#a04000"
+        },
+        {
+          "code": "initie",
+          "label": {
+            "fr": "Initié malveillant",
+            "en": "Malicious insider",
+            "it": "Insider malevolo"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "concurrent",
+          "label": {
+            "fr": "Concurrent",
+            "en": "Competitor",
+            "it": "Concorrente"
+          },
+          "color": "#1f618d"
+        }
+      ]
+    },
+    {
+      "code": "objectif_vise",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "filterable": true,
+      "label": {
+        "fr": "Objectif visé",
+        "en": "Target objective",
+        "it": "Obiettivo"
+      },
+      "items": [
+        {
+          "code": "espionnage",
+          "label": {
+            "fr": "Espionnage",
+            "en": "Espionage",
+            "it": "Spionaggio"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "prepos",
+          "label": {
+            "fr": "Pré-positionnement",
+            "en": "Pre-positioning",
+            "it": "Pre-posizionamento"
+          },
+          "color": "#5d6d7e"
+        },
+        {
+          "code": "entrave",
+          "label": {
+            "fr": "Sabotage / entrave",
+            "en": "Sabotage / disruption",
+            "it": "Sabotaggio / ostruzione"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "influence",
+          "label": {
+            "fr": "Influence",
+            "en": "Influence",
+            "it": "Influenza"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "lucratif",
+          "label": {
+            "fr": "Lucratif",
+            "en": "Financial gain",
+            "it": "Lucro"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "defi",
+          "label": {
+            "fr": "Défi / amusement",
+            "en": "Challenge / fun",
+            "it": "Sfida / divertimento"
+          },
+          "color": "#2980b9"
+        }
+      ]
+    },
+    {
+      "code": "valeur_metier",
+      "target": "risk",
+      "type": "text",
+      "order": 4,
+      "label": {
+        "fr": "Valeur métier visée",
+        "en": "Targeted business value",
+        "it": "Valore di business"
+      }
+    },
+    {
+      "code": "biens_supports",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 5,
+      "filterable": true,
+      "label": {
+        "fr": "Biens supports",
+        "en": "Supporting assets",
+        "it": "Beni di supporto"
+      },
+      "items": [
+        {
+          "code": "poste",
+          "label": {
+            "fr": "Poste de travail",
+            "en": "Workstation",
+            "it": "Postazione di lavoro"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "serveur",
+          "label": {
+            "fr": "Serveur / stockage",
+            "en": "Server / storage",
+            "it": "Server / storage"
+          },
+          "color": "#117864"
+        },
+        {
+          "code": "appli",
+          "label": {
+            "fr": "Application",
+            "en": "Application",
+            "it": "Applicazione"
+          },
+          "color": "#148f77"
+        },
+        {
+          "code": "reseau",
+          "label": {
+            "fr": "Réseau",
+            "en": "Network",
+            "it": "Rete"
+          },
+          "color": "#1f618d"
+        },
+        {
+          "code": "donnees",
+          "label": {
+            "fr": "Données",
+            "en": "Data",
+            "it": "Dati"
+          },
+          "color": "#7d6608"
+        },
+        {
+          "code": "prestataire",
+          "label": {
+            "fr": "Prestataire",
+            "en": "Third party",
+            "it": "Fornitore"
+          },
+          "color": "#1abc9c"
+        },
+        {
+          "code": "local",
+          "label": {
+            "fr": "Site / local",
+            "en": "Site / premises",
+            "it": "Sito / locale"
+          },
+          "color": "#b9770e"
+        },
+        {
+          "code": "personne",
+          "label": {
+            "fr": "Personne",
+            "en": "Person",
+            "it": "Persona"
+          },
+          "color": "#af7ac5"
+        }
+      ]
+    },
+    {
+      "code": "socle",
+      "target": "measure",
+      "type": "select",
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Catégorie de sécurité",
+        "en": "Security category",
+        "it": "Categoria di sicurezza"
+      },
+      "items": [
+        {
+          "code": "gouvernance",
+          "label": {
+            "fr": "Gouvernance",
+            "en": "Governance",
+            "it": "Governance"
+          }
+        },
+        {
+          "code": "protection",
+          "label": {
+            "fr": "Protection",
+            "en": "Protection",
+            "it": "Protezione"
+          }
+        },
+        {
+          "code": "defense",
+          "label": {
+            "fr": "Défense",
+            "en": "Defence",
+            "it": "Difesa"
+          }
+        },
+        {
+          "code": "resilience",
+          "label": {
+            "fr": "Résilience",
+            "en": "Resilience",
+            "it": "Resilienza"
+          }
+        }
+      ]
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "order": 2,
+      "label": {
+        "fr": "Avancement",
+        "en": "Progress",
+        "it": "Avanzamento"
+      },
+      "palette": "red-orange-green",
+      "step": 10
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Effet attendu",
+        "en": "Expected effect",
+        "it": "Effetto atteso"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood",
+            "it": "Riduce la verosimiglianza"
+          },
+          "color": "#2471a3"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité",
+            "en": "Reduces severity",
+            "it": "Riduce la gravità"
+          },
+          "color": "#b9770e"
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

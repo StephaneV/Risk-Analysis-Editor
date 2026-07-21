@@ -2308,7 +2308,7 @@ function templateBlob(){
     custom:{}, risks:[], measures:[], treatments:[]};
   return new Blob([JSON.stringify(tpl,null,2)],{type:"application/vnd.rae+json"});
 }
-function templateFileName(){return (slug(analyse.metadata&&analyse.metadata.title)||"modele")+".template.rae.json";}
+function templateFileName(){return (slug(analyse.metadata&&analyse.metadata.title)||"modele")+".template."+lang+".rae.json";}
 async function saveAsTemplate(){
   const blob=templateBlob(), name=templateFileName();
   if(FS_OK&&window.showSaveFilePicker){
@@ -5171,7 +5171,7 @@ function renderStartTemplates(){
   if(!box||!list)return;
   box.hidden=!TEMPLATES.length;
   list.innerHTML=TEMPLATES.map(tp=>
-    '<button type="button" class="tpl-btn" data-tpl="'+esc(tp.file)+'">'+
+    '<button type="button" class="tpl-btn" data-tpl="'+esc(tp.base)+'">'+
       '<span class="tpl-name">'+esc(tplText(tp.name))+'</span>'+
       '<span class="tpl-desc">'+esc(tplText(tp.desc))+'</span></button>').join("");
 }
@@ -6507,25 +6507,32 @@ const DEMOS={fr:"demo-ebios-rm-systeme-d-information.rae.json",en:"demo-ebios-rm
    préconfigurés) vivant dans le dossier templates/. Le manifeste est embarqué : en file://,
    impossible de lister un dossier. Nom et description sont ici pour les afficher sans charger
    chaque fichier. Ouvrir un modèle démarre une NOUVELLE analyse, non reliée au fichier. */
+/* `base` : préfixe du fichier ; le modèle chargé est `<base>.<lang>.rae.json`, où <lang> est
+   la langue courante de l'interface (repli sur fr). Les grilles et libellés de la grille sont
+   des chaînes non commutables : c'est un fichier par langue qui rend les modèles multilingues. */
 const TEMPLATES=[
-  {file:"ebios-rm.template.rae.json",
+  {base:"ebios-rm.template",
    name:{fr:"EBIOS RM (ANSSI)",en:"EBIOS RM (ANSSI)",it:"EBIOS RM (ANSSI)"},
    desc:{fr:"Vraisemblance × gravité, grille 4×4 (produit).",en:"Likelihood × severity, 4×4 grid (product).",it:"Verosimiglianza × gravità, griglia 4×4 (prodotto)."}},
-  {file:"cnil-pia.template.rae.json",
-   name:{fr:"AIPD — CNIL PIA",en:"DPIA — CNIL PIA",it:"AIPD — CNIL PIA"},
+  {base:"cnil-pia.template",
+   name:{fr:"AIPD — CNIL PIA",en:"DPIA — CNIL PIA",it:"DPIA — CNIL PIA"},
    desc:{fr:"Grille 4×4, niveau de risque défini par cellule.",en:"4×4 grid, risk level defined per cell.",it:"Griglia 4×4, livello di rischio definito per cella."}},
-  {file:"iso-27005.template.rae.json",
+  {base:"iso-27005.template",
    name:{fr:"ISO/IEC 27005",en:"ISO/IEC 27005",it:"ISO/IEC 27005"},
    desc:{fr:"Vraisemblance × impact, grille 5×5 (produit).",en:"Likelihood × impact, 5×5 grid (product).",it:"Verosimiglianza × impatto, griglia 5×5 (prodotto)."}},
-  {file:"generique.template.rae.json",
+  {base:"generique.template",
    name:{fr:"Modèle générique",en:"Generic template",it:"Modello generico"},
    desc:{fr:"Probabilité × impact 5×5, sans champ imposé.",en:"Probability × impact 5×5, no imposed field.",it:"Probabilità × impatto 5×5, senza campi imposti."}}
 ];
 const tplText=(o)=>(o&&(o[lang]||o.fr))||"";
-/* Ouverture d'un modèle : applyLoadedData reconnaît le marqueur metadata.kind="template",
-   le retire, ne relie pas le fichier et démarre une nouvelle analyse. */
-async function openTemplate(file){
+/* Fichier du modèle dans la langue courante, avec repli sur le français. */
+function templateFileFor(base){return base+"."+(["fr","en","it"].indexOf(lang)>=0?lang:"fr")+".rae.json";}
+/* Ouverture d'un modèle : on charge le fichier de la langue courante. applyLoadedData
+   reconnaît le marqueur metadata.kind="template", le retire, ne relie pas le fichier et
+   démarre une nouvelle analyse. */
+async function openTemplate(base){
   const note=document.getElementById("startNote");if(note)note.textContent="";
+  const file=templateFileFor(base);
   try{
     const resp=await fetch("../templates/"+file,{cache:"no-store"});
     if(!resp.ok)throw new Error("HTTP "+resp.status);

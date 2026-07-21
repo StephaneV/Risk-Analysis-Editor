@@ -2,16 +2,16 @@
   "format": "risk-analysis-editor",
   "version": "1.0",
   "metadata": {
+    "title": "Modèle ISO/IEC 27005",
+    "description": "Squelette d'appréciation du risque selon **ISO/IEC 27005**. Grille vraisemblance × impact sur cinq niveaux (score = produit), et champs personnalisés orientés actifs, menaces et vulnérabilités.\n\nÀ compléter : périmètre et critères d'acceptation, identification des actifs, des menaces et vulnérabilités, estimation puis évaluation du risque, et choix des options de traitement.",
     "author": "",
     "organization": "",
     "scope": "",
+    "methodology_reference": "ISO/IEC 27005 — Gestion des risques liés à la sécurité de l'information",
     "revision": "1.0",
     "status": "draft",
     "language": "fr",
-    "kind": "template",
-    "title": "Modèle ISO/IEC 27005",
-    "description": "Squelette d'appréciation du risque selon **ISO/IEC 27005**. Grille vraisemblance × impact sur cinq niveaux (score = produit), et champs personnalisés orientés actifs, menaces et vulnérabilités.\n\nÀ compléter : périmètre et critères d'acceptation, identification des actifs, des menaces et vulnérabilités, estimation puis évaluation du risque, et choix des options de traitement.",
-    "methodology_reference": "ISO/IEC 27005 — Gestion des risques liés à la sécurité de l'information"
+    "kind": "template"
   },
   "grid": {
     "vertical_axis": {
@@ -130,34 +130,44 @@
       "multiple": true,
       "order": 1,
       "label": {
-        "fr": "Référentiels"
+        "fr": "Référentiels",
+        "en": "Frameworks",
+        "it": "Riferimenti"
       },
       "items": [
         {
           "code": "iso-27005",
           "label": {
-            "fr": "ISO 27005"
+            "fr": "ISO 27005",
+            "en": "ISO 27005",
+            "it": "ISO 27005"
           },
           "color": "#3a63d6"
         },
         {
           "code": "iso-27001",
           "label": {
-            "fr": "ISO 27001"
+            "fr": "ISO 27001",
+            "en": "ISO 27001",
+            "it": "ISO 27001"
           },
           "color": "#4c7dff"
         },
         {
           "code": "iso-27002",
           "label": {
-            "fr": "ISO 27002"
+            "fr": "ISO 27002",
+            "en": "ISO 27002",
+            "it": "ISO 27002"
           },
           "color": "#16a085"
         },
         {
           "code": "rgpd",
           "label": {
-            "fr": "RGPD"
+            "fr": "RGPD",
+            "en": "GDPR",
+            "it": "GDPR"
           },
           "color": "#e25631"
         }
@@ -169,7 +179,9 @@
       "type": "textarea",
       "order": 2,
       "label": {
-        "fr": "Périmètre"
+        "fr": "Périmètre",
+        "en": "Scope",
+        "it": "Ambito"
       }
     },
     {
@@ -178,7 +190,9 @@
       "type": "textarea",
       "order": 3,
       "label": {
-        "fr": "Critères d'acceptation du risque"
+        "fr": "Critères d'acceptation du risque",
+        "en": "Risk acceptance criteria",
+        "it": "Criteri di accettazione del rischio"
       }
     },
     {
@@ -187,7 +201,9 @@
       "type": "text",
       "order": 1,
       "label": {
-        "fr": "Actif concerné"
+        "fr": "Actif concerné",
+        "en": "Affected asset",
+        "it": "Bene interessato"
       }
     },
     {
@@ -197,19 +213,25 @@
       "order": 2,
       "filterable": true,
       "label": {
-        "fr": "Type d'actif"
+        "fr": "Type d'actif",
+        "en": "Asset type",
+        "it": "Tipo di bene"
       },
       "items": [
         {
           "code": "primaire",
           "label": {
-            "fr": "Actif primaire (information, processus)"
+            "fr": "Actif primaire (information, processus)",
+            "en": "Primary asset (information, process)",
+            "it": "Bene primario (informazione, processo)"
           }
         },
         {
           "code": "support",
           "label": {
-            "fr": "Actif support (matériel, logiciel, réseau, personne, site)"
+            "fr": "Actif support (matériel, logiciel, réseau, personne, site)",
+            "en": "Supporting asset (hardware, software, network, person, site)",
+            "it": "Bene di supporto (hardware, software, rete, persona, sito)"
           }
         }
       ]
@@ -222,62 +244,80 @@
       "order": 3,
       "filterable": true,
       "label": {
-        "fr": "Menace"
+        "fr": "Menace",
+        "en": "Threat",
+        "it": "Minaccia"
       },
       "items": [
         {
           "code": "acces-na",
           "label": {
-            "fr": "Accès non autorisé"
+            "fr": "Accès non autorisé",
+            "en": "Unauthorised access",
+            "it": "Accesso non autorizzato"
           },
           "color": "#c0392b"
         },
         {
           "code": "compromission-info",
           "label": {
-            "fr": "Compromission d'informations"
+            "fr": "Compromission d'informations",
+            "en": "Compromise of information",
+            "it": "Compromissione di informazioni"
           },
           "color": "#922b21"
         },
         {
           "code": "defaillance",
           "label": {
-            "fr": "Défaillance technique"
+            "fr": "Défaillance technique",
+            "en": "Technical failure",
+            "it": "Guasto tecnico"
           },
           "color": "#7f8c8d"
         },
         {
           "code": "actions-na",
           "label": {
-            "fr": "Actions non autorisées"
+            "fr": "Actions non autorisées",
+            "en": "Unauthorised actions",
+            "it": "Azioni non autorizzate"
           },
           "color": "#a04000"
         },
         {
           "code": "compromission-fct",
           "label": {
-            "fr": "Compromission de fonctions"
+            "fr": "Compromission de fonctions",
+            "en": "Compromise of functions",
+            "it": "Compromissione di funzioni"
           },
           "color": "#6c3483"
         },
         {
           "code": "dommages",
           "label": {
-            "fr": "Dommages physiques"
+            "fr": "Dommages physiques",
+            "en": "Physical damage",
+            "it": "Danni fisici"
           },
           "color": "#b9770e"
         },
         {
           "code": "naturel",
           "label": {
-            "fr": "Événement naturel"
+            "fr": "Événement naturel",
+            "en": "Natural event",
+            "it": "Evento naturale"
           },
           "color": "#16a085"
         },
         {
           "code": "perte-service",
           "label": {
-            "fr": "Perte de services essentiels"
+            "fr": "Perte de services essentiels",
+            "en": "Loss of essential services",
+            "it": "Perdita di servizi essenziali"
           },
           "color": "#1f618d"
         }
@@ -289,7 +329,9 @@
       "type": "text",
       "order": 4,
       "label": {
-        "fr": "Vulnérabilité exploitée"
+        "fr": "Vulnérabilité exploitée",
+        "en": "Exploited vulnerability",
+        "it": "Vulnerabilità sfruttata"
       }
     },
     {
@@ -299,31 +341,41 @@
       "order": 5,
       "filterable": true,
       "label": {
-        "fr": "Option de traitement"
+        "fr": "Option de traitement",
+        "en": "Treatment option",
+        "it": "Opzione di trattamento"
       },
       "items": [
         {
           "code": "reduire",
           "label": {
-            "fr": "Réduire (modifier)"
+            "fr": "Réduire (modifier)",
+            "en": "Reduce (modify)",
+            "it": "Ridurre (modificare)"
           }
         },
         {
           "code": "accepter",
           "label": {
-            "fr": "Accepter (maintenir)"
+            "fr": "Accepter (maintenir)",
+            "en": "Accept (retain)",
+            "it": "Accettare (mantenere)"
           }
         },
         {
           "code": "eviter",
           "label": {
-            "fr": "Éviter (supprimer)"
+            "fr": "Éviter (supprimer)",
+            "en": "Avoid (remove)",
+            "it": "Evitare (eliminare)"
           }
         },
         {
           "code": "partager",
           "label": {
-            "fr": "Partager (transférer)"
+            "fr": "Partager (transférer)",
+            "en": "Share (transfer)",
+            "it": "Condividere (trasferire)"
           }
         }
       ]
@@ -334,7 +386,9 @@
       "type": "text",
       "order": 6,
       "label": {
-        "fr": "Propriétaire du risque"
+        "fr": "Propriétaire du risque",
+        "en": "Risk owner",
+        "it": "Titolare del rischio"
       }
     },
     {
@@ -343,10 +397,14 @@
       "type": "text",
       "order": 1,
       "label": {
-        "fr": "Réf. mesure (ISO 27002)"
+        "fr": "Réf. mesure (ISO 27002)",
+        "en": "Control ref. (ISO 27002)",
+        "it": "Rif. controllo (ISO 27002)"
       },
       "description": {
-        "fr": "Référence de la mesure de sécurité applicable, p. ex. A.8.16."
+        "fr": "Référence de la mesure de sécurité applicable, p. ex. A.8.16.",
+        "en": "Reference of the applicable security control, e.g. A.8.16.",
+        "it": "Riferimento del controllo di sicurezza applicabile, es. A.8.16."
       }
     },
     {
@@ -355,7 +413,9 @@
       "type": "progress",
       "order": 2,
       "label": {
-        "fr": "Avancement"
+        "fr": "Avancement",
+        "en": "Progress",
+        "it": "Avanzamento"
       },
       "palette": "red-orange-green",
       "step": 10
@@ -368,20 +428,26 @@
       "order": 1,
       "filterable": true,
       "label": {
-        "fr": "Effet attendu"
+        "fr": "Effet attendu",
+        "en": "Expected effect",
+        "it": "Effetto atteso"
       },
       "items": [
         {
           "code": "vraisemblance",
           "label": {
-            "fr": "Réduit la vraisemblance"
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood",
+            "it": "Riduce la verosimiglianza"
           },
           "color": "#2471a3"
         },
         {
           "code": "gravite",
           "label": {
-            "fr": "Réduit l'impact"
+            "fr": "Réduit l'impact",
+            "en": "Reduces impact",
+            "it": "Riduce l'impatto"
           },
           "color": "#b9770e"
         }
