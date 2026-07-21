@@ -1211,6 +1211,7 @@ const I18N = {
     quick_created:"{0} créé et lié : {1}",
     cell_moved:"{0} : {1} × {2} = {3} ({4})",
     confirm_new:"Créer une nouvelle analyse ? Les modifications non enregistrées seront perdues.",
+    confirm_home:"Revenir à l'écran d'accueil ? L'analyse en cours sera fermée et les modifications non enregistrées seront perdues.",
     confirm_load:"Charger une autre analyse ? Les modifications non enregistrées seront perdues.",
     pres_confirm_leave:"Des modifications de l'onglet Présentation ne sont pas validées. Elles seront perdues. Continuer ?",
     /* Ces textes nomment le bouton de l'onglet : ils doivent suivre btn_save_modal, et non
@@ -1454,6 +1455,7 @@ const I18N = {
     quick_created:"{0} created and linked: {1}",
     cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Create a new analysis? Unsaved changes will be lost.",
+    confirm_home:"Return to the home screen? The current analysis will be closed and unsaved changes will be lost.",
     confirm_load:"Load another analysis? Unsaved changes will be lost.",
     pres_confirm_leave:"Changes in the Overview tab are not confirmed. They will be lost. Continue?",
     settings_general_pending:"Changes in this tab are applied only when you click Confirm.",
@@ -1695,6 +1697,7 @@ const I18N = {
     quick_created:"{0} creato e collegato: {1}",
     cell_moved:"{0}: {1} × {2} = {3} ({4})",
     confirm_new:"Creare una nuova analisi? Le modifiche non salvate andranno perse.",
+    confirm_home:"Tornare alla schermata iniziale? L'analisi corrente verrà chiusa e le modifiche non salvate andranno perse.",
     confirm_load:"Caricare un'altra analisi? Le modifiche non salvate andranno perse.",
     pres_confirm_leave:"Le modifiche della scheda Presentazione non sono confermate. Andranno perse. Continuare?",
     settings_general_pending:"Le modifiche di questa scheda vengono applicate solo dopo aver fatto clic su Conferma.",
@@ -2291,7 +2294,7 @@ function backToStart(){
   const go=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
     dirty=false;isFresh=true;startDismissed=false;
     cfFilterReset();cfFilterSyncURL();autosaveClear();renderAll();goToPresentation();};
-  if(dirty)confirmModal(t("confirm_new"),go); else go();
+  if(dirty)confirmModal(t("confirm_home"),go); else go();
 }
 /* Enregistrer comme modèle : produit un fichier .template.rae.json — squelette reprenant la
    grille et les champs personnalisés de l'analyse courante, mais sans risque ni mesure, et
