@@ -1,4 +1,4 @@
-# <img src="docs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
+# <img src="specs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
 
 [English](README.md) · **Français**
 
@@ -8,7 +8,7 @@ Outil autonome de **construction et de visualisation de matrices de risque** —
 
 *Aucune installation : l'outil s'exécute entièrement dans votre navigateur. Deux démos prêtes à ouvrir : une analyse de risques **inspirée d'EBIOS RM** (12 risques, 11 mesures) et une **AIPD suivant la méthode PIA de la CNIL** pour un service de santé au travail (12 risques, 12 mesures) — toutes deux illustrant descriptions, notes, **tags** colorés, **barres de progression**, responsables et justifications de liens. Le téléchargement fournit **l'unique fichier HTML** de la [dernière version](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest) : double-cliquez-le pour travailler **hors-ligne**.*
 
-![Vue Matrices › Trajectoire de l'analyse « Système d'information » (thème clair)](docs/images/capture-trajectoire.png)
+![Vue Matrices › Trajectoire de l'analyse « Système d'information » (thème clair)](specs/images/capture-trajectoire.png)
 
 > *Vue **Matrices › Trajectoire** : chaque flèche relie la position initiale (contour pointillé) à la position résiduelle (contour plein) d'un risque.*
 
@@ -22,7 +22,7 @@ Elle permet de mener une analyse de risque complète : définir une grille de co
 
 L'outil est **indépendant de toute méthodologie** (ISO 27005, EBIOS RM, AIPD/PIA CNIL, référentiel interne…) : la grille (taille, libellés, seuils, couleurs, méthode de calcul) est entièrement paramétrable et enregistrée dans le fichier.
 
-Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risques, mesures, liens et cotations initiale/résiduelle. Le format est **spécifié** ([documentation technique](docs/SPEC-format-analyse-risque.md)) et validé par un **schéma JSON** ([schema-analyse-risque.json](docs/schema-analyse-risque.json)). Les noms de propriétés sont en anglais ; les valeurs (libellés, descriptions) restent dans la langue de l'analyse.
+Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risques, mesures, liens et cotations initiale/résiduelle. Le format est **spécifié** ([documentation technique](specs/SPEC-format-analyse-risque.md)) et validé par un **schéma JSON** ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Les noms de propriétés sont en anglais ; les valeurs (libellés, descriptions) restent dans la langue de l'analyse.
 
 **Point d'entrée :** [ouvrir l'application en ligne](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — ou, pour un usage **hors-ligne**, télécharger le dépôt et ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) par un simple double-clic.
 
@@ -75,7 +75,7 @@ Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risq
 | Dossier | Contenu |
 |---|---|
 | [`app/`](app/) | L'application (`risk-analysis-editor.html`). |
-| [`docs/`](docs/) | Documentation technique : spécification du format, schéma JSON et stratégies de disposition. |
+| [`specs/`](specs/) | **Spécifications** : spécification du format de fichier, schéma JSON et stratégies de disposition. La documentation utilisateur vivra ailleurs. |
 | [`examples/`](examples/) | Analyses d'exemple au format `.rae.json` (français et anglais), dont deux **démos complètes** : une analyse de risques **inspirée d'EBIOS RM** (`demo-ebios-rm-*.rae.json`) et une **AIPD suivant la méthode PIA de la CNIL** pour un service de santé au travail (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — avec tags colorés, barres de progression, responsables et liens justifiés. |
 | [`templates/`](templates/) | **Modèles méthodologiques** (`xxx.template.<lang>.rae.json`, un fichier par langue) : squelettes vierges — grille, niveaux de criticité et champs personnalisés préconfigurés, sans risque ni mesure. **EBIOS RM**, **AIPD — CNIL PIA**, **ISO/IEC 27005** et un modèle **générique** 5×5, chacun en **français, anglais et italien**. Listés sous *Démarrer d'un modèle* dans le bloc d'amorçage (le fichier correspondant à la langue de l'interface est chargé) ; l'ouverture (depuis là ou via *Charger…*) démarre une nouvelle analyse **non reliée**. On peut aussi transformer l'analyse courante en modèle via **Fichier › Enregistrer comme modèle…**, et revenir au bloc d'amorçage via **Fichier › Écran d'accueil**. |
 
@@ -86,6 +86,24 @@ Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risq
 1. [Ouvrir l'application en ligne](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — ou ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) depuis une copie locale, dans un navigateur récent.
 2. L'outil démarre sur une **analyse vierge**, ouverte sur l'onglet **Présentation**.
 3. Bouton **Charger…** pour ouvrir un fichier `.rae.json` (par ex. depuis [`examples/`](examples/)), **Enregistrer** pour exporter le vôtre.
+
+---
+
+## Compatibilité navigateurs
+
+**Prérequis** : un navigateur de bureau récent (version à jour) avec JavaScript activé — rien d'autre. Aucun serveur, aucun accès réseau ni installation ne sont nécessaires ; l'application se lance d'un double-clic en `file://`. Seul le **chargement par URL** (`?file=…`) demande que l'outil soit servi en HTTP(S).
+
+Le développement et les tests sont réalisés principalement avec **Microsoft Edge (Chromium)** ; tout navigateur basé sur Chromium (Chrome, Edge, Opera, Brave…) offre l'expérience complète. Différences connues avec les autres moteurs :
+
+- **Firefox / Safari** — l'API File System Access (`showSaveFilePicker`) n'y est pas disponible : *Enregistrer* se replie sur un **téléchargement** classique du fichier `.rae.json` (et *Charger* sur un sélecteur de fichier standard) au lieu d'écrire directement dans le fichier ouvert. Tout le reste fonctionne à l'identique.
+- **Firefox ancien (< 127)** — la copie d'une matrice dans le presse-papiers **sous forme d'image** (`ClipboardItem`) n'est pas prise en charge ; les boutons de téléchargement PNG et SVG restent disponibles.
+- **Appareils tactiles** — les interactions en glisser-déposer (pastilles, kanban, en-têtes de colonnes) visent un usage à la souris ; des alternatives clavier et menu existent (Ctrl+flèches dans le kanban et les matrices, flèches ▲/▼ du menu de colonnes), mais l'outil est conçu pour un usage bureau.
+
+---
+
+## Crédits
+
+RAE embarque exactement **une bibliothèque tierce** : [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (licence MIT, © Arjun Barrett), une implémentation ZIP/deflate minuscule et rapide. Elle fournit le conteneur ZIP requis par les exports Word (`.docx`) et Excel (`.xlsx`) — les fichiers OOXML étant des archives ZIP de parties XML. La bibliothèque est **incorporée** dans le fichier HTML, avec sa notice de licence, afin que l'application reste pleinement hors-ligne et sans dépendance externe. Tout le reste (moteur Markdown, export SVG/PNG, génération OOXML, composants d'interface) est écrit sur mesure pour ce projet.
 
 ---
 

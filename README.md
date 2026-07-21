@@ -1,4 +1,4 @@
-# <img src="docs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
+# <img src="specs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
 
 **English** · [Français](README.fr.md)
 
@@ -8,7 +8,7 @@ Standalone tool for **building and visualizing risk matrices** — inherent (gro
 
 *No installation: the tool runs entirely in your browser. Two ready-to-open demos: an **EBIOS RM–inspired** risk analysis (12 risks, 11 measures) and a **DPIA following the CNIL PIA method** for an occupational health service (12 risks, 12 measures) — both showcasing descriptions, notes, colored **tags**, **progress bars**, owners and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
 
-![Matrices › Trajectory view of the "Information system" analysis (light theme)](docs/images/capture-trajectoire.png)
+![Matrices › Trajectory view of the "Information system" analysis (light theme)](specs/images/capture-trajectoire.png)
 
 > ***Matrices › Trajectory** view: each arrow links a risk's initial position (dashed outline) to its residual position (solid outline).*
 
@@ -22,7 +22,7 @@ It lets you carry out a complete risk analysis: define a scoring grid, enter ris
 
 The tool is **methodology-agnostic** (ISO 27005, EBIOS RM, DPIA/PIA, internal framework…): the grid (size, labels, thresholds, colors, scoring method) is fully configurable and saved inside the file.
 
-The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, measures, links and initial/residual assessments. The format is **specified** ([technical documentation](docs/SPEC-format-analyse-risque.md), in French) and validated by a **JSON schema** ([schema-analyse-risque.json](docs/schema-analyse-risque.json)). Property names are in English; values (labels, descriptions) stay in the analysis's own language.
+The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, measures, links and initial/residual assessments. The format is **specified** ([technical documentation](specs/SPEC-format-analyse-risque.md), in French) and validated by a **JSON schema** ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Property names are in English; values (labels, descriptions) stay in the analysis's own language.
 
 **Entry point:** [open the app online](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — or, for **offline** use, download the repository and open [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) with a simple double-click.
 
@@ -76,7 +76,7 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 | Folder | Contents |
 |---|---|
 | [`app/`](app/) | The application (`risk-analysis-editor.html`). |
-| [`docs/`](docs/) | Technical documentation (in French): format specification, JSON schema and layout strategies. |
+| [`specs/`](specs/) | **Specifications** (in French): file-format specification, JSON schema and layout strategies. User documentation will live elsewhere. |
 | [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including two **complete demos**: an **EBIOS RM–inspired** risk analysis (`demo-ebios-rm-*.rae.json`) and a **DPIA following the CNIL PIA method** for an occupational health service (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — with colored tags, progress bars, owners and justified links. |
 | [`templates/`](templates/) | **Methodology templates** (`xxx.template.<lang>.rae.json`, one file per language): blank skeletons — grid, criticality levels and custom fields preconfigured, no risks or measures. **EBIOS RM**, **CNIL PIA / DPIA**, **ISO/IEC 27005** and a **generic** 5×5, each in **French, English and Italian**. Listed under *Start from a template* in the onboarding block (the file matching the current interface language is loaded); opening one (from there, or via *Load…*) starts a new, **unlinked** analysis. You can also turn the current analysis into a template with **File › Save as template…**, and return to the onboarding block with **File › Home screen**. |
 
@@ -87,6 +87,24 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 1. [Open the app online](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — or open [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) from a local copy, in a recent browser.
 2. The tool starts on a **blank analysis**, opened on the **Overview** tab.
 3. Use **Load…** to open a `.rae.json` file (e.g. from [`examples/`](examples/)), **Save** to export yours.
+
+---
+
+## Browser support
+
+**Prerequisites**: a recent desktop browser (evergreen version) with JavaScript enabled — nothing else. No server, no network access and no installation are required; the app runs from a simple `file://` double-click. Only **Load by URL** (`?file=…`) needs the tool to be served over HTTP(S).
+
+Development and testing are done primarily with **Microsoft Edge (Chromium)**; any Chromium-based browser (Chrome, Edge, Opera, Brave…) offers the full experience. Known differences with other engines:
+
+- **Firefox / Safari** — the File System Access API (`showSaveFilePicker`) is not available: *Save* falls back to a standard **download** of the `.rae.json` file (and *Load* to a classic file picker) instead of writing directly into the opened file. Everything else works identically.
+- **Older Firefox (< 127)** — copying a matrix to the clipboard **as an image** (`ClipboardItem`) is not supported; the PNG and SVG download buttons remain available.
+- **Touch devices** — drag-and-drop interactions (chips, kanban, column headers) target mouse usage; keyboard and menu alternatives exist (Ctrl+arrows in the kanban and matrices, ▲/▼ arrows in the column menu), but the tool is designed for desktop use.
+
+---
+
+## Credits
+
+RAE embeds exactly **one third-party library**: [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (MIT license, © Arjun Barrett), a tiny, fast ZIP/deflate implementation. It provides the ZIP container required by the Word (`.docx`) and Excel (`.xlsx`) exports — OOXML files being ZIP archives of XML parts. The library is **vendored inline** in the HTML file, with its license notice, so the app keeps working fully offline with no external dependency. Everything else (Markdown engine, SVG/PNG export, OOXML generation, UI components) is written from scratch for this project.
 
 ---
 
