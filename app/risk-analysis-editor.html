@@ -638,10 +638,12 @@
       <span data-i18n="menu_file">Fichier</span> <span aria-hidden="true">▾</span></button>
     <div class="menu" id="fileMenu" role="menu" data-i18n-label="menu_file">
       <button type="button" role="menuitem" id="miNew"><span data-i18n="btn_new">Nouveau</span></button>
+      <button type="button" role="menuitem" id="miHome"><span data-i18n="menu_home">Écran d'accueil</span></button>
       <button type="button" role="menuitem" id="miOpen"><span data-i18n="btn_load">Charger…</span><span class="kbd">Ctrl+O</span></button>
       <hr>
       <button type="button" role="menuitem" id="miSave"><span data-i18n="btn_save">Enregistrer</span><span class="kbd">Ctrl+S</span></button>
       <button type="button" role="menuitem" id="miSaveAs"><span data-i18n="btn_save_as">Enregistrer sous…</span><span class="kbd">Ctrl+Maj+S</span></button>
+      <button type="button" role="menuitem" id="miSaveTemplate"><span data-i18n="menu_save_template">Enregistrer comme modèle…</span></button>
       <hr>
       <button type="button" role="menuitem" id="miAbout"><span data-i18n="about_title">À propos</span></button>
     </div>
@@ -1198,6 +1200,7 @@ const I18N = {
     start_step4:"Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.",
     start_demo_failed:"Démonstration non accessible depuis ce mode d'ouverture. Utilisez « Charger un fichier .rae.json » et choisissez {0} dans le dossier examples/.",
     start_templates_title:"Démarrer d'un modèle", toast_template_new:"Nouvelle analyse créée à partir d'un modèle.",
+    menu_home:"Écran d'accueil", menu_save_template:"Enregistrer comme modèle…", toast_template_saved:"Modèle enregistré : {0}",
     start_template_failed:"Modèle non accessible depuis ce mode d'ouverture. Servez l'application via un serveur (http://) pour charger « {0} ».",
     start_locked:"Choisissez d'abord comment commencer ci-dessus.",
     covered_risks_title:"Risques couverts",
@@ -1440,6 +1443,7 @@ const I18N = {
     start_step4:"Read the matrices, follow the Action plan, print the Report.",
     start_demo_failed:"The demonstration cannot be reached in this opening mode. Use “Load a .rae.json file” and pick {0} from the examples/ folder.",
     start_templates_title:"Start from a template", toast_template_new:"New analysis created from a template.",
+    menu_home:"Home screen", menu_save_template:"Save as template…", toast_template_saved:"Template saved: {0}",
     start_template_failed:"Template not reachable in this opening mode. Serve the app over http:// to load \"{0}\".",
     start_locked:"First choose how to start above.",
     covered_risks_title:"Covered risks",
@@ -1680,6 +1684,7 @@ const I18N = {
     start_step4:"Leggi le matrici, segui il Piano d'azione, stampa il Rapporto.",
     start_demo_failed:"Dimostrazione non raggiungibile in questa modalità di apertura. Usa «Carica un file .rae.json» e scegli {0} nella cartella examples/.",
     start_templates_title:"Inizia da un modello", toast_template_new:"Nuova analisi creata da un modello.",
+    menu_home:"Schermata iniziale", menu_save_template:"Salva come modello…", toast_template_saved:"Modello salvato: {0}",
     start_template_failed:"Modello non raggiungibile in questa modalità. Servi l'app tramite http:// per caricare «{0}».",
     start_locked:"Scegli prima come iniziare qui sopra.",
     covered_risks_title:"Rischi coperti",
@@ -2280,6 +2285,39 @@ function newAnalysis(){
     autosaveClear();renderAll();goToPresentation();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
 }
+/* Retour à l'écran d'accueil : comme « Nouveau », mais on RÉAFFICHE le bloc d'amorçage
+   (startDismissed=false) au lieu de le masquer. Utile pour revenir aux modèles après coup. */
+function backToStart(){
+  const go=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
+    dirty=false;isFresh=true;startDismissed=false;
+    cfFilterReset();cfFilterSyncURL();autosaveClear();renderAll();goToPresentation();};
+  if(dirty)confirmModal(t("confirm_new"),go); else go();
+}
+/* Enregistrer comme modèle : produit un fichier .template.rae.json — squelette reprenant la
+   grille et les champs personnalisés de l'analyse courante, mais sans risque ni mesure, et
+   marqué metadata.kind="template". Opération NON destructive : l'analyse en cours et son
+   éventuel fichier relié ne sont pas touchés (c'est un export, pas un enregistrement). */
+function templateBlob(){
+  const src=JSON.parse(JSON.stringify(analyse));   // copie profonde, on ne modifie pas l'analyse
+  const meta=Object.assign({},src.metadata||{},{kind:"template",updated_at:today(),language:lang});
+  const tpl={format:src.format||"risk-analysis-editor",version:src.version||"1.0",
+    metadata:meta, grid:src.grid, custom_fields:src.custom_fields||[],
+    custom:{}, risks:[], measures:[], treatments:[]};
+  return new Blob([JSON.stringify(tpl,null,2)],{type:"application/vnd.rae+json"});
+}
+function templateFileName(){return (slug(analyse.metadata&&analyse.metadata.title)||"modele")+".template.rae.json";}
+async function saveAsTemplate(){
+  const blob=templateBlob(), name=templateFileName();
+  if(FS_OK&&window.showSaveFilePicker){
+    let h;
+    try{h=await window.showSaveFilePicker(pickerOpts({suggestedName:name,types:RAE_TYPES}));}
+    catch(e){return;}   // annulation
+    try{await writeTo(h,blob);toast(t("toast_template_saved",h.name));}
+    catch(ex){alertModal(t("err_write",ex.message));}
+  }else{
+    downloadBlob(blob,name);toast(t("toast_template_saved",name));
+  }
+}
 /* Remplacer l'analyse en cours fait perdre les modifications non enregistrées : on demande
    confirmation, comme le fait Fichier > Nouveau avec sa propre formulation. Placé au plus
    près de l'action plutôt que sur chaque appelant, pour qu'aucun point d'entrée ne l'oublie. */
@@ -2297,22 +2335,37 @@ async function openFilePicker(){
   catch(e){return;}  // annulation utilisateur
   try{
     const f=await h.getFile();
-    if(applyLoadedData(JSON.parse(await f.text()),f.name,false)){fileHandle=h;refreshFileState();toast(t("toast_loaded"));}
+    if(applyLoadedData(JSON.parse(await f.text()),f.name,false)){
+      if(!lastLoadWasTemplate)fileHandle=h;   // un modèle démarre une nouvelle analyse non reliée
+      refreshFileState();toast(lastLoadWasTemplate?t("toast_template_new"):t("toast_loaded"));}
   }catch(ex){alertModal(t("err_read_file",ex.message));}
 }
 document.getElementById("miNew").addEventListener("click",()=>{closeMenu();presGuard(newAnalysis);});
+document.getElementById("miHome").addEventListener("click",()=>{closeMenu();presGuard(backToStart);});
 document.getElementById("miOpen").addEventListener("click",()=>{closeMenu();presGuard(openFile);});
 document.getElementById("miSave").addEventListener("click",()=>{closeMenu();presGuard(saveToFile);});
 document.getElementById("miSaveAs").addEventListener("click",()=>{closeMenu();presGuard(saveFileAs);});
+document.getElementById("miSaveTemplate").addEventListener("click",()=>{closeMenu();presGuard(saveAsTemplate);});
 document.getElementById("miAbout").addEventListener("click",()=>closeMenu());  // l'ouverture est câblée plus bas
 /* Le modèle interne ET le fichier .rae.json partagent les mêmes clés anglaises :
    aucune conversion. Charger = JSON.parse, enregistrer = JSON.stringify. */
 
+/* Le dernier chargement portait-il un modèle ? Les appelants s'en servent pour ne pas relier
+   le fichier : un modèle ouvert, quel que soit le chemin (Charger…, dépôt, URL), démarre une
+   NOUVELLE analyse non reliée. */
+let lastLoadWasTemplate=false;
 // Applique un objet JSON (.rae.json, clés anglaises) comme analyse courante.
 function applyLoadedData(data,name,withQuery){
   const err=validateStructure(data);
   if(err){alertModal(t("err_invalid_file",err));return false;}
-  analyse=normalize(data);currentFileName=name||null;dirty=false;isFresh=false;
+  /* Modèle méthodologique : on retire le marqueur, on ne relie pas le fichier et on repart
+     d'une « nouvelle analyse » — comme depuis le bloc d'amorçage. */
+  lastLoadWasTemplate=!!(data&&data.metadata&&data.metadata.kind==="template");
+  if(lastLoadWasTemplate&&data.metadata)delete data.metadata.kind;
+  analyse=normalize(data);
+  currentFileName=lastLoadWasTemplate?null:(name||null);
+  if(lastLoadWasTemplate)fileHandle=null;
+  dirty=false;isFresh=false;
   startDismissed=true;   // un chargement explicite vaut prise en main
   /* Les filtres portent sur les champs de l'analyse précédente : les conserver masquerait
      des fiches sans raison visible. On repart à zéro, puis on applique ceux de l'adresse
@@ -2342,7 +2395,7 @@ document.getElementById("fileInput").addEventListener("change",e=>{
   const rd=new FileReader();
   rd.onload=()=>{
     try{
-      if(applyLoadedData(JSON.parse(rd.result),f.name,false))toast(t("toast_loaded"));
+      if(applyLoadedData(JSON.parse(rd.result),f.name,false))toast(lastLoadWasTemplate?t("toast_template_new"):t("toast_loaded"));
     }catch(ex){alertModal(t("err_read_file",ex.message));}
   };
   rd.readAsText(f);
@@ -2395,8 +2448,9 @@ document.getElementById("fileInput").addEventListener("change",e=>{
       try{
         if(!applyLoadedData(JSON.parse(await f.text()),f.name,false))return;
         let h=null;try{h=await pHandle;}catch(_){}
-        if(h&&h.kind==="file"){fileHandle=h;refreshFileState();}
-        toast(t("toast_loaded"));
+        // Un modèle déposé démarre une nouvelle analyse : on ne relie pas le fichier.
+        if(!lastLoadWasTemplate&&h&&h.kind==="file"){fileHandle=h;refreshFileState();}
+        toast(lastLoadWasTemplate?t("toast_template_new"):t("toast_loaded"));
       }catch(ex){alertModal(t("err_read_file",ex.message));}
     }));
   });
@@ -6404,6 +6458,8 @@ function openMenu(){
   // du téléchargement, déjà couvert par « Enregistrer ». Grisé aussi pendant l'amorçage.
   document.getElementById("miSaveAs").disabled=!FS_OK||startLocked();
   document.getElementById("miSave").disabled=startLocked();
+  // « Enregistrer comme modèle » : rien à exporter tant que l'amorçage est affiché.
+  document.getElementById("miSaveTemplate").disabled=startLocked();
   m.classList.add("open");b.setAttribute("aria-expanded","true");
   const it=menuItems();if(it.length)it[0].focus();
 }
@@ -6463,17 +6519,14 @@ const TEMPLATES=[
    desc:{fr:"Probabilité × impact 5×5, sans champ imposé.",en:"Probability × impact 5×5, no imposed field.",it:"Probabilità × impatto 5×5, senza campi imposti."}}
 ];
 const tplText=(o)=>(o&&(o[lang]||o.fr))||"";
-/* Ouverture d'un modèle : chargé comme une NOUVELLE analyse. On ne relie pas le fichier
-   (fileHandle et currentFileName restent nuls → « Enregistrer » proposera « Enregistrer
-   sous… ») et on retire le marqueur, pour que l'analyse enregistrée ne soit pas un modèle. */
+/* Ouverture d'un modèle : applyLoadedData reconnaît le marqueur metadata.kind="template",
+   le retire, ne relie pas le fichier et démarre une nouvelle analyse. */
 async function openTemplate(file){
   const note=document.getElementById("startNote");if(note)note.textContent="";
   try{
     const resp=await fetch("../templates/"+file,{cache:"no-store"});
     if(!resp.ok)throw new Error("HTTP "+resp.status);
-    const data=JSON.parse(await resp.text());
-    if(data&&data.metadata)delete data.metadata.kind;
-    if(applyLoadedData(data,null,false)){fileHandle=null;refreshFileState();toast(t("toast_template_new"));}
+    if(applyLoadedData(JSON.parse(await resp.text()),null,false)){refreshFileState();toast(t("toast_template_new"));}
   }catch(ex){
     if(note)note.textContent=t("start_template_failed",file);
     else alertModal(t("start_template_failed",file));
