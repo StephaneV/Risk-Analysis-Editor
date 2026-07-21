@@ -683,7 +683,6 @@
       </div>
       <div class="filterbar">
         <input type="search" id="fltRiskQ" data-i18n-label="flt_search_risks" data-i18n-ph="flt_search" placeholder="Rechercher…">
-        <select id="fltRiskCat" data-i18n-label="flt_by_category"></select>
       </div>
       <div class="table-scroll"><table id="risksTableEl">
         <caption class="sr-only" data-i18n="risks_title">Registre des risques</caption>
@@ -715,8 +714,6 @@
       </div>
       <div class="filterbar">
         <input type="search" id="fltMeasureQ" data-i18n-label="flt_search_measures" data-i18n-ph="flt_search" placeholder="Rechercher…">
-        <select id="fltMeasureType" data-i18n-label="flt_by_type"></select>
-        <select id="fltMeasureStatus" data-i18n-label="flt_by_status"></select>
       </div>
       <div class="table-scroll"><table id="measuresTableEl">
         <caption class="sr-only" data-i18n="measures_title">Mesures de maîtrise</caption>
@@ -752,9 +749,6 @@
       </div>
       <div class="filterbar">
         <input type="search" id="fltPlanQ" data-i18n-label="flt_search_measures" data-i18n-ph="flt_search" placeholder="Rechercher…">
-        <select id="fltPlanStatus" data-i18n-label="flt_by_status"></select>
-        <select id="fltPlanResp" data-i18n-label="flt_by_responsible"></select>
-        <label class="chk"><input type="checkbox" id="fltPlanOverdue"> <span data-i18n="flt_overdue">En retard uniquement</span></label>
       </div>
       <div id="planArea"></div>
     </div>
@@ -1221,6 +1215,7 @@ const I18N = {
     plan_empty:"Aucune mesure. Ajoutez des mesures dans l'onglet « Mesures ».",
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
+    flt_overdue_field:"En retard",
     flt_none:"Aucun résultat pour ce filtre.",
     flt_by_field:"Filtrer par « {0} »", flt_field_all:"{0} : tout", flt_clear:"Réinitialiser les filtres", flt_all:"Tout", flt_clear_one:"Retirer ce filtre",
     cf_section:"Champs personnalisés", cf_caption:"Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.",
@@ -1458,6 +1453,7 @@ const I18N = {
     plan_empty:"No measure. Add measures in the “Measures” tab.",
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
+    flt_overdue_field:"Overdue",
     flt_none:"No result for this filter.",
     flt_by_field:"Filter by \"{0}\"", flt_field_all:"{0}: all", flt_clear:"Clear filters", flt_all:"All", flt_clear_one:"Remove this filter",
     cf_section:"Custom fields", cf_caption:"Define extra fields attached to the analysis, risks or measures.",
@@ -1695,6 +1691,7 @@ const I18N = {
     plan_empty:"Nessuna misura. Aggiungi misure nella scheda « Misure ».",
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
+    flt_overdue_field:"In ritardo",
     flt_none:"Nessun risultato per questo filtro.",
     flt_by_field:"Filtra per « {0} »", flt_field_all:"{0} : tutto", flt_clear:"Azzera i filtri", flt_all:"Tutto", flt_clear_one:"Rimuovi questo filtro",
     cf_section:"Campi personalizzati", cf_caption:"Definisci campi aggiuntivi associati all'analisi, ai rischi o alle misure.",
@@ -3977,7 +3974,9 @@ function filteredPlanMeasures(){
   return visibleMeasures().filter(m=>{
     if(st.status && (m.status||"")!==st.status)return false;
     if(st.resp && (m.responsible||"")!==st.resp)return false;
-    if(st.overdue && !isOverdue(m))return false;
+    // « En retard » est désormais un filtre à trois états : tout / en retard / pas en retard.
+    if(st.overdue==="true" && !isOverdue(m))return false;
+    if(st.overdue==="false" && isOverdue(m))return false;
     if(q && normV([m.id,m.label,m.responsible].join(" ")).indexOf(q)<0)return false;
     return true;});
 }
@@ -4019,10 +4018,7 @@ function renderPlanResponsible(area,ms){
 }
 function renderPlan(){
   const area=document.getElementById("planArea");if(!area)return;
-  const st=listState.plan, allM=visibleMeasures();
-  fillSelect(document.getElementById("fltPlanStatus"),STATUS_CODES.filter(c=>allM.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),t("flt_status_all"),st.status);
-  fillSelect(document.getElementById("fltPlanResp"),Array.from(new Set(allM.map(m=>m.responsible).filter(Boolean))).sort((a,b)=>a.localeCompare(b)).map(r=>[r,r]),t("flt_resp_all"),st.resp);
-  const cb=document.getElementById("fltPlanOverdue");if(cb)cb.checked=st.overdue;
+  const st=listState.plan, allM=visibleMeasures();   // statuts et responsables : puces de la barre
   if(!allM.length){document.getElementById("planSummary").innerHTML="";
     setFilterCount("plan",0,analyse.measures.length);
     area.innerHTML='<div class="empty">'+esc(t(analyse.measures.length?"flt_none":"plan_empty"))+'</div>';return;}
@@ -4080,7 +4076,7 @@ document.getElementById("planSeg").addEventListener("click",e=>{const b=e.target
 const listState={
   risks:{q:"",cat:"",sort:"",dir:1},
   measures:{q:"",type:"",status:"",sort:"",dir:1},
-  plan:{q:"",status:"",resp:"",overdue:false},
+  plan:{q:"",status:"",resp:"",overdue:""},   // overdue : "" | "true" | "false"
   links:{sort:"rid",dir:1} // défaut : code risque puis code mesure
 };
 /* ============================================================
@@ -4178,19 +4174,43 @@ function visibleTreatments(){return cfVisibleSets().links;}
    sur le registre des risques comme sur les statistiques : le proposer là où il produit un
    effet, c'est le proposer partout. Seuls les contrôles natifs (recherche, catégorie…)
    restent propres à leur vue. */
+/* Filtres « natifs » (catégorie, type, statut, responsable, en retard) : autrefois des
+   <select> et une case à cocher, désormais servis par la MÊME puce à menu que les champs
+   personnalisés. Chaque descripteur sait lire et écrire son état (dans listState) et
+   fournir ses options ; leur affichage est mutualisé avec les champs perso.
+   La recherche reste une simple zone de saisie, propre à chaque barre. */
+function natSelect(key,label,options,get,set){
+  return {key,label:label(),kind:"select",native:true,color:()=>null,
+    options,value:get,set};
+}
+function natBool(key,label,get,set){
+  return {key,label:label(),kind:"bool",native:true,color:()=>null,
+    options:()=>[["true",t("cf_yes")],["false",t("cf_no")]],value:get,set};
+}
 const FILTER_BARS=[
-  {cle:"risks",    vue:"view-risks",    panneau:null,
-   natifs:["fltRiskQ","fltRiskCat"]},
-  {cle:"measures", vue:"view-measures", panneau:null,
-   natifs:["fltMeasureQ","fltMeasureType","fltMeasureStatus"]},
-  {cle:"plan",     vue:"view-plan",     panneau:null,
-   natifs:["fltPlanQ","fltPlanStatus","fltPlanResp","fltPlanOverdue"]},
-  {cle:"matrices", vue:"view-matrices", panneau:null,
-   natifs:[]},
-  {cle:"cross",    vue:"view-links",    panneau:'[data-lmode="grid"]',
-   natifs:[]},
-  {cle:"details",  vue:"view-links",    panneau:'[data-lmode="details"]',
-   natifs:["fltLinkQ"]}
+  {cle:"risks", vue:"view-risks", panneau:null, search:"fltRiskQ", natives:()=>[
+    natSelect("fltRiskCat",()=>t("f_category"),
+      ()=>[...new Set(analyse.risks.map(r=>r.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(c=>[c,c]),
+      ()=>listState.risks.cat, v=>listState.risks.cat=v)]},
+  {cle:"measures", vue:"view-measures", panneau:null, search:"fltMeasureQ", natives:()=>[
+    natSelect("fltMeasureType",()=>t("th_type"),
+      ()=>[...new Set(analyse.measures.map(m=>m.type).filter(Boolean))].sort().map(c=>[c,typeLabel(c)]),
+      ()=>listState.measures.type, v=>listState.measures.type=v),
+    natSelect("fltMeasureStatus",()=>t("th_status"),
+      ()=>STATUS_CODES.filter(c=>analyse.measures.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),
+      ()=>listState.measures.status, v=>listState.measures.status=v)]},
+  {cle:"plan", vue:"view-plan", panneau:null, search:"fltPlanQ", natives:()=>[
+    natSelect("fltPlanStatus",()=>t("th_status"),
+      ()=>STATUS_CODES.filter(c=>analyse.measures.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),
+      ()=>listState.plan.status, v=>listState.plan.status=v),
+    natSelect("fltPlanResp",()=>t("th_responsible"),
+      ()=>[...new Set(analyse.measures.map(m=>m.responsible).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(r=>[r,r]),
+      ()=>listState.plan.resp, v=>listState.plan.resp=v),
+    natBool("fltPlanOverdue",()=>t("flt_overdue_field"),
+      ()=>listState.plan.overdue||"", v=>listState.plan.overdue=v)]},
+  {cle:"matrices", vue:"view-matrices", panneau:null, search:null, natives:()=>[]},
+  {cle:"cross", vue:"view-links", panneau:'[data-lmode="grid"]', search:null, natives:()=>[]},
+  {cle:"details", vue:"view-links", panneau:'[data-lmode="details"]', search:"fltLinkQ", natives:()=>[]}
 ];
 /* Tous les champs filtrables, dans un ordre stable (risque, puis mesure, puis lien). */
 function cfAllFilterableFields(){
@@ -4201,25 +4221,37 @@ function filterBarDef(cle){return FILTER_BARS.filter(b=>b.cle===cle)[0];}
 
 /* ---- Puce de filtre à menu déroulant ----
    Remplace le <select> natif, dont le texte long était coupé net. La puce montre le nom du
-   champ tronqué puis la valeur ; le menu déroulant affiche les libellés en entier. */
+   champ tronqué puis la valeur ; le menu déroulant affiche les libellés en entier.
+   Sert AUSSI bien aux champs personnalisés qu'aux filtres natifs (catégorie, statut…) :
+   chacun est décrit par un « descripteur » — value()/set()/options()/color() — et enregistré
+   dans CHIP_REG, que les gestionnaires d'évènements consultent au moment du clic. */
 function cfChoiceColor(f,v){
   if(f.type!=="tags")return null;
   const it=(f.items||[]).find(x=>x.code===v);
   return (it&&it.color)||null;
 }
-function cfChipHTML(f,bcle){
-  const v=cfFilters[f.code]||"";
-  const menuId="fmenu-"+esc(bcle)+"-"+esc(f.code);
-  const nom=cfLabel(f);
+/* Descripteur d'un champ personnalisé filtrable, au même format que les filtres natifs. */
+function cfDescriptor(f){
+  return {key:f.code,label:cfLabel(f),kind:f.type==="boolean"?"bool":"select",
+    options:()=>cfFilterChoices(f),color:v=>cfChoiceColor(f,v),
+    value:()=>cfFilters[f.code]||"",
+    set:v=>{if(v)cfFilters[f.code]=v;else delete cfFilters[f.code];cfFilterSyncURL();}};
+}
+let CHIP_REG={};   // reconstruit à chaque renderFilterBars ; consulté au clic
+function filterChipHTML(d,bcle){
+  CHIP_REG[d.key]=d;
+  const v=d.value()||"";
+  const menuId="fmenu-"+esc(bcle)+"-"+esc(d.key);
+  const nom=d.label, opts=d.options();
   let chip;
   if(!v){
-    chip='<button type="button" class="fchip" data-cf-chip="'+esc(f.code)+'"'+
+    chip='<button type="button" class="fchip" data-chip="'+esc(d.key)+'"'+
       ' aria-haspopup="listbox" aria-expanded="false" aria-controls="'+menuId+'"'+
       ' aria-label="'+esc(t("flt_by_field",nom))+'">'+
       '<span class="fchip-cap">'+esc(nom)+'</span><span class="fchip-caret" aria-hidden="true">▾</span></button>';
   }else{
-    const pair=cfFilterChoices(f).find(c=>c[0]===v), val=pair?pair[1]:v, col=cfChoiceColor(f,v);
-    chip='<button type="button" class="fchip on" data-cf-chip="'+esc(f.code)+'"'+
+    const pair=opts.find(c=>c[0]===v), val=pair?pair[1]:v, col=d.color(v);
+    chip='<button type="button" class="fchip on" data-chip="'+esc(d.key)+'"'+
       ' aria-haspopup="listbox" aria-expanded="false" aria-controls="'+menuId+'"'+
       ' title="'+esc(nom+" : "+val)+'" aria-label="'+esc(t("flt_by_field",nom)+" : "+val)+'">'+
       (col?'<span class="fchip-dot" style="background:'+esc(col)+'"></span>':'')+
@@ -4227,17 +4259,17 @@ function cfChipHTML(f,bcle){
       '<span class="fchip-val">'+esc(val)+'</span>'+
       '<span class="fchip-clear" data-cf-clear title="'+esc(t("flt_clear_one"))+'" aria-label="'+esc(t("flt_clear_one"))+'">✕</span></button>';
   }
-  let opts='<div class="fopt fopt-all" role="option" id="'+menuId+'-o0" data-cf-opt="'+esc(f.code)+'" data-val=""'+
+  let ol='<div class="fopt fopt-all" role="option" id="'+menuId+'-o0" data-chip="'+esc(d.key)+'" data-val=""'+
     ' aria-selected="'+(!v)+'"><span class="fopt-lbl">'+esc(t("flt_all"))+'</span></div>';
-  cfFilterChoices(f).forEach((c,i)=>{
-    const col=cfChoiceColor(f,c[0]);
-    opts+='<div class="fopt" role="option" id="'+menuId+'-o'+(i+1)+'" data-cf-opt="'+esc(f.code)+'" data-val="'+esc(c[0])+'"'+
+  opts.forEach((c,i)=>{
+    const col=d.color(c[0]);
+    ol+='<div class="fopt" role="option" id="'+menuId+'-o'+(i+1)+'" data-chip="'+esc(d.key)+'" data-val="'+esc(c[0])+'"'+
       ' aria-selected="'+(c[0]===v)+'">'+
       (col?'<span class="fopt-dot" style="background:'+esc(col)+'"></span>':'')+
       '<span class="fopt-lbl">'+esc(c[1])+'</span></div>';
   });
   const menu='<div class="fmenu" id="'+menuId+'" role="listbox" aria-label="'+esc(nom)+'" hidden>'+
-    '<div class="fmenu-head">'+esc(nom)+'</div>'+opts+'</div>';
+    '<div class="fmenu-head">'+esc(nom)+'</div>'+ol+'</div>';
   return '<span class="fwrap">'+chip+menu+'</span>';
 }
 /* Un seul menu ouvert à la fois. */
@@ -4265,13 +4297,15 @@ function cfOpenMenu(chip){
   let i=opts.findIndex(o=>o.getAttribute("aria-selected")==="true");if(i<0)i=0;
   cfPointMenu(chip,menu,i);
 }
-function cfChooseOpt(opt){
-  const code=opt.dataset.cfOpt, val=opt.dataset.val;
-  const viewId=(opt.closest(".view")||{}).id;
-  if(val)cfFilters[code]=val;else delete cfFilters[code];
-  cfFilterSyncURL();renderAll();   // renderAll reconstruit (et referme) toutes les barres
+/* Applique une valeur à la puce d'une clé donnée (choix ou retrait), quel que soit son type
+   — champ perso ou filtre natif : le descripteur enregistré sait où écrire. */
+function chipSet(key,val,origin){
+  const d=CHIP_REG[key];if(!d)return;
+  const viewId=(origin&&origin.closest(".view")||{}).id;
+  d.set(val);
+  renderAll();   // reconstruit (et referme) toutes les barres
   // Le focus était sur la puce détruite par le redessin : on le rend à la puce refaite.
-  if(viewId){const c=document.querySelector("#"+viewId+' .fchip[data-cf-chip="'+code+'"]');if(c)c.focus();}
+  if(viewId){const c=document.querySelector("#"+viewId+' .fchip[data-chip="'+key+'"]');if(c)c.focus();}
 }
 /* Conteneur de la barre : celui du gabarit s'il existe, créé sinon (matrices, tableau
    croisé). Placé au-dessus du contenu qu'il restreint. */
@@ -4288,28 +4322,26 @@ function filterBarHost(b){
   }
   return host;
 }
-/* Un contrôle natif est-il actif ? Une case à cocher l'est si elle est cochée, les autres
-   si elles portent une valeur. */
-function natifActif(id){
-  const el=document.getElementById(id);if(!el)return false;
-  return el.type==="checkbox"?!!el.checked:!!(el.value||"").trim();
+/* La recherche d'une barre est-elle active ? (la seule commande restée « native ».) */
+function searchActive(b){
+  if(!b.search)return false;
+  const el=document.getElementById(b.search);
+  return !!(el&&(el.value||"").trim());
 }
-/* Les critères se propageant le long des liens, un filtre posé sur n'importe quelle famille
-   restreint toutes les vues : l'état « filtré » est donc global, et non propre à la barre. */
-function barreActive(b){return b.natifs.some(natifActif)||cfFilterCount()>0;}
-/* Réinitialisation : les contrôles natifs de cette barre, et TOUS les champs personnalisés.
-   Se limiter aux cibles de la barre laisserait en place un filtre d'une autre famille qui,
-   par propagation, continuerait de masquer des fiches ici — un bouton « réinitialiser » qui
-   ne rétablit pas tout serait pire que pas de bouton. */
+/* Les critères personnalisés se propageant le long des liens, un filtre posé sur n'importe
+   quelle famille restreint toutes les vues ; s'y ajoutent la recherche et les filtres natifs
+   propres à la barre (catégorie, statut…). */
+function barreActive(b){
+  return searchActive(b)||b.natives().some(d=>d.value())||cfFilterCount()>0;
+}
+/* Réinitialisation : la recherche et les filtres natifs de cette barre, et TOUS les champs
+   personnalisés. Se limiter aux filtres de la barre laisserait en place un filtre d'une autre
+   famille qui, par propagation, continuerait de masquer des fiches ici. */
 function filterBarReset(cle){
   const b=filterBarDef(cle);if(!b)return;
-  /* L'évènement doit être celui que le contrôle écoute : « change » pour une liste
-     déroulante ou une case à cocher, « input » pour une zone de saisie. Se tromper vide le
-     contrôle à l'écran sans toucher l'état interne, que le rendu suivant restaure. */
-  b.natifs.forEach(id=>{const el=document.getElementById(id);if(!el)return;
-    const change=(el.tagName==="SELECT"||el.type==="checkbox");
-    if(el.type==="checkbox")el.checked=false;else el.value="";
-    el.dispatchEvent(new Event(change?"change":"input",{bubbles:true}));});
+  if(b.search){const el=document.getElementById(b.search);
+    if(el&&el.value){el.value="";el.dispatchEvent(new Event("input",{bubbles:true}));}}
+  b.natives().forEach(d=>d.set(""));
   cfFilterReset();
   cfFilterSyncURL();renderAll();
 }
@@ -4340,15 +4372,17 @@ function renderFilterBars(){
   // L'adresse ne doit pas conserver un filtre qui ne s'applique plus.
   if(purge)cfFilterSyncURL();
 
-  const champs=cfAllFilterableFields();   // les mêmes dans toutes les barres
+  CHIP_REG={};                            // registre reconstruit à chaque rendu
+  const champs=cfAllFilterableFields().map(cfDescriptor);   // les mêmes dans toutes les barres
   FILTER_BARS.forEach(b=>{
     const host=filterBarHost(b);if(!host)return;
-    /* Les contrôles natifs viennent du gabarit : on ne réécrit que nos propres éléments,
-       repérés par attribut, et on les crée une fois pour toutes à la bonne place. */
+    /* La recherche vient du gabarit ; on ne réécrit que notre propre zone (puces natives puis
+       puces de champs perso), créée une fois pour toutes juste après la recherche. */
     let zone=host.querySelector("[data-flt-cf]");
     if(!zone){zone=document.createElement("span");zone.setAttribute("data-flt-cf","");
       zone.style.display="contents";host.appendChild(zone);}
-    zone.innerHTML=champs.map(f=>cfChipHTML(f,b.cle)).join("");
+    const natives=b.natives();
+    zone.innerHTML=natives.concat(champs).map(d=>filterChipHTML(d,b.cle)).join("");
     let cnt=host.querySelector("[data-flt-count]");
     if(!cnt){cnt=document.createElement("span");cnt.className="flt-count";
       cnt.setAttribute("data-flt-count","");host.appendChild(cnt);}
@@ -4356,9 +4390,9 @@ function renderFilterBars(){
     if(!btn){btn=document.createElement("button");btn.type="button";btn.className="btn ghost sm";
       btn.setAttribute("data-flt-reset",b.cle);host.appendChild(btn);}
     btn.textContent=t("flt_clear");btn.dataset.fltReset=b.cle;
-    // Une barre sans aucun contrôle (matrices ou tableau croisé sans champ filtrable)
-    // n'a pas lieu d'occuper de la place.
-    host.hidden=!b.natifs.length&&!champs.length;
+    // Une barre sans recherche, sans filtre natif ni champ filtrable (matrices, tableau
+    // croisé sans champ perso) n'a pas lieu d'occuper de la place.
+    host.hidden=!b.search&&!natives.length&&!champs.length;
     setFilterInfo(b.cle,cnt.textContent);
   });
 }
@@ -4371,16 +4405,15 @@ document.addEventListener("click",e=>{
    reconstruites à chaque renderAll, mais ces écouteurs, posés sur document, survivent. */
 document.addEventListener("click",e=>{
   const clr=e.target.closest&&e.target.closest("[data-cf-clear]");
-  if(clr){const chip=clr.closest(".fchip"),code=chip&&chip.dataset.cfChip;
-    if(code){delete cfFilters[code];cfFilterSyncURL();renderAll();}return;}
-  const opt=e.target.closest&&e.target.closest(".fopt[data-cf-opt]");
-  if(opt){cfChooseOpt(opt);return;}
-  const chip=e.target.closest&&e.target.closest(".fchip[data-cf-chip]");
+  if(clr){const chip=clr.closest(".fchip");if(chip)chipSet(chip.dataset.chip,"",chip);return;}
+  const opt=e.target.closest&&e.target.closest(".fopt[data-chip]");
+  if(opt){chipSet(opt.dataset.chip,opt.dataset.val,opt);return;}
+  const chip=e.target.closest&&e.target.closest(".fchip[data-chip]");
   if(chip){const menu=document.getElementById(chip.getAttribute("aria-controls"));
     if(menu&&menu.hidden)cfOpenMenu(chip);else cfCloseMenus();}
 });
 document.addEventListener("keydown",e=>{
-  const chip=e.target.closest&&e.target.closest(".fchip[data-cf-chip]");if(!chip)return;
+  const chip=e.target.closest&&e.target.closest(".fchip[data-chip]");if(!chip)return;
   const menu=document.getElementById(chip.getAttribute("aria-controls"));if(!menu)return;
   const ouvert=!menu.hidden, i=+menu.dataset.idx||0;
   if(e.key==="ArrowDown"){e.preventDefault();if(ouvert)cfPointMenu(chip,menu,i+1);else cfOpenMenu(chip);}
@@ -4388,7 +4421,7 @@ document.addEventListener("keydown",e=>{
   else if(e.key==="Home"){if(ouvert){e.preventDefault();cfPointMenu(chip,menu,0);}}
   else if(e.key==="End"){if(ouvert){e.preventDefault();cfPointMenu(chip,menu,menu.querySelectorAll(".fopt").length-1);}}
   else if(e.key==="Enter"||e.key===" "){
-    if(ouvert){e.preventDefault();const opt=menu.querySelectorAll(".fopt")[i];if(opt)cfChooseOpt(opt);}
+    if(ouvert){e.preventDefault();const opt=menu.querySelectorAll(".fopt")[i];if(opt)chipSet(opt.dataset.chip,opt.dataset.val,opt);}
     else{e.preventDefault();cfOpenMenu(chip);}}
   else if(e.key==="Escape"&&ouvert){e.preventDefault();e.stopPropagation();cfCloseMenus();chip.focus();}
 });
@@ -4475,10 +4508,7 @@ function renderRisks(){
   const st=listState.risks, tb=document.getElementById("risksTable");tb.innerHTML="";
   // Les filtres par champ perso s'appliquent avant les filtres propres à la vue : le
   // compteur « n sur N » compare alors ce qui est affiché à ce qui reste filtrable ici.
-  const all=visibleRisks();
-  fillSelect(document.getElementById("fltRiskCat"),
-    Array.from(new Set(all.map(r=>r.category).filter(Boolean))).sort((a,b)=>a.localeCompare(b)).map(c=>[c,c]),
-    t("flt_cat_all"), st.cat);
+  const all=visibleRisks();   // le filtre par catégorie est servi par une puce de la barre
   updateSortInd("risksTableEl",st);
   const q=normV(st.q);
   let list=all.filter(r=>{
@@ -4649,11 +4679,7 @@ function measurePill(id){
 const TYPES=["technical","organizational","preventive","detective","corrective","deterrent"];
 function renderMeasures(){
   const st=listState.measures, tb=document.getElementById("measuresTable");tb.innerHTML="";
-  const all=visibleMeasures();
-  fillSelect(document.getElementById("fltMeasureType"),
-    Array.from(new Set(all.map(m=>m.type).filter(Boolean))).sort().map(c=>[c,typeLabel(c)]), t("flt_type_all"), st.type);
-  fillSelect(document.getElementById("fltMeasureStatus"),
-    STATUS_CODES.filter(c=>all.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]), t("flt_status_all"), st.status);
+  const all=visibleMeasures();   // type et statut sont servis par des puces de la barre
   updateSortInd("measuresTableEl",st);
   const q=normV(st.q);
   let list=all.filter(m=>{
@@ -4685,16 +4711,12 @@ function renderMeasures(){
 document.getElementById("btnAddMeasure").addEventListener("click",()=>openMeasureModal(null));
 document.getElementById("btnImportMeasures").addEventListener("click",()=>openImportModal("measures"));
 /* ---------- Écouteurs filtres & tri ---------- */
+/* Seules les zones de RECHERCHE restent des contrôles natifs ; catégorie, type, statut,
+   responsable et « en retard » sont désormais des puces (cf. FILTER_BARS / chipSet). */
 function bindFilter(id,ev,fn){const el=document.getElementById(id);if(el)el.addEventListener(ev,fn);}
 bindFilter("fltRiskQ","input",e=>{listState.risks.q=e.target.value;renderRisks();});
-bindFilter("fltRiskCat","change",e=>{listState.risks.cat=e.target.value;renderRisks();});
 bindFilter("fltMeasureQ","input",e=>{listState.measures.q=e.target.value;renderMeasures();});
-bindFilter("fltMeasureType","change",e=>{listState.measures.type=e.target.value;renderMeasures();});
-bindFilter("fltMeasureStatus","change",e=>{listState.measures.status=e.target.value;renderMeasures();});
 bindFilter("fltPlanQ","input",e=>{listState.plan.q=e.target.value;renderPlan();});
-bindFilter("fltPlanStatus","change",e=>{listState.plan.status=e.target.value;renderPlan();});
-bindFilter("fltPlanResp","change",e=>{listState.plan.resp=e.target.value;renderPlan();});
-bindFilter("fltPlanOverdue","change",e=>{listState.plan.overdue=e.target.checked;renderPlan();});
 function bindSort(tableId,stKey,render){const el=document.getElementById(tableId);if(!el)return;
   el.addEventListener("click",e=>{const th=e.target.closest("th[data-sort]");if(!th)return;
     const st=listState[stKey],col=th.dataset.sort;if(st.sort===col)st.dir=-st.dir;else{st.sort=col;st.dir=1;}render();});}
