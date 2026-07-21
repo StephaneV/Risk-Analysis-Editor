@@ -2151,6 +2151,32 @@ function slug(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[�
   .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);}
 function cmpId(a,b){const na=parseInt(String(a.id).replace(/\D/g,""),10),nb=parseInt(String(b.id).replace(/\D/g,""),10);
   if(!isNaN(na)&&!isNaN(nb)&&na!==nb)return na-nb;return String(a.id).localeCompare(String(b.id));}
+/* ---------- Étiquette courte des pastilles de matrice ----------
+   Règle : si TOUS les identifiants respectent le format « Rx » (R majuscule suivi
+   de chiffres uniquement : R7, R12…), chaque pastille affiche le numéro de son
+   identifiant (R7 → 7 ; les trous sont tolérés : R1, R5, R9 → 1, 5, 9).
+   Sinon — dès qu'AU MOINS UN identifiant sort de ce format — on renumérote TOUS
+   les risques 1..N selon l'ordre de création (ordre du tableau analyse.risks),
+   indépendamment de l'identifiant : on évite ainsi d'afficher un code long et
+   illisible dans une pastille. L'infobulle conserve l'identifiant complet et le
+   libellé, donc l'identité du risque reste accessible au survol.
+   Le résultat est mémoïsé et invalidé dès que la liste des identifiants change. */
+let _chipLabelSig=null,_chipLabelMap=null;
+function chipLabelMap(){
+  const ids=analyse.risks.map(r=>String(r.id));
+  const sig=ids.join("");
+  if(sig===_chipLabelSig&&_chipLabelMap)return _chipLabelMap;
+  const allRx=ids.length>0&&ids.every(id=>/^R\d+$/.test(id));
+  const map={};
+  analyse.risks.forEach((r,i)=>{map[r.id]=allRx?String(r.id).replace(/^R/,""):String(i+1);});
+  _chipLabelSig=sig;_chipLabelMap=map;
+  return map;
+}
+function chipLabel(r){const m=chipLabelMap();return (r&&r.id in m)?m[r.id]:String((r&&r.id)||"").replace(/^R/,"");}
+/* Tri des pastilles d'une même case : par le numéro affiché (identifiant propre
+   ou numéro de création), avec repli sur l'ordre des identifiants. */
+function cmpChip(a,b){const na=parseInt(chipLabel(a),10),nb=parseInt(chipLabel(b),10);
+  if(!isNaN(na)&&!isNaN(nb)&&na!==nb)return na-nb;return cmpId(a,b);}
 function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
 function val(id){const el=document.getElementById(id);return el?el.value:"";}
@@ -2784,7 +2810,7 @@ function buildGrid(container,mode){
     });
     Object.keys(byCell).forEach(key=>{
       const stack=cellMap[key];if(!stack)return;
-      stack._risks=byCell[key].slice().sort(cmpId);stack._mode=mode;
+      stack._risks=byCell[key].slice().sort(cmpChip);stack._mode=mode;
     });
   }
 
@@ -2902,7 +2928,7 @@ function getArrangement(){return (analyse.extensions&&analyse.extensions.display
 function setArrangement(v){analyse.extensions=analyse.extensions||{};analyse.extensions.display=analyse.extensions.display||{};
   analyse.extensions.display.arrangement=v;markDirty();}
 function makeChip(r,mode,size){
-  const c=document.createElement("div");c.className="chip";c.textContent=String(r.id).replace(/^R/,"");
+  const c=document.createElement("div");c.className="chip";c.textContent=chipLabel(r);
   if(size&&size!==BASE_CHIP){c.style.width=size+"px";c.style.height=size+"px";
     c.style.fontSize=Math.max(7,Math.round(size*0.46))+"px";c.style.borderWidth=(size<15?1:2)+"px";}
   attachTip(c,r,mode);
@@ -3012,7 +3038,7 @@ function drawTrajectories(mc){
   Object.keys(cellTokens).forEach(key=>{
     const parts=key.split("-"),p=+parts[0],g=+parts[1];
     const c=center(p,g);if(!c)return;
-    const toks=cellTokens[key].slice().sort((t1,t2)=>cmpId(t1.risk,t2.risk));
+    const toks=cellTokens[key].slice().sort((t1,t2)=>cmpChip(t1.risk,t2.risk));
     const lay=computePositions(disp,toks.length,c.x,c.y,S);
     const hiddenStart=lay.badge?(toks.length-lay.badge.count):toks.length;
     toks.forEach((t,i)=>{
@@ -3047,7 +3073,7 @@ function drawTrajectories(mc){
   });
 }
 function makeOvChip(risk,kind,size){
-  const c=document.createElement("div");c.className="ov-chip "+kind;c.textContent=String(risk.id).replace(/^R/,"");
+  const c=document.createElement("div");c.className="ov-chip "+kind;c.textContent=chipLabel(risk);
   if(size&&size!==BASE_CHIP){c.style.width=size+"px";c.style.height=size+"px";
     c.style.fontSize=Math.max(7,Math.round(size*0.46))+"px";c.style.borderWidth=(size<15?1:2)+"px";}
   attachTip(c,risk,kind);return c;
