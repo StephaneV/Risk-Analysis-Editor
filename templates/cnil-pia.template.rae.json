@@ -1,0 +1,436 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "kind": "template",
+    "title": "Modèle AIPD — CNIL PIA",
+    "description": "Squelette d'**Analyse d'Impact sur la Protection des Données** selon la méthode **CNIL PIA**. Grille à quatre niveaux dont le niveau de risque est défini **par cellule** (et non par produit), et champs personnalisés propres à la démarche.\n\nÀ compléter : contexte et sous-traitants, puis pour chaque événement redouté (accès illégitime, modification non désirée, indisponibilité) les scénarios, leur cotation initiale et résiduelle, et le plan d'action.",
+    "methodology_reference": "Méthode CNIL PIA (Privacy Impact Assessment)"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Vraisemblance",
+      "description": "Possibilité qu'un risque se réalise, au regard des vulnérabilités des supports et des sources de risques.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Négligeable",
+          "description": "Il ne semble pas possible que la menace se réalise."
+        },
+        {
+          "value": 2,
+          "label": "Limitée",
+          "description": "Il semble difficile pour les sources de risques de réaliser la menace."
+        },
+        {
+          "value": 3,
+          "label": "Importante",
+          "description": "Il semble possible pour les sources de risques de réaliser la menace."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "Il semble extrêmement facile pour les sources de risques de réaliser la menace."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Gravité",
+      "description": "Ampleur du risque, estimée au regard des impacts potentiels sur les personnes concernées.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Négligeable",
+          "description": "Les personnes ne seront pas impactées ou surmonteront quelques désagréments sans difficulté."
+        },
+        {
+          "value": 2,
+          "label": "Limitée",
+          "description": "Les personnes pourraient connaître des désagréments significatifs, surmontables malgré des difficultés."
+        },
+        {
+          "value": 3,
+          "label": "Importante",
+          "description": "Les personnes pourraient connaître des conséquences significatives, surmontables mais avec de réelles difficultés."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "Les personnes pourraient connaître des conséquences significatives, voire irrémédiables, qu'elles pourraient ne pas surmonter."
+        }
+      ]
+    },
+    "score": {
+      "method": "matrix",
+      "matrix": [
+        [
+          1,
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          2,
+          3
+        ],
+        [
+          2,
+          2,
+          3,
+          4
+        ],
+        [
+          3,
+          3,
+          4,
+          4
+        ]
+      ]
+    },
+    "criticality_levels": [
+      {
+        "code": "negligeable",
+        "label": "Négligeable",
+        "score_min": 1,
+        "score_max": 1,
+        "color": "#8CC63E",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Niveau de risque négligeable au sens de la méthode PIA."
+      },
+      {
+        "code": "limite",
+        "label": "Limité",
+        "score_min": 2,
+        "score_max": 2,
+        "color": "#FFF166",
+        "acceptance": "acceptable",
+        "order": 2,
+        "description": "Niveau de risque limité au sens de la méthode PIA."
+      },
+      {
+        "code": "important",
+        "label": "Important",
+        "score_min": 3,
+        "score_max": 3,
+        "color": "#F2B33D",
+        "acceptance": "tolerable",
+        "order": 3,
+        "description": "Niveau de risque important : des mesures de réduction sont attendues."
+      },
+      {
+        "code": "maximal",
+        "label": "Maximal",
+        "score_min": 4,
+        "score_max": 4,
+        "color": "#E8291C",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Niveau de risque maximal : le traitement ne peut être conduit en l'état."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "responsable_traitement",
+      "target": "analysis",
+      "type": "text",
+      "order": 1,
+      "label": {
+        "fr": "Responsable du traitement"
+      }
+    },
+    {
+      "code": "sous_traitants",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 2,
+      "label": {
+        "fr": "Sous-traitants"
+      },
+      "description": {
+        "fr": "Sous-traitants au sens de l'article 28 du RGPD (ou équivalent), et objet de leur intervention."
+      }
+    },
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 3,
+      "label": {
+        "fr": "Référentiels applicables"
+      }
+    },
+    {
+      "code": "avis_dpo",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 4,
+      "label": {
+        "fr": "Avis du DPO"
+      }
+    },
+    {
+      "code": "mesures_existantes",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 5,
+      "label": {
+        "fr": "Mesures existantes"
+      },
+      "description": {
+        "fr": "Catalogue des mesures déjà en place, tenues hors du registre des mesures (réservé aux actions du plan d'action)."
+      }
+    },
+    {
+      "code": "evenement_redoute",
+      "target": "risk",
+      "type": "select",
+      "order": 1,
+      "required": true,
+      "filterable": true,
+      "label": {
+        "fr": "Événement redouté"
+      },
+      "items": [
+        {
+          "code": "acces",
+          "label": {
+            "fr": "Accès illégitime à des données"
+          }
+        },
+        {
+          "code": "modif",
+          "label": {
+            "fr": "Modification non désirée de données"
+          }
+        },
+        {
+          "code": "indispo",
+          "label": {
+            "fr": "Indisponibilité ou disparition de données"
+          }
+        }
+      ]
+    },
+    {
+      "code": "sources_risque",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Sources de risque"
+      },
+      "items": [
+        {
+          "code": "interne-mal",
+          "label": {
+            "fr": "Source interne malveillante"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "interne-acc",
+          "label": {
+            "fr": "Source interne accidentelle"
+          },
+          "color": "#e67e22"
+        },
+        {
+          "code": "externe",
+          "label": {
+            "fr": "Source externe"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "prestataire",
+          "label": {
+            "fr": "Prestataire"
+          },
+          "color": "#1abc9c"
+        },
+        {
+          "code": "environnement",
+          "label": {
+            "fr": "Environnement / matériel"
+          },
+          "color": "#7f8c8d"
+        }
+      ]
+    },
+    {
+      "code": "supports",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "filterable": true,
+      "label": {
+        "fr": "Supports concernés"
+      },
+      "items": [
+        {
+          "code": "materiel",
+          "label": {
+            "fr": "Matériel"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "logiciel",
+          "label": {
+            "fr": "Logiciel"
+          },
+          "color": "#148f77"
+        },
+        {
+          "code": "canal-info",
+          "label": {
+            "fr": "Canal informatique"
+          },
+          "color": "#1f618d"
+        },
+        {
+          "code": "papier",
+          "label": {
+            "fr": "Support papier"
+          },
+          "color": "#b9770e"
+        },
+        {
+          "code": "canal-papier",
+          "label": {
+            "fr": "Canal papier"
+          },
+          "color": "#ca6f1e"
+        },
+        {
+          "code": "personne",
+          "label": {
+            "fr": "Personne"
+          },
+          "color": "#af7ac5"
+        }
+      ]
+    },
+    {
+      "code": "impacts",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 4,
+      "filterable": true,
+      "label": {
+        "fr": "Impacts sur les personnes"
+      },
+      "items": [
+        {
+          "code": "corporel",
+          "label": {
+            "fr": "Corporel"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "materiel-imp",
+          "label": {
+            "fr": "Matériel"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "moral",
+          "label": {
+            "fr": "Moral"
+          },
+          "color": "#6c3483"
+        }
+      ]
+    },
+    {
+      "code": "origine",
+      "target": "measure",
+      "type": "select",
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Origine"
+      },
+      "items": [
+        {
+          "code": "complementaire",
+          "label": {
+            "fr": "Mesure complémentaire"
+          }
+        },
+        {
+          "code": "ajustement",
+          "label": {
+            "fr": "Ajustement d'une mesure existante"
+          }
+        },
+        {
+          "code": "principe",
+          "label": {
+            "fr": "Principe fondamental"
+          }
+        }
+      ]
+    },
+    {
+      "code": "bloquante",
+      "target": "measure",
+      "type": "boolean",
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Bloquante"
+      },
+      "description": {
+        "fr": "Action à mettre en œuvre au plus vite : le traitement ne peut être conduit sans elle."
+      }
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Effet attendu"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance"
+          },
+          "color": "#2471a3"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité"
+          },
+          "color": "#b9770e"
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

@@ -1,0 +1,130 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "kind": "template",
+    "title": "Modèle générique",
+    "description": "Squelette neutre : grille probabilité × impact sur cinq niveaux (score = produit) et quatre niveaux de criticité, **sans champ personnalisé imposé**. Point de départ pour une analyse de risques ne suivant pas une méthode particulière.",
+    "methodology_reference": "Analyse de risques — grille générique 5×5"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Probabilité",
+      "description": "Probabilité de survenue du risque.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Très faible",
+          "description": "Réalisation très improbable."
+        },
+        {
+          "value": 2,
+          "label": "Faible",
+          "description": "Réalisation peu probable."
+        },
+        {
+          "value": 3,
+          "label": "Moyenne",
+          "description": "Réalisation plausible."
+        },
+        {
+          "value": 4,
+          "label": "Élevée",
+          "description": "Réalisation probable."
+        },
+        {
+          "value": 5,
+          "label": "Très élevée",
+          "description": "Réalisation quasi certaine."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Impact",
+      "description": "Ampleur des conséquences en cas de survenue.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Très faible",
+          "description": "Conséquences insignifiantes."
+        },
+        {
+          "value": 2,
+          "label": "Faible",
+          "description": "Conséquences mineures."
+        },
+        {
+          "value": 3,
+          "label": "Moyen",
+          "description": "Conséquences notables."
+        },
+        {
+          "value": 4,
+          "label": "Élevé",
+          "description": "Conséquences sérieuses."
+        },
+        {
+          "value": 5,
+          "label": "Très élevé",
+          "description": "Conséquences majeures."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Faible",
+        "score_min": 1,
+        "score_max": 4,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque faible : acceptable, à surveiller."
+      },
+      {
+        "code": "moyen",
+        "label": "Moyen",
+        "score_min": 5,
+        "score_max": 10,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque moyen : tolérable sous conditions ; réduction à envisager."
+      },
+      {
+        "code": "eleve",
+        "label": "Élevé",
+        "score_min": 11,
+        "score_max": 16,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque élevé : traitement attendu."
+      },
+      {
+        "code": "critique",
+        "label": "Critique",
+        "score_min": 17,
+        "score_max": 25,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque critique : inacceptable en l'état ; traitement prioritaire."
+      }
+    ]
+  },
+  "custom_fields": [],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

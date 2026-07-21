@@ -1,0 +1,395 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "kind": "template",
+    "title": "Modèle ISO/IEC 27005",
+    "description": "Squelette d'appréciation du risque selon **ISO/IEC 27005**. Grille vraisemblance × impact sur cinq niveaux (score = produit), et champs personnalisés orientés actifs, menaces et vulnérabilités.\n\nÀ compléter : périmètre et critères d'acceptation, identification des actifs, des menaces et vulnérabilités, estimation puis évaluation du risque, et choix des options de traitement.",
+    "methodology_reference": "ISO/IEC 27005 — Gestion des risques liés à la sécurité de l'information"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Vraisemblance",
+      "description": "Probabilité de réalisation du scénario de risque.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Très faible",
+          "description": "Réalisation très improbable dans la période considérée."
+        },
+        {
+          "value": 2,
+          "label": "Faible",
+          "description": "Réalisation peu probable."
+        },
+        {
+          "value": 3,
+          "label": "Moyenne",
+          "description": "Réalisation plausible."
+        },
+        {
+          "value": 4,
+          "label": "Élevée",
+          "description": "Réalisation probable."
+        },
+        {
+          "value": 5,
+          "label": "Très élevée",
+          "description": "Réalisation quasi certaine."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Impact",
+      "description": "Conséquences pour l'organisation en cas de réalisation.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Négligeable",
+          "description": "Conséquences insignifiantes pour l'organisation."
+        },
+        {
+          "value": 2,
+          "label": "Faible",
+          "description": "Conséquences mineures, absorbées sans difficulté."
+        },
+        {
+          "value": 3,
+          "label": "Moyen",
+          "description": "Conséquences notables mais maîtrisables."
+        },
+        {
+          "value": 4,
+          "label": "Important",
+          "description": "Conséquences sérieuses, difficilement réversibles."
+        },
+        {
+          "value": 5,
+          "label": "Critique",
+          "description": "Conséquences majeures, mettant en cause l'activité."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Faible",
+        "score_min": 1,
+        "score_max": 4,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque faible : acceptable, à surveiller."
+      },
+      {
+        "code": "moyen",
+        "label": "Moyen",
+        "score_min": 5,
+        "score_max": 10,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque moyen : tolérable sous conditions ; réduction à envisager."
+      },
+      {
+        "code": "eleve",
+        "label": "Élevé",
+        "score_min": 11,
+        "score_max": 16,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque élevé : traitement attendu."
+      },
+      {
+        "code": "critique",
+        "label": "Critique",
+        "score_min": 17,
+        "score_max": 25,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque critique : inacceptable en l'état ; traitement prioritaire."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels"
+      },
+      "items": [
+        {
+          "code": "iso-27005",
+          "label": {
+            "fr": "ISO 27005"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "iso-27001",
+          "label": {
+            "fr": "ISO 27001"
+          },
+          "color": "#4c7dff"
+        },
+        {
+          "code": "iso-27002",
+          "label": {
+            "fr": "ISO 27002"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD"
+          },
+          "color": "#e25631"
+        }
+      ]
+    },
+    {
+      "code": "perimetre",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 2,
+      "label": {
+        "fr": "Périmètre"
+      }
+    },
+    {
+      "code": "critere_acceptation",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 3,
+      "label": {
+        "fr": "Critères d'acceptation du risque"
+      }
+    },
+    {
+      "code": "actif",
+      "target": "risk",
+      "type": "text",
+      "order": 1,
+      "label": {
+        "fr": "Actif concerné"
+      }
+    },
+    {
+      "code": "type_actif",
+      "target": "risk",
+      "type": "select",
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Type d'actif"
+      },
+      "items": [
+        {
+          "code": "primaire",
+          "label": {
+            "fr": "Actif primaire (information, processus)"
+          }
+        },
+        {
+          "code": "support",
+          "label": {
+            "fr": "Actif support (matériel, logiciel, réseau, personne, site)"
+          }
+        }
+      ]
+    },
+    {
+      "code": "menace",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "filterable": true,
+      "label": {
+        "fr": "Menace"
+      },
+      "items": [
+        {
+          "code": "acces-na",
+          "label": {
+            "fr": "Accès non autorisé"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "compromission-info",
+          "label": {
+            "fr": "Compromission d'informations"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "defaillance",
+          "label": {
+            "fr": "Défaillance technique"
+          },
+          "color": "#7f8c8d"
+        },
+        {
+          "code": "actions-na",
+          "label": {
+            "fr": "Actions non autorisées"
+          },
+          "color": "#a04000"
+        },
+        {
+          "code": "compromission-fct",
+          "label": {
+            "fr": "Compromission de fonctions"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "dommages",
+          "label": {
+            "fr": "Dommages physiques"
+          },
+          "color": "#b9770e"
+        },
+        {
+          "code": "naturel",
+          "label": {
+            "fr": "Événement naturel"
+          },
+          "color": "#16a085"
+        },
+        {
+          "code": "perte-service",
+          "label": {
+            "fr": "Perte de services essentiels"
+          },
+          "color": "#1f618d"
+        }
+      ]
+    },
+    {
+      "code": "vulnerabilite",
+      "target": "risk",
+      "type": "text",
+      "order": 4,
+      "label": {
+        "fr": "Vulnérabilité exploitée"
+      }
+    },
+    {
+      "code": "option_traitement",
+      "target": "risk",
+      "type": "select",
+      "order": 5,
+      "filterable": true,
+      "label": {
+        "fr": "Option de traitement"
+      },
+      "items": [
+        {
+          "code": "reduire",
+          "label": {
+            "fr": "Réduire (modifier)"
+          }
+        },
+        {
+          "code": "accepter",
+          "label": {
+            "fr": "Accepter (maintenir)"
+          }
+        },
+        {
+          "code": "eviter",
+          "label": {
+            "fr": "Éviter (supprimer)"
+          }
+        },
+        {
+          "code": "partager",
+          "label": {
+            "fr": "Partager (transférer)"
+          }
+        }
+      ]
+    },
+    {
+      "code": "proprietaire_risque",
+      "target": "risk",
+      "type": "text",
+      "order": 6,
+      "label": {
+        "fr": "Propriétaire du risque"
+      }
+    },
+    {
+      "code": "reference_controle",
+      "target": "measure",
+      "type": "text",
+      "order": 1,
+      "label": {
+        "fr": "Réf. mesure (ISO 27002)"
+      },
+      "description": {
+        "fr": "Référence de la mesure de sécurité applicable, p. ex. A.8.16."
+      }
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "order": 2,
+      "label": {
+        "fr": "Avancement"
+      },
+      "palette": "red-orange-green",
+      "step": 10
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Effet attendu"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance"
+          },
+          "color": "#2471a3"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit l'impact"
+          },
+          "color": "#b9770e"
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

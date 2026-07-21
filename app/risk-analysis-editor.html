@@ -203,6 +203,17 @@
   .quick-add input{flex:1;min-width:0}
   .quick-add .btn{flex:none;white-space:nowrap}
   .start-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 4px}
+  /* Modèles méthodologiques dans le bloc d'amorçage. */
+  .start-templates{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
+  .start-templates .st-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
+  .start-templates .st-list{display:flex;flex-wrap:wrap;gap:10px}
+  .tpl-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;
+    background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;
+    cursor:pointer;font-family:inherit;min-width:210px;max-width:260px}
+  .tpl-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .tpl-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--focus-ring)}
+  .tpl-btn .tpl-name{font-size:13.5px;font-weight:600;color:var(--text)}
+  .tpl-btn .tpl-desc{font-size:11.5px;color:var(--muted)}
   .start-steps{margin:12px 0 0;padding-left:20px;color:var(--muted);font-size:12.5px;line-height:1.7}
   .start-steps li{padding-left:2px}
   .card-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px}
@@ -789,6 +800,11 @@
         <button class="btn ghost" id="startOpen"><span data-i18n="start_open">Charger un fichier .rae.json</span></button>
         <button class="btn ghost" id="startDemo"><span data-i18n="start_demo">Ouvrir une analyse de démonstration</span></button>
       </div>
+      <!-- Modèles méthodologiques : peuplé par renderStartTemplates() depuis TEMPLATES. -->
+      <div class="start-templates" id="startTemplates" hidden>
+        <div class="st-title" data-i18n="start_templates_title">Démarrer d'un modèle</div>
+        <div class="st-list" id="startTemplatesList"></div>
+      </div>
       <ol class="start-steps">
         <li data-i18n="start_step1">Vérifiez la grille de cotation dans Paramètres (axes, niveaux de criticité).</li>
         <li data-i18n="start_step2">Saisissez vos risques, puis vos mesures de maîtrise.</li>
@@ -1181,6 +1197,8 @@ const I18N = {
     start_step3:"Associez mesures et risques dans l'onglet Liens.",
     start_step4:"Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.",
     start_demo_failed:"Démonstration non accessible depuis ce mode d'ouverture. Utilisez « Charger un fichier .rae.json » et choisissez {0} dans le dossier examples/.",
+    start_templates_title:"Démarrer d'un modèle", toast_template_new:"Nouvelle analyse créée à partir d'un modèle.",
+    start_template_failed:"Modèle non accessible depuis ce mode d'ouverture. Servez l'application via un serveur (http://) pour charger « {0} ».",
     start_locked:"Choisissez d'abord comment commencer ci-dessus.",
     covered_risks_title:"Risques couverts",
     no_risks_defined:"Aucun risque défini pour l'instant.",
@@ -1421,6 +1439,8 @@ const I18N = {
     start_step3:"Link measures and risks in the Links tab.",
     start_step4:"Read the matrices, follow the Action plan, print the Report.",
     start_demo_failed:"The demonstration cannot be reached in this opening mode. Use “Load a .rae.json file” and pick {0} from the examples/ folder.",
+    start_templates_title:"Start from a template", toast_template_new:"New analysis created from a template.",
+    start_template_failed:"Template not reachable in this opening mode. Serve the app over http:// to load \"{0}\".",
     start_locked:"First choose how to start above.",
     covered_risks_title:"Covered risks",
     no_risks_defined:"No risk defined yet.",
@@ -1659,6 +1679,8 @@ const I18N = {
     start_step3:"Collega misure e rischi nella scheda Collegamenti.",
     start_step4:"Leggi le matrici, segui il Piano d'azione, stampa il Rapporto.",
     start_demo_failed:"Dimostrazione non raggiungibile in questa modalità di apertura. Usa «Carica un file .rae.json» e scegli {0} nella cartella examples/.",
+    start_templates_title:"Inizia da un modello", toast_template_new:"Nuova analisi creata da un modello.",
+    start_template_failed:"Modello non raggiungibile in questa modalità. Servi l'app tramite http:// per caricare «{0}».",
     start_locked:"Scegli prima come iniziare qui sopra.",
     covered_risks_title:"Rischi coperti",
     no_risks_defined:"Nessun rischio definito finora.",
@@ -5087,9 +5109,19 @@ function presSetPending(v){
    Il ne réapparaît pas après un « Nouveau », un chargement, ni la moindre modification :
    à ce moment-là l'utilisateur a déjà l'application sous les yeux et sait où il est
    (`startDismissed`, posé par markDirty et déclaré avec l'état du document). */
+function renderStartTemplates(){
+  const box=document.getElementById("startTemplates"), list=document.getElementById("startTemplatesList");
+  if(!box||!list)return;
+  box.hidden=!TEMPLATES.length;
+  list.innerHTML=TEMPLATES.map(tp=>
+    '<button type="button" class="tpl-btn" data-tpl="'+esc(tp.file)+'">'+
+      '<span class="tpl-name">'+esc(tplText(tp.name))+'</span>'+
+      '<span class="tpl-desc">'+esc(tplText(tp.desc))+'</span></button>').join("");
+}
 function renderStartCard(){
   const c=document.getElementById("startCard"), v=document.getElementById("view-presentation");
   if(!c||!v)return;
+  renderStartTemplates();
   const montrer=!startDismissed && !analyse.risks.length && !analyse.measures.length;
   c.style.display=montrer?"":"none";
   v.classList.toggle("onboarding",montrer);
@@ -6401,11 +6433,52 @@ document.getElementById("startNew").addEventListener("click",()=>{
   const ti=document.getElementById("mTitle");if(ti){ti.focus();ti.select();}
 });
 document.getElementById("startOpen").addEventListener("click",()=>presGuard(openFile));
+document.getElementById("startTemplatesList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-tpl]");if(!b)return;
+  // Comme « Charger… », on confirme avant d'écraser une analyse non enregistrée. Depuis
+  // l'amorçage l'analyse est vierge, mais openTemplate peut être appelé autrement.
+  presGuard(()=>dirtyGuard(()=>openTemplate(b.dataset.tpl)));
+});
 /* Les analyses de démonstration vivent à côté de l'application (dossier examples/).
    En file://, certains navigateurs refusent la lecture d'un fichier voisin : on le dit
    clairement plutôt que d'échouer en silence. */
 const DEMOS={fr:"demo-ebios-rm-systeme-d-information.rae.json",en:"demo-ebios-rm-information-system.rae.json",
              it:"demo-ebios-rm-systeme-d-information.rae.json"};
+/* Modèles méthodologiques : squelettes vierges (grille, criticité, champs personnalisés
+   préconfigurés) vivant dans le dossier templates/. Le manifeste est embarqué : en file://,
+   impossible de lister un dossier. Nom et description sont ici pour les afficher sans charger
+   chaque fichier. Ouvrir un modèle démarre une NOUVELLE analyse, non reliée au fichier. */
+const TEMPLATES=[
+  {file:"ebios-rm.template.rae.json",
+   name:{fr:"EBIOS RM (ANSSI)",en:"EBIOS RM (ANSSI)",it:"EBIOS RM (ANSSI)"},
+   desc:{fr:"Vraisemblance × gravité, grille 4×4 (produit).",en:"Likelihood × severity, 4×4 grid (product).",it:"Verosimiglianza × gravità, griglia 4×4 (prodotto)."}},
+  {file:"cnil-pia.template.rae.json",
+   name:{fr:"AIPD — CNIL PIA",en:"DPIA — CNIL PIA",it:"AIPD — CNIL PIA"},
+   desc:{fr:"Grille 4×4, niveau de risque défini par cellule.",en:"4×4 grid, risk level defined per cell.",it:"Griglia 4×4, livello di rischio definito per cella."}},
+  {file:"iso-27005.template.rae.json",
+   name:{fr:"ISO/IEC 27005",en:"ISO/IEC 27005",it:"ISO/IEC 27005"},
+   desc:{fr:"Vraisemblance × impact, grille 5×5 (produit).",en:"Likelihood × impact, 5×5 grid (product).",it:"Verosimiglianza × impatto, griglia 5×5 (prodotto)."}},
+  {file:"generique.template.rae.json",
+   name:{fr:"Modèle générique",en:"Generic template",it:"Modello generico"},
+   desc:{fr:"Probabilité × impact 5×5, sans champ imposé.",en:"Probability × impact 5×5, no imposed field.",it:"Probabilità × impatto 5×5, senza campi imposti."}}
+];
+const tplText=(o)=>(o&&(o[lang]||o.fr))||"";
+/* Ouverture d'un modèle : chargé comme une NOUVELLE analyse. On ne relie pas le fichier
+   (fileHandle et currentFileName restent nuls → « Enregistrer » proposera « Enregistrer
+   sous… ») et on retire le marqueur, pour que l'analyse enregistrée ne soit pas un modèle. */
+async function openTemplate(file){
+  const note=document.getElementById("startNote");if(note)note.textContent="";
+  try{
+    const resp=await fetch("../templates/"+file,{cache:"no-store"});
+    if(!resp.ok)throw new Error("HTTP "+resp.status);
+    const data=JSON.parse(await resp.text());
+    if(data&&data.metadata)delete data.metadata.kind;
+    if(applyLoadedData(data,null,false)){fileHandle=null;refreshFileState();toast(t("toast_template_new"));}
+  }catch(ex){
+    if(note)note.textContent=t("start_template_failed",file);
+    else alertModal(t("start_template_failed",file));
+  }
+}
 document.getElementById("startDemo").addEventListener("click",()=>presGuard(async()=>{
   const nom=DEMOS[lang]||DEMOS.fr, note=document.getElementById("startNote");
   note.textContent="";

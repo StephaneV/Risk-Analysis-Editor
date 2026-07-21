@@ -28,7 +28,8 @@
         "updated_at": { "type": "string", "format": "date" },
         "revision": { "type": "string" },
         "status": { "type": "string" },
-        "language": { "type": "string", "enum": ["fr", "en", "it"], "description": "Langue de l'interface associée à l'analyse (ISO 639-1)." }
+        "language": { "type": "string", "enum": ["fr", "en", "it"], "description": "Langue de l'interface associée à l'analyse (ISO 639-1)." },
+        "kind": { "const": "template", "description": "Optionnel. Marque le fichier comme modèle méthodologique (squelette vierge) : l'application l'ouvre comme une nouvelle analyse non reliée, et retire ce marqueur avant enregistrement." }
       }
     },
     "grid": {

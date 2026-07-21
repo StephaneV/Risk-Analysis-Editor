@@ -1,0 +1,487 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "kind": "template",
+    "title": "Modèle EBIOS RM (ANSSI)",
+    "description": "Squelette d'analyse selon **EBIOS Risk Manager** (ANSSI). Grille de vraisemblance × gravité, niveaux de risque et champs personnalisés préconfigurés.\n\nÀ compléter : valeurs métier et biens supports (atelier 1), sources de risque et objectifs visés (atelier 2), scénarios stratégiques (atelier 3) puis opérationnels (atelier 4), et le traitement (atelier 5).",
+    "methodology_reference": "EBIOS Risk Manager (ANSSI)"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Vraisemblance",
+      "description": "Possibilité que le scénario se réalise, au regard des sources de risque et des modes opératoires.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Minime",
+          "description": "La source de risque ne devrait pas agir, ou le mode opératoire est très difficile à mettre en œuvre."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "La source de risque pourrait agir ; le mode opératoire reste réalisable avec un effort modéré."
+        },
+        {
+          "value": 3,
+          "label": "Forte",
+          "description": "La source de risque a de bonnes raisons d'agir et le mode opératoire est accessible."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "La source de risque va très probablement agir ; le mode opératoire est trivial."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Gravité",
+      "description": "Ampleur des conséquences pour l'organisation et les personnes.",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Mineure",
+          "description": "Aucun impact opérationnel ou juridique notable ; gêne surmontable."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "Impact réel mais maîtrisable, sans conséquence durable."
+        },
+        {
+          "value": 3,
+          "label": "Grave",
+          "description": "Impact important, difficilement réversible, sur l'activité ou les personnes."
+        },
+        {
+          "value": 4,
+          "label": "Critique",
+          "description": "Impact majeur, potentiellement irréversible, mettant en cause la pérennité ou la sécurité."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Faible",
+        "score_min": 1,
+        "score_max": 3,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque faible : acceptable en l'état, à surveiller lors des revues."
+      },
+      {
+        "code": "modere",
+        "label": "Modéré",
+        "score_min": 4,
+        "score_max": 6,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque modéré : tolérable sous conditions ; des mesures de réduction sont à envisager."
+      },
+      {
+        "code": "eleve",
+        "label": "Élevé",
+        "score_min": 7,
+        "score_max": 11,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque élevé : un traitement est attendu pour ramener le risque à un niveau acceptable."
+      },
+      {
+        "code": "critique",
+        "label": "Critique",
+        "score_min": 12,
+        "score_max": 16,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque critique : inacceptable en l'état ; traitement prioritaire requis."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels"
+      },
+      "items": [
+        {
+          "code": "ebios-rm",
+          "label": {
+            "fr": "EBIOS RM"
+          },
+          "color": "#3a63d6"
+        },
+        {
+          "code": "iso-27005",
+          "label": {
+            "fr": "ISO 27005"
+          },
+          "color": "#4c7dff"
+        },
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD"
+          },
+          "color": "#e25631"
+        },
+        {
+          "code": "nis2",
+          "label": {
+            "fr": "NIS2"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "pssi",
+          "label": {
+            "fr": "PSSI"
+          },
+          "color": "#16a085"
+        }
+      ]
+    },
+    {
+      "code": "socle_securite",
+      "target": "analysis",
+      "type": "textarea",
+      "order": 2,
+      "label": {
+        "fr": "Socle de sécurité"
+      },
+      "description": {
+        "fr": "Référentiels applicables, écarts identifiés et justification (atelier 1)."
+      }
+    },
+    {
+      "code": "type_scenario",
+      "target": "risk",
+      "type": "select",
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Type de scénario"
+      },
+      "items": [
+        {
+          "code": "strategique",
+          "label": {
+            "fr": "Scénario stratégique"
+          }
+        },
+        {
+          "code": "operationnel",
+          "label": {
+            "fr": "Scénario opérationnel"
+          }
+        }
+      ]
+    },
+    {
+      "code": "source_risque",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "filterable": true,
+      "label": {
+        "fr": "Source de risque"
+      },
+      "items": [
+        {
+          "code": "etatique",
+          "label": {
+            "fr": "Étatique"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "cybercriminel",
+          "label": {
+            "fr": "Cybercriminel"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "terroriste",
+          "label": {
+            "fr": "Terroriste"
+          },
+          "color": "#7b241c"
+        },
+        {
+          "code": "activiste",
+          "label": {
+            "fr": "Activiste idéologique"
+          },
+          "color": "#d35400"
+        },
+        {
+          "code": "officine",
+          "label": {
+            "fr": "Officine spécialisée"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "amateur",
+          "label": {
+            "fr": "Amateur"
+          },
+          "color": "#2980b9"
+        },
+        {
+          "code": "vengeur",
+          "label": {
+            "fr": "Vengeur"
+          },
+          "color": "#a04000"
+        },
+        {
+          "code": "initie",
+          "label": {
+            "fr": "Initié malveillant"
+          },
+          "color": "#922b21"
+        },
+        {
+          "code": "concurrent",
+          "label": {
+            "fr": "Concurrent"
+          },
+          "color": "#1f618d"
+        }
+      ]
+    },
+    {
+      "code": "objectif_vise",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 3,
+      "filterable": true,
+      "label": {
+        "fr": "Objectif visé"
+      },
+      "items": [
+        {
+          "code": "espionnage",
+          "label": {
+            "fr": "Espionnage"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "prepos",
+          "label": {
+            "fr": "Pré-positionnement"
+          },
+          "color": "#5d6d7e"
+        },
+        {
+          "code": "entrave",
+          "label": {
+            "fr": "Sabotage / entrave"
+          },
+          "color": "#c0392b"
+        },
+        {
+          "code": "influence",
+          "label": {
+            "fr": "Influence"
+          },
+          "color": "#8e44ad"
+        },
+        {
+          "code": "lucratif",
+          "label": {
+            "fr": "Lucratif"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "defi",
+          "label": {
+            "fr": "Défi / amusement"
+          },
+          "color": "#2980b9"
+        }
+      ]
+    },
+    {
+      "code": "valeur_metier",
+      "target": "risk",
+      "type": "text",
+      "order": 4,
+      "label": {
+        "fr": "Valeur métier visée"
+      }
+    },
+    {
+      "code": "biens_supports",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 5,
+      "filterable": true,
+      "label": {
+        "fr": "Biens supports"
+      },
+      "items": [
+        {
+          "code": "poste",
+          "label": {
+            "fr": "Poste de travail"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "serveur",
+          "label": {
+            "fr": "Serveur / stockage"
+          },
+          "color": "#117864"
+        },
+        {
+          "code": "appli",
+          "label": {
+            "fr": "Application"
+          },
+          "color": "#148f77"
+        },
+        {
+          "code": "reseau",
+          "label": {
+            "fr": "Réseau"
+          },
+          "color": "#1f618d"
+        },
+        {
+          "code": "donnees",
+          "label": {
+            "fr": "Données"
+          },
+          "color": "#7d6608"
+        },
+        {
+          "code": "prestataire",
+          "label": {
+            "fr": "Prestataire"
+          },
+          "color": "#1abc9c"
+        },
+        {
+          "code": "local",
+          "label": {
+            "fr": "Site / local"
+          },
+          "color": "#b9770e"
+        },
+        {
+          "code": "personne",
+          "label": {
+            "fr": "Personne"
+          },
+          "color": "#af7ac5"
+        }
+      ]
+    },
+    {
+      "code": "socle",
+      "target": "measure",
+      "type": "select",
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Catégorie de sécurité"
+      },
+      "items": [
+        {
+          "code": "gouvernance",
+          "label": {
+            "fr": "Gouvernance"
+          }
+        },
+        {
+          "code": "protection",
+          "label": {
+            "fr": "Protection"
+          }
+        },
+        {
+          "code": "defense",
+          "label": {
+            "fr": "Défense"
+          }
+        },
+        {
+          "code": "resilience",
+          "label": {
+            "fr": "Résilience"
+          }
+        }
+      ]
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "order": 2,
+      "label": {
+        "fr": "Avancement"
+      },
+      "palette": "red-orange-green",
+      "step": 10
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "filterable": true,
+      "label": {
+        "fr": "Effet attendu"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance"
+          },
+          "color": "#2471a3"
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité"
+          },
+          "color": "#b9770e"
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "risks": [],
+  "measures": [],
+  "treatments": []
+}

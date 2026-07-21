@@ -100,6 +100,7 @@ Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIO
 | `revision` | chaîne | F | Numéro/étiquette de révision du document (distinct de `version` du format). |
 | `status` | chaîne | F | Ex. `"draft"`, `"approved"`, `"archived"`. |
 | `language` | chaîne | F | Langue de l'interface associée à l'analyse, code ISO 639-1 (`"fr"`, `"en"`, `"it"`). À l'ouverture, l'application adopte cette langue (sauf paramètre d'URL `?lang`) ; en son absence, la langue du navigateur est utilisée, avec repli sur l'anglais. |
+| `kind` | chaîne | F | Vaut `"template"` pour un **modèle méthodologique** — un squelette vierge (grille, niveaux de criticité et champs personnalisés préconfigurés, sans risque ni mesure). L'application ouvre alors le fichier comme une **nouvelle analyse non reliée** et retire ce marqueur avant tout enregistrement, de sorte que l'analyse de l'utilisateur n'est pas elle-même un modèle. Fichiers nommés par convention `xxx.template.rae.json`. |
 
 ### 4.2 `grid` — paramètres de la matrice
 

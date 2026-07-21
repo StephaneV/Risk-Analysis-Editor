@@ -76,6 +76,7 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 | [`app/`](app/) | The application (`risk-analysis-editor.html`). |
 | [`docs/`](docs/) | Technical documentation (in French): format specification, JSON schema and layout strategies. |
 | [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including two **complete demos**: an **EBIOS RM–inspired** risk analysis (`demo-ebios-rm-*.rae.json`) and a **DPIA following the CNIL PIA method** for an occupational health service (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — with colored tags, progress bars, owners and justified links. |
+| [`templates/`](templates/) | **Methodology templates** (`xxx.template.rae.json`): blank skeletons — grid, criticality levels and custom fields preconfigured, no risks or measures. **EBIOS RM**, **CNIL PIA / DPIA**, **ISO/IEC 27005** and a **generic** 5×5. Listed under *Start from a template* in the onboarding block; opening one starts a new, unlinked analysis. |
 
 ---
 
