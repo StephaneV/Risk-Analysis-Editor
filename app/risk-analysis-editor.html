@@ -400,6 +400,23 @@
     border-top:1px solid var(--border);margin-top:6px;padding:8px 6px 3px}
   .col-menu .cm-hint{color:var(--muted);font-size:11px}
 
+  /* ---------- Aides à la sécurité et à la navigation ---------- */
+  /* Bandeau d'avertissement (grille déjà cotée) : teinte ambre translucide, lisible sur les deux thèmes. */
+  .callout-warn{background:rgba(224,185,58,.14);border:1px solid rgba(224,185,58,.55);color:var(--text);
+    border-radius:10px;padding:9px 12px;font-size:12.5px;margin-bottom:14px}
+  /* Pastilles R/M cliquables : elles ouvrent la fiche référencée. */
+  .pill[data-open-m],.pill[data-open-r]{cursor:pointer}
+  .pill[data-open-m]:hover,.pill[data-open-r]:hover{border-color:var(--accent);filter:brightness(1.06)}
+  .pill[data-open-m]:focus-visible,.pill[data-open-r]:focus-visible{outline:2px solid var(--focus-ring);outline-offset:1px}
+  /* Bouton d'action dans le toast (annulation d'une suppression). */
+  #toast .t-act{margin-left:12px;background:none;border:1px solid currentColor;color:inherit;
+    border-radius:6px;padding:2px 10px;cursor:pointer;font-weight:700;font-size:12px}
+  #toast .t-act:hover{background:rgba(255,255,255,.15)}
+  /* Panneau Aide & raccourcis */
+  .hlp-sec{margin:10px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+  .hlp-row{display:flex;gap:12px;align-items:baseline;margin:5px 0;font-size:13px}
+  .hlp-row .kbd{flex:none;min-width:96px;text-align:center}
+
   /* ---------- Champs personnalisés (contrôles de saisie) ---------- */
   .cf-field{display:block;margin-bottom:12px}
   .cf-field>.lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
@@ -698,6 +715,7 @@
       <button type="button" role="menuitem" id="miExportDocx"><span data-i18n="menu_export_docx">Exporter en Word (.docx)</span></button>
       <button type="button" role="menuitem" id="miExportXlsx"><span data-i18n="menu_export_xlsx">Exporter en Excel (.xlsx)</span></button>
       <hr>
+      <button type="button" role="menuitem" id="miHelp"><span data-i18n="menu_help">Aide & raccourcis</span><span class="kbd">?</span></button>
       <button type="button" role="menuitem" id="miAbout"><span data-i18n="about_title">À propos</span></button>
     </div>
   </div>
@@ -943,6 +961,8 @@
     <!-- -------- Sous-onglet : Grille de cotation -------- -->
     <div class="card ppanel" data-pmode="grid" style="display:none">
       <div class="caption" data-i18n="settings_grid_caption">Les axes définissent la taille de la matrice. Le score et les couleurs sont recalculés automatiquement.</div>
+      <!-- Prévention d'erreur : rappel qu'une grille déjà cotée n'est pas neutre à modifier. -->
+      <div class="callout-warn" id="gridRatedWarn" style="display:none"></div>
       <button class="btn ghost sm" id="btnTranspose" style="margin-bottom:16px" data-i18n="btn_transpose_long">⇄ Transposer les axes (échanger horizontal / vertical)</button>
 
       <div class="row">
@@ -1106,6 +1126,21 @@ const I18N = {
     cols_reorder_hint:"Ordre : glissez les en-têtes", cols_reset:"Réinitialiser", th_actions_col:"Actions",
     menu_export_docx:"Exporter en Word (.docx)", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"Fichier exporté : {0}", toast_export_fail:"Export impossible : {0}", xl_score:"Score", xl_crit:"Criticité",
+    link_confirm_off:"Ne plus demander (pour cette session)",
+    btn_save_new:"Enregistrer et nouveau", copy_suffix:" (copie)", a11y_dup_risk:"Dupliquer le risque {0}", a11y_dup_measure:"Dupliquer la mesure {0}",
+    btn_undo:"Annuler", toast_deleted:"Supprimé : {0}", toast_restored:"Élément restauré",
+    grid_warn_rated:"⚠ {0} risque(s) déjà coté(s) sur cette grille : modifier les axes, les niveaux ou la méthode de calcul réinterprétera leurs cotations existantes.",
+    menu_help:"Aide & raccourcis", help_title:"Aide & raccourcis",
+    hp_sec_file:"Fichier", hp_save:"Enregistrer dans le fichier lié", hp_save_as:"Enregistrer sous…", hp_open:"Charger un fichier .rae.json",
+    hp_drop:"Déposer un fichier .rae.json sur la fenêtre l'ouvre",
+    hp_sec_nav:"Navigation", hp_esc:"Fermer la fenêtre ou le menu ouvert", hp_help:"Ouvrir cette aide",
+    hp_url:"Paramètres d'adresse : ?file=, ?tab=, ?lang=, ?filter=",
+    hp_sec_tables:"Tableaux", hp_sort:"Trier la colonne (second clic : ordre inverse)", hp_reorder:"Réordonner les colonnes en glissant l'en-tête",
+    hp_cols:"Choisir les colonnes affichées, dont les champs personnalisés", hp_pill:"Ouvrir la fiche du risque ou de la mesure référencée",
+    hp_sec_matrix:"Matrices, liens & plan d'action", hp_drag:"Déplacer une pastille (matrices) ou une carte (kanban)",
+    hp_ctrl_arrows:"Déplacer au clavier la pastille ou la carte sélectionnée", hp_space:"Cocher/décocher dans la grille des associations",
+    hp_arrows:"Se déplacer dans les onglets et la grille des associations",
+    hp_k_esc:"Échap", hp_k_space:"Espace", hp_k_click:"Clic", hp_k_drag:"Glisser",
     risks_empty:"Aucun risque. Cliquez sur « Ajouter un risque ».",
     delta_flat:"● non réduit", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Supprimer le risque {0} ?",
@@ -1358,6 +1393,21 @@ const I18N = {
     cols_reorder_hint:"Order: drag the headers", cols_reset:"Reset", th_actions_col:"Actions",
     menu_export_docx:"Export to Word (.docx)", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File exported: {0}", toast_export_fail:"Export failed: {0}", xl_score:"Score", xl_crit:"Criticality",
+    link_confirm_off:"Don't ask again (this session)",
+    btn_save_new:"Save and new", copy_suffix:" (copy)", a11y_dup_risk:"Duplicate risk {0}", a11y_dup_measure:"Duplicate measure {0}",
+    btn_undo:"Undo", toast_deleted:"Deleted: {0}", toast_restored:"Item restored",
+    grid_warn_rated:"⚠ {0} risk(s) already assessed on this grid: changing axes, levels or the scoring method will reinterpret their existing assessments.",
+    menu_help:"Help & shortcuts", help_title:"Help & shortcuts",
+    hp_sec_file:"File", hp_save:"Save to the linked file", hp_save_as:"Save as…", hp_open:"Load a .rae.json file",
+    hp_drop:"Dropping a .rae.json file on the window opens it",
+    hp_sec_nav:"Navigation", hp_esc:"Close the open dialog or menu", hp_help:"Open this help",
+    hp_url:"URL parameters: ?file=, ?tab=, ?lang=, ?filter=",
+    hp_sec_tables:"Tables", hp_sort:"Sort the column (second click: reverse order)", hp_reorder:"Reorder columns by dragging the header",
+    hp_cols:"Choose displayed columns, including custom fields", hp_pill:"Open the referenced risk or measure",
+    hp_sec_matrix:"Matrices, links & action plan", hp_drag:"Move a chip (matrices) or a card (kanban)",
+    hp_ctrl_arrows:"Move the selected chip or card with the keyboard", hp_space:"Check/uncheck in the associations grid",
+    hp_arrows:"Navigate the tabs and the associations grid",
+    hp_k_esc:"Esc", hp_k_space:"Space", hp_k_click:"Click", hp_k_drag:"Drag",
     risks_empty:"No risk. Click “Add a risk”.",
     delta_flat:"● unreduced", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Delete risk {0}?",
@@ -1605,6 +1655,21 @@ const I18N = {
     cols_reorder_hint:"Ordine: trascina le intestazioni", cols_reset:"Reimposta", th_actions_col:"Azioni",
     menu_export_docx:"Esporta in Word (.docx)", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File esportato: {0}", toast_export_fail:"Esportazione non riuscita: {0}", xl_score:"Punteggio", xl_crit:"Criticità",
+    link_confirm_off:"Non chiedere più (per questa sessione)",
+    btn_save_new:"Salva e nuovo", copy_suffix:" (copia)", a11y_dup_risk:"Duplica il rischio {0}", a11y_dup_measure:"Duplica la misura {0}",
+    btn_undo:"Annulla", toast_deleted:"Eliminato: {0}", toast_restored:"Elemento ripristinato",
+    grid_warn_rated:"⚠ {0} rischio/i già valutato/i su questa griglia: modificare gli assi, i livelli o il metodo di calcolo reinterpreterà le valutazioni esistenti.",
+    menu_help:"Aiuto e scorciatoie", help_title:"Aiuto e scorciatoie",
+    hp_sec_file:"File", hp_save:"Salva nel file collegato", hp_save_as:"Salva con nome…", hp_open:"Carica un file .rae.json",
+    hp_drop:"Trascinare un file .rae.json sulla finestra lo apre",
+    hp_sec_nav:"Navigazione", hp_esc:"Chiudi la finestra o il menu aperto", hp_help:"Apri questo aiuto",
+    hp_url:"Parametri URL: ?file=, ?tab=, ?lang=, ?filter=",
+    hp_sec_tables:"Tabelle", hp_sort:"Ordina la colonna (secondo clic: ordine inverso)", hp_reorder:"Riordina le colonne trascinando l'intestazione",
+    hp_cols:"Scegli le colonne visualizzate, inclusi i campi personalizzati", hp_pill:"Apri la scheda del rischio o della misura",
+    hp_sec_matrix:"Matrici, collegamenti e piano d'azione", hp_drag:"Sposta una pastiglia (matrici) o una scheda (kanban)",
+    hp_ctrl_arrows:"Sposta con la tastiera la pastiglia o la scheda selezionata", hp_space:"Seleziona/deseleziona nella griglia delle associazioni",
+    hp_arrows:"Naviga tra le schede e nella griglia delle associazioni",
+    hp_k_esc:"Esc", hp_k_space:"Spazio", hp_k_click:"Clic", hp_k_drag:"Trascina",
     risks_empty:"Nessun rischio. Clicca su « Aggiungi un rischio ».",
     delta_flat:"● non ridotto", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Eliminare il rischio {0}?",
@@ -2198,6 +2263,16 @@ function attachCompletion(input,source,libelleListe){
 function nextId(list,prefix){let n=1;const ids=new Set(list.map(x=>x.id));while(ids.has(prefix+n))n++;return prefix+n;}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),4000);}
+/* Toast avec bouton d'action (ex. « Annuler » après une suppression). Durée allongée :
+   l'utilisateur doit avoir le temps de lire ET de cliquer. L'action ne vaut qu'une fois. */
+function toastAction(msg,label,onAction){
+  const el=document.getElementById("toast");el.textContent="";
+  el.appendChild(document.createTextNode(msg));
+  const b=document.createElement("button");b.className="t-act";b.textContent=label;
+  b.onclick=()=>{el.classList.remove("show");clearTimeout(el._t);onAction();};
+  el.appendChild(b);el.classList.add("show");
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),7000);
+}
 
 /* Nom accessible + infobulle d'un bouton à icône. Mêmes arguments que t(). */
 function a11y(){const s=t.apply(null,arguments);return ' aria-label="'+esc(s)+'" title="'+esc(s)+'"';}
@@ -4085,7 +4160,7 @@ let planMode="due_date";
 /* En retard : échéance passée ET mesure non finalisée (ni « en place » ni « abandonnée »). */
 function isOverdue(m){return !!(m.due_date && m.due_date<today() && m.status!=="implemented" && m.status!=="abandoned");}
 function planCovered(mid){const risks=risksOfMeasure(mid);
-  return risks.length?'<span class="pill-list">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join("")+'</span>':'<span class="muted">—</span>';}
+  return risks.length?'<span class="pill-list">'+risks.map(riskPill).join("")+'</span>':'<span class="muted">—</span>';}
 function planSortByDate(list){
   const withD=list.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:cmpId(a,b));
   const noD=list.filter(m=>!m.due_date).slice().sort(cmpId);
@@ -4203,7 +4278,9 @@ function renderPlan(){
 (function(){
   const area=document.getElementById("planArea");if(!area)return;
   let dragId=null;
-  area.addEventListener("click",e=>{const el=e.target.closest("[data-mid]");if(el)openMeasureModal(el.dataset.mid);});
+  area.addEventListener("click",e=>{
+    if(e.target.closest("[data-open-r],[data-open-m]"))return; // les pastilles ouvrent leur propre fiche
+    const el=e.target.closest("[data-mid]");if(el)openMeasureModal(el.dataset.mid);});
   /* Alternative clavier au glisser-déposer (vue Par statut) :
      Entrée/Espace ouvre la mesure, Ctrl+←/→ la fait changer de colonne. */
   area.addEventListener("keydown",e=>{
@@ -4720,7 +4797,10 @@ function riskDeltaCell(r){
   if(!moved)return '<span class="delta-flat">'+esc(t("delta_flat"))+'</span>';
   return sr<si?'<span class="delta-down">'+esc(t("delta_down",si-sr))+'</span>':'<span class="delta-up">'+esc(t("delta_up",sr-si))+'</span>';
 }
-function measurePillsFor(id){const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}
+/* Pastille de code de risque, cliquable : ouvre la fiche du risque (pendant de measurePill). */
+function riskPill(id){const rr=riskById(id);
+  return '<span class="pill" title="'+esc(rr?rr.label:id)+'" data-open-r="'+esc(id)+'" tabindex="0" role="button">'+esc(id)+'</span>';}
+function measurePillsFor(id){return riskPill(id);}
 // Descripteurs des colonnes intégrées (hors Actions), par table.
 function builtinCols(table){
   if(table==="risks")return [
@@ -4838,8 +4918,8 @@ function renderColRow(table,row){
   }).join("");
 }
 function actionCell(table,row){
-  if(table==="risks")return '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(row.id)+'"'+a11y("a11y_edit_risk",row.id)+'>✎</button><button class="btn icon sm" data-del-r="'+esc(row.id)+'"'+a11y("a11y_del_risk",row.id)+'>🗑</button></div></td>';
-  if(table==="measures")return '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(row.id)+'"'+a11y("a11y_edit_measure",row.id)+'>✎</button><button class="btn icon sm" data-del-m="'+esc(row.id)+'"'+a11y("a11y_del_measure",row.id)+'>🗑</button></div></td>';
+  if(table==="risks")return '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(row.id)+'"'+a11y("a11y_edit_risk",row.id)+'>✎</button><button class="btn icon sm" data-dup-r="'+esc(row.id)+'"'+a11y("a11y_dup_risk",row.id)+'>⧉</button><button class="btn icon sm" data-del-r="'+esc(row.id)+'"'+a11y("a11y_del_risk",row.id)+'>🗑</button></div></td>';
+  if(table==="measures")return '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(row.id)+'"'+a11y("a11y_edit_measure",row.id)+'>✎</button><button class="btn icon sm" data-dup-m="'+esc(row.id)+'"'+a11y("a11y_dup_measure",row.id)+'>⧉</button><button class="btn icon sm" data-del-m="'+esc(row.id)+'"'+a11y("a11y_del_measure",row.id)+'>🗑</button></div></td>';
   const key=esc(row.risk)+'|'+esc(row.measure);
   return '<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'"'+a11y("a11y_edit_link",row.risk,row.measure)+'>✎</button><button class="btn icon sm" data-del-l="'+key+'"'+a11y("a11y_del_link",row.risk,row.measure)+'>🗑</button></div></td>';
 }
@@ -4902,6 +4982,75 @@ document.addEventListener("click",e=>{if(colMenu.style.display==="none")return;i
 window.addEventListener("resize",closeColMenu);
 
 /* ============================================================
+   PRODUCTIVITÉ & NAVIGATION TRANSVERSALE
+   Duplication de fiche, « Enregistrer et nouveau », pastilles R/M cliquables,
+   panneau Aide & raccourcis. (Recommandations R3/R4/R5 de l'audit interne.)
+   ============================================================ */
+/* Duplique une fiche et ouvre la copie en édition : les risques d'une même famille
+   partagent l'essentiel de leur contenu. La copie se range sous l'original ; ses
+   associations sont reprises SANS les notes ni champs perso des liens (ces
+   justifications appartiennent au couple d'origine). */
+function duplicateRisk(id){
+  const src=riskById(id);if(!src)return;
+  const copy=JSON.parse(JSON.stringify(src));
+  copy.id=nextId(analyse.risks,"R");copy.label=(copy.label||"")+t("copy_suffix");
+  const i=analyse.risks.findIndex(r=>r.id===id);
+  analyse.risks.splice(i+1,0,copy);
+  measuresOfRisk(id).forEach(mid=>analyse.treatments.push({risk:copy.id,measure:mid}));
+  markDirty();renderAll();openRiskModal(copy.id);
+}
+function duplicateMeasure(id){
+  const src=measureById(id);if(!src)return;
+  const copy=JSON.parse(JSON.stringify(src));
+  copy.id=nextId(analyse.measures,"M");copy.label=(copy.label||"")+t("copy_suffix");
+  const i=analyse.measures.findIndex(m=>m.id===id);
+  analyse.measures.splice(i+1,0,copy);
+  risksOfMeasure(id).forEach(rid=>analyse.treatments.push({risk:rid,measure:copy.id}));
+  markDirty();renderAll();openMeasureModal(copy.id);
+}
+/* « Enregistrer et nouveau » : bouton supplémentaire des modales de création, qui
+   enregistre (même clôture de validation que le bouton principal) puis rouvre une
+   fiche vierge — la saisie en série ne coûte plus une réouverture par fiche. */
+function addModalSaveAndNew(reopen){
+  const foot=document.getElementById("modalFooter"),ok=document.getElementById("modalOk");
+  const b=document.createElement("button");b.className="btn ghost";b.id="modalSaveNew";b.textContent=t("btn_save_new");
+  b.onclick=()=>{modalMsg("");if(modalConfirm()!==false){closeModal();reopen();}};
+  foot.insertBefore(b,ok);
+}
+/* Pastilles R1/M4 cliquables (souris et clavier) : ouvrent la fiche référencée.
+   Les gestionnaires de ligne ignorent ces clics (garde closest dans chaque tableau). */
+document.addEventListener("click",e=>{
+  const el=e.target.closest("[data-open-m],[data-open-r]");if(!el)return;
+  if(el.dataset.openM)openMeasureModal(el.dataset.openM);else openRiskModal(el.dataset.openR);
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  const el=e.target&&e.target.closest?e.target.closest("[data-open-m],[data-open-r]"):null;
+  if(!el)return;e.preventDefault();
+  if(el.dataset.openM)openMeasureModal(el.dataset.openM);else openRiskModal(el.dataset.openR);
+});
+/* ---------- Aide & raccourcis ---------- */
+function openHelpModal(){
+  const row=(k,d)=>'<div class="hlp-row"><span class="kbd">'+esc(k)+'</span><span>'+esc(t(d))+'</span></div>';
+  const sec=k=>'<div class="hlp-sec">'+esc(t(k))+'</div>';
+  pushModal(t("help_title"),
+    sec("hp_sec_file")+row("Ctrl+S","hp_save")+row("Ctrl+Maj+S","hp_save_as")+row("Ctrl+O","hp_open")+row("📄 ⭢","hp_drop")+
+    sec("hp_sec_nav")+row(t("hp_k_esc"),"hp_esc")+row("?","hp_help")+row("URL","hp_url")+
+    sec("hp_sec_tables")+row(t("hp_k_click"),"hp_sort")+row(t("hp_k_drag"),"hp_reorder")+row("⚙","hp_cols")+row("R1 · M4","hp_pill")+
+    sec("hp_sec_matrix")+row(t("hp_k_drag"),"hp_drag")+row("Ctrl+←↑→↓","hp_ctrl_arrows")+row(t("hp_k_space"),"hp_space")+row("←↑→↓","hp_arrows"),
+    [{label:t("btn_ok"),onClick:api=>api.close()}]);
+}
+document.getElementById("miHelp").addEventListener("click",()=>{closeMenu();openHelpModal();});
+// « ? » ouvre l'aide — hors zones de saisie et hors modale déjà ouverte.
+document.addEventListener("keydown",e=>{
+  if(e.key!=="?"||e.ctrlKey||e.metaKey||e.altKey)return;
+  const tg=e.target;
+  if(tg&&(tg.tagName==="INPUT"||tg.tagName==="TEXTAREA"||tg.tagName==="SELECT"||tg.isContentEditable))return;
+  if(document.getElementById("modalBg").classList.contains("open")||dynModals.length)return;
+  e.preventDefault();openHelpModal();
+});
+
+/* ============================================================
    VUE RISQUES
    ============================================================ */
 function renderRisks(){
@@ -4925,7 +5074,7 @@ function renderRisks(){
   list.forEach(r=>{
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.innerHTML=renderColRow("risks",r);
-    tr.addEventListener("click",e=>{if(e.target.closest("button"))return;openRiskModal(r.id);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,[data-open-m],[data-open-r]"))return;openRiskModal(r.id);});
     tb.appendChild(tr);
   });
 }
@@ -4933,11 +5082,21 @@ document.getElementById("btnAddRisk").addEventListener("click",()=>openRiskModal
 document.getElementById("btnImportRisks").addEventListener("click",()=>openImportModal("risks"));
 document.getElementById("risksTable").addEventListener("click",e=>{
   const ed=e.target.closest("[data-edit-r]");const dl=e.target.closest("[data-del-r]");
+  const dp=e.target.closest("[data-dup-r]");if(dp){duplicateRisk(dp.dataset.dupR);return;}
   if(ed)openRiskModal(ed.dataset.editR);
   if(dl){const id=dl.dataset.delR;confirmModal(t("confirm_del_risk",id),()=>{
+    /* Filet d'annulation : la fiche et ses liens sont mémorisés (avec sa position) et
+       restaurables depuis le toast — la confirmation protège, le toast pardonne. */
+    const idx=analyse.risks.findIndex(r=>r.id===id),obj=analyse.risks[idx];
+    const liens=analyse.treatments.filter(t=>t.risk===id);
     analyse.risks=analyse.risks.filter(r=>r.id!==id);
     analyse.treatments=analyse.treatments.filter(t=>t.risk!==id);
-    markDirty();renderAll();},{danger:true});}
+    markDirty();renderAll();
+    toastAction(t("toast_deleted",id),t("btn_undo"),()=>{
+      analyse.risks.splice(Math.min(idx,analyse.risks.length),0,obj);
+      liens.forEach(l=>analyse.treatments.push(l));
+      markDirty();renderAll();toast(t("toast_restored"));
+    });},{danger:true});}
 });
 
 function levelSelect(axis,val){
@@ -5016,6 +5175,7 @@ function openRiskModal(id){
     markDirty();renderAll();return true;
   // Le libellé décrit ce qui va se produire : « Créer » à l'ajout, « Valider » à l'édition.
   },isNew?t("btn_create"):null);
+  if(isNew)addModalSaveAndNew(()=>openRiskModal(null));   // saisie en série
 
   // Complétion : vivier des personnes (commun avec les responsables de mesures), et des catégories.
   attachCompletion(document.getElementById("f_prop"),"people",t("cbx_people"));
@@ -5058,7 +5218,8 @@ function measurePill(id){
   const statutLbl=m&&m.status?statusLabel(m.status):"";
   const title=(m?m.label:id)+(statutLbl?" — "+statutLbl:"");
   const style=c?' style="background:'+c.bg+';color:'+badgeFg(c.bg)+';border-color:'+c.bg+'"':"";
-  return '<span class="pill"'+style+' title="'+esc(title)+'">'+esc(id)+'</span>';
+  // data-open-m : la pastille ouvre la fiche de la mesure (navigation transversale, souris et clavier).
+  return '<span class="pill"'+style+' title="'+esc(title)+'" data-open-m="'+esc(id)+'" tabindex="0" role="button">'+esc(id)+'</span>';
 }
 const TYPES=["technical","organizational","preventive","detective","corrective","deterrent"];
 function renderMeasures(){
@@ -5079,7 +5240,7 @@ function renderMeasures(){
   list.forEach(m=>{
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.innerHTML=renderColRow("measures",m);
-    tr.addEventListener("click",e=>{if(e.target.closest("button"))return;openMeasureModal(m.id);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,[data-open-m],[data-open-r]"))return;openMeasureModal(m.id);});
     tb.appendChild(tr);
   });
 }
@@ -5100,11 +5261,20 @@ bindSort("risksTableEl","risks",renderRisks);
 bindSort("measuresTableEl","measures",renderMeasures);
 document.getElementById("measuresTable").addEventListener("click",e=>{
   const ed=e.target.closest("[data-edit-m]");const dl=e.target.closest("[data-del-m]");
+  const dp=e.target.closest("[data-dup-m]");if(dp){duplicateMeasure(dp.dataset.dupM);return;}
   if(ed)openMeasureModal(ed.dataset.editM);
   if(dl){const id=dl.dataset.delM;confirmModal(t("confirm_del_measure",id),()=>{
+    // Même filet d'annulation que pour les risques.
+    const idx=analyse.measures.findIndex(m=>m.id===id),obj=analyse.measures[idx];
+    const liens=analyse.treatments.filter(t=>t.measure===id);
     analyse.measures=analyse.measures.filter(m=>m.id!==id);
     analyse.treatments=analyse.treatments.filter(t=>t.measure!==id);
-    markDirty();renderAll();},{danger:true});}
+    markDirty();renderAll();
+    toastAction(t("toast_deleted",id),t("btn_undo"),()=>{
+      analyse.measures.splice(Math.min(idx,analyse.measures.length),0,obj);
+      liens.forEach(l=>analyse.treatments.push(l));
+      markDirty();renderAll();toast(t("toast_restored"));
+    });},{danger:true});}
 });
 function openMeasureModal(id){
   const isNew=!id;
@@ -5153,6 +5323,7 @@ function openMeasureModal(id){
       analyse.treatments.push({risk:rid,measure:obj.id});});
     markDirty();renderAll();return true;
   },isNew?t("btn_create"):null);
+  if(isNew)addModalSaveAndNew(()=>openMeasureModal(null));   // saisie en série
   // Même vivier que le propriétaire d'un risque : c'est la même population.
   attachCompletion(document.getElementById("f_resp"),"people",t("cbx_people"));
 }
@@ -5348,18 +5519,37 @@ document.getElementById("crossArea").addEventListener("change",e=>{
   const refresh=()=>{crossRefocus=true;markDirty();renderCrosstab();renderLinkDetails();renderRisks();renderMeasures();updateBadges();};
   if(cb.checked){
     cb.checked=false; // cocher = créer le lien : on attend la confirmation avant de créer
-    confirmModal(t("confirm_add_link",rid,mid),()=>{
+    confirmLink(t("confirm_add_link",rid,mid),()=>{
       if(!treatmentOf(rid,mid))analyse.treatments.push({risk:rid,measure:mid});
       refresh();
     });
   }else{
     cb.checked=true; // décocher = supprimer le lien : on annule visuellement en attendant confirmation
-    confirmModal(t("confirm_del_link",rid,mid),()=>{
+    confirmLink(t("confirm_del_link",rid,mid),()=>{
       analyse.treatments=analyse.treatments.filter(t=>!(t.risk===rid&&t.measure===mid));
       refresh();
-    },{danger:true});
+    },true);
   }
 });
+/* Confirmation des coches du tableau croisé, débrayable pour la SESSION : en phase
+   d'association massive, N liens valaient N confirmations. La préférence n'est pas
+   persistée (ni fichier ni localStorage) : au prochain lancement, la protection revient.
+   Le registre Liens > Détails garde, lui, sa confirmation systématique (suppression
+   d'un lien porteur de note et de champs personnalisés). */
+let linkConfirmOff=false;
+function confirmLink(message,onYes,danger){
+  if(linkConfirmOff){onYes();return;}
+  const cbId="lcOff"+Date.now();
+  pushModal(t("dialog_confirm"),
+    '<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>'+
+    '<label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;color:var(--muted)">'+
+      '<input type="checkbox" id="'+cbId+'" style="width:15px;height:15px;flex:none"> '+esc(t("link_confirm_off"))+'</label>',
+    [{label:t("btn_cancel"),cls:"ghost",onClick:api=>api.close()},
+     {label:t("btn_confirm"),cls:danger?"danger":"",onClick:api=>{
+       const cb=document.getElementById(cbId);if(cb&&cb.checked)linkConfirmOff=true;
+       api.close();onYes();}}],
+    {role:"alertdialog"});
+}
 
 // Sous-onglet Détails : registre des liens existants (note + champs perso), éditable via modale.
 function renderLinkDetails(){
@@ -5400,8 +5590,14 @@ document.getElementById("linkDetailsArea").addEventListener("click",e=>{
   if(ed){const[rid,mid]=ed.dataset.editL.split("|");openLinkModal(rid,mid);return;}
   if(dl){const[rid,mid]=dl.dataset.delL.split("|");
     confirmModal(t("confirm_del_link",rid,mid),()=>{
+      // Filet d'annulation : le lien supprimé (note et champs perso compris) est restaurable.
+      const idx=analyse.treatments.findIndex(x=>x.risk===rid&&x.measure===mid),obj=analyse.treatments[idx];
       analyse.treatments=analyse.treatments.filter(x=>!(x.risk===rid&&x.measure===mid));
       markDirty();renderLinks();renderRisks();renderMeasures();updateBadges();
+      toastAction(t("toast_deleted",rid+" → "+mid),t("btn_undo"),()=>{
+        analyse.treatments.splice(Math.min(idx,analyse.treatments.length),0,obj);
+        markDirty();renderLinks();renderRisks();renderMeasures();updateBadges();toast(t("toast_restored"));
+      });
     },{danger:true});return;}
   const row=e.target.closest(".linkrow");if(!row)return;
   openLinkModal(row.dataset.r,row.dataset.m);
@@ -5995,6 +6191,9 @@ function setParamMode(m){
 }
 document.getElementById("paramSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setParamMode(b.dataset.pmode);});
 function renderSettings(){
+  // Grille déjà cotée : bandeau d'impact — modifier axes/niveaux/méthode réinterprète l'existant.
+  const gw=document.getElementById("gridRatedWarn");
+  if(gw){const n=analyse.risks.length;gw.style.display=n?"":"none";if(n)gw.textContent=t("grid_warn_rated",n);}
   renderAxis("axisProb",analyse.grid.vertical_axis,"prob");
   renderAxis("axisGrav",analyse.grid.horizontal_axis,"grav");
   document.getElementById("scoreMethode").value=analyse.grid.score.method||"product";
