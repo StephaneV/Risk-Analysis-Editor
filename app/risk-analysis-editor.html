@@ -27,6 +27,7 @@
     --green-text:var(--green);--red-text:var(--red);--unchanged-text:var(--unchanged);
     --green-text-aa:#3fbf74;--red-text-aa:#f06a6a;--unchanged-text-aa:#9b85ff;
     --btn-bg:var(--accent);
+    --accent-soft:#24345e;
     --focus-ring:color-mix(in srgb,var(--accent) 45%,transparent);
     --danger:#d64545;--shadow:0 8px 30px rgba(0,0,0,.45);
   }
@@ -37,6 +38,7 @@
     --green-text:var(--green);--red-text:var(--red);--unchanged-text:var(--unchanged);
     --green-text-aa:#1f7a44;--red-text-aa:#b3383a;--unchanged-text-aa:#5b3fd6;
     --btn-bg:var(--accent);
+    --accent-soft:#dbe6ff;
     --focus-ring:color-mix(in srgb,var(--accent) 35%,transparent);
     --danger:#d64545;--shadow:0 10px 28px rgba(35,50,85,.12);
   }
@@ -313,6 +315,37 @@
   .filterbar input[type=search]{min-width:180px}
   .filterbar label.chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);white-space:nowrap}
   .filterbar label.chk input{width:16px;height:16px;flex:none}
+  /* Filtres par champ perso : puce compacte à menu déroulant sur mesure. Nom du champ tronqué
+     (largeur bornée) puis valeur, le tout en une puce à la place d'un <select> natif dont le
+     texte long était coupé net et illisible. Le menu ouvert affiche les libellés en entier. */
+  .fwrap{position:relative;display:inline-block}
+  .fchip{display:inline-flex;align-items:center;gap:7px;height:34px;max-width:260px;
+    padding:0 9px 0 11px;border-radius:8px;border:1px solid var(--border);background:var(--panel-2);
+    color:var(--text);font-size:13px;font-family:inherit;cursor:pointer}
+  .fchip:hover{border-color:var(--muted)}
+  .fchip:focus-visible{outline:none;box-shadow:0 0 0 3px var(--focus-ring)}
+  .fchip-cap{color:var(--muted);white-space:nowrap}                 /* nom du champ, état vide */
+  .fchip-dot{width:9px;height:9px;border-radius:50%;flex:none}
+  /* nom du champ à l'état choisi : tronqué à une largeur fixe (variante 3) */
+  .fchip-lbl{color:var(--accent);white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+  .fchip-val{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:26px}
+  .fchip-caret{color:var(--muted);flex:none;font-size:11px}
+  .fchip-clear{flex:none;color:var(--muted);font-size:14px;line-height:1;padding:2px;border-radius:5px}
+  .fchip-clear:hover{color:var(--danger);background:var(--panel)}
+  .fchip.on{border-color:var(--accent);background:var(--accent-soft)}
+  .fmenu{position:absolute;z-index:60;top:calc(100% + 5px);left:0;min-width:230px;max-width:360px;
+    background:var(--panel-2);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);
+    padding:5px;max-height:340px;overflow:auto}
+  .fmenu[hidden]{display:none}
+  .fmenu-head{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:6px 10px 4px}
+  .fopt{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:13.5px;line-height:1.35}
+  .fopt.point{background:var(--panel-3)}
+  .fopt[aria-selected="true"]{background:var(--accent);color:#fff}
+  .fopt[aria-selected="true"].point{background:var(--accent)}
+  .fopt-dot{width:11px;height:11px;border-radius:50%;flex:none;margin-top:3px}
+  .fopt-lbl{min-width:0}
+  .fopt-all{color:var(--muted);border-bottom:1px solid var(--border);margin-bottom:3px;padding-bottom:9px}
+  .fopt-all[aria-selected="true"]{color:#fff}
   th[data-sort]{cursor:pointer;user-select:none}
   th[data-sort]:hover{color:var(--text)}
   .sort-ind{font-size:10px;margin-left:4px;color:var(--accent)}
@@ -1189,7 +1222,7 @@ const I18N = {
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
     flt_none:"Aucun résultat pour ce filtre.",
-    flt_by_field:"Filtrer par « {0} »", flt_field_all:"{0} : tout", flt_clear:"Réinitialiser les filtres",
+    flt_by_field:"Filtrer par « {0} »", flt_field_all:"{0} : tout", flt_clear:"Réinitialiser les filtres", flt_all:"Tout", flt_clear_one:"Retirer ce filtre",
     cf_section:"Champs personnalisés", cf_caption:"Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.",
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
@@ -1426,7 +1459,7 @@ const I18N = {
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
     flt_none:"No result for this filter.",
-    flt_by_field:"Filter by \"{0}\"", flt_field_all:"{0}: all", flt_clear:"Clear filters",
+    flt_by_field:"Filter by \"{0}\"", flt_field_all:"{0}: all", flt_clear:"Clear filters", flt_all:"All", flt_clear_one:"Remove this filter",
     cf_section:"Custom fields", cf_caption:"Define extra fields attached to the analysis, risks or measures.",
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
@@ -1663,7 +1696,7 @@ const I18N = {
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
     flt_none:"Nessun risultato per questo filtro.",
-    flt_by_field:"Filtra per « {0} »", flt_field_all:"{0} : tutto", flt_clear:"Azzera i filtri",
+    flt_by_field:"Filtra per « {0} »", flt_field_all:"{0} : tutto", flt_clear:"Azzera i filtri", flt_all:"Tutto", flt_clear_one:"Rimuovi questo filtro",
     cf_section:"Campi personalizzati", cf_caption:"Definisci campi aggiuntivi associati all'analisi, ai rischi o alle misure.",
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
@@ -4165,6 +4198,81 @@ function cfAllFilterableFields(){
   return l;
 }
 function filterBarDef(cle){return FILTER_BARS.filter(b=>b.cle===cle)[0];}
+
+/* ---- Puce de filtre à menu déroulant ----
+   Remplace le <select> natif, dont le texte long était coupé net. La puce montre le nom du
+   champ tronqué puis la valeur ; le menu déroulant affiche les libellés en entier. */
+function cfChoiceColor(f,v){
+  if(f.type!=="tags")return null;
+  const it=(f.items||[]).find(x=>x.code===v);
+  return (it&&it.color)||null;
+}
+function cfChipHTML(f,bcle){
+  const v=cfFilters[f.code]||"";
+  const menuId="fmenu-"+esc(bcle)+"-"+esc(f.code);
+  const nom=cfLabel(f);
+  let chip;
+  if(!v){
+    chip='<button type="button" class="fchip" data-cf-chip="'+esc(f.code)+'"'+
+      ' aria-haspopup="listbox" aria-expanded="false" aria-controls="'+menuId+'"'+
+      ' aria-label="'+esc(t("flt_by_field",nom))+'">'+
+      '<span class="fchip-cap">'+esc(nom)+'</span><span class="fchip-caret" aria-hidden="true">▾</span></button>';
+  }else{
+    const pair=cfFilterChoices(f).find(c=>c[0]===v), val=pair?pair[1]:v, col=cfChoiceColor(f,v);
+    chip='<button type="button" class="fchip on" data-cf-chip="'+esc(f.code)+'"'+
+      ' aria-haspopup="listbox" aria-expanded="false" aria-controls="'+menuId+'"'+
+      ' title="'+esc(nom+" : "+val)+'" aria-label="'+esc(t("flt_by_field",nom)+" : "+val)+'">'+
+      (col?'<span class="fchip-dot" style="background:'+esc(col)+'"></span>':'')+
+      '<span class="fchip-lbl">'+esc(nom)+' :</span>'+
+      '<span class="fchip-val">'+esc(val)+'</span>'+
+      '<span class="fchip-clear" data-cf-clear title="'+esc(t("flt_clear_one"))+'" aria-label="'+esc(t("flt_clear_one"))+'">✕</span></button>';
+  }
+  let opts='<div class="fopt fopt-all" role="option" id="'+menuId+'-o0" data-cf-opt="'+esc(f.code)+'" data-val=""'+
+    ' aria-selected="'+(!v)+'"><span class="fopt-lbl">'+esc(t("flt_all"))+'</span></div>';
+  cfFilterChoices(f).forEach((c,i)=>{
+    const col=cfChoiceColor(f,c[0]);
+    opts+='<div class="fopt" role="option" id="'+menuId+'-o'+(i+1)+'" data-cf-opt="'+esc(f.code)+'" data-val="'+esc(c[0])+'"'+
+      ' aria-selected="'+(c[0]===v)+'">'+
+      (col?'<span class="fopt-dot" style="background:'+esc(col)+'"></span>':'')+
+      '<span class="fopt-lbl">'+esc(c[1])+'</span></div>';
+  });
+  const menu='<div class="fmenu" id="'+menuId+'" role="listbox" aria-label="'+esc(nom)+'" hidden>'+
+    '<div class="fmenu-head">'+esc(nom)+'</div>'+opts+'</div>';
+  return '<span class="fwrap">'+chip+menu+'</span>';
+}
+/* Un seul menu ouvert à la fois. */
+function cfCloseMenus(except){
+  document.querySelectorAll(".fmenu:not([hidden])").forEach(m=>{
+    if(m===except)return;
+    m.hidden=true;
+    const chip=m.parentNode&&m.parentNode.querySelector(".fchip");
+    if(chip){chip.setAttribute("aria-expanded","false");chip.removeAttribute("aria-activedescendant");}
+  });
+}
+function cfPointMenu(chip,menu,i){
+  const opts=[...menu.querySelectorAll(".fopt")];if(!opts.length)return;
+  i=(i+opts.length)%opts.length;
+  opts.forEach((o,k)=>o.classList.toggle("point",k===i));
+  chip.setAttribute("aria-activedescendant",opts[i].id);
+  opts[i].scrollIntoView({block:"nearest"});
+  menu.dataset.idx=i;
+}
+function cfOpenMenu(chip){
+  const menu=document.getElementById(chip.getAttribute("aria-controls"));if(!menu)return;
+  cfCloseMenus(menu);
+  menu.hidden=false;chip.setAttribute("aria-expanded","true");
+  const opts=[...menu.querySelectorAll(".fopt")];
+  let i=opts.findIndex(o=>o.getAttribute("aria-selected")==="true");if(i<0)i=0;
+  cfPointMenu(chip,menu,i);
+}
+function cfChooseOpt(opt){
+  const code=opt.dataset.cfOpt, val=opt.dataset.val;
+  const viewId=(opt.closest(".view")||{}).id;
+  if(val)cfFilters[code]=val;else delete cfFilters[code];
+  cfFilterSyncURL();renderAll();   // renderAll reconstruit (et referme) toutes les barres
+  // Le focus était sur la puce détruite par le redessin : on le rend à la puce refaite.
+  if(viewId){const c=document.querySelector("#"+viewId+' .fchip[data-cf-chip="'+code+'"]');if(c)c.focus();}
+}
 /* Conteneur de la barre : celui du gabarit s'il existe, créé sinon (matrices, tableau
    croisé). Placé au-dessus du contenu qu'il restreint. */
 function filterBarHost(b){
@@ -4240,14 +4348,7 @@ function renderFilterBars(){
     let zone=host.querySelector("[data-flt-cf]");
     if(!zone){zone=document.createElement("span");zone.setAttribute("data-flt-cf","");
       zone.style.display="contents";host.appendChild(zone);}
-    zone.innerHTML=champs.map(f=>{
-      const cur=cfFilters[f.code]||"";
-      return '<select data-cf-flt="'+esc(f.code)+'" aria-label="'+esc(t("flt_by_field",cfLabel(f)))+'"'+
-        ' title="'+esc(t("flt_by_field",cfLabel(f)))+'">'+
-        '<option value="">'+esc(t("flt_field_all",cfLabel(f)))+'</option>'+
-        cfFilterChoices(f).map(function(c){return '<option value="'+esc(c[0])+'"'+(c[0]===cur?" selected":"")+'>'+esc(c[1])+'</option>';}).join("")+
-        '</select>';
-    }).join("");
+    zone.innerHTML=champs.map(f=>cfChipHTML(f,b.cle)).join("");
     let cnt=host.querySelector("[data-flt-count]");
     if(!cnt){cnt=document.createElement("span");cnt.className="flt-count";
       cnt.setAttribute("data-flt-count","");host.appendChild(cnt);}
@@ -4266,13 +4367,33 @@ document.addEventListener("click",e=>{
   if(!b)return;
   filterBarReset(b.dataset.fltReset);
 });
-document.addEventListener("change",e=>{
-  const sel=e.target.closest&&e.target.closest("select[data-cf-flt]");
-  if(!sel)return;
-  const code=sel.dataset.cfFlt;
-  if(sel.value)cfFilters[code]=sel.value;else delete cfFilters[code];
-  cfFilterSyncURL();renderAll();
+/* Ouverture/fermeture, retrait, choix — délégués une fois pour toutes : les barres sont
+   reconstruites à chaque renderAll, mais ces écouteurs, posés sur document, survivent. */
+document.addEventListener("click",e=>{
+  const clr=e.target.closest&&e.target.closest("[data-cf-clear]");
+  if(clr){const chip=clr.closest(".fchip"),code=chip&&chip.dataset.cfChip;
+    if(code){delete cfFilters[code];cfFilterSyncURL();renderAll();}return;}
+  const opt=e.target.closest&&e.target.closest(".fopt[data-cf-opt]");
+  if(opt){cfChooseOpt(opt);return;}
+  const chip=e.target.closest&&e.target.closest(".fchip[data-cf-chip]");
+  if(chip){const menu=document.getElementById(chip.getAttribute("aria-controls"));
+    if(menu&&menu.hidden)cfOpenMenu(chip);else cfCloseMenus();}
 });
+document.addEventListener("keydown",e=>{
+  const chip=e.target.closest&&e.target.closest(".fchip[data-cf-chip]");if(!chip)return;
+  const menu=document.getElementById(chip.getAttribute("aria-controls"));if(!menu)return;
+  const ouvert=!menu.hidden, i=+menu.dataset.idx||0;
+  if(e.key==="ArrowDown"){e.preventDefault();if(ouvert)cfPointMenu(chip,menu,i+1);else cfOpenMenu(chip);}
+  else if(e.key==="ArrowUp"){e.preventDefault();if(ouvert)cfPointMenu(chip,menu,i-1);}
+  else if(e.key==="Home"){if(ouvert){e.preventDefault();cfPointMenu(chip,menu,0);}}
+  else if(e.key==="End"){if(ouvert){e.preventDefault();cfPointMenu(chip,menu,menu.querySelectorAll(".fopt").length-1);}}
+  else if(e.key==="Enter"||e.key===" "){
+    if(ouvert){e.preventDefault();const opt=menu.querySelectorAll(".fopt")[i];if(opt)cfChooseOpt(opt);}
+    else{e.preventDefault();cfOpenMenu(chip);}}
+  else if(e.key==="Escape"&&ouvert){e.preventDefault();e.stopPropagation();cfCloseMenus();chip.focus();}
+});
+// Clic hors d'une puce : on referme. mousedown, pour agir avant le clic sur un autre contrôle.
+document.addEventListener("mousedown",e=>{if(!(e.target.closest&&e.target.closest(".fwrap")))cfCloseMenus();});
 
 /* ---- Adresse ----
    Format : ?filter=code:valeur;code:valeur — un couple par champ, séparés par des
