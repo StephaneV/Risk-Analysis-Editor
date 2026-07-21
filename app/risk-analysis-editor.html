@@ -363,7 +363,10 @@
 
   /* ---------- Colonnes personnalisables des registres ---------- */
   th .thlabel{display:inline-flex;align-items:center}
+  /* En-tête triable ET déplaçable : priorité au curseur du clic (tri), pas à la main du glisser. */
+  th.col-move,th.col-pinned{white-space:nowrap}   /* la flèche de tri reste sur la même ligne que le libellé */
   th.col-move{cursor:grab}
+  th.col-move[data-sort]{cursor:pointer}
   th.col-move .grip{opacity:0;margin-right:5px;color:var(--muted);font-size:11px;transition:opacity .12s}
   th.col-move:hover .grip{opacity:.7}
   th.th-dragging{opacity:.45}
