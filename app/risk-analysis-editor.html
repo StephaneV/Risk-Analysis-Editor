@@ -4986,27 +4986,22 @@ window.addEventListener("resize",closeColMenu);
    Duplication de fiche, « Enregistrer et nouveau », pastilles R/M cliquables,
    panneau Aide & raccourcis. (Recommandations R3/R4/R5 de l'audit interne.)
    ============================================================ */
-/* Duplique une fiche et ouvre la copie en édition : les risques d'une même famille
-   partagent l'essentiel de leur contenu. La copie se range sous l'original ; ses
-   associations sont reprises SANS les notes ni champs perso des liens (ces
-   justifications appartiennent au couple d'origine). */
+/* Duplique une fiche : les risques d'une même famille partagent l'essentiel de leur
+   contenu. La modale s'ouvre en CRÉATION pré-remplie (identifiant suivant, libellé
+   suffixé « (copie) », associations de l'original pré-cochées — sans les notes ni
+   champs perso des liens, qui appartiennent au couple d'origine). Rien n'est créé
+   tant que l'utilisateur ne valide pas ; la copie se range alors en fin de liste. */
 function duplicateRisk(id){
   const src=riskById(id);if(!src)return;
   const copy=JSON.parse(JSON.stringify(src));
   copy.id=nextId(analyse.risks,"R");copy.label=(copy.label||"")+t("copy_suffix");
-  const i=analyse.risks.findIndex(r=>r.id===id);
-  analyse.risks.splice(i+1,0,copy);
-  measuresOfRisk(id).forEach(mid=>analyse.treatments.push({risk:copy.id,measure:mid}));
-  markDirty();renderAll();openRiskModal(copy.id);
+  openRiskModal(null,{prefill:copy,linked:measuresOfRisk(id)});
 }
 function duplicateMeasure(id){
   const src=measureById(id);if(!src)return;
   const copy=JSON.parse(JSON.stringify(src));
   copy.id=nextId(analyse.measures,"M");copy.label=(copy.label||"")+t("copy_suffix");
-  const i=analyse.measures.findIndex(m=>m.id===id);
-  analyse.measures.splice(i+1,0,copy);
-  risksOfMeasure(id).forEach(rid=>analyse.treatments.push({risk:rid,measure:copy.id}));
-  markDirty();renderAll();openMeasureModal(copy.id);
+  openMeasureModal(null,{prefill:copy,linked:risksOfMeasure(id)});
 }
 /* « Enregistrer et nouveau » : bouton supplémentaire des modales de création, qui
    enregistre (même clôture de validation que le bouton principal) puis rouvre une
@@ -5102,14 +5097,16 @@ document.getElementById("risksTable").addEventListener("click",e=>{
 function levelSelect(axis,val){
   return axis.levels.map(n=>'<option value="'+n.value+'"'+(n.value==val?" selected":"")+'>'+n.value+' · '+esc(n.label)+'</option>').join("");
 }
-function openRiskModal(id){
+/* dup (duplication) : {prefill, linked} — la modale s'ouvre en CRÉATION pré-remplie ;
+   rien n'existe tant que l'utilisateur ne valide pas (Annuler = aucune trace). */
+function openRiskModal(id,dup){
   const isNew=!id;
-  const r=isNew?{id:nextId(analyse.risks,"R"),label:"",category:"",description:"",owner:"",
+  const r=isNew?(dup&&dup.prefill?dup.prefill:{id:nextId(analyse.risks,"R"),label:"",category:"",description:"",owner:"",
     initial_assessment:{probability:probabilityLevels()[0].value,severity:severityLevels()[0].value},
-    residual_assessment:{probability:probabilityLevels()[0].value,severity:severityLevels()[0].value}}
+    residual_assessment:{probability:probabilityLevels()[0].value,severity:severityLevels()[0].value}})
     :JSON.parse(JSON.stringify(riskById(id)));
   if(!r.residual_assessment)r.residual_assessment=JSON.parse(JSON.stringify(r.initial_assessment));
-  const linked=new Set(measuresOfRisk(r.id));
+  const linked=new Set(isNew?(dup&&dup.linked||[]):measuresOfRisk(r.id));
 
   const pAxis=analyse.grid.vertical_axis, gAxis=analyse.grid.horizontal_axis;
   const body=
@@ -5276,11 +5273,13 @@ document.getElementById("measuresTable").addEventListener("click",e=>{
       markDirty();renderAll();toast(t("toast_restored"));
     });},{danger:true});}
 });
-function openMeasureModal(id){
+/* dup (duplication) : {prefill, linked} — la modale s'ouvre en CRÉATION pré-remplie ;
+   rien n'existe tant que l'utilisateur ne valide pas (Annuler = aucune trace). */
+function openMeasureModal(id,dup){
   const isNew=!id;
-  const m=isNew?{id:nextId(analyse.measures,"M"),label:"",type:"technical",status:"proposed"}
+  const m=isNew?(dup&&dup.prefill?dup.prefill:{id:nextId(analyse.measures,"M"),label:"",type:"technical",status:"proposed"})
     :JSON.parse(JSON.stringify(measureById(id)));
-  const couverts=new Set(isNew?[]:risksOfMeasure(m.id));
+  const couverts=new Set(isNew?(dup&&dup.linked||[]):risksOfMeasure(m.id));
   const body=reqLegend()+'<div class="grid2">'+
     '<label class="field"><span class="lab">'+esc(t("f_identifier"))+'</span><input id="f_id" value="'+esc(m.id)+'"></label>'+
     '<label class="field"><span class="lab">'+esc(t("th_status"))+'</span><select id="f_status">'+
