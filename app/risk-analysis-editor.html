@@ -384,8 +384,11 @@
   /* ---------- Rendu Markdown (rapport, bloc Présentation, aperçu) ---------- */
   .md>*:first-child{margin-top:0}
   .md>*:last-child{margin-bottom:0}
+  .md>*:first-child{margin-top:0}   /* pas de blanc parasite en tête de bloc */
   .md p{margin:.4em 0}
-  .md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:.6em 0 .3em;line-height:1.25}
+  /* Titres : davantage d'air au-dessus (séparation avec le contenu précédent),
+     moins en dessous (le titre reste solidaire de son paragraphe). */
+  .md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:1.2em 0 .2em;line-height:1.25}
   .md h1{font-size:1.3em}.md h2{font-size:1.18em}.md h3{font-size:1.07em}
   .md h4,.md h5,.md h6{font-size:1em}
   .md ul,.md ol{margin:.4em 0;padding-left:1.6em}
@@ -569,6 +572,14 @@
   .report h1{font-size:22px;margin:0 0 6px;color:var(--text)}
   .report h2{font-size:15px;margin:0 0 12px;font-weight:600;color:var(--text)}
   .report h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+  /* Titres issus d'un champ Markdown dans le rapport : rendus comme du Markdown
+     (échelle et casse normales), et non comme les titres de structure du rapport
+     ci-dessus. Espacement demandé : plus d'air au-dessus, moins en dessous. */
+  .report .md h1,.report .md h2,.report .md h3,.report .md h4,.report .md h5,.report .md h6{
+    margin:1.2em 0 .2em;color:var(--text);font-weight:600;text-transform:none;letter-spacing:normal}
+  .report .md h1{font-size:1.3em}.report .md h2{font-size:1.18em}.report .md h3{font-size:1.07em}
+  .report .md h4,.report .md h5,.report .md h6{font-size:1em}
+  .report .md>*:first-child{margin-top:0}
   .report .rp-sub{color:var(--muted);font-size:13px;margin-bottom:10px}
   .report table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:6px}
   .report th,.report td{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top}
@@ -3969,7 +3980,7 @@ function renderReport(){
   else{
     h+='<table><thead><tr><th style="width:44px">'+esc(t("th_id"))+'</th><th>'+esc(t("th_measure"))+'</th><th>'+esc(t("th_type"))+'</th><th>'+esc(t("th_status"))+'</th><th>'+esc(t("th_responsible"))+'</th><th>'+esc(t("f_due_date"))+'</th><th>'+esc(t("th_covered_risks"))+'</th></tr></thead><tbody>';
     analyse.measures.forEach(m=>{const risks=risksOfMeasure(m.id);
-      h+='<tr><td>'+esc(m.id)+'</td><td>'+esc(m.label)+'</td><td>'+(m.type?esc(typeLabel(m.type)):"—")+'</td><td>'+(m.status?esc(statusLabel(m.status)):"—")+'</td><td>'+esc(m.responsible||"—")+'</td><td>'+esc(m.due_date||"—")+'</td><td>'+(risks.length?risks.map(esc).join(", "):"—")+'</td></tr>';
+      h+='<tr><td>'+esc(m.id)+'</td><td>'+esc(m.label)+'</td><td>'+(m.type?esc(typeLabel(m.type)):"—")+'</td><td>'+statusBadge(m.status)+'</td><td>'+esc(m.responsible||"—")+'</td><td>'+esc(m.due_date||"—")+'</td><td>'+(risks.length?risks.map(esc).join(", "):"—")+'</td></tr>';
     });
     h+='</tbody></table></div>';
   }
