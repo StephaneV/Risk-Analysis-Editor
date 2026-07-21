@@ -85,7 +85,25 @@
     },
     "extensions": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {
+        "display": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Préférences d'affichage propres à l'analyse (non normatives).",
+          "properties": {
+            "arrangement": { "type": "string", "description": "Disposition des pastilles dans les matrices." },
+            "columns": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "description": "Colonnes visibles, dans l'ordre d'affichage, pour chaque registre (clés « risks », « measures », « links »). Une entrée liste les colonnes retenues (la colonne « Actions » est implicite et toujours affichée). Les colonnes de champ personnalisé sont désignées par « cf:<code> ». Absent : ordre par défaut."
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {

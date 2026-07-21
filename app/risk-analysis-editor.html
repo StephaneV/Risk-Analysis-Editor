@@ -361,6 +361,42 @@
   th[data-sort]:hover{color:var(--text)}
   .sort-ind{font-size:10px;margin-left:4px;color:var(--accent)}
 
+  /* ---------- Colonnes personnalisables des registres ---------- */
+  th .thlabel{display:inline-flex;align-items:center}
+  th.col-move{cursor:grab}
+  th.col-move .grip{opacity:0;margin-right:5px;color:var(--muted);font-size:11px;transition:opacity .12s}
+  th.col-move:hover .grip{opacity:.7}
+  th.th-dragging{opacity:.45}
+  th.col-pinned .pin{opacity:0;margin-right:4px;font-size:10px;transition:opacity .12s}
+  th.col-pinned:hover .pin{opacity:.6}
+  th.drop-before{box-shadow:inset 3px 0 0 var(--accent)}
+  th.drop-after{box-shadow:inset -3px 0 0 var(--accent)}
+  th.colhead-actions{text-align:right}
+  .colgear{color:var(--muted)}
+  .colgear:hover{color:var(--accent)}
+  .col-menu{position:fixed;z-index:120;background:var(--panel);border:1px solid var(--border);
+    border-radius:12px;box-shadow:0 12px 40px rgba(20,40,80,.22);width:290px;padding:8px}
+  .col-menu .cm-title{margin:6px 8px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .col-menu .cm-list{max-height:60vh;overflow:auto}
+  .col-menu .cm-row{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;cursor:pointer}
+  .col-menu .cm-row:hover{background:var(--panel-2)}
+  .col-menu .cm-row.locked{cursor:default;opacity:.75}
+  .col-menu .cm-row.locked:hover{background:none}
+  .col-menu .cm-row input{width:16px;height:16px;accent-color:var(--accent);flex:none}
+  .col-menu .cm-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .col-menu .cm-cf{font-size:9.5px;font-weight:800;letter-spacing:.4px;color:var(--accent);
+    background:var(--panel-2);border:1px solid var(--border);border-radius:5px;padding:1px 5px;text-transform:uppercase;flex:none}
+  .col-menu .cm-pinned{font-size:11px;color:var(--muted);flex:none}
+  .col-menu .cm-lock{font-size:11px;color:var(--muted);flex:none}
+  .col-menu .cm-move{display:inline-flex;gap:2px;flex:none}
+  .col-menu .cm-arrow{border:none;background:none;cursor:pointer;color:var(--muted);font-size:11px;
+    padding:2px 4px;border-radius:5px;line-height:1}
+  .col-menu .cm-arrow:hover:not([disabled]){color:var(--accent);background:var(--panel-2)}
+  .col-menu .cm-arrow[disabled]{opacity:.3;cursor:default}
+  .col-menu .cm-foot{display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--border);margin-top:6px;padding:8px 6px 3px}
+  .col-menu .cm-hint{color:var(--muted);font-size:11px}
+
   /* ---------- Champs personnalisés (contrôles de saisie) ---------- */
   .cf-field{display:block;margin-bottom:12px}
   .cf-field>.lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
@@ -710,16 +746,7 @@
       </div>
       <div class="table-scroll"><table id="risksTableEl">
         <caption class="sr-only" data-i18n="risks_title">Registre des risques</caption>
-        <thead><tr>
-          <th data-sort="id"><span data-i18n="th_id">ID</span><span class="sort-ind"></span></th>
-          <th data-sort="risk"><span data-i18n="th_risk">Risque</span><span class="sort-ind"></span></th>
-          <th data-sort="cat"><span data-i18n="th_category">Catégorie</span><span class="sort-ind"></span></th>
-          <th data-sort="initial"><span data-i18n="th_initial">Initial</span><span class="sort-ind"></span></th>
-          <th data-sort="residual"><span data-i18n="th_residual">Résiduel</span><span class="sort-ind"></span></th>
-          <th data-i18n="th_measures">Mesures</th>
-          <th data-sort="evolution"><span data-i18n="th_evolution">Évolution</span><span class="sort-ind"></span></th>
-          <th></th>
-        </tr></thead>
+        <thead><tr class="col-head-row"></tr></thead>
         <tbody id="risksTable"></tbody>
       </table></div>
       <div class="empty" id="risquesEmpty" style="display:none" data-i18n="risks_empty">Aucun risque. Cliquez sur « Ajouter un risque ».</div>
@@ -741,15 +768,7 @@
       </div>
       <div class="table-scroll"><table id="measuresTableEl">
         <caption class="sr-only" data-i18n="measures_title">Mesures de maîtrise</caption>
-        <thead><tr>
-          <th data-sort="id"><span data-i18n="th_id">ID</span><span class="sort-ind"></span></th>
-          <th data-sort="measure"><span data-i18n="th_measure">Mesure</span><span class="sort-ind"></span></th>
-          <th data-sort="type"><span data-i18n="th_type">Type</span><span class="sort-ind"></span></th>
-          <th data-sort="status"><span data-i18n="th_status">Statut</span><span class="sort-ind"></span></th>
-          <th data-sort="resp"><span data-i18n="th_responsible">Responsable</span><span class="sort-ind"></span></th>
-          <th data-i18n="th_covered_risks">Risques couverts</th>
-          <th></th>
-        </tr></thead>
+        <thead><tr class="col-head-row"></tr></thead>
         <tbody id="measuresTable"></tbody>
       </table></div>
       <div class="empty" id="mesuresEmpty" style="display:none" data-i18n="measures_empty">Aucune mesure. Cliquez sur « Ajouter une mesure ».</div>
@@ -1068,6 +1087,9 @@ const I18N = {
     btn_import_csv:"⭱ Importer (CSV)", btn_export_csv:"⭳ Exporter (CSV)", toast_csv_export:"CSV exporté : {0}", btn_add_risk:"+ Ajouter un risque",
     th_id:"ID", th_risk:"Risque", th_risk_id:"ID risque", th_measure_id:"ID mesure", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel",
     th_measures:"Mesures", th_evolution:"Évolution",
+    cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
+    cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
+    cols_reorder_hint:"Ordre : glissez les en-têtes", cols_reset:"Réinitialiser", th_actions_col:"Actions",
     risks_empty:"Aucun risque. Cliquez sur « Ajouter un risque ».",
     delta_flat:"● non réduit", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Supprimer le risque {0} ?",
@@ -1315,6 +1337,9 @@ const I18N = {
     btn_import_csv:"⭱ Import (CSV)", btn_export_csv:"⭳ Export (CSV)", toast_csv_export:"CSV exported: {0}", btn_add_risk:"+ Add a risk",
     th_id:"ID", th_risk:"Risk", th_risk_id:"Risk ID", th_measure_id:"Measure ID", th_category:"Category", th_initial:"Initial", th_residual:"Residual",
     th_measures:"Measures", th_evolution:"Change",
+    cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
+    cols_up:"Move column left", cols_down:"Move column right",
+    cols_reorder_hint:"Order: drag the headers", cols_reset:"Reset", th_actions_col:"Actions",
     risks_empty:"No risk. Click “Add a risk”.",
     delta_flat:"● unreduced", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Delete risk {0}?",
@@ -1557,6 +1582,9 @@ const I18N = {
     btn_import_csv:"⭱ Importa (CSV)", btn_export_csv:"⭳ Esporta (CSV)", toast_csv_export:"CSV esportato: {0}", btn_add_risk:"+ Aggiungi un rischio",
     th_id:"ID", th_risk:"Rischio", th_risk_id:"ID rischio", th_measure_id:"ID misura", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo",
     th_measures:"Misure", th_evolution:"Evoluzione",
+    cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
+    cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
+    cols_reorder_hint:"Ordine: trascina le intestazioni", cols_reset:"Reimposta", th_actions_col:"Azioni",
     risks_empty:"Nessun rischio. Clicca su « Aggiungi un rischio ».",
     delta_flat:"● non ridotto", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Eliminare il rischio {0}?",
@@ -4591,13 +4619,33 @@ function updateSortInd(tableId,st){
   tbl.querySelectorAll("th[data-sort] .sort-ind").forEach(s=>s.textContent="");
   if(st.sort){const s=tbl.querySelector('th[data-sort="'+st.sort+'"] .sort-ind');if(s)s.textContent=st.dir<0?" ▼":" ▲";}
 }
+/* Comparaison d'une colonne de champ personnalisé (cible/target donnée), à partir de la
+   valeur brute stockée dans row.custom[code]. Seuls les types scalaires sont triables ;
+   les valeurs vides sont rejetées en fin de tri (ascendant). */
+function cfColCompare(target,code,a,b){
+  const f=customFieldsFor(target).find(x=>x&&x.code===code);if(!f)return 0;
+  const va=(a.custom||{})[code], vb=(b.custom||{})[code];
+  const empty=v=>v===undefined||v===null||v==="";
+  if(empty(va)&&empty(vb))return 0;
+  if(empty(va))return 1; if(empty(vb))return -1;
+  switch(f.type){
+    case "boolean":return (va?1:0)-(vb?1:0);
+    case "integer":case "decimal":case "number":case "progress":return (parseFloat(va)||0)-(parseFloat(vb)||0);
+    case "select":{const idx=v=>(f.items||[]).findIndex(it=>it.code===v);const ia=idx(va),ib=idx(vb);
+      if(ia>=0&&ib>=0&&ia!==ib)return ia-ib;return String(cfDisplay(f,va)).localeCompare(String(cfDisplay(f,vb)));}
+    case "date":return String(va).localeCompare(String(vb));
+    default:return String(cfDisplay(f,va)).localeCompare(String(cfDisplay(f,vb)));
+  }
+}
 function riskCmp(col){return (a,b)=>{
   if(col==="id")return cmpId(a,b);
   if(col==="risk")return (a.label||"").localeCompare(b.label||"");
   if(col==="cat")return (a.category||"").localeCompare(b.category||"");
+  if(col==="owner")return (a.owner||"").localeCompare(b.owner||"");
   if(col==="initial")return scoreOf(a.initial_assessment.probability,a.initial_assessment.severity)-scoreOf(b.initial_assessment.probability,b.initial_assessment.severity);
   if(col==="residual"){const ra=residual(a),rb=residual(b);return scoreOf(ra.probability,ra.severity)-scoreOf(rb.probability,rb.severity);}
   if(col==="evolution"){const dl=x=>scoreOf(residual(x).probability,residual(x).severity)-scoreOf(x.initial_assessment.probability,x.initial_assessment.severity);return dl(a)-dl(b);}
+  if(col&&col.indexOf("cf:")===0)return cfColCompare("risk",col.slice(3),a,b);
   return 0;};}
 function measureCmp(col){return (a,b)=>{
   if(col==="id")return cmpId(a,b);
@@ -4605,6 +4653,9 @@ function measureCmp(col){return (a,b)=>{
   if(col==="type")return typeLabel(a.type||"").localeCompare(typeLabel(b.type||""));
   if(col==="status")return STATUS_CODES.indexOf(a.status)-STATUS_CODES.indexOf(b.status);
   if(col==="resp")return (a.responsible||"").localeCompare(b.responsible||"");
+  if(col==="due")return String(a.due_date||"").localeCompare(String(b.due_date||""));
+  if(col==="cost")return (parseFloat(a.cost)||0)-(parseFloat(b.cost)||0);
+  if(col&&col.indexOf("cf:")===0)return cfColCompare("measure",col.slice(3),a,b);
   return 0;};}
 // Liens : tri sur la colonne demandée, avec repli systématique code risque puis code mesure.
 function linkCmp(col){return (a,b)=>{
@@ -4613,19 +4664,229 @@ function linkCmp(col){return (a,b)=>{
   else if(col==="mid")d=cmpId({id:a.measure},{id:b.measure});
   else if(col==="measure")d=((measureById(a.measure)||{}).label||"").localeCompare((measureById(b.measure)||{}).label||"");
   else if(col==="notes")d=(a.comment||"").localeCompare(b.comment||"");
+  else if(col&&col.indexOf("cf:")===0)d=cfColCompare("link",col.slice(3),a,b);
   if(d!==0)return d;
   const dr=cmpId({id:a.risk},{id:b.risk});if(dr!==0)return dr;
   return cmpId({id:a.measure},{id:b.measure});};}
+
+/* ============================================================
+   COLONNES PERSONNALISABLES DES REGISTRES
+
+   Registres des risques, des mesures et détail des liens : l'utilisateur choisit les
+   colonnes affichées, leur ordre (glisser d'en-tête ou flèches du menu), et peut y placer
+   des champs personnalisés. La configuration est persistée dans le fichier, sous
+   analyse.extensions.display.columns[table] = liste ordonnée des clés VISIBLES (hors
+   colonne « Actions », toujours présente et implicite). Absente -> ordre par défaut.
+
+   Épinglées : la 1re colonne (identifiant) et la colonne Actions restent toujours visibles
+   et non déplaçables ; elles bornent le tableau. Les colonnes de champ perso portent une
+   clé « cf:<code> » ; celles dont le champ a été supprimé sont ignorées silencieusement.
+   Par défaut, un champ perso est masqué pour les risques/mesures, et visible pour les liens
+   (comportement historique du détail des liens). Tri possible sur les colonnes scalaires. */
+const CF_SORTABLE_TYPES=["boolean","integer","decimal","number","date","text","select","progress"];
+function cfColSortable(f){return f&&CF_SORTABLE_TYPES.indexOf(f.type)>=0;}
+function cfTargetOf(table){return table==="risks"?"risk":table==="measures"?"measure":"link";}
+function riskCellTag(r,which){
+  const ev=which==="i"?r.initial_assessment:residual(r);const c=critOfEval(ev),s=scoreOf(ev.probability,ev.severity);
+  return '<span class="tag" style="background:'+c.color+';color:'+badgeFg(c.color)+'">'+esc(c.label)+' · '+s+'</span>';
+}
+function riskDeltaCell(r){
+  const evi=r.initial_assessment,evr=residual(r);
+  const si=scoreOf(evi.probability,evi.severity),sr=scoreOf(evr.probability,evr.severity);
+  const moved=evi.probability!==evr.probability||evi.severity!==evr.severity;
+  if(!moved)return '<span class="delta-flat">'+esc(t("delta_flat"))+'</span>';
+  return sr<si?'<span class="delta-down">'+esc(t("delta_down",si-sr))+'</span>':'<span class="delta-up">'+esc(t("delta_up",sr-si))+'</span>';
+}
+function measurePillsFor(id){const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}
+// Descripteurs des colonnes intégrées (hors Actions), par table.
+function builtinCols(table){
+  if(table==="risks")return [
+    {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:r=>'<span class="id-badge">'+esc(r.id)+'</span>'},
+    {key:"risk",label:t("th_risk"),sort:"risk",cell:r=>'<b>'+esc(r.label)+'</b>'},
+    {key:"cat",label:t("th_category"),sort:"cat",cell:r=>'<span class="muted">'+esc(r.category||"—")+'</span>'},
+    {key:"owner",label:t("f_owner"),sort:"owner",def:false,cell:r=>'<span class="muted">'+esc(r.owner||"—")+'</span>'},
+    {key:"initial",label:t("th_initial"),sort:"initial",cell:r=>riskCellTag(r,"i")},
+    {key:"residual",label:t("th_residual"),sort:"residual",cell:r=>riskCellTag(r,"r")},
+    {key:"measures",label:t("th_measures"),cell:r=>{const m=measuresOfRisk(r.id);return m.length?'<span class="pill-list">'+m.map(id=>measurePill(id)).join("")+'</span>':'<span class="muted">—</span>';}},
+    {key:"evolution",label:t("th_evolution"),sort:"evolution",cell:r=>riskDeltaCell(r)},
+  ];
+  if(table==="measures")return [
+    {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:m=>'<span class="id-badge">'+esc(m.id)+'</span>'},
+    {key:"measure",label:t("th_measure"),sort:"measure",cell:m=>'<b>'+esc(m.label)+'</b>'},
+    {key:"type",label:t("th_type"),sort:"type",cell:m=>'<span class="muted">'+(m.type?esc(typeLabel(m.type)):"—")+'</span>'},
+    {key:"status",label:t("th_status"),sort:"status",cell:m=>statusBadge(m.status)},
+    {key:"resp",label:t("th_responsible"),sort:"resp",cell:m=>'<span class="muted">'+esc(m.responsible||"—")+'</span>'},
+    {key:"due",label:t("f_due_date"),sort:"due",def:false,cell:m=>'<span class="muted">'+esc(m.due_date||"—")+'</span>'},
+    {key:"cost",label:t("f_cost"),sort:"cost",def:false,cell:m=>'<span class="muted">'+(m.cost!=null&&m.cost!==""?esc(m.cost):"—")+'</span>'},
+    {key:"covered",label:t("th_covered_risks"),cell:m=>{const rk=risksOfMeasure(m.id);return rk.length?'<span class="pill-list">'+rk.map(id=>measurePillsFor(id)).join("")+'</span>':'<span class="muted">—</span>';}},
+  ];
+  return [ // links (le champ « custom » vit dans l'objet treatment)
+    {key:"rid",label:t("th_risk_id"),pinned:"first",sort:"rid",cell:x=>'<span class="id-badge">'+esc(x.risk)+'</span>'},
+    {key:"risk",label:t("th_risk"),sort:"risk",cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
+    {key:"mid",label:t("th_measure_id"),sort:"mid",cell:x=>'<span class="id-badge">'+esc(x.measure)+'</span>'},
+    {key:"measure",label:t("th_measure"),sort:"measure",cell:x=>{const m=measureById(x.measure);return esc(m?m.label:"—");}},
+    {key:"notes",label:t("f_notes"),sort:"notes",cell:x=>esc(mdToText(x.comment)||"—")},
+  ];
+}
+function cfCols(table){
+  return customFieldsFor(cfTargetOf(table)).map(f=>({
+    key:"cf:"+f.code, label:cfLabel(f), cf:f, def:table==="links",
+    sort:cfColSortable(f)?("cf:"+f.code):null,
+    cell:row=>{const dv=cfDisplayHTML(f,(row.custom||{})[f.code]);return dv||'<span class="muted">—</span>';}
+  }));
+}
+const ACTIONS_COL={key:"__act",pinned:"last",label:""};
+function allCols(table){return builtinCols(table).concat(cfCols(table)).concat([ACTIONS_COL]);}
+function colMap(table){const m={};allCols(table).forEach(c=>m[c.key]=c);return m;}
+function pinnedFirstKey(table){const c=allCols(table).find(x=>x.pinned==="first");return c?c.key:null;}
+function defaultColOrder(table){return allCols(table).filter(c=>c.pinned!=="last"&&c.def!==false).map(c=>c.key);}
+function colConfigStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.columns=d.columns||{};}
+// Lecture seule : ne crée aucun objet (évite de polluer le fichier avec un columns:{} vide).
+function savedColOrder(table){
+  const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.columns;
+  const c=d&&d[table];return Array.isArray(c)?c:null;}
+// Liste ordonnée des colonnes visibles (hors Actions), identifiant épinglé forcé en tête.
+function colOrder(table){
+  const cols=colMap(table), first=pinnedFirstKey(table);
+  let list=savedColOrder(table)||defaultColOrder(table);
+  const seen={},keep=[];
+  list.forEach(k=>{if(cols[k]&&cols[k].pinned!=="last"&&!seen[k]){seen[k]=1;keep.push(k);}});
+  const rest=keep.filter(k=>k!==first);
+  return first?[first,...rest]:rest;
+}
+function effectiveCols(table){const cols=colMap(table);return colOrder(table).map(k=>cols[k]).concat([cols["__act"]]);}
+function setColOrder(table,list){colConfigStore()[table]=list;markDirty();}
+function toggleColumn(table,key,on){
+  const order=colOrder(table).slice(), i=order.indexOf(key);
+  if(on&&i<0){
+    const model=allCols(table).map(c=>c.key), mi=model.indexOf(key);
+    let pos=order.length;
+    for(let j=0;j<order.length;j++){if(model.indexOf(order[j])>mi){pos=j;break;}}
+    order.splice(pos,0,key);
+  }else if(!on&&i>=0){if(order.length<=1)return;order.splice(i,1);}else return;
+  setColOrder(table,order);
+}
+function moveColumnStep(table,key,delta){
+  const first=pinnedFirstKey(table), order=colOrder(table).slice(), mids=order.filter(k=>k!==first);
+  const i=mids.indexOf(key);if(i<0)return;const j=i+delta;if(j<0||j>=mids.length)return;
+  mids.splice(i,1);mids.splice(j,0,key);setColOrder(table,[first,...mids]);
+}
+function moveColumnBefore(table,key,targetKey,after){
+  const first=pinnedFirstKey(table);if(key===first||targetKey===first)return;
+  const order=colOrder(table).slice(), mids=order.filter(k=>k!==first);
+  const i=mids.indexOf(key);if(i<0)return;mids.splice(i,1);
+  let j=mids.indexOf(targetKey);if(j<0)return;if(after)j++;
+  mids.splice(j,0,key);setColOrder(table,[first,...mids]);
+}
+function resetColumns(table){
+  const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.columns;
+  if(d&&(table in d)){delete d[table];markDirty();}}
+function rerenderTable(table){if(table==="risks")renderRisks();else if(table==="measures")renderMeasures();else renderLinkDetails();}
+
+/* Construit la ligne d'en-tête (thead > tr) : identifiant épinglé, colonnes déplaçables,
+   puis l'engrenage du menu dans la cellule Actions. tableElId sert au tri et aux repères. */
+function renderColHead(table,trEl,tableElId,stKey){
+  trEl.innerHTML="";
+  effectiveCols(table).forEach(c=>{
+    const th=document.createElement("th");
+    if(c.pinned==="last"){
+      th.className="colhead-actions";
+      th.innerHTML='<button class="btn icon sm colgear" title="'+esc(t("cols_menu_title"))+'" aria-haspopup="dialog">⚙</button>';
+      th.querySelector(".colgear").addEventListener("click",e=>{e.stopPropagation();toggleColMenu(table,e.currentTarget,tableElId,stKey);});
+      trEl.appendChild(th);return;
+    }
+    if(c.sort){th.dataset.sort=c.sort;}
+    if(c.pinned==="first"){
+      th.className="col-pinned";
+      th.innerHTML='<span class="thlabel"><span class="pin" title="'+esc(t("cols_pinned"))+'">📌</span>'+esc(c.label)+'</span>'+(c.sort?'<span class="sort-ind"></span>':'');
+    }else{
+      th.className="col-move";th.draggable=true;th.dataset.col=c.key;
+      th.innerHTML='<span class="thlabel"><span class="grip">⠿</span>'+esc(c.label)+'</span>'+(c.sort?'<span class="sort-ind"></span>':'');
+      wireHeaderDrag(th,table,tableElId);
+    }
+    trEl.appendChild(th);
+  });
+  updateSortInd(tableElId,listState[stKey]);
+}
+function renderColRow(table,row){
+  return effectiveCols(table).map(c=>{
+    if(c.pinned==="last")return actionCell(table,row);
+    return '<td>'+c.cell(row)+'</td>';
+  }).join("");
+}
+function actionCell(table,row){
+  if(table==="risks")return '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(row.id)+'"'+a11y("a11y_edit_risk",row.id)+'>✎</button><button class="btn icon sm" data-del-r="'+esc(row.id)+'"'+a11y("a11y_del_risk",row.id)+'>🗑</button></div></td>';
+  if(table==="measures")return '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(row.id)+'"'+a11y("a11y_edit_measure",row.id)+'>✎</button><button class="btn icon sm" data-del-m="'+esc(row.id)+'"'+a11y("a11y_del_measure",row.id)+'>🗑</button></div></td>';
+  const key=esc(row.risk)+'|'+esc(row.measure);
+  return '<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'"'+a11y("a11y_edit_link",row.risk,row.measure)+'>✎</button><button class="btn icon sm" data-del-l="'+key+'"'+a11y("a11y_del_link",row.risk,row.measure)+'>🗑</button></div></td>';
+}
+
+/* ---- Glisser-déposer des en-têtes ---- */
+let dragCol=null, lastColDrop=0;
+function clearDropMarks(){document.querySelectorAll("th.drop-before,th.drop-after").forEach(n=>n.classList.remove("drop-before","drop-after"));}
+function wireHeaderDrag(th,table){
+  th.addEventListener("dragstart",e=>{dragCol={table,key:th.dataset.col};th.classList.add("th-dragging");e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain",th.dataset.col);}catch(_){}} );
+  th.addEventListener("dragend",()=>{dragCol=null;th.classList.remove("th-dragging");clearDropMarks();});
+  th.addEventListener("dragover",e=>{if(!dragCol||dragCol.table!==table||th.dataset.col===dragCol.key)return;e.preventDefault();clearDropMarks();const r=th.getBoundingClientRect();th.classList.add((e.clientX-r.left)>r.width/2?"drop-after":"drop-before");});
+  th.addEventListener("dragleave",()=>th.classList.remove("drop-before","drop-after"));
+  th.addEventListener("drop",e=>{e.preventDefault();if(!dragCol||dragCol.table!==table||th.dataset.col===dragCol.key)return;
+    const r=th.getBoundingClientRect(),after=(e.clientX-r.left)>r.width/2,from=dragCol.key;
+    clearDropMarks();lastColDrop=Date.now();moveColumnBefore(table,from,th.dataset.col,after);rerenderTable(table);});
+}
+
+/* ---- Menu « Colonnes » (afficher/masquer + flèches de réordonnancement) ---- */
+const colMenu=document.createElement("div");colMenu.className="col-menu";colMenu.style.display="none";document.body.appendChild(colMenu);
+function toggleColMenu(table,gear,tableElId,stKey){
+  if(colMenu.style.display!=="none"&&colMenu._table===table){closeColMenu();return;}
+  colMenu._table=table;colMenu._tableElId=tableElId;colMenu._stKey=stKey;
+  buildColMenu(table);colMenu.style.display="block";
+  const r=gear.getBoundingClientRect(),w=colMenu.offsetWidth;
+  colMenu.style.top=(r.bottom+6)+"px";
+  colMenu.style.left=Math.max(8,r.right-w)+"px";
+}
+function closeColMenu(){colMenu.style.display="none";colMenu._table=null;}
+function buildColMenu(table){
+  const cols=allCols(table), order=colOrder(table), first=pinnedFirstKey(table);
+  const mids=order.filter(k=>k!==first);
+  let h='<div class="cm-title">'+esc(t("cols_shown"))+'</div><div class="cm-list">';
+  cols.forEach(c=>{
+    if(c.pinned){
+      h+='<div class="cm-row locked"><span class="cm-lock">🔒</span><span class="cm-name">'+esc(c.pinned==="last"?t("th_actions_col"):c.label)+'</span><span class="cm-pinned">'+esc(t("cols_pinned"))+'</span></div>';
+    }else{
+      const on=order.indexOf(c.key)>=0, mi=mids.indexOf(c.key);
+      const canUp=on&&mi>0, canDown=on&&mi>=0&&mi<mids.length-1;
+      h+='<div class="cm-row" data-key="'+esc(c.key)+'">'+
+         '<input type="checkbox" '+(on?"checked":"")+' aria-label="'+esc(c.label)+'">'+
+         '<span class="cm-name">'+esc(c.label)+'</span>'+
+         (c.cf?'<span class="cm-cf">'+esc(t("cols_cf"))+'</span>':'')+
+         '<span class="cm-move"><button class="cm-arrow" data-mv="up" '+(canUp?"":"disabled")+' aria-label="'+esc(t("cols_up"))+'">▲</button>'+
+         '<button class="cm-arrow" data-mv="down" '+(canDown?"":"disabled")+' aria-label="'+esc(t("cols_down"))+'">▼</button></span>'+
+         '</div>';
+    }
+  });
+  h+='</div><div class="cm-foot"><span class="cm-hint">'+esc(t("cols_reorder_hint"))+'</span><button class="btn ghost sm" data-cm-reset>'+esc(t("cols_reset"))+'</button></div>';
+  colMenu.innerHTML=h;
+}
+colMenu.addEventListener("click",e=>{
+  const table=colMenu._table;if(!table)return;
+  if(e.target.closest("[data-cm-reset]")){resetColumns(table);buildColMenu(table);rerenderTable(table);return;}
+  const arrow=e.target.closest(".cm-arrow");
+  if(arrow&&!arrow.disabled){const row=arrow.closest(".cm-row");moveColumnStep(table,row.dataset.key,arrow.dataset.mv==="up"?-1:1);buildColMenu(table);rerenderTable(table);return;}
+  const row=e.target.closest(".cm-row[data-key]");
+  if(row){const cb=row.querySelector("input");if(e.target!==cb)cb.checked=!cb.checked;toggleColumn(table,row.dataset.key,cb.checked);buildColMenu(table);rerenderTable(table);}
+});
+document.addEventListener("click",e=>{if(colMenu.style.display==="none")return;if(colMenu.contains(e.target)||e.target.closest(".colgear"))return;closeColMenu();});
+window.addEventListener("resize",closeColMenu);
 
 /* ============================================================
    VUE RISQUES
    ============================================================ */
 function renderRisks(){
   const st=listState.risks, tb=document.getElementById("risksTable");tb.innerHTML="";
+  renderColHead("risks",document.querySelector("#risksTableEl thead tr"),"risksTableEl","risks");
   // Les filtres par champ perso s'appliquent avant les filtres propres à la vue : le
   // compteur « n sur N » compare alors ce qui est affiché à ce qui reste filtrable ici.
   const all=visibleRisks();   // le filtre par catégorie est servi par une puce de la barre
-  updateSortInd("risksTableEl",st);
   const q=normV(st.q);
   let list=all.filter(r=>{
     if(st.cat && (r.category||"")!==st.cat)return false;
@@ -4639,24 +4900,8 @@ function renderRisks(){
   // filtres de champ perso : sinon « 5 sur 5 » masquerait le fait que 12 fiches sont écartées.
   setFilterCount("risks",list.length,analyse.risks.length);
   list.forEach(r=>{
-    const evi=r.initial_assessment, evr=residual(r);
-    const ci=critOfEval(evi), cr=critOfEval(evr);
-    const si=scoreOf(evi.probability,evi.severity), sr=scoreOf(evr.probability,evr.severity);
-    const moved=evi.probability!==evr.probability||evi.severity!==evr.severity;
-    const delta=!moved?'<span class="delta-flat">'+esc(t("delta_flat"))+'</span>':
-      (sr<si?'<span class="delta-down">'+esc(t("delta_down",si-sr))+'</span>':'<span class="delta-up">'+esc(t("delta_up",sr-si))+'</span>');
-    const mes=measuresOfRisk(r.id);
     const tr=document.createElement("tr");tr.style.cursor="pointer";
-    tr.innerHTML=
-      '<td><span class="id-badge">'+esc(r.id)+'</span></td>'+
-      '<td><b>'+esc(r.label)+'</b></td>'+
-      '<td class="muted">'+esc(r.category||"—")+'</td>'+
-      '<td><span class="tag" style="background:'+ci.color+';color:'+badgeFg(ci.color)+'">'+esc(ci.label)+' · '+si+'</span></td>'+
-      '<td><span class="tag" style="background:'+cr.color+';color:'+badgeFg(cr.color)+'">'+esc(cr.label)+' · '+sr+'</span></td>'+
-      '<td>'+(mes.length?'<span class="pill-list">'+mes.map(id=>measurePill(id)).join("")+'</span>':'<span class="muted">—</span>')+'</td>'+
-      '<td>'+delta+'</td>'+
-      '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(r.id)+'"'+a11y("a11y_edit_risk",r.id)+'>✎</button>'+
-        '<button class="btn icon sm" data-del-r="'+esc(r.id)+'"'+a11y("a11y_del_risk",r.id)+'>🗑</button></div></td>';
+    tr.innerHTML=renderColRow("risks",r);
     tr.addEventListener("click",e=>{if(e.target.closest("button"))return;openRiskModal(r.id);});
     tb.appendChild(tr);
   });
@@ -4795,8 +5040,8 @@ function measurePill(id){
 const TYPES=["technical","organizational","preventive","detective","corrective","deterrent"];
 function renderMeasures(){
   const st=listState.measures, tb=document.getElementById("measuresTable");tb.innerHTML="";
+  renderColHead("measures",document.querySelector("#measuresTableEl thead tr"),"measuresTableEl","measures");
   const all=visibleMeasures();   // type et statut sont servis par des puces de la barre
-  updateSortInd("measuresTableEl",st);
   const q=normV(st.q);
   let list=all.filter(m=>{
     if(st.type && (m.type||"")!==st.type)return false;
@@ -4809,17 +5054,8 @@ function renderMeasures(){
   else emptyEl.style.display="none";
   setFilterCount("measures",list.length,analyse.measures.length);
   list.forEach(m=>{
-    const risks=risksOfMeasure(m.id);
     const tr=document.createElement("tr");tr.style.cursor="pointer";
-    tr.innerHTML=
-      '<td><span class="id-badge">'+esc(m.id)+'</span></td>'+
-      '<td><b>'+esc(m.label)+'</b></td>'+
-      '<td class="muted">'+(m.type?esc(typeLabel(m.type)):"—")+'</td>'+
-      '<td>'+statusBadge(m.status)+'</td>'+
-      '<td class="muted">'+esc(m.responsible||"—")+'</td>'+
-      '<td>'+(risks.length?'<span class="pill-list">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join("")+'</span>':'<span class="muted">—</span>')+'</td>'+
-      '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(m.id)+'"'+a11y("a11y_edit_measure",m.id)+'>✎</button>'+
-        '<button class="btn icon sm" data-del-m="'+esc(m.id)+'"'+a11y("a11y_del_measure",m.id)+'>🗑</button></div></td>';
+    tr.innerHTML=renderColRow("measures",m);
     tr.addEventListener("click",e=>{if(e.target.closest("button"))return;openMeasureModal(m.id);});
     tb.appendChild(tr);
   });
@@ -4835,6 +5071,7 @@ bindFilter("fltMeasureQ","input",e=>{listState.measures.q=e.target.value;renderM
 bindFilter("fltPlanQ","input",e=>{listState.plan.q=e.target.value;renderPlan();});
 function bindSort(tableId,stKey,render){const el=document.getElementById(tableId);if(!el)return;
   el.addEventListener("click",e=>{const th=e.target.closest("th[data-sort]");if(!th)return;
+    if(Date.now()-lastColDrop<300)return;   // un glisser de colonne ne doit pas déclencher un tri
     const st=listState[stKey],col=th.dataset.sort;if(st.sort===col)st.dir=-st.dir;else{st.sort=col;st.dir=1;}render();});}
 bindSort("risksTableEl","risks",renderRisks);
 bindSort("measuresTableEl","measures",renderMeasures);
@@ -5117,36 +5354,25 @@ function renderLinkDetails(){
     return normV(hay).indexOf(q)>=0;});
   setFilterCount("details",list.length,analyse.treatments.length);
   list=list.slice().sort(linkCmp(st.sort));if(st.dir<0)list.reverse();
-  const ind=col=>'<span class="sort-ind">'+(st.sort===col?(st.dir<0?"▼":"▲"):"")+'</span>';
-  const sth=(col,label)=>'<th data-sort="'+col+'">'+esc(label)+ind(col)+'</th>';
-  let h='<table><thead><tr>'+
-    sth("rid",t("th_risk_id"))+sth("risk",t("th_risk"))+
-    sth("mid",t("th_measure_id"))+sth("measure",t("th_measure"))+
-    sth("notes",t("f_notes"));
-  cf.forEach(f=>h+='<th>'+esc(cfLabel(f))+'</th>');
-  h+='<th></th></tr></thead><tbody>';
-  if(!list.length)h+='<tr><td colspan="'+(6+cf.length)+'" class="muted">'+esc(t("flt_none"))+'</td></tr>';
+  // Tableau bâti en DOM pour réutiliser le moteur de colonnes (en-tête déplaçable + engrenage).
+  area.innerHTML="";
+  const table=document.createElement("table");table.id="linkDetailsTableEl";
+  const thead=document.createElement("thead"),htr=document.createElement("tr");thead.appendChild(htr);
+  const tbody=document.createElement("tbody");
+  table.appendChild(thead);table.appendChild(tbody);area.appendChild(table);
+  renderColHead("links",htr,"linkDetailsTableEl","links");
+  const nbCols=effectiveCols("links").length;
+  if(!list.length){tbody.innerHTML='<tr><td colspan="'+nbCols+'" class="muted">'+esc(t("flt_none"))+'</td></tr>';return;}
   list.forEach(tr=>{
-    const r=riskById(tr.risk),m=measureById(tr.measure);
-    const key=esc(tr.risk)+'|'+esc(tr.measure);
-    h+='<tr class="linkrow" data-r="'+esc(tr.risk)+'" data-m="'+esc(tr.measure)+'" style="cursor:pointer">'+
-      '<td><span class="id-badge">'+esc(tr.risk)+'</span></td>'+
-      '<td>'+esc(r?r.label:"—")+'</td>'+
-      '<td><span class="id-badge">'+esc(tr.measure)+'</span></td>'+
-      '<td>'+esc(m?m.label:"—")+'</td>'+
-      '<td>'+esc(mdToText(tr.comment)||"—")+'</td>';
-    cf.forEach(f=>{const dv=cfDisplayHTML(f,(tr.custom||{})[f.code]);h+='<td>'+(dv||"—")+'</td>';});
-    h+='<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'"'+a11y("a11y_edit_link",tr.risk,tr.measure)+'>✎</button>'+
-      '<button class="btn icon sm" data-del-l="'+key+'"'+a11y("a11y_del_link",tr.risk,tr.measure)+'>🗑</button></div></td>';
-    h+='</tr>';
+    const row=document.createElement("tr");row.className="linkrow";row.dataset.r=tr.risk;row.dataset.m=tr.measure;row.style.cursor="pointer";
+    row.innerHTML=renderColRow("links",tr);
+    tbody.appendChild(row);
   });
-  h+='</tbody></table>';
-  area.innerHTML=h;
 }
 document.getElementById("fltLinkQ").addEventListener("input",renderLinkDetails);
 document.getElementById("linkDetailsArea").addEventListener("click",e=>{
   const th=e.target.closest("th[data-sort]");
-  if(th){const st=listState.links,col=th.dataset.sort;if(st.sort===col)st.dir=-st.dir;else{st.sort=col;st.dir=1;}renderLinkDetails();return;}
+  if(th){if(Date.now()-lastColDrop<300)return;const st=listState.links,col=th.dataset.sort;if(st.sort===col)st.dir=-st.dir;else{st.sort=col;st.dir=1;}renderLinkDetails();return;}
   const ed=e.target.closest("[data-edit-l]");const dl=e.target.closest("[data-del-l]");
   if(ed){const[rid,mid]=ed.dataset.editL.split("|");openLinkModal(rid,mid);return;}
   if(dl){const[rid,mid]=dl.dataset.delL.split("|");

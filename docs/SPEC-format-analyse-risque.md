@@ -343,6 +343,9 @@ Un fichier est **valide** s'il respecte le schéma JSON (§8) **et** les règles
 
 - **Champs additionnels :** un producteur peut ajouter des champs à n'importe quel objet ; un lecteur les ignore s'il ne les connaît pas (§2).
 - **Espace réservé `extensions` :** objet libre, à la racine et/ou dans chaque entité, destiné aux données propriétaires (ex. cache de score, coordonnées d'affichage figées, champs métier). Il est recommandé d'y préfixer les clés par un identifiant d'éditeur, ex. `"omt:zone_geographique"`.
+- **Préférences d'affichage `extensions.display` (non normatif) :** l'application y stocke des choix de présentation propres à l'analyse.
+  - `arrangement` : disposition des pastilles dans les matrices.
+  - `columns` : personnalisation des colonnes des registres. Objet dont les clés sont `risks`, `measures` et `links` ; chaque valeur est la **liste ordonnée des colonnes visibles** du registre correspondant (la colonne « Actions » est implicite et toujours affichée). Une colonne de champ personnalisé est désignée par `cf:<code>` ; une colonne inconnue (champ supprimé) est ignorée. Absent : ordre par défaut. Exemple : `{ "risks": ["id","risk","initial","residual","cf:source_risque"] }`.
 - **Compatibilité :** les lecteurs doivent traiter un fichier de version mineure supérieure connue en mode « meilleure lecture possible ».
 
 ---

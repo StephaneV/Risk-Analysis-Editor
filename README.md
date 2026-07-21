@@ -54,6 +54,7 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 - **CSV import** of risks, measures and links: columns named after the format's **English** keys, auto-detected separator; merge by identifier (risks/measures); integrity check and deduplication (links).
 - **CSV export of risks, measures and links**: headers = **English** key names (identical whatever the interface language), `;` delimiter and UTF-8 BOM (Excel), with read-only derived columns (score/criticality for risks; covered risks for measures; labels for links); re-importable.
 - **Sorting and filtering** of the Risks, Measures and Action plan lists: text search, sort by clicking columns, and dropdown filters (category, type, status, owner, "overdue only").
+- **Customizable columns** in the Risks, Measures and Link details registers: show/hide columns and reorder them (drag the headers, or the ▲/▼ arrows in the ⚙ column menu), surface fields otherwise hidden (owner, due date, cost…) and add **custom-field columns**. The ID and Actions columns stay pinned; the layout is **saved in the file** (`extensions.display.columns`).
 
 ### File & export
 - **New / Load / Save** in `.rae.json` format.
