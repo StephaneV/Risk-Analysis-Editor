@@ -1152,6 +1152,7 @@ const I18N = {
     hp_arrows:"Se déplacer dans les onglets et la grille des associations",
     hp_k_esc:"Échap", hp_k_space:"Espace", hp_k_click:"Clic", hp_k_drag:"Glisser",
     a11y_row_grip:"Déplacer la ligne {0}", hp_row_reorder:"Réordonner les lignes par la poignée (sans tri actif) — Ctrl+↑/↓ au clavier",
+    modal_discard_q:"Abandonner les modifications ?", modal_keep:"Continuer la saisie", modal_discard_btn:"Abandonner",
     risks_empty:"Aucun risque. Cliquez sur « Ajouter un risque ».",
     delta_flat:"● non réduit", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Supprimer le risque {0} ?",
@@ -1420,6 +1421,7 @@ const I18N = {
     hp_arrows:"Navigate the tabs and the associations grid",
     hp_k_esc:"Esc", hp_k_space:"Space", hp_k_click:"Click", hp_k_drag:"Drag",
     a11y_row_grip:"Move row {0}", hp_row_reorder:"Reorder rows with the handle (when unsorted) — Ctrl+↑/↓ with the keyboard",
+    modal_discard_q:"Discard your changes?", modal_keep:"Keep editing", modal_discard_btn:"Discard",
     risks_empty:"No risk. Click “Add a risk”.",
     delta_flat:"● unreduced", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Delete risk {0}?",
@@ -1683,6 +1685,7 @@ const I18N = {
     hp_arrows:"Naviga tra le schede e nella griglia delle associazioni",
     hp_k_esc:"Esc", hp_k_space:"Spazio", hp_k_click:"Clic", hp_k_drag:"Trascina",
     a11y_row_grip:"Sposta la riga {0}", hp_row_reorder:"Riordina le righe con la maniglia (senza ordinamento attivo) — Ctrl+↑/↓ da tastiera",
+    modal_discard_q:"Abbandonare le modifiche?", modal_keep:"Continua la modifica", modal_discard_btn:"Abbandona",
     risks_empty:"Nessun rischio. Clicca su « Aggiungi un rischio ».",
     delta_flat:"● non ridotto", delta_down:"▼ −{0}", delta_up:"▲ +{0}",
     confirm_del_risk:"Eliminare il rischio {0}?",
@@ -7383,6 +7386,7 @@ function openModal(title,bodyHtml,onConfirm,okLabel){
     '<span id="modalMsg" style="flex:1;text-align:left;color:var(--danger);font-size:12.5px"></span>'+
     '<button class="btn ghost" id="modalCancel">'+esc(t("btn_cancel"))+'</button><button class="btn" id="modalOk">'+esc(okLabel||t("btn_save_modal"))+'</button>';
   modalConfirm=onConfirm;
+  modalTouched=false;   // nouvelle fiche affichée : la garde anti-perte repart de zéro
   const bg=document.getElementById("modalBg");
   modalReturnFocus=document.activeElement;   // pour rendre le focus à la fermeture
   bg.classList.add("open");
@@ -7404,9 +7408,31 @@ function closeModal(){
   if(modalReturnFocus&&document.body.contains(modalReturnFocus))modalReturnFocus.focus();
   modalReturnFocus=null;
 }
-document.getElementById("modalX").onclick=closeModal;
-document.getElementById("modalBg").addEventListener("mousedown",e=>{if(e.target.id==="modalBg")closeModal();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dynModals.length&&document.getElementById("modalBg").classList.contains("open"))closeModal();});
+/* ---------- Garde anti-perte de saisie ----------
+   Fermer la modale-formulaire par un geste NON explicite (clic sur l'arrière-plan,
+   Échap, ✕) perdait les saisies en cours. La garde ne joue que si la fiche a été
+   modifiée : sans saisie, la fermeture rapide reste immédiate. Le bouton Annuler,
+   lui, ferme toujours directement — son sens explicite est d'abandonner. */
+let modalTouched=false;
+// input/change couvrent champs, listes, cases, textarea et la complétion (qui émet
+// ces événements) ; les étiquettes de champ perso sont des boutons .cf-tag à bascule.
+["input","change"].forEach(ev=>document.getElementById("modalBody").addEventListener(ev,()=>{modalTouched=true;}));
+document.getElementById("modalBody").addEventListener("click",e=>{if(e.target.closest(".cf-tag"))modalTouched=true;});
+function requestCloseModal(){
+  if(!modalTouched){closeModal();return;}
+  confirmModal(t("modal_discard_q"),()=>closeModal(),
+    {danger:true,okLabel:t("modal_discard_btn"),cancelLabel:t("modal_keep")});
+}
+document.getElementById("modalX").onclick=requestCloseModal;
+document.getElementById("modalBg").addEventListener("mousedown",e=>{if(e.target.id==="modalBg")requestCloseModal();});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape"||dynModals.length||!document.getElementById("modalBg").classList.contains("open"))return;
+  /* stopImmediatePropagation : l'écouteur Échap des modales empilées (enregistré plus
+     loin) traiterait le MÊME événement et refermerait aussitôt la confirmation que
+     requestCloseModal vient d'ouvrir. */
+  e.stopImmediatePropagation();
+  requestCloseModal();
+});
 
 /* ---------- Modales empilables (alerte / confirmation), créées dynamiquement ---------- */
 const dynModals=[];
