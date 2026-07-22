@@ -422,4 +422,4 @@ C'est attendu : le score et la criticité sont **recalculés** à partir de la g
 
 ---
 
-*Ce guide correspond à Risk Analysis Editor version 1.6.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
+*Ce guide correspond à Risk Analysis Editor version 1.7.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
