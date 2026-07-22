@@ -295,6 +295,8 @@ Les **valeurs** des champs se saisissent ensuite dans les fiches (risque, mesure
 
 > Les libellés et l'aide se saisissent dans la langue de l'interface active ; à défaut de traduction, le code du champ est affiché.
 
+> ⚠️ **Champ déjà utilisé.** Si vous **supprimez** un champ qui contient déjà des valeurs, si vous **changez sa cible** (par ex. de *risque* à *mesure*) ou si vous **changez son type** de façon incompatible (par ex. de *tags* à *texte*), l'outil indique combien de valeurs sont concernées et avertit qu'elles deviendront inaccessibles ou inexploitables, avant d'appliquer.
+
 ---
 
 ## 13. Rechercher, trier, filtrer, personnaliser les colonnes

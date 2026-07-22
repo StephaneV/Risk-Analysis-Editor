@@ -1357,6 +1357,11 @@ const I18N = {
     cf_err_code:"Le code est obligatoire.", cf_err_code_dup:"Ce code de champ existe déjà.", cf_err_label:"Le libellé est obligatoire (au moins une langue).",
     cf_err_items:"Une liste doit contenir au moins un item.", cf_err_item_code:"Chaque item doit avoir un code unique.", cf_err_minmax:"Le minimum ne peut pas dépasser le maximum.",
     cf_del_confirm:"Supprimer ce champ personnalisé ?",
+    cf_del_confirm_used:"Ce champ contient {0} valeur(s) déjà saisie(s). En le supprimant, ces valeurs ne seront plus affichées ni exploitées (elles subsistent dans le fichier mais deviennent inaccessibles). Supprimer quand même ?",
+    cf_target_warn:"Ce champ est rattaché à « {1} » et contient {0} valeur(s) saisie(s). Changer sa cible pour « {2} » rendra ces valeurs inaccessibles. Continuer ?",
+    cf_change_target:"Changer la cible",
+    cf_type_warn:"Ce champ est de type « {1} » et contient {0} valeur(s) saisie(s). Changer son type pour « {2} » rendra ces valeurs incompatibles et inexploitables. Continuer ?",
+    cf_change_type:"Changer le type",
     cf_analysis_values:"Champs de l'analyse",
     cf_req_missing:"« {0} » est obligatoire.", cf_val_min:"« {0} » : minimum {1}.", cf_val_max:"« {0} » : maximum {1}.",
     cf_val_minlen:"« {0} » : au moins {1} caractères.", cf_val_maxlen:"« {0} » : au plus {1} caractères.",
@@ -1621,6 +1626,11 @@ const I18N = {
     cf_err_code:"Code is required.", cf_err_code_dup:"This field code already exists.", cf_err_label:"A label is required (at least one language).",
     cf_err_items:"A list must contain at least one item.", cf_err_item_code:"Each item must have a unique code.", cf_err_minmax:"Minimum cannot exceed maximum.",
     cf_del_confirm:"Delete this custom field?",
+    cf_del_confirm_used:"This field holds {0} entered value(s). Deleting it will hide these values from view and use (they remain in the file but become inaccessible). Delete anyway?",
+    cf_target_warn:"This field is attached to “{1}” and holds {0} entered value(s). Changing its target to “{2}” will make those values inaccessible. Continue?",
+    cf_change_target:"Change target",
+    cf_type_warn:"This field is of type “{1}” and holds {0} entered value(s). Changing its type to “{2}” will make those values incompatible and unusable. Continue?",
+    cf_change_type:"Change type",
     cf_analysis_values:"Analysis fields",
     cf_req_missing:"“{0}” is required.", cf_val_min:"“{0}”: minimum {1}.", cf_val_max:"“{0}”: maximum {1}.",
     cf_val_minlen:"“{0}”: at least {1} characters.", cf_val_maxlen:"“{0}”: at most {1} characters.",
@@ -1885,6 +1895,11 @@ const I18N = {
     cf_err_code:"Il codice è obbligatorio.", cf_err_code_dup:"Questo codice di campo esiste già.", cf_err_label:"È richiesta un'etichetta (almeno una lingua).",
     cf_err_items:"Un elenco deve contenere almeno un elemento.", cf_err_item_code:"Ogni elemento deve avere un codice univoco.", cf_err_minmax:"Il minimo non può superare il massimo.",
     cf_del_confirm:"Eliminare questo campo personalizzato?",
+    cf_del_confirm_used:"Questo campo contiene {0} valore/i già inserito/i. Eliminandolo, questi valori non saranno più visualizzati né utilizzati (restano nel file ma diventano inaccessibili). Eliminare comunque?",
+    cf_target_warn:"Questo campo è associato a « {1} » e contiene {0} valore/i inserito/i. Cambiare la sua destinazione in « {2} » renderà tali valori inaccessibili. Continuare?",
+    cf_change_target:"Cambia destinazione",
+    cf_type_warn:"Questo campo è di tipo « {1} » e contiene {0} valore/i inserito/i. Cambiare il suo tipo in « {2} » renderà tali valori incompatibili e inutilizzabili. Continuare?",
+    cf_change_type:"Cambia tipo",
     cf_analysis_values:"Campi dell'analisi",
     cf_req_missing:"« {0} » è obbligatorio.", cf_val_min:"« {0} »: minimo {1}.", cf_val_max:"« {0} »: massimo {1}.",
     cf_val_minlen:"« {0} »: almeno {1} caratteri.", cf_val_maxlen:"« {0} »: al massimo {1} caratteri.",
@@ -2359,6 +2374,25 @@ function riskById(id){return analyse.risks.find(r=>r.id===id);}
 /* ---------- Champs personnalisés (définitions) ---------- */
 function customFields(){analyse.custom_fields=Array.isArray(analyse.custom_fields)?analyse.custom_fields:[];return analyse.custom_fields;}
 function customFieldsFor(target){return customFields().filter(f=>f&&f.target===target).slice().sort((a,b)=>(a.order||0)-(b.order||0));}
+/* Une valeur de champ personnalisé est « saisie » si elle n'est ni vide ni une liste vide. */
+function cfValueFilled(v){return !(v===undefined||v===null||v===""||(Array.isArray(v)&&v.length===0));}
+/* Nombre d'enregistrements de la cible du champ qui portent déjà une valeur pour ce code.
+   Sert à avertir avant une suppression ou un changement de cible (perte de visibilité). */
+function cfUsageCount(f){
+  if(!f||!f.code)return 0;
+  if(f.target==="analysis")return (analyse.custom&&cfValueFilled(analyse.custom[f.code]))?1:0;
+  const arr=f.target==="risk"?analyse.risks:f.target==="measure"?analyse.measures:f.target==="link"?analyse.treatments:[];
+  return (arr||[]).filter(r=>r&&r.custom&&cfValueFilled(r.custom[f.code])).length;
+}
+/* Forme de stockage d'une valeur selon le type : liste (tableau de codes), booléen,
+   nombre, ou chaîne. Changer de type À L'INTÉRIEUR d'un groupe préserve les valeurs ;
+   en changer rend les valeurs existantes incompatibles (d'où l'avertissement). */
+function cfStorageKind(type){
+  if(type==="checklist"||type==="tags")return "list";
+  if(type==="boolean")return "bool";
+  if(type==="integer"||type==="decimal"||type==="progress")return "number";
+  return "string";   // text, textarea, url, email, tel, regexp, date, select
+}
 
 /* ============================================================
    NAVIGATION ONGLETS
@@ -6370,7 +6404,9 @@ document.getElementById("btnAddCF").addEventListener("click",()=>openCustomField
 document.getElementById("cfTable").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;const list=customFields();
   if(b.dataset.cfEdit!=null)return openCustomFieldModal(+b.dataset.cfEdit);
-  if(b.dataset.cfDel!=null){const i=+b.dataset.cfDel;confirmModal(t("cf_del_confirm"),()=>{list.splice(i,1);cfReindex();markDirty();renderAll();},{danger:true});return;}
+  if(b.dataset.cfDel!=null){const i=+b.dataset.cfDel;const n=cfUsageCount(list[i]);
+    const msg=n>0?t("cf_del_confirm_used",n):t("cf_del_confirm");
+    confirmModal(msg,()=>{list.splice(i,1);cfReindex();markDirty();renderAll();},{danger:true});return;}
   if(b.dataset.cfUp!=null){const i=+b.dataset.cfUp;if(i>0){[list[i-1],list[i]]=[list[i],list[i-1]];cfReindex();markDirty();renderAll();}return;}
   if(b.dataset.cfDown!=null){const i=+b.dataset.cfDown;if(i<list.length-1){[list[i+1],list[i]]=[list[i],list[i+1]];cfReindex();markDirty();renderAll();}return;}
 });
@@ -6481,8 +6517,28 @@ function openCustomFieldModal(idx){
       obj.items=items.map(it=>{const o={code:it.code,label:Object.assign({},it.label)};if(type==="tags")o.color=it.color||"#4c7dff";return o;});
     }
     const list=customFields();
-    if(isNew){obj.order=list.length;list.push(obj);}else{obj.order=list[idx].order!=null?list[idx].order:idx;list[idx]=obj;}
-    cfReindex();markDirty();renderAll();return true;
+    const commit=()=>{
+      if(isNew){obj.order=list.length;list.push(obj);}else{obj.order=list[idx].order!=null?list[idx].order:idx;list[idx]=obj;}
+      cfReindex();markDirty();renderAll();
+    };
+    /* Champ déjà utilisé : changer sa CIBLE (les valeurs restent rattachées à l'ancienne
+       cible) ou son TYPE de façon incompatible (les valeurs changent de forme de stockage)
+       rend les valeurs saisies inexploitables. On avertit avant d'appliquer. La cible prime :
+       si elle change, les valeurs deviennent inaccessibles quel que soit le type. */
+    if(!isNew){
+      const oldField=list[idx], n=cfUsageCount(oldField);
+      const targetChanged=oldField.target!==target;
+      const typeBreaks=cfStorageKind(oldField.type)!==cfStorageKind(type);
+      if(n>0&&(targetChanged||typeBreaks)){
+        const msg=targetChanged
+          ? t("cf_target_warn",n,cfTargetLabel(oldField.target),cfTargetLabel(target))
+          : t("cf_type_warn",n,cfTypeLabel(oldField.type),cfTypeLabel(type));
+        confirmModal(msg,()=>{commit();closeModal();},
+          {danger:true,okLabel:targetChanged?t("cf_change_target"):t("cf_change_type")});
+        return false;   // garder la modale ouverte jusqu'à la décision
+      }
+    }
+    commit();return true;
   },isNew?t("btn_create"):null);
   // câblage post-ouverture
   const typeSel=document.getElementById("cfType");
