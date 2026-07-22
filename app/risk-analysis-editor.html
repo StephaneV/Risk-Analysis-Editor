@@ -1135,7 +1135,7 @@ const I18N = {
     hp_drop:"Déposer un fichier .rae.json sur la fenêtre l'ouvre",
     hp_sec_nav:"Navigation", hp_esc:"Fermer la fenêtre ou le menu ouvert", hp_help:"Ouvrir cette aide",
     hp_url:"Paramètres d'adresse : ?file=, ?tab=, ?lang=, ?filter=",
-    hp_sec_tables:"Tableaux", hp_sort:"Trier la colonne (second clic : ordre inverse)", hp_reorder:"Réordonner les colonnes en glissant l'en-tête",
+    hp_sec_tables:"Tableaux", hp_sort:"Trier la colonne : croissant → décroissant → ordre d'origine", hp_reorder:"Réordonner les colonnes en glissant l'en-tête",
     hp_cols:"Choisir les colonnes affichées, dont les champs personnalisés", hp_pill:"Ouvrir la fiche du risque ou de la mesure référencée",
     hp_sec_matrix:"Matrices, liens & plan d'action", hp_drag:"Déplacer une pastille (matrices) ou une carte (kanban)",
     hp_ctrl_arrows:"Déplacer au clavier la pastille ou la carte sélectionnée", hp_space:"Cocher/décocher dans la grille des associations",
@@ -1402,7 +1402,7 @@ const I18N = {
     hp_drop:"Dropping a .rae.json file on the window opens it",
     hp_sec_nav:"Navigation", hp_esc:"Close the open dialog or menu", hp_help:"Open this help",
     hp_url:"URL parameters: ?file=, ?tab=, ?lang=, ?filter=",
-    hp_sec_tables:"Tables", hp_sort:"Sort the column (second click: reverse order)", hp_reorder:"Reorder columns by dragging the header",
+    hp_sec_tables:"Tables", hp_sort:"Sort the column: ascending → descending → original order", hp_reorder:"Reorder columns by dragging the header",
     hp_cols:"Choose displayed columns, including custom fields", hp_pill:"Open the referenced risk or measure",
     hp_sec_matrix:"Matrices, links & action plan", hp_drag:"Move a chip (matrices) or a card (kanban)",
     hp_ctrl_arrows:"Move the selected chip or card with the keyboard", hp_space:"Check/uncheck in the associations grid",
@@ -1664,7 +1664,7 @@ const I18N = {
     hp_drop:"Trascinare un file .rae.json sulla finestra lo apre",
     hp_sec_nav:"Navigazione", hp_esc:"Chiudi la finestra o il menu aperto", hp_help:"Apri questo aiuto",
     hp_url:"Parametri URL: ?file=, ?tab=, ?lang=, ?filter=",
-    hp_sec_tables:"Tabelle", hp_sort:"Ordina la colonna (secondo clic: ordine inverso)", hp_reorder:"Riordina le colonne trascinando l'intestazione",
+    hp_sec_tables:"Tabelle", hp_sort:"Ordina la colonna: crescente → decrescente → ordine originale", hp_reorder:"Riordina le colonne trascinando l'intestazione",
     hp_cols:"Scegli le colonne visualizzate, inclusi i campi personalizzati", hp_pill:"Apri la scheda del rischio o della misura",
     hp_sec_matrix:"Matrici, collegamenti e piano d'azione", hp_drag:"Sposta una pastiglia (matrici) o una scheda (kanban)",
     hp_ctrl_arrows:"Sposta con la tastiera la pastiglia o la scheda selezionata", hp_space:"Seleziona/deseleziona nella griglia delle associazioni",
@@ -5250,10 +5250,15 @@ function bindFilter(id,ev,fn){const el=document.getElementById(id);if(el)el.addE
 bindFilter("fltRiskQ","input",e=>{listState.risks.q=e.target.value;renderRisks();});
 bindFilter("fltMeasureQ","input",e=>{listState.measures.q=e.target.value;renderMeasures();});
 bindFilter("fltPlanQ","input",e=>{listState.plan.q=e.target.value;renderPlan();});
+/* Tri tri-état : croissant → décroissant → aucun (retour à l'ordre d'origine du
+   fichier). Sans le 3e état, aucun geste ne permettait de revenir au tri par défaut. */
 function bindSort(tableId,stKey,render){const el=document.getElementById(tableId);if(!el)return;
   el.addEventListener("click",e=>{const th=e.target.closest("th[data-sort]");if(!th)return;
     if(Date.now()-lastColDrop<300)return;   // un glisser de colonne ne doit pas déclencher un tri
-    const st=listState[stKey],col=th.dataset.sort;if(st.sort===col)st.dir=-st.dir;else{st.sort=col;st.dir=1;}render();});}
+    const st=listState[stKey],col=th.dataset.sort;
+    if(st.sort===col){if(st.dir===1)st.dir=-1;else{st.sort="";st.dir=1;}}
+    else{st.sort=col;st.dir=1;}
+    render();});}
 bindSort("risksTableEl","risks",renderRisks);
 bindSort("measuresTableEl","measures",renderMeasures);
 document.getElementById("measuresTable").addEventListener("click",e=>{
@@ -5584,7 +5589,12 @@ function renderLinkDetails(){
 document.getElementById("fltLinkQ").addEventListener("input",renderLinkDetails);
 document.getElementById("linkDetailsArea").addEventListener("click",e=>{
   const th=e.target.closest("th[data-sort]");
-  if(th){if(Date.now()-lastColDrop<300)return;const st=listState.links,col=th.dataset.sort;if(st.sort===col)st.dir=-st.dir;else{st.sort=col;st.dir=1;}renderLinkDetails();return;}
+  if(th){if(Date.now()-lastColDrop<300)return;const st=listState.links,col=th.dataset.sort;
+    /* Tri tri-état ; le « défaut » des liens n'est pas l'ordre du fichier mais le tri
+       code risque puis code mesure : le 3e clic y revient. */
+    if(st.sort===col){if(st.dir===1)st.dir=-1;else{st.sort="rid";st.dir=1;}}
+    else{st.sort=col;st.dir=1;}
+    renderLinkDetails();return;}
   const ed=e.target.closest("[data-edit-l]");const dl=e.target.closest("[data-del-l]");
   if(ed){const[rid,mid]=ed.dataset.editL.split("|");openLinkModal(rid,mid);return;}
   if(dl){const[rid,mid]=dl.dataset.delL.split("|");
