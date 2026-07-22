@@ -2390,7 +2390,7 @@ function cfUsageCount(f){
 function cfStorageKind(type){
   if(type==="checklist"||type==="tags")return "list";
   if(type==="boolean")return "bool";
-  if(type==="integer"||type==="decimal"||type==="progress")return "number";
+  if(type==="integer"||type==="float"||type==="progress")return "number";
   return "string";   // text, textarea, url, email, tel, regexp, date, select
 }
 
@@ -4780,7 +4780,7 @@ function cfColCompare(target,code,a,b){
   if(empty(va))return 1; if(empty(vb))return -1;
   switch(f.type){
     case "boolean":return (va?1:0)-(vb?1:0);
-    case "integer":case "decimal":case "number":case "progress":return (parseFloat(va)||0)-(parseFloat(vb)||0);
+    case "integer":case "float":case "progress":return (parseFloat(va)||0)-(parseFloat(vb)||0);
     case "select":{const idx=v=>(f.items||[]).findIndex(it=>it.code===v);const ia=idx(va),ib=idx(vb);
       if(ia>=0&&ib>=0&&ia!==ib)return ia-ib;return String(cfDisplay(f,va)).localeCompare(String(cfDisplay(f,vb)));}
     case "date":return String(va).localeCompare(String(vb));
@@ -4833,7 +4833,7 @@ function linkCmp(col){return (a,b)=>{
    clé « cf:<code> » ; celles dont le champ a été supprimé sont ignorées silencieusement.
    Par défaut, un champ perso est masqué pour les risques/mesures, et visible pour les liens
    (comportement historique du détail des liens). Tri possible sur les colonnes scalaires. */
-const CF_SORTABLE_TYPES=["boolean","integer","decimal","number","date","text","select","progress"];
+const CF_SORTABLE_TYPES=["boolean","integer","float","date","text","select","progress"];
 function cfColSortable(f){return f&&CF_SORTABLE_TYPES.indexOf(f.type)>=0;}
 function cfTargetOf(table){return table==="risks"?"risk":table==="measures"?"measure":"link";}
 function riskCellTag(r,which){
