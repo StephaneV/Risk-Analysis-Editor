@@ -1,4 +1,4 @@
-# <img src="specs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
+# <img src="docs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
 
 [English](README.md) · **Français**
 
@@ -8,7 +8,7 @@ Outil autonome de **construction et de visualisation de matrices de risque** —
 
 *Aucune installation : l'outil s'exécute entièrement dans votre navigateur. Deux démos prêtes à ouvrir : une analyse de risques **inspirée d'EBIOS RM** (12 risques, 11 mesures) et une **AIPD suivant la méthode PIA de la CNIL** pour un service de santé au travail (12 risques, 12 mesures) — toutes deux illustrant descriptions, notes, **tags** colorés, **barres de progression**, responsables et justifications de liens. Le téléchargement fournit **l'unique fichier HTML** de la [dernière version](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest) : double-cliquez-le pour travailler **hors-ligne**.*
 
-![Vue Matrices › Trajectoire de l'analyse « Système d'information » (thème clair)](specs/images/capture-trajectoire.png)
+![Vue Matrices › Trajectoire de l'analyse « Système d'information » (thème clair)](docs/images/capture-trajectoire.png)
 
 > *Vue **Matrices › Trajectoire** : chaque flèche relie la position initiale (contour pointillé) à la position résiduelle (contour plein) d'un risque.*
 

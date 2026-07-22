@@ -1,4 +1,4 @@
-# <img src="specs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
+# <img src="docs/images/RAE-logo-mini.svg" alt="" height="38" align="top"> Risk Analysis Editor (RAE)
 
 **English** · [Français](README.fr.md)
 
@@ -8,7 +8,7 @@ Standalone tool for **building and visualizing risk matrices** — inherent (gro
 
 *No installation: the tool runs entirely in your browser. Two ready-to-open demos: an **EBIOS RM–inspired** risk analysis (12 risks, 11 measures) and a **DPIA following the CNIL PIA method** for an occupational health service (12 risks, 12 measures) — both showcasing descriptions, notes, colored **tags**, **progress bars**, owners and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
 
-![Matrices › Trajectory view of the "Information system" analysis (light theme)](specs/images/capture-trajectoire.png)
+![Matrices › Trajectory view of the "Information system" analysis (light theme)](docs/images/capture-trajectoire.png)
 
 > ***Matrices › Trajectory** view: each arrow links a risk's initial position (dashed outline) to its residual position (solid outline).*
 
