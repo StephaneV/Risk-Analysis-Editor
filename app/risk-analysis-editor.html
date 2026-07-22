@@ -2385,13 +2385,25 @@ function cfUsageCount(f){
   return (arr||[]).filter(r=>r&&r.custom&&cfValueFilled(r.custom[f.code])).length;
 }
 /* Forme de stockage d'une valeur selon le type : liste (tableau de codes), booléen,
-   nombre, ou chaîne. Changer de type À L'INTÉRIEUR d'un groupe préserve les valeurs ;
-   en changer rend les valeurs existantes incompatibles (d'où l'avertissement). */
+   nombre, ou chaîne. Changer de type À L'INTÉRIEUR d'un groupe préserve en général les
+   valeurs ; en changer les rend incompatibles. */
 function cfStorageKind(type){
   if(type==="checklist"||type==="tags")return "list";
   if(type==="boolean")return "bool";
   if(type==="integer"||type==="float"||type==="progress")return "number";
   return "string";   // text, textarea, url, email, tel, regexp, date, select
+}
+/* Un changement de type casse-t-il les valeurs déjà saisies ?
+   - Forme de stockage différente (chaîne/nombre/booléen/liste) : oui.
+   - Même forme, MAIS destination « liste déroulante » depuis un autre type : oui aussi.
+     La liste déroulante restreint les valeurs aux codes de ses items ; une valeur libre
+     (date, texte, URL…) n'y correspond pas et devient non sélectionnable (orpheline).
+     L'inverse (liste déroulante -> texte, date…) préserve le code sous forme de chaîne. */
+function cfTypeChangeBreaks(oldType,newType){
+  if(oldType===newType)return false;
+  if(cfStorageKind(oldType)!==cfStorageKind(newType))return true;
+  if(newType==="select"&&oldType!=="select")return true;
+  return false;
 }
 
 /* ============================================================
@@ -6528,7 +6540,7 @@ function openCustomFieldModal(idx){
     if(!isNew){
       const oldField=list[idx], n=cfUsageCount(oldField);
       const targetChanged=oldField.target!==target;
-      const typeBreaks=cfStorageKind(oldField.type)!==cfStorageKind(type);
+      const typeBreaks=cfTypeChangeBreaks(oldField.type,type);
       if(n>0&&(targetChanged||typeBreaks)){
         const msg=targetChanged
           ? t("cf_target_warn",n,cfTargetLabel(oldField.target),cfTargetLabel(target))
