@@ -77,7 +77,8 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 | Folder | Contents |
 |---|---|
 | [`app/`](app/) | The application (`risk-analysis-editor.html`). |
-| [`specs/`](specs/) | **Specifications** (in French): file-format specification, JSON schema and layout strategies. User documentation will live elsewhere. |
+| [`docs/`](docs/) | **User documentation** (in French): the illustrated [user guide](docs/guide-utilisateur.md), and shared images. |
+| [`specs/`](specs/) | **Specifications** (in French): file-format specification, JSON schema and layout strategies. |
 | [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including two **complete demos**: an **EBIOS RM–inspired** risk analysis (`demo-ebios-rm-*.rae.json`) and a **DPIA following the CNIL PIA method** for an occupational health service (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — with colored tags, progress bars, owners and justified links. |
 | [`templates/`](templates/) | **Methodology templates** (`xxx.template.<lang>.rae.json`, one file per language): blank skeletons — grid, criticality levels and custom fields preconfigured, no risks or measures. **EBIOS RM**, **CNIL PIA / DPIA**, **ISO/IEC 27005** and a **generic** 5×5, each in **French, English and Italian**. Listed under *Start from a template* in the onboarding block (the file matching the current interface language is loaded); opening one (from there, or via *Load…*) starts a new, **unlinked** analysis. You can also turn the current analysis into a template with **File › Save as template…**, and return to the onboarding block with **File › Home screen**. |
 
