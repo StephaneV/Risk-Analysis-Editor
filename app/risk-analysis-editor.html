@@ -414,6 +414,9 @@
   #toast .t-act:hover{background:rgba(255,255,255,.15)}
   /* Poignée de réordonnancement des lignes (révélée au survol, sans tri actif) */
   .row-grip{opacity:0;cursor:grab;color:var(--muted);margin-right:7px;font-size:11px;user-select:none;display:inline-block}
+  /* La cellule ID (poignée + badge) ne se coupe jamais : un identifiant long passait
+     à la ligne sous la poignée. La colonne ID est toujours épinglée en tête. */
+  #risksTable td:first-child,#measuresTable td:first-child{white-space:nowrap}
   tr:hover .row-grip{opacity:.7}
   .row-grip:focus-visible{opacity:1;outline:2px solid var(--focus-ring);outline-offset:1px;border-radius:3px}
   tr.row-dragging{opacity:.45}
