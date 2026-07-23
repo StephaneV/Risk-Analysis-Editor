@@ -1328,7 +1328,7 @@ const I18N = {
        dans l'analyse en mémoire — et crée l'état « modifié » — quand l'autre le résout. */
     btn_cancel:"Annuler", btn_save_modal:"Valider", btn_ok:"OK", btn_confirm:"Confirmer", btn_close:"Fermer", dialog_error:"Erreur", dialog_confirm:"Confirmation",
     btn_create:"Créer",
-    about_title:"À propos", about_subtitle:"Éditeur de matrices de risque · format .rae.json", about_version:"Version", about_credits:"Auteur", about_license:"Licence", about_github:"Voir le projet sur GitHub",
+    about_title:"À propos", about_subtitle:"Éditeur de matrices de risque · format .rae.json", about_version:"Version", about_credits:"Auteur", about_license:"Licence", about_website:"Site web", about_github:"Voir le projet sur GitHub",
     skip_to_content:"Aller au contenu",
     nav_sections:"Sections de l'analyse",
     flt_search_risks:"Rechercher un risque",
@@ -1626,7 +1626,7 @@ const I18N = {
     sep_tab:"tab", no_label:"(no label)",
     btn_cancel:"Cancel", btn_save_modal:"Confirm", btn_ok:"OK", btn_confirm:"Confirm", btn_close:"Close", dialog_error:"Error", dialog_confirm:"Confirmation",
     btn_create:"Create",
-    about_title:"About", about_subtitle:"Risk matrix editor · .rae.json format", about_version:"Version", about_credits:"Author", about_license:"License", about_github:"View the project on GitHub",
+    about_title:"About", about_subtitle:"Risk matrix editor · .rae.json format", about_version:"Version", about_credits:"Author", about_license:"License", about_website:"Website", about_github:"View the project on GitHub",
     skip_to_content:"Skip to content",
     nav_sections:"Analysis sections",
     flt_search_risks:"Search a risk",
@@ -1922,7 +1922,7 @@ const I18N = {
     sep_tab:"tab", no_label:"(senza etichetta)",
     btn_cancel:"Annulla", btn_save_modal:"Conferma", btn_ok:"OK", btn_confirm:"Conferma", btn_close:"Chiudi", dialog_error:"Errore", dialog_confirm:"Conferma",
     btn_create:"Crea",
-    about_title:"Informazioni", about_subtitle:"Editor di matrici di rischio · formato .rae.json", about_version:"Versione", about_credits:"Autore", about_license:"Licenza", about_github:"Vedi il progetto su GitHub",
+    about_title:"Informazioni", about_subtitle:"Editor di matrici di rischio · formato .rae.json", about_version:"Versione", about_credits:"Autore", about_license:"Licenza", about_website:"Sito web", about_github:"Vedi il progetto su GitHub",
     skip_to_content:"Vai al contenuto",
     nav_sections:"Sezioni dell'analisi",
     flt_search_risks:"Cerca un rischio",
@@ -8281,6 +8281,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dy
 /* ---------- À propos ---------- */
 const APP_VERSION="1.8.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
+const SITE_URL="https://www.risk-analysis-editor.com/";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */
 const LOGO_SVG='<svg viewBox="0 0 18.585251 18.585253" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(-29.633334,-127.52917)" stroke-width="0.329" stroke-miterlimit="8" fill-rule="evenodd">'+
   '<path d="m 29.797833,128.11382 c 0,-0.23203 0.188119,-0.42015 0.420159,-0.42015 h 4.715933 c 0.23204,0 0.420158,0.18812 0.420158,0.42015 v 4.71594 c 0,0.23204 -0.188118,0.42016 -0.420158,0.42016 h -4.715933 c -0.23204,0 -0.420159,-0.18812 -0.420159,-0.42016 z" stroke="#d9b22b" fill="#f2c62f"/>'+
@@ -8297,6 +8298,7 @@ const LOGO_SVG='<svg viewBox="0 0 18.585251 18.585253" xmlns="http://www.w3.org/
 function openAboutModal(){
   const row=(k,v)=>'<div class="muted">'+esc(k)+'</div><div>'+v+'</div>';
   const link='<a href="'+esc(GITHUB_URL)+'" target="_blank" rel="noopener">'+esc(t("about_github"))+' →</a>';
+  const site='<a href="'+esc(SITE_URL)+'" target="_blank" rel="noopener">www.risk-analysis-editor.com →</a>';
   const body=
     '<div style="text-align:center;padding:2px 0 14px">'+
       '<div class="about-logo">'+LOGO_SVG+'</div>'+
@@ -8307,6 +8309,7 @@ function openAboutModal(){
       row(t("about_version"),esc(APP_VERSION))+
       row(t("about_credits"),esc(APP_AUTHOR))+
       row(t("about_license"),esc(APP_LICENSE))+
+      row(t("about_website"),site)+
       row("GitHub",link)+
     '</div>';
   pushModal(t("about_title"),body,[{label:t("btn_close"),onClick:api=>api.close()}]);
