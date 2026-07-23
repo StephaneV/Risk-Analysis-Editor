@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 1.8.0
+  Version  : 1.8.1
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -2811,6 +2811,9 @@ document.getElementById("fileInput").addEventListener("change",e=>{
   dz.innerHTML='<div class="dz-box"><div class="dz-title"></div><div class="dz-sub"></div></div>';
   document.body.appendChild(dz);
   const porteFichier=e=>!!e.dataTransfer&&[...(e.dataTransfer.types||[])].indexOf("Files")>=0;
+  /* Zone de dépôt LOCALE (ex. logo du sous-onglet Rapport) : le glisser-déposer de fichier
+     y a sa propre signification, il ne doit pas déclencher le chargement d'une analyse. */
+  const zoneLocale=e=>!!(e.target&&e.target.closest&&e.target.closest(".rc-dropzone"));
   /* Pendant qu'une modale est ouverte, on n'affiche pas le voile et on ne charge rien :
      remplacer l'analyse sous une fiche en cours d'édition laisserait cette fiche
      rattachée à un objet qui n'existe plus. Sans voile, aucune promesse n'est faite. */
@@ -2822,13 +2825,14 @@ document.getElementById("fileInput").addEventListener("change",e=>{
     dz.classList.add("on");
   };
   const cacher=()=>{profondeur=0;dz.classList.remove("on");};
-  window.addEventListener("dragenter",e=>{if(!porteFichier(e)||!dispo())return;
+  window.addEventListener("dragenter",e=>{if(zoneLocale(e)||!porteFichier(e)||!dispo())return;
     e.preventDefault();profondeur++;montrer();});
-  window.addEventListener("dragover",e=>{if(!porteFichier(e)||!dispo())return;
+  window.addEventListener("dragover",e=>{if(zoneLocale(e)||!porteFichier(e)||!dispo())return;
     e.preventDefault();e.dataTransfer.dropEffect="copy";});
-  window.addEventListener("dragleave",e=>{if(!porteFichier(e))return;
+  window.addEventListener("dragleave",e=>{if(zoneLocale(e)||!porteFichier(e))return;
     if(--profondeur<=0)cacher();});
   window.addEventListener("drop",e=>{
+    if(zoneLocale(e))return;              // zone de dépôt locale (logo…) : gérée sur place
     if(!porteFichier(e))return;          // glisser interne (cartes du Plan) : on ne s'en mêle pas
     e.preventDefault();cacher();
     if(!dispo())return;
@@ -4252,9 +4256,12 @@ const REPORT_META_ROW_IDS=["author","organization","scope","methodology","create
 /* Par défaut (sans configuration), toutes les sections sont activées SAUF les matrices
    « seules » (initiale seule, résiduelle seule) : seule la version accolée est cochée. */
 function reportSectionDefaultOn(id){return !(id==="matrix_initial"||id==="matrix_residual");}
-/* Filtres actifs (champs personnalisés) décrivant le sous-ensemble filtré : [{label,value}]. */
+/* Filtres actifs (natifs propagés + champs personnalisés) décrivant le sous-ensemble filtré : [{label,value}]. */
 function reportActiveFilters(){
   const out=[];
+  const rc=natRiskCat();if(rc)out.push({label:t("f_category"),value:rc});
+  const mt=natMeasType();if(mt)out.push({label:t("th_type"),value:typeLabel(mt)});
+  const ms=natMeasStatus();if(ms)out.push({label:t("th_status"),value:statusLabel(ms)});
   ["risk","measure","link"].forEach(tg=>{
     cfFilterableFields(tg).forEach(f=>{
       const want=cfFilters[f.code];if(!want)return;
@@ -4765,14 +4772,34 @@ function cfEntityMatches(obj,target){
    lien, un risque dépourvu de mesure reste affiché — il n'est écarté par aucun critère.
    Un seul passage suffit à atteindre le point fixe : les ensembles réduits ne contiennent
    plus que des extrémités de liens eux-mêmes retenus. */
+/* Filtres natifs qui se propagent (au meme titre que les champs perso) : categorie de
+   risque, type et statut de mesure. La recherche texte et les filtres propres au Plan
+   d'action (responsable, en retard) restent locaux a leur vue et ne passent pas ici. */
+function natRiskCat(){const ls=(typeof listState==="object"&&listState&&listState.risks)||{};return ls.cat||"";}
+function natMeasType(){const ls=(typeof listState==="object"&&listState&&listState.measures)||{};return ls.type||"";}
+function natMeasStatus(){const ls=(typeof listState==="object"&&listState&&listState.measures)||{};return ls.status||"";}
+function natRiskMatches(r){const c=natRiskCat();return !c||(r.category||"")===c;}
+function natMeasureMatches(m){const ty=natMeasType(),st=natMeasStatus();
+  return (!ty||(m.type||"")===ty)&&(!st||(m.status||"")===st);}
+/* Un filtre natif propage-t-il (categorie/type/statut) ? Sert au decompte et au bouton
+   « Reinitialiser » de CHAQUE barre, puisque ces filtres restreignent toutes les vues. */
+function natPropagatingActive(){return !!(natRiskCat()||natMeasType()||natMeasStatus());}
+function natPropagatingReset(){
+  if(typeof listState==="object"&&listState){
+    if(listState.risks)listState.risks.cat="";
+    if(listState.measures){listState.measures.type="";listState.measures.status="";}
+  }
+}
 function cfVisibleSets(){
-  const actif=tg=>cfFilterableFields(tg).some(f=>cfFilters[f.code]);
-  const aR=actif("risk"), aM=actif("measure"), aL=actif("link");
-  const R=new Set(analyse.risks.filter(r=>!aR||cfEntityMatches(r,"risk")).map(r=>r.id));
-  const M=new Set(analyse.measures.filter(m=>!aM||cfEntityMatches(m,"measure")).map(m=>m.id));
+  const cfActif=tg=>cfFilterableFields(tg).some(f=>cfFilters[f.code]);
+  const rCf=cfActif("risk"), mCf=cfActif("measure"), lCf=cfActif("link");
+  // « actif » = un critere restreint cette entite (champ perso OU filtre natif propage).
+  const aR=rCf||!!natRiskCat(), aM=mCf||!!(natMeasType()||natMeasStatus()), aL=lCf;
+  const R=new Set(analyse.risks.filter(r=>(!rCf||cfEntityMatches(r,"risk"))&&natRiskMatches(r)).map(r=>r.id));
+  const M=new Set(analyse.measures.filter(m=>(!mCf||cfEntityMatches(m,"measure"))&&natMeasureMatches(m)).map(m=>m.id));
   // Liens retenus : ceux qui satisfont leurs propres critères ET dont les deux extrémités
   // sont retenues.
-  const L=analyse.treatments.filter(x=>(!aL||cfEntityMatches(x,"link"))&&R.has(x.risk)&&M.has(x.measure));
+  const L=analyse.treatments.filter(x=>(!lCf||cfEntityMatches(x,"link"))&&R.has(x.risk)&&M.has(x.measure));
   if(aM||aL){const gardes=new Set(L.map(x=>x.risk));
     [...R].forEach(id=>{if(!gardes.has(id))R.delete(id);});}
   if(aR||aL){const gardes=new Set(L.map(x=>x.measure));
@@ -4800,8 +4827,9 @@ function visibleTreatments(){return cfVisibleSets().links;}
    Chaque barre propose TOUS les champs filtrables — risque, mesure et lien confondus — quel
    que soit l'onglet. Les critères se propageant le long des liens, un filtre de mesure agit
    sur le registre des risques comme sur les statistiques : le proposer là où il produit un
-   effet, c'est le proposer partout. Seuls les contrôles natifs (recherche, catégorie…)
-   restent propres à leur vue. */
+   effet, c'est le proposer partout. Les filtres natifs « catégorie » (risque), « type » et
+   « statut » (mesure) se propagent de la même façon (via cfVisibleSets). Restent propres à
+   leur vue : la recherche texte, et les filtres du Plan d'action (responsable, « en retard »). */
 /* Filtres « natifs » (catégorie, type, statut, responsable, en retard) : autrefois des
    <select> et une case à cocher, désormais servis par la MÊME puce à menu que les champs
    personnalisés. Chaque descripteur sait lire et écrire son état (dans listState) et
@@ -4960,7 +4988,7 @@ function searchActive(b){
    quelle famille restreint toutes les vues ; s'y ajoutent la recherche et les filtres natifs
    propres à la barre (catégorie, statut…). */
 function barreActive(b){
-  return searchActive(b)||b.natives().some(d=>d.value())||cfFilterCount()>0;
+  return searchActive(b)||b.natives().some(d=>d.value())||cfFilterCount()>0||natPropagatingActive();
 }
 /* Réinitialisation : la recherche et les filtres natifs de cette barre, et TOUS les champs
    personnalisés. Se limiter aux filtres de la barre laisserait en place un filtre d'une autre
@@ -4970,6 +4998,7 @@ function filterBarReset(cle){
   if(b.search){const el=document.getElementById(b.search);
     if(el&&el.value){el.value="";el.dispatchEvent(new Event("input",{bubbles:true}));}}
   b.natives().forEach(d=>d.set(""));
+  natPropagatingReset();   // les filtres propages (categorie/type/statut) masquent aussi ici
   cfFilterReset();
   cfFilterSyncURL();renderAll();
 }
@@ -5019,8 +5048,9 @@ function renderFilterBars(){
       btn.setAttribute("data-flt-reset",b.cle);host.appendChild(btn);}
     btn.textContent=t("flt_clear");btn.dataset.fltReset=b.cle;
     // Une barre sans recherche, sans filtre natif ni champ filtrable (matrices, tableau
-    // croisé sans champ perso) n'a pas lieu d'occuper de la place.
-    host.hidden=!b.search&&!natives.length&&!champs.length;
+    // croisé sans champ perso) n'a pas lieu d'occuper de la place — sauf si un filtre
+    // propagé (catégorie/type/statut) réduit la vue : on montre alors décompte + réinitialiser.
+    host.hidden=!b.search&&!natives.length&&!champs.length&&!natPropagatingActive();
     setFilterInfo(b.cle,cnt.textContent);
   });
 }
@@ -8279,7 +8309,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="1.8.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="1.8.1", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 const SITE_URL="https://www.risk-analysis-editor.com/";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */
