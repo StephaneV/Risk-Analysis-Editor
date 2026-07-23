@@ -100,6 +100,88 @@
                 "items": { "type": "string" }
               },
               "description": "Colonnes visibles, dans l'ordre d'affichage, pour chaque registre (clés « risks », « measures », « links »). Une entrée liste les colonnes retenues (la colonne « Actions » est implicite et toujours affichée). Les colonnes de champ personnalisé sont désignées par « cf:<code> ». Absent : ordre par défaut."
+            },
+            "report": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Personnalisation du rapport (écran/PDF et export Word). Absent : modèle par défaut (page de garde, table des matières et toutes les sections activées, dans l'ordre par défaut, y compris le plan d'action). Robustesse : une section, une ligne ou une colonne connue absente d'une configuration existante est ajoutée désactivée ; un identifiant inconnu est ignoré.",
+              "properties": {
+                "scope": { "enum": ["all", "filtered"], "description": "Périmètre du rapport : analyse complète (« all ») ou sous-ensemble filtré selon les filtres et la recherche actifs (« filtered »). Défaut : « all »." },
+                "orientation": { "enum": ["portrait", "landscape"], "description": "Orientation de la page à l'impression PDF et à l'export Word. Défaut : « portrait »." },
+                "cover": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Page de garde. Placée en tête, avant la table des matières.",
+                  "properties": {
+                    "on": { "type": "boolean", "description": "Inclure la page de garde. Défaut : true." },
+                    "logo": { "type": "string", "description": "Logo incorporé (data URI PNG/JPEG/SVG). Réutilisé dans l'en-tête si « header.logo » est vrai." },
+                    "title": { "type": "string", "description": "Titre affiché. Vide : titre de l'analyse." },
+                    "subtitle": { "type": "string" },
+                    "show_organization": { "type": "boolean" },
+                    "show_author": { "type": "boolean" },
+                    "show_date": { "type": "boolean" },
+                    "version": { "type": "string", "description": "Version affichée. Vide : révision de l'analyse." },
+                    "confidentiality": { "type": "string", "description": "Mention de confidentialité (ex. « Diffusion restreinte »)." },
+                    "free_text": { "type": "string", "description": "Texte libre (Markdown)." }
+                  }
+                },
+                "toc": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Table des matières (liste des sections activées ; champ TOC natif à l'export Word).",
+                  "properties": { "on": { "type": "boolean", "description": "Défaut : true." } }
+                },
+                "header": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "En-tête de document — RÉSERVÉ À L'EXPORT WORD (non rendu à l'écran ni à l'impression PDF). Trois zones ; variables : {title}, {organization}, {author}, {date}, {version}, {confidentiality}, {page}, {pages}. En-tête répété par page.",
+                  "properties": {
+                    "left": { "type": "string" },
+                    "center": { "type": "string" },
+                    "right": { "type": "string" },
+                    "logo": { "type": "boolean", "description": "Afficher le logo de la page de garde dans l'en-tête." }
+                  }
+                },
+                "footer": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Pied de document — RÉSERVÉ À L'EXPORT WORD. Mêmes zones et variables que « header » (hors logo).",
+                  "properties": {
+                    "left": { "type": "string" },
+                    "center": { "type": "string" },
+                    "right": { "type": "string" }
+                  }
+                },
+                "sections": {
+                  "type": "array",
+                  "description": "Sections du rapport, dans l'ordre de publication. Chaque entrée porte un « id » et un drapeau « on ». Identifiants : « metadata », « presentation », « summary_counts », « summary_distribution », « grid_axes », « grid_criticality », « matrix_ir » (matrices initiale et résiduelle accolées), « matrix_initial » (matrice initiale seule, désactivée par défaut), « matrix_residual » (matrice résiduelle seule, désactivée par défaut), « matrix_traj », « risks_table », « risks_detail », « measures_table », « measures_detail », « links_table », « links_detail », « action_plan ». (Un résumé du périmètre filtré est ajouté automatiquement en tête lorsque « scope » vaut « filtered » ; il ne fait pas partie de cette liste.)",
+                  "items": {
+                    "type": "object",
+                    "required": ["id"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "id": { "type": "string" },
+                      "on": { "type": "boolean", "description": "Section incluse. Défaut : true, sauf « matrix_initial » et « matrix_residual » (défaut : false)." },
+                      "view": { "enum": ["due_date", "status", "responsible"], "description": "« action_plan » uniquement : présentation par échéancier, par statut ou par responsable. Défaut : « due_date »." },
+                      "rows": {
+                        "type": "array",
+                        "description": "« metadata » uniquement : lignes du cartouche, dans l'ordre, chacune {id, on}. Identifiants : « author », « organization », « scope », « methodology », « created », « updated », « revision », « status ».",
+                        "items": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "on": { "type": "boolean" } } }
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "« presentation » uniquement : éléments, dans l'ordre, chacun {id, on}. Identifiants : « description » et « cf:<code> » (champs personnalisés de l'analyse).",
+                        "items": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "on": { "type": "boolean" } } }
+                      },
+                      "columns": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Tableaux (« risks_table », « measures_table », « links_table ») uniquement : colonnes retenues, dans l'ordre. Mêmes clés que « display.columns » (champs personnalisés en « cf:<code> »)."
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }

@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 1.7.0
+  Version  : 1.8.0
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -634,6 +634,7 @@
     --text:#1b2536;--muted:#5f6b83}
   .report-toolbar{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
   .report{max-width:900px;margin:0 auto;color:var(--text)}
+  .report.report-landscape{max-width:1240px}
   .report .rp-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:18px}
   .report h1{font-size:22px;margin:0 0 6px;color:var(--text)}
   .report h2{font-size:15px;margin:0 0 12px;font-weight:600;color:var(--text)}
@@ -662,6 +663,87 @@
   .report .rp-item p{margin:4px 0 0;font-size:12.5px;white-space:pre-wrap}
   .report .rp-item .rp-note{margin-top:4px;font-size:12px;color:var(--muted);white-space:pre-wrap}
 
+  /* ---- Rapport personnalisable : page de garde, table des matières, en-tête/pied ---- */
+  .report .rp-cover{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:12px;padding:40px 26px;background:var(--panel);border:1px solid var(--border);
+    border-radius:12px;margin-bottom:18px;page-break-after:always}
+  .report .rp-cover-logo{max-height:120px;max-width:60%;object-fit:contain;margin-bottom:10px}
+  .report .rp-cover-title{font-size:30px;color:var(--text)}
+  .report .rp-cover-sub{font-size:16px;color:var(--muted)}
+  .report .rp-cover-meta{font-size:13px;color:var(--muted);margin-top:8px}
+  .report .rp-cover-confid{margin-top:12px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+    color:var(--danger);border:1px solid var(--danger);border-radius:6px;padding:4px 12px}
+  .report .rp-cover-free{max-width:640px;font-size:13px;color:var(--text);margin-top:8px}
+  .report .rp-toc ol{margin:6px 0 0;padding-left:22px;font-size:13px}
+  .report .rp-toc li{margin:3px 0}
+  .report .rp-toc a{color:var(--accent);text-decoration:none}
+  .report .rp-toc a:hover{text-decoration:underline}
+  .report .rp-runhead,.report .rp-runfoot{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--muted);
+    padding:6px 2px;border-color:var(--border)}
+  .report .rp-runhead{border-bottom:1px solid var(--border);margin-bottom:14px}
+  .report .rp-runfoot{border-top:1px solid var(--border);margin-top:16px}
+  .report .rp-runhead .z,.report .rp-runfoot .z{flex:1;display:flex;align-items:center;gap:8px}
+  .report .rp-runhead .z.c,.report .rp-runfoot .z.c{justify-content:center}
+  .report .rp-runhead .z.r,.report .rp-runfoot .z.r{justify-content:flex-end}
+  .report .rp-runhead img{max-height:28px;max-width:120px;object-fit:contain}
+
+  /* ---- Sous-onglet Paramètres › Rapport (personnalisation) ----
+     Toutes les classes sont préfixées « rc- » pour éviter toute collision avec
+     les classes globales de l'application (.chip, .dropzone, .radio, .zones…). */
+  #reportCfgPanel .rc-seclist{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  #reportCfgPanel .rc-secitem{border-bottom:1px solid var(--border)}
+  #reportCfgPanel .rc-secitem:last-child{border-bottom:none}
+  #reportCfgPanel .rc-secrow{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--panel)}
+  #reportCfgPanel .rc-secrow.rc-pinned{background:var(--panel-2);border-bottom:1px solid var(--border)}
+  #reportCfgPanel .rc-secitem.rc-off .rc-secrow{opacity:.5}
+  #reportCfgPanel .rc-grip{cursor:grab;color:var(--muted);font-size:12px;width:14px;text-align:center;flex:none;user-select:none}
+  #reportCfgPanel .rc-pinned .rc-grip{visibility:hidden}
+  #reportCfgPanel .rc-secrow input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);flex:none;margin:0}
+  #reportCfgPanel .rc-name{flex:1;min-width:0}
+  #reportCfgPanel .rc-badge{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+    padding:1px 6px;border-radius:5px;border:1px solid var(--border);color:var(--muted);background:var(--panel-2);flex:none;white-space:nowrap}
+  #reportCfgPanel .rc-rowctrl{flex:none;width:auto;max-width:220px;font:inherit;font-size:12.5px;height:auto;margin:0;
+    padding:4px 8px;border:1px solid var(--border);border-radius:7px;background:var(--panel);color:var(--text)}
+  #reportCfgPanel .rc-expand{flex:none;font-size:12px;color:var(--accent);cursor:pointer;background:none;border:none;padding:2px 4px;white-space:nowrap}
+  #reportCfgPanel .rc-subrows{padding:6px 12px 10px 40px;background:var(--panel-2);display:none}
+  #reportCfgPanel .rc-subrows.rc-open{display:block}
+  #reportCfgPanel .rc-subrow{display:flex;align-items:center;gap:9px;padding:5px 8px;background:var(--panel);
+    border:1px solid var(--border);border-radius:7px;margin:5px 0;font-size:12.5px}
+  #reportCfgPanel .rc-subrow .rc-grip{font-size:11px}
+  #reportCfgPanel .rc-subrow input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);flex:none;margin:0}
+  #reportCfgPanel .rc-field{display:block;margin:0 0 12px}
+  #reportCfgPanel .rc-field .rc-lab{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px}
+  #reportCfgPanel .rc-field input[type=text],#reportCfgPanel .rc-field textarea{width:100%;padding:8px 10px;
+    border:1px solid var(--border);border-radius:8px;font:inherit;background:var(--panel);color:var(--text)}
+  #reportCfgPanel .rc-field textarea{min-height:64px;resize:vertical}
+  #reportCfgPanel .rc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #reportCfgPanel .rc-checks{display:flex;gap:18px;flex-wrap:wrap;margin:2px 0 12px}
+  #reportCfgPanel .rc-checks label{display:flex;align-items:center;gap:7px;font-size:13px}
+  #reportCfgPanel .rc-checks input{width:15px;height:15px;accent-color:var(--accent);margin:0;flex:none}
+  #reportCfgPanel .rc-dropzone{border:1.5px dashed var(--border);border-radius:10px;padding:16px;text-align:center;
+    color:var(--muted);font-size:12.5px;background:var(--panel-2);cursor:pointer}
+  #reportCfgPanel .rc-dropzone.rc-drag{border-color:var(--accent);background:var(--accent-soft)}
+  #reportCfgPanel .rc-logo-prev{display:flex;align-items:center;gap:12px;margin-top:8px}
+  #reportCfgPanel .rc-logo-prev:empty{display:none}
+  #reportCfgPanel .rc-logo-prev img{max-height:52px;max-width:160px;object-fit:contain;
+    border:1px solid var(--border);border-radius:6px;background:#fff;padding:4px}
+  #reportCfgPanel .rc-zones{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  #reportCfgPanel .rc-zones .rc-field{margin:0}
+  #reportCfgPanel .rc-chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+  #reportCfgPanel .rc-chip{display:inline-block;position:static;width:auto;height:auto;transform:none;
+    font-size:11.5px;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--accent);
+    background:var(--accent-soft);border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer}
+  #reportCfgPanel .rc-chip:hover{transform:none;border-color:var(--accent)}
+  #reportCfgPanel .rc-hint{color:var(--muted);font-size:11.5px;margin-top:6px}
+  #reportCfgPanel .rc-radio{display:flex;flex-direction:column;gap:8px}
+  #reportCfgPanel .rc-radio label{display:flex;align-items:center;justify-content:flex-start;gap:9px;font-size:13.5px;text-align:left}
+  #reportCfgPanel .rc-radio input[type=radio]{width:16px;height:16px;accent-color:var(--accent);margin:0;flex:none}
+  #reportCfgPanel .rc-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  #reportCfgPanel .rc-note{color:var(--muted);font-size:12px}
+  #reportCfgPanel h3{font-size:13px;margin:16px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  #reportCfgPanel .rc-drop-above{box-shadow:inset 0 2px 0 0 var(--accent)}
+  #reportCfgPanel .rc-drop-below{box-shadow:inset 0 -2px 0 0 var(--accent)}
+
   /* Respect de la préférence système « animations réduites ». */
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
@@ -685,11 +767,15 @@
     #view-report{display:block!important}
     .report{max-width:none}
     .report .rp-card{border:none;border-radius:0;padding:14px 0;margin:0 0 8px}
+    /* Page de garde : bordure/fond à l'écran seulement, jamais à l'impression. */
+    .report .rp-cover{border:none;border-radius:0;background:transparent;padding:24px 0}
     .report tr,.report .rp-item{break-inside:avoid}
     /* Les conteneurs à défilement n'ont aucun sens sur papier : ils tronqueraient. */
     .table-scroll{overflow:visible!important;padding:0!important;margin:0!important}
   }
 </style>
+<!-- Orientation d'impression du rapport (portrait/paysage) — mise à jour par renderReport(). -->
+<style id="reportPageStyle">@page{size:A4 portrait}</style>
 </head>
 <body>
 
@@ -916,6 +1002,7 @@
       <button data-pmode="display" class="active" data-i18n="settings_display">Affichage des matrices</button>
       <button data-pmode="grid" data-i18n="settings_grid">Grille de cotation</button>
       <button data-pmode="fields" data-i18n="cf_section">Champs personnalisés</button>
+      <button data-pmode="report" data-i18n="settings_report">Rapport</button>
     </div>
 
     <!-- -------- Sous-onglet : Affichage des matrices -------- -->
@@ -1018,6 +1105,9 @@
       <div class="empty" id="cfEmpty" style="display:none" data-i18n="cf_none">Aucun champ personnalisé défini.</div>
       <button class="btn ghost sm" id="btnAddCF" style="margin-top:10px" data-i18n="cf_add">+ Ajouter un champ</button>
     </div>
+
+    <!-- -------- Sous-onglet : Rapport (personnalisation) -------- -->
+    <div class="ppanel" data-pmode="report" style="display:none" id="reportCfgPanel"></div>
   </section>
 
   <!-- ============ RAPPORT ============ -->
@@ -1324,6 +1414,33 @@ const I18N = {
     tab_report:"Rapport", report_print:"🖨 Imprimer",
     report_hint:"Aperçu ci-dessous. Le bouton Imprimer ouvre la boîte d'impression du navigateur (→ PDF).",
     rp_summary:"Synthèse", rp_presentation:"Présentation", cf_yes:"Oui", cf_no:"Non", rp_created:"Date de création", rp_updated:"Dernière modification",
+    rp_metadata:"Métadonnées", rp_toc:"Table des matières", mtx_ir_title:"Matrices Initial / Résiduel",
+    mtx_initial_only:"Matrice initiale seule", mtx_residual_only:"Matrice résiduelle seule", mtx_both_side:"Matrices initiale et résiduelle accolées",
+    rp_filter_summary:"Périmètre filtré", rp_filter_none:"Aucun filtre actif ; le rapport couvre toute l'analyse.",
+    settings_report:"Rapport",
+    rc_sections_title:"Sections du rapport",
+    rc_sections_cap:"Cochez les sections à inclure ; glissez la poignée pour changer l'ordre. La page de garde et la table des matières restent en tête. Certaines sections offrent des options.",
+    rc_cover_row:"Page de garde", rc_pinned:"position fixe", rc_cf:"champ perso",
+    rc_lines:"Lignes", rc_items:"Éléments", rc_columns:"Colonnes",
+    rc_layout_side:"Côte à côte", rc_layout_stacked:"L'une après l'autre",
+    rc_view_due:"Échéancier", rc_view_status:"Par statut", rc_view_resp:"Par responsable",
+    rc_pres_description:"Description de l'analyse",
+    rc_cover_cap:"Activez ou désactivez la page de garde par sa ligne dans « Sections du rapport ». Contenu ci-dessous.",
+    rc_logo:"Logo", rc_logo_drop:"Déposez une image ou cliquez pour parcourir — redimensionnée et incorporée au fichier (PNG/JPEG/SVG).",
+    rc_logo_remove:"Retirer", rc_subtitle:"Sous-titre", rc_title_ph:"(par défaut : titre de l'analyse)",
+    rc_show_org:"Afficher l'organisation", rc_show_author:"Afficher l'auteur", rc_show_date:"Afficher la date",
+    rc_version:"Version", rc_version_ph:"(par défaut : révision de l'analyse)",
+    rc_confid:"Mention de confidentialité", rc_confid_ph:"ex. Diffusion restreinte",
+    rc_free:"Texte libre (Markdown)", rc_free_ph:"Contexte, avertissement, mentions légales…",
+    rc_headfoot_title:"En-tête / pied de page", rc_headfoot_cap:"Trois zones par bande. Insérez des variables avec les puces ci-dessous.",
+    rc_head:"En-tête", rc_foot:"Pied de page", rc_zone_left:"Gauche", rc_zone_center:"Centre", rc_zone_right:"Droite",
+    rc_head_logo:"Afficher le logo dans l'en-tête",
+    rc_head_hint:"L'en-tête et le pied de page sont réservés à l'export Word : ils n'apparaissent pas dans le rapport à l'écran ni à l'impression PDF. Les variables « {page} » et « {pages} » n'ont de sens que dans Word.",
+    rc_orient_title:"Orientation du rapport", rc_orient_portrait:"Portrait", rc_orient_landscape:"Paysage",
+    rc_scope_title:"Périmètre du rapport", rc_scope_all:"Analyse complète",
+    rc_scope_filtered:"Sous-ensemble filtré (selon les filtres et la recherche actifs)",
+    rc_saved_note:"Préférences enregistrées dans le fichier .rae.json (rubrique extensions.display.report).",
+    rc_reset:"Réinitialiser le rapport par défaut",
     rp_revision:"Révision", rp_value:"Valeur", rp_range:"Plage de score",
     rp_risk_details:"Détail des risques", rp_measure_details:"Détail des mesures", rp_link_details:"Détail des liens",
     tab_plan:"Plan d'action", plan_caption:"Suivi des mesures de maîtrise : échéances, statut et avancement. Sur le tableau par statut, au clavier : Entrée pour ouvrir une mesure, Ctrl+flèches pour changer sa colonne.",
@@ -1593,6 +1710,33 @@ const I18N = {
     tab_report:"Report", report_print:"🖨 Print",
     report_hint:"Preview below. The Print button opens the browser's print dialog (→ PDF).",
     rp_summary:"Summary", rp_presentation:"Overview", cf_yes:"Yes", cf_no:"No", rp_created:"Created on", rp_updated:"Last updated",
+    rp_metadata:"Metadata", rp_toc:"Table of contents", mtx_ir_title:"Inherent / Residual matrices",
+    mtx_initial_only:"Inherent matrix only", mtx_residual_only:"Residual matrix only", mtx_both_side:"Inherent and residual matrices side by side",
+    rp_filter_summary:"Filtered scope", rp_filter_none:"No active filter; the report covers the whole analysis.",
+    settings_report:"Report",
+    rc_sections_title:"Report sections",
+    rc_sections_cap:"Check the sections to include; drag the handle to reorder. The cover page and table of contents stay at the top. Some sections offer options.",
+    rc_cover_row:"Cover page", rc_pinned:"fixed position", rc_cf:"custom field",
+    rc_lines:"Rows", rc_items:"Items", rc_columns:"Columns",
+    rc_layout_side:"Side by side", rc_layout_stacked:"One after another",
+    rc_view_due:"Timeline", rc_view_status:"By status", rc_view_resp:"By owner",
+    rc_pres_description:"Analysis description",
+    rc_cover_cap:"Enable or disable the cover page from its row in “Report sections”. Content below.",
+    rc_logo:"Logo", rc_logo_drop:"Drop an image or click to browse — resized and embedded in the file (PNG/JPEG/SVG).",
+    rc_logo_remove:"Remove", rc_subtitle:"Subtitle", rc_title_ph:"(default: analysis title)",
+    rc_show_org:"Show organization", rc_show_author:"Show author", rc_show_date:"Show date",
+    rc_version:"Version", rc_version_ph:"(default: analysis revision)",
+    rc_confid:"Confidentiality notice", rc_confid_ph:"e.g. Restricted",
+    rc_free:"Free text (Markdown)", rc_free_ph:"Context, disclaimer, legal notice…",
+    rc_headfoot_title:"Header / footer", rc_headfoot_cap:"Three zones per band. Insert variables with the chips below.",
+    rc_head:"Header", rc_foot:"Footer", rc_zone_left:"Left", rc_zone_center:"Center", rc_zone_right:"Right",
+    rc_head_logo:"Show the logo in the header",
+    rc_head_hint:"The header and footer are reserved for the Word export: they do not appear in the on-screen report or in PDF printing. The “{page}” and “{pages}” variables only make sense in Word.",
+    rc_orient_title:"Report orientation", rc_orient_portrait:"Portrait", rc_orient_landscape:"Landscape",
+    rc_scope_title:"Report scope", rc_scope_all:"Full analysis",
+    rc_scope_filtered:"Filtered subset (per active filters and search)",
+    rc_saved_note:"Preferences saved in the .rae.json file (extensions.display.report).",
+    rc_reset:"Reset to default report",
     rp_revision:"Revision", rp_value:"Value", rp_range:"Score range",
     rp_risk_details:"Risk details", rp_measure_details:"Measure details", rp_link_details:"Link details",
     tab_plan:"Action plan", plan_caption:"Follow-up of controls: due dates, status and progress. On the status board, keyboard: Enter to open a measure, Ctrl+arrows to move it between columns.",
@@ -1862,6 +2006,33 @@ const I18N = {
     tab_report:"Rapporto", report_print:"🖨 Stampa",
     report_hint:"Anteprima qui sotto. Il pulsante Stampa apre la finestra di stampa del browser (→ PDF).",
     rp_summary:"Sintesi", rp_presentation:"Presentazione", cf_yes:"Sì", cf_no:"No", rp_created:"Data di creazione", rp_updated:"Ultima modifica",
+    rp_metadata:"Metadati", rp_toc:"Indice", mtx_ir_title:"Matrici Iniziale / Residuo",
+    mtx_initial_only:"Matrice iniziale sola", mtx_residual_only:"Matrice residua sola", mtx_both_side:"Matrici iniziale e residua affiancate",
+    rp_filter_summary:"Ambito filtrato", rp_filter_none:"Nessun filtro attivo; il report copre l'intera analisi.",
+    settings_report:"Report",
+    rc_sections_title:"Sezioni del report",
+    rc_sections_cap:"Seleziona le sezioni da includere; trascina la maniglia per riordinare. La copertina e l'indice restano in testa. Alcune sezioni offrono opzioni.",
+    rc_cover_row:"Copertina", rc_pinned:"posizione fissa", rc_cf:"campo pers.",
+    rc_lines:"Righe", rc_items:"Elementi", rc_columns:"Colonne",
+    rc_layout_side:"Affiancate", rc_layout_stacked:"Una dopo l'altra",
+    rc_view_due:"Scadenzario", rc_view_status:"Per stato", rc_view_resp:"Per responsabile",
+    rc_pres_description:"Descrizione dell'analisi",
+    rc_cover_cap:"Attiva o disattiva la copertina dalla sua riga in « Sezioni del report ». Contenuto qui sotto.",
+    rc_logo:"Logo", rc_logo_drop:"Trascina un'immagine o clicca per sfogliare — ridimensionata e incorporata nel file (PNG/JPEG/SVG).",
+    rc_logo_remove:"Rimuovi", rc_subtitle:"Sottotitolo", rc_title_ph:"(predefinito: titolo dell'analisi)",
+    rc_show_org:"Mostra l'organizzazione", rc_show_author:"Mostra l'autore", rc_show_date:"Mostra la data",
+    rc_version:"Versione", rc_version_ph:"(predefinito: revisione dell'analisi)",
+    rc_confid:"Nota di riservatezza", rc_confid_ph:"es. Diffusione riservata",
+    rc_free:"Testo libero (Markdown)", rc_free_ph:"Contesto, avvertenza, note legali…",
+    rc_headfoot_title:"Intestazione / piè di pagina", rc_headfoot_cap:"Tre zone per banda. Inserisci variabili con i chip qui sotto.",
+    rc_head:"Intestazione", rc_foot:"Piè di pagina", rc_zone_left:"Sinistra", rc_zone_center:"Centro", rc_zone_right:"Destra",
+    rc_head_logo:"Mostra il logo nell'intestazione",
+    rc_head_hint:"L'intestazione e il piè di pagina sono riservati all'export Word: non compaiono nel report a schermo né nella stampa PDF. Le variabili « {page} » e « {pages} » hanno senso solo in Word.",
+    rc_orient_title:"Orientamento del report", rc_orient_portrait:"Verticale", rc_orient_landscape:"Orizzontale",
+    rc_scope_title:"Ambito del report", rc_scope_all:"Analisi completa",
+    rc_scope_filtered:"Sottoinsieme filtrato (secondo i filtri e la ricerca attivi)",
+    rc_saved_note:"Preferenze salvate nel file .rae.json (sezione extensions.display.report).",
+    rc_reset:"Ripristina il report predefinito",
     rp_revision:"Revisione", rp_value:"Valore", rp_range:"Intervallo di punteggio",
     rp_risk_details:"Dettaglio dei rischi", rp_measure_details:"Dettaglio delle misure", rp_link_details:"Dettaglio dei collegamenti",
     tab_plan:"Piano d'azione", plan_caption:"Monitoraggio delle misure di controllo: scadenze, stato e avanzamento. Nella bacheca per stato, da tastiera: Invio per aprire una misura, Ctrl+frecce per spostarla di colonna.",
@@ -2466,7 +2637,7 @@ const SUBTABS={
   matrices:{tokens:["side","traj"],set:m=>{matrixMode=m;syncSeg("viewSeg",m);}},
   plan:{tokens:["due_date","status","responsible"],set:m=>{planMode=m;syncSeg("planSeg",m);}},
   links:{tokens:["grid","details"],set:m=>setLinkMode(m)},
-  settings:{tokens:["display","grid","fields"],set:m=>setParamMode(m)}
+  settings:{tokens:["display","grid","fields","report"],set:m=>setParamMode(m)}
 };
 function applyTabParam(){
   let raw;
@@ -4069,148 +4240,299 @@ function reportMatrixSVG(mode){
   holder.remove();
   return svg;
 }
+/* ============================================================
+   PERSONNALISATION DU RAPPORT
+   Config sous analyse.extensions.display.report. Absente => modèle par défaut
+   (page de garde, table des matières, toutes les sections activées, ordre par défaut).
+   ============================================================ */
+const REPORT_SECTION_IDS=["metadata","presentation","summary_counts","summary_distribution",
+  "grid_axes","grid_criticality","matrix_ir","matrix_initial","matrix_residual","matrix_traj","risks_table","risks_detail",
+  "measures_table","measures_detail","links_table","links_detail","action_plan"];
+const REPORT_META_ROW_IDS=["author","organization","scope","methodology","created","updated","revision","status"];
+/* Par défaut (sans configuration), toutes les sections sont activées SAUF les matrices
+   « seules » (initiale seule, résiduelle seule) : seule la version accolée est cochée. */
+function reportSectionDefaultOn(id){return !(id==="matrix_initial"||id==="matrix_residual");}
+/* Filtres actifs (champs personnalisés) décrivant le sous-ensemble filtré : [{label,value}]. */
+function reportActiveFilters(){
+  const out=[];
+  ["risk","measure","link"].forEach(tg=>{
+    cfFilterableFields(tg).forEach(f=>{
+      const want=cfFilters[f.code];if(!want)return;
+      let v=want;
+      if(f.type==="boolean")v=want==="true"?t("cf_yes"):t("cf_no");
+      else{const it=(f.items||[]).find(x=>x.code===want);v=it?cfItemLabel(it):want;}
+      out.push({label:cfLabel(f),value:v});
+    });
+  });
+  return out;
+}
+function reportTableId(secId){return secId==="risks_table"?"risks":secId==="measures_table"?"measures":secId==="links_table"?"links":null;}
+function reportDefaultCols(secId){return ({
+  risks_table:["id","risk","cat","initial","residual","measures"],
+  measures_table:["id","measure","type","status","resp","covered"],
+  links_table:["rid","risk","mid","measure","notes"]})[secId]||[];}
+function reportSectionTitle(id){return ({
+  metadata:t("rp_metadata"), presentation:t("rp_presentation"), summary_counts:t("rp_summary"),
+  summary_distribution:t("stat_distribution"), grid_axes:t("settings_grid"), grid_criticality:t("crit_title"),
+  matrix_ir:t("mtx_both_side"), matrix_initial:t("mtx_initial_only"), matrix_residual:t("mtx_residual_only"),
+  matrix_traj:t("mtx_traj"), risks_table:t("risks_title"), risks_detail:t("rp_risk_details"),
+  measures_table:t("measures_title"), measures_detail:t("rp_measure_details"), links_table:t("links_title"),
+  links_detail:t("rp_link_details"), action_plan:t("tab_plan")})[id]||id;}
+function reportCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.report;return (d&&typeof d==="object")?d:null;}
+function reportCfgStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.report=d.report||{};}
+/* Config effective, normalisée : valeurs par défaut + robustesse (id inconnu ignoré ;
+   section/ligne/colonne connue absente d'une config existante => ajoutée désactivée). */
+function reportCfg(){
+  const raw=reportCfgRaw()||{}, hasCfg=!!reportCfgRaw();
+  function ordered(saved,allIds,onDefault){
+    const res=[],seen={};
+    if(Array.isArray(saved))saved.forEach(x=>{if(x&&allIds.indexOf(x.id)>=0&&!seen[x.id]){seen[x.id]=1;res.push({id:x.id,on:x.on!==false});}});
+    allIds.forEach(id=>{if(!seen[id])res.push({id,on:Array.isArray(saved)?false:onDefault});});
+    return res;
+  }
+  function columns(saved,tbl,dflt){
+    const known=(typeof allCols==="function")?allCols(tbl).filter(c=>c.pinned!=="last").map(c=>c.key):dflt;
+    if(!Array.isArray(saved))return dflt.slice();
+    const set={},seen={},keep=[];known.forEach(k=>set[k]=1);
+    saved.forEach(k=>{if(set[k]&&!seen[k]){seen[k]=1;keep.push(k);}});
+    return keep.length?keep:dflt.slice();
+  }
+  const cfg={};
+  cfg.scope = raw.scope==="filtered"?"filtered":"all";
+  cfg.orientation = raw.orientation==="landscape"?"landscape":"portrait";
+  cfg.cover = Object.assign({on:true,logo:"",title:"",subtitle:"",show_organization:true,show_author:true,show_date:true,version:"",confidentiality:"",free_text:""}, raw.cover||{});
+  cfg.cover.on = raw.cover? raw.cover.on!==false : true;
+  cfg.toc = { on: raw.toc? raw.toc.on!==false : true };
+  cfg.header = Object.assign({left:"",center:"",right:"",logo:false}, raw.header||{});
+  cfg.footer = Object.assign({left:"",center:"",right:""}, raw.footer||{});
+  const savedSecs=Array.isArray(raw.sections)?raw.sections:null, seen={}, secs=[];
+  (savedSecs||REPORT_SECTION_IDS.map(id=>({id,on:reportSectionDefaultOn(id)}))).forEach(s=>{
+    if(!s||REPORT_SECTION_IDS.indexOf(s.id)<0||seen[s.id])return;seen[s.id]=1;secs.push(normSec(s));
+  });
+  REPORT_SECTION_IDS.forEach(id=>{if(!seen[id])secs.push(normSec({id,on:false}));});
+  cfg.sections=secs;
+  return cfg;
+  function normSec(s){
+    const o={id:s.id, on:s.on!==false};
+    if(s.id==="metadata")o.rows=ordered(s.rows,REPORT_META_ROW_IDS,true);
+    else if(s.id==="presentation")o.items=ordered(s.items,["description"].concat(customFieldsFor("analysis").map(f=>"cf:"+f.code)),true);
+    else if(reportTableId(s.id))o.columns=columns(s.columns,reportTableId(s.id),reportDefaultCols(s.id));
+    else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
+    return o;
+  }
+}
+/* Matrice unique (mode « stacked » : Initial seule, puis Résiduel seule). */
+function reportSingleMatrixSVG(which){
+  const holder=document.createElement("div");
+  holder.style.cssText="position:absolute;left:-99999px;top:0;width:520px;background:#ffffff";
+  document.body.appendChild(holder);
+  const b=document.createElement("div");b.className="matrix-block";b.style.maxWidth="480px";b.style.margin="0 auto";
+  b.innerHTML=matrixHeader(which==="initial"?t("mtx_initial"):t("mtx_residual"));
+  const c=document.createElement("div");b.appendChild(c);holder.appendChild(b);
+  const mc=buildGrid(c,which);
+  if(getArrangement()==="manual"){ensureManualInit();renderManualSide(mc,which);}else layoutStacks(holder);
+  const legend=document.createElement("div");legend.className="legend";legend.innerHTML=critLegend();
+  holder.appendChild(legend);
+  const svg=buildExportSVG([b],legend,holder,false).svg;
+  holder.remove();
+  return svg;
+}
+
 function renderReport(){
   const host=document.getElementById("reportBody");if(!host)return;
-  const md=analyse.metadata||{}, g=analyse.grid;
+  const md=analyse.metadata||{}, g=analyse.grid, cfg=reportCfg();
   const title=(md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle);
-  const nR=analyse.risks.length, nM=analyse.measures.length;
-  const treated=analyse.risks.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+  // Périmètre : analyse complète ou sous-ensemble filtré.
+  const RISKS = cfg.scope==="filtered"?visibleRisks():analyse.risks;
+  const MEAS  = cfg.scope==="filtered"?visibleMeasures():analyse.measures;
+  const TRs   = cfg.scope==="filtered"?visibleTreatments():analyse.treatments;
+  const nR=RISKS.length, nM=MEAS.length;
+  const treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
   const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
-  const count=(w)=>{const c={};cats.forEach(x=>c[x.code]=0);analyse.risks.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
+  const count=(w)=>{const c={};cats.forEach(x=>c[x.code]=0);RISKS.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
   const ci=count("i"), cr=count("r");
-  let h="";
+  const card=(id,inner)=>'<div class="rp-card" id="rsec-'+id+'">'+inner+'</div>';
 
-  // 1. En-tête + métadonnées
-  const metaRows=[[t("f_author"),md.author],[t("f_org"),md.organization],[t("f_scope"),md.scope],
-    [t("f_methodology"),md.methodology_reference],[t("rp_created"),md.created_at],[t("rp_updated"),md.updated_at],
-    [t("rp_revision"),md.revision],[t("th_status"),metaStatusLabel(md.status)]].filter(r=>r[1]);
-  h+='<div class="rp-card"><h1>'+esc(title)+'</h1>';
-  if(metaRows.length)h+='<table class="meta-tbl"><tbody>'+metaRows.map(r=>'<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join("")+'</tbody></table>';
-  h+='</div>';
+  // ---- En-tête / pied de document (variables ; {page}/{pages} vides à l'écran) ----
+  const subst=s=>String(s||"").replace(/\{title\}/g,title).replace(/\{organization\}/g,md.organization||"")
+    .replace(/\{author\}/g,md.author||"").replace(/\{date\}/g,md.updated_at||today())
+    .replace(/\{version\}/g,cfg.cover.version||md.revision||"").replace(/\{confidentiality\}/g,cfg.cover.confidentiality||"")
+    .replace(/\{page\}/g,"").replace(/\{pages\}/g,"");
+  const band=(b,cls,withLogo)=>{
+    const L=subst(b.left),C=subst(b.center),R=subst(b.right);
+    const logo=(withLogo&&b.logo&&cfg.cover.logo)?'<img src="'+esc(cfg.cover.logo)+'" alt="">':"";
+    if(!L&&!C&&!R&&!logo)return "";
+    return '<div class="'+cls+'"><div class="z l">'+logo+esc(L)+'</div><div class="z c">'+esc(C)+'</div><div class="z r">'+esc(R)+'</div></div>';
+  };
 
-  // 1b. Présentation : description de l'analyse + champs personnalisés de l'analyse
-  {
-    const aRows=cfReportRows("analysis",analyse.custom);
-    if(md.description||aRows){
-      h+='<div class="rp-card"><h2>'+esc(t("rp_presentation"))+'</h2>';
-      if(md.description)h+='<div class="md" style="font-size:13px'+(aRows?";margin-bottom:10px":"")+'">'+mdToHTML(md.description)+'</div>';
-      if(aRows)h+='<table class="meta-tbl"><tbody>'+aRows+'</tbody></table>';
-      h+='</div>';
+  // ---- Rendu par section ----
+  const R={
+    metadata:s=>{
+      let h='<h1>'+esc(title)+'</h1>';
+      const DEF={author:[t("f_author"),md.author],organization:[t("f_org"),md.organization],scope:[t("f_scope"),md.scope],
+        methodology:[t("f_methodology"),md.methodology_reference],created:[t("rp_created"),md.created_at],
+        updated:[t("rp_updated"),md.updated_at],revision:[t("rp_revision"),md.revision],status:[t("th_status"),metaStatusLabel(md.status)]};
+      const rows=s.rows.filter(x=>x.on).map(x=>DEF[x.id]).filter(r=>r&&r[1]);
+      if(rows.length)h+='<table class="meta-tbl"><tbody>'+rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join("")+'</tbody></table>';
+      return card("metadata",h);
+    },
+    presentation:s=>{
+      let body="";
+      const acf=customFieldsFor("analysis"), cust=analyse.custom||{}, rows=[];
+      s.items.filter(x=>x.on).forEach(it=>{
+        if(it.id==="description"){ if(md.description)body+='<div class="md" style="font-size:13px">'+mdToHTML(md.description)+'</div>'; return; }
+        const f=acf.find(x=>"cf:"+x.code===it.id); if(f&&cfHasVal(cust[f.code]))rows.push('<tr><td>'+esc(cfLabel(f))+'</td><td class="md">'+cfDisplayHTML(f,cust[f.code],true)+'</td></tr>');
+      });
+      if(rows.length)body+=(body?'<div style="height:10px"></div>':'')+'<table class="meta-tbl"><tbody>'+rows.join("")+'</tbody></table>';
+      if(!body)return "";
+      return card("presentation",'<h2>'+esc(t("rp_presentation"))+'</h2>'+body);
+    },
+    summary_counts:()=>card("summary_counts",'<h2>'+esc(t("rp_summary"))+'</h2>'+
+      '<table class="meta-tbl"><tbody>'+
+        '<tr><td>'+esc(t("stat_risks"))+'</td><td>'+nR+'</td></tr>'+
+        '<tr><td>'+esc(t("stat_measures"))+'</td><td>'+nM+'</td></tr>'+
+        '<tr><td>'+esc(t("stat_reduced"))+'</td><td>'+treated+'</td></tr></tbody></table>'),
+    summary_distribution:()=>card("summary_distribution",'<h2>'+esc(t("stat_distribution"))+'</h2>'+
+      '<table><thead><tr><th>'+esc(t("th_label"))+'</th><th>'+esc(t("th_initial"))+'</th><th>'+esc(t("th_residual"))+'</th></tr></thead><tbody>'+
+      cats.map(c=>'<tr><td><span class="rp-swatch" style="background:'+c.color+'"></span>'+esc(c.label)+'</td><td>'+ci[c.code]+'</td><td>'+cr[c.code]+'</td></tr>').join("")+'</tbody></table>'),
+    grid_axes:()=>{
+      const axisTbl=ax=>'<table><thead><tr><th style="width:70px">'+esc(t("rp_value"))+'</th><th style="width:160px">'+esc(t("th_label"))+'</th><th>'+esc(t("f_description"))+'</th></tr></thead><tbody>'+
+        ax.levels.map(n=>'<tr><td>'+n.value+'</td><td>'+esc(n.label)+'</td><td>'+esc(n.description||"")+'</td></tr>').join("")+'</tbody></table>';
+      return card("grid_axes",'<h2>'+esc(t("settings_grid"))+'</h2>'+
+        '<div class="rp-sub">'+esc(t("score_method"))+' : '+esc(t("method."+(g.score.method||"product")))+'</div>'+
+        '<h3>'+esc(t("axis_vertical"))+' — '+esc(g.vertical_axis.label)+'</h3>'+axisTbl(g.vertical_axis)+
+        '<h3>'+esc(t("axis_horizontal"))+' — '+esc(g.horizontal_axis.label)+'</h3>'+axisTbl(g.horizontal_axis));
+    },
+    grid_criticality:()=>card("grid_criticality",'<h2>'+esc(t("crit_title"))+'</h2>'+
+      '<table><thead><tr><th style="width:180px">'+esc(t("th_label"))+'</th><th style="width:90px">'+esc(t("rp_range"))+'</th><th style="width:110px">'+esc(t("th_acceptance"))+'</th><th>'+esc(t("f_description"))+'</th></tr></thead><tbody>'+
+      cats.map(c=>'<tr><td><span class="rp-swatch" style="background:'+c.color+'"></span>'+esc(c.label)+'</td><td>'+c.score_min+' – '+c.score_max+'</td><td>'+esc(accLabel(c.acceptance||""))+'</td><td>'+esc(c.description||"")+'</td></tr>').join("")+'</tbody></table>'),
+    matrix_ir:()=>{
+      let inner='<h2>'+esc(t("mtx_both_side"))+'</h2>';
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("side");
+      return '<div class="rp-card rp-matrices" id="rsec-matrix_ir">'+inner+'</div>';
+    },
+    matrix_initial:()=>{
+      let inner='<h2>'+esc(t("mtx_initial_only"))+'</h2>';
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("initial");
+      return '<div class="rp-card rp-matrices" id="rsec-matrix_initial">'+inner+'</div>';
+    },
+    matrix_residual:()=>{
+      let inner='<h2>'+esc(t("mtx_residual_only"))+'</h2>';
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("residual");
+      return '<div class="rp-card rp-matrices" id="rsec-matrix_residual">'+inner+'</div>';
+    },
+    matrix_traj:()=>{
+      let inner='<h2>'+esc(t("mtx_traj"))+'</h2>';
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("traj");
+      return '<div class="rp-card rp-matrices" id="rsec-matrix_traj">'+inner+'</div>';
+    },
+    risks_table:s=>card("risks_table",'<h2>'+esc(t("risks_title"))+'</h2>'+reportTable("risks",s.columns,RISKS)),
+    measures_table:s=>card("measures_table",'<h2>'+esc(t("measures_title"))+'</h2>'+reportTable("measures",s.columns,MEAS)),
+    links_table:s=>card("links_table",'<h2>'+esc(t("links_title"))+'</h2>'+reportTable("links",s.columns,TRs)),
+    risks_detail:()=>{
+      if(!nR)return "";
+      let h='<h2>'+esc(t("rp_risk_details"))+'</h2>';
+      RISKS.forEach(r=>{
+        const sub=[r.category,r.owner].filter(Boolean).map(esc).join(" · ");
+        h+='<div class="rp-item"><div><b>'+esc(r.id)+' — '+esc(r.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
+        if(r.description)h+='<div class="md">'+mdToHTML(r.description)+'</div>';
+        const ji=r.initial_assessment&&r.initial_assessment.justification, jr=r.residual_assessment&&r.residual_assessment.justification;
+        if(ji)h+='<div class="rp-note md"><b>'+esc(t("th_initial"))+' :</b> '+mdToHTML(ji)+'</div>';
+        if(jr)h+='<div class="rp-note md"><b>'+esc(t("th_residual"))+' :</b> '+mdToHTML(jr)+'</div>';
+        if(r.comment)h+='<div class="rp-note md">'+mdToHTML(r.comment)+'</div>';
+        h+=cfReportNotes("risk",r.custom)+'</div>';
+      });
+      return card("risks_detail",h);
+    },
+    measures_detail:()=>{
+      if(!nM)return "";
+      let h='<h2>'+esc(t("rp_measure_details"))+'</h2>';
+      MEAS.forEach(m=>{
+        const sub=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,m.due_date,(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).map(esc).join(" · ");
+        h+='<div class="rp-item"><div><b>'+esc(m.id)+' — '+esc(m.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
+        if(m.description)h+='<div class="md">'+mdToHTML(m.description)+'</div>';
+        if(m.comment)h+='<div class="rp-note md">'+mdToHTML(m.comment)+'</div>';
+        h+=cfReportNotes("measure",m.custom)+'</div>';
+      });
+      return card("measures_detail",h);
+    },
+    links_detail:()=>{
+      const lcf=customFieldsFor("link");
+      if(!(TRs.length&&(lcf.length||TRs.some(linkEnriched))))return "";
+      let h='<h2>'+esc(t("rp_link_details"))+'</h2>';
+      TRs.forEach(tr=>{
+        const r=riskById(tr.risk),m=measureById(tr.measure);
+        const sub=[r&&r.label,m&&m.label].filter(Boolean).map(esc).join(" → ");
+        h+='<div class="rp-item"><div><b>'+esc(tr.risk)+' → '+esc(tr.measure)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
+        if(tr.comment)h+='<div class="rp-note md">'+mdToHTML(tr.comment)+'</div>';
+        h+=cfReportNotes("link",tr.custom)+'</div>';
+      });
+      return card("links_detail",h);
+    },
+    action_plan:s=>{
+      let inner='<h2>'+esc(t("tab_plan"))+'</h2>';
+      if(!nM)inner+='<div class="rp-sub">'+esc(t("measures_empty"))+'</div>';
+      else if(s.view==="status"){
+        STATUS_CODES.forEach(code=>{const l=MEAS.filter(m=>(m.status||"proposed")===code);if(l.length)inner+='<h3>'+esc(statusLabel(code))+'</h3>'+planTable(l);});
+      }else if(s.view==="responsible"){
+        const by={};MEAS.forEach(m=>{const k=m.responsible||"—";(by[k]=by[k]||[]).push(m);});
+        Object.keys(by).sort((a,b)=>a==="—"?1:b==="—"?-1:a.localeCompare(b)).forEach(k=>inner+='<h3>'+esc(k)+'</h3>'+planTable(by[k]));
+      }else{
+        const withD=MEAS.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:0);
+        inner+=planTable(withD.concat(MEAS.filter(m=>!m.due_date)));
+      }
+      return '<div class="rp-card" id="rsec-action_plan">'+inner+'</div>';
     }
+  };
+  function reportTable(tbl,colKeys,rows){
+    const cm=(typeof colMap==="function")?colMap(tbl):{};
+    const cols=colKeys.map(k=>cm[k]).filter(Boolean);
+    if(!cols.length)return '<div class="rp-sub">—</div>';
+    let h='<table><thead><tr>'+cols.map(c=>'<th>'+esc(c.label)+'</th>').join("")+'</tr></thead><tbody>';
+    if(!rows.length)h+='<tr><td colspan="'+cols.length+'" class="rp-sub">—</td></tr>';
+    rows.forEach(row=>h+='<tr>'+cols.map(c=>'<td>'+c.cell(row)+'</td>').join("")+'</tr>');
+    return h+'</tbody></table>';
   }
 
-  // 2. Synthèse
-  h+='<div class="rp-card"><h2>'+esc(t("rp_summary"))+'</h2>'+
-    '<table class="meta-tbl"><tbody>'+
+  // ---- Assemblage ----
+  // Note : l'en-tête / pied de page est réservé à l'export Word ; il n'est pas rendu à l'écran ni à l'impression PDF.
+  const enabled=cfg.sections.filter(s=>s.on);
+  let h="";
+  if(cfg.cover.on){
+    const c=cfg.cover;let cv='<div class="rp-cover" id="rsec-cover">';
+    if(c.logo)cv+='<img class="rp-cover-logo" src="'+esc(c.logo)+'" alt="">';
+    cv+='<h1 class="rp-cover-title">'+esc(c.title||title)+'</h1>';
+    if(c.subtitle)cv+='<div class="rp-cover-sub">'+esc(c.subtitle)+'</div>';
+    const meta=[];
+    if(c.show_organization&&md.organization)meta.push(esc(md.organization));
+    if(c.show_author&&md.author)meta.push(esc(md.author));
+    if(c.show_date&&md.updated_at)meta.push(esc(md.updated_at));
+    const ver=c.version||md.revision;if(ver)meta.push(esc(t("rp_revision"))+' '+esc(ver));
+    if(meta.length)cv+='<div class="rp-cover-meta">'+meta.join(' · ')+'</div>';
+    if(c.confidentiality)cv+='<div class="rp-cover-confid">'+esc(c.confidentiality)+'</div>';
+    if(c.free_text)cv+='<div class="rp-cover-free md">'+mdToHTML(c.free_text)+'</div>';
+    h+=cv+'</div>';
+  }
+  if(cfg.toc.on&&enabled.length)h+='<div class="rp-card rp-toc" id="rsec-toc"><h2>'+esc(t("rp_toc"))+'</h2><ol>'+
+    enabled.map(s=>'<li><a href="#rsec-'+s.id+'">'+esc(reportSectionTitle(s.id))+'</a></li>').join("")+'</ol></div>';
+  // Périmètre filtré : rappel des filtres actifs et du nombre d'éléments retenus.
+  if(cfg.scope==="filtered"){
+    const flts=reportActiveFilters();
+    let fb='<div class="rp-card" id="rsec-filter"><h2>'+esc(t("rp_filter_summary"))+'</h2>'+
+      '<table class="meta-tbl"><tbody>'+
       '<tr><td>'+esc(t("stat_risks"))+'</td><td>'+nR+'</td></tr>'+
       '<tr><td>'+esc(t("stat_measures"))+'</td><td>'+nM+'</td></tr>'+
-      '<tr><td>'+esc(t("stat_reduced"))+'</td><td>'+treated+'</td></tr>'+
-    '</tbody></table>'+
-    '<h3>'+esc(t("stat_distribution"))+'</h3>'+
-    '<table><thead><tr><th>'+esc(t("th_label"))+'</th><th>'+esc(t("th_initial"))+'</th><th>'+esc(t("th_residual"))+'</th></tr></thead><tbody>'+
-      cats.map(c=>'<tr><td><span class="rp-swatch" style="background:'+c.color+'"></span>'+esc(c.label)+'</td><td>'+ci[c.code]+'</td><td>'+cr[c.code]+'</td></tr>').join("")+
-    '</tbody></table></div>';
-
-  // 3. Grille & criticité
-  h+='<div class="rp-card"><h2>'+esc(t("settings_grid"))+'</h2>'+
-    '<div class="rp-sub">'+esc(t("score_method"))+' : '+esc(t("method."+(g.score.method||"product")))+'</div>';
-  const axisTbl=ax=>'<table><thead><tr><th style="width:70px">'+esc(t("rp_value"))+'</th><th style="width:160px">'+esc(t("th_label"))+'</th><th>'+esc(t("f_description"))+'</th></tr></thead><tbody>'+
-    ax.levels.map(n=>'<tr><td>'+n.value+'</td><td>'+esc(n.label)+'</td><td>'+esc(n.description||"")+'</td></tr>').join("")+'</tbody></table>';
-  h+='<h3>'+esc(t("axis_vertical"))+' — '+esc(g.vertical_axis.label)+'</h3>'+axisTbl(g.vertical_axis);
-  h+='<h3>'+esc(t("axis_horizontal"))+' — '+esc(g.horizontal_axis.label)+'</h3>'+axisTbl(g.horizontal_axis);
-  h+='<h3>'+esc(t("crit_title"))+'</h3>'+
-    '<table><thead><tr><th style="width:180px">'+esc(t("th_label"))+'</th><th style="width:90px">'+esc(t("rp_range"))+'</th><th style="width:110px">'+esc(t("th_acceptance"))+'</th><th>'+esc(t("f_description"))+'</th></tr></thead><tbody>'+
-      cats.map(c=>'<tr><td><span class="rp-swatch" style="background:'+c.color+'"></span>'+esc(c.label)+'</td><td>'+c.score_min+' – '+c.score_max+'</td><td>'+esc(accLabel(c.acceptance||""))+'</td><td>'+esc(c.description||"")+'</td></tr>').join("")+
-    '</tbody></table></div>';
-
-  // 4. Matrices
-  h+='<div class="rp-card rp-matrices"><h2>'+esc(t("tab_matrices"))+'</h2>';
-  if(nR===0)h+='<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>';
-  else h+='<div>'+reportMatrixSVG("side")+'</div><div style="margin-top:14px">'+reportMatrixSVG("traj")+'</div>';
-  h+='</div>';
-
-  // 5. Registre des risques
-  h+='<div class="rp-card"><h2>'+esc(t("risks_title"))+'</h2>';
-  if(nR===0)h+='<div class="rp-sub">'+esc(t("risks_empty"))+'</div></div>';
-  else{
-    h+='<table><thead><tr><th style="width:44px">'+esc(t("th_id"))+'</th><th>'+esc(t("th_risk"))+'</th><th>'+esc(t("th_category"))+'</th><th>'+esc(t("th_initial"))+'</th><th>'+esc(t("th_residual"))+'</th><th>'+esc(t("th_measures"))+'</th></tr></thead><tbody>';
-    analyse.risks.forEach(r=>{
-      const evi=r.initial_assessment,evr=residual(r),cci=critOfEval(evi),ccr=critOfEval(evr);
-      const si=scoreOf(evi.probability,evi.severity),sr=scoreOf(evr.probability,evr.severity),mes=measuresOfRisk(r.id);
-      h+='<tr><td>'+esc(r.id)+'</td><td>'+esc(r.label)+'</td><td>'+esc(r.category||"—")+'</td>'+
-        '<td><span class="rp-tag" style="background:'+cci.color+';color:'+badgeFg(cci.color)+'">'+esc(cci.label)+' · '+si+'</span></td>'+
-        '<td><span class="rp-tag" style="background:'+ccr.color+';color:'+badgeFg(ccr.color)+'">'+esc(ccr.label)+' · '+sr+'</span></td>'+
-        '<td>'+(mes.length?mes.map(esc).join(", "):"—")+'</td></tr>';
-    });
-    h+='</tbody></table></div>';
+      flts.map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(f.value)+'</td></tr>').join("")+
+      '</tbody></table>';
+    if(!flts.length)fb+='<div class="rp-sub">'+esc(t("rp_filter_none"))+'</div>';
+    h+=fb+'</div>';
   }
+  enabled.forEach(s=>{if(R[s.id])h+=R[s.id](s);});
 
-  // 5b. Détail des risques (avec descriptions)
-  if(nR){
-    h+='<div class="rp-card"><h2>'+esc(t("rp_risk_details"))+'</h2>';
-    analyse.risks.forEach(r=>{
-      const sub=[r.category,r.owner].filter(Boolean).map(esc).join(" · ");
-      h+='<div class="rp-item"><div><b>'+esc(r.id)+' — '+esc(r.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
-      if(r.description)h+='<div class="md">'+mdToHTML(r.description)+'</div>';
-      const ji=r.initial_assessment&&r.initial_assessment.justification, jr=r.residual_assessment&&r.residual_assessment.justification;
-      if(ji)h+='<div class="rp-note md"><b>'+esc(t("th_initial"))+' :</b> '+mdToHTML(ji)+'</div>';
-      if(jr)h+='<div class="rp-note md"><b>'+esc(t("th_residual"))+' :</b> '+mdToHTML(jr)+'</div>';
-      if(r.comment)h+='<div class="rp-note md">'+mdToHTML(r.comment)+'</div>';
-      h+=cfReportNotes("risk",r.custom);
-      h+='</div>';
-    });
-    h+='</div>';
-  }
-
-  // 6. Mesures
-  h+='<div class="rp-card"><h2>'+esc(t("measures_title"))+'</h2>';
-  if(nM===0)h+='<div class="rp-sub">'+esc(t("measures_empty"))+'</div></div>';
-  else{
-    h+='<table><thead><tr><th style="width:44px">'+esc(t("th_id"))+'</th><th>'+esc(t("th_measure"))+'</th><th>'+esc(t("th_type"))+'</th><th>'+esc(t("th_status"))+'</th><th>'+esc(t("th_responsible"))+'</th><th>'+esc(t("f_due_date"))+'</th><th>'+esc(t("th_covered_risks"))+'</th></tr></thead><tbody>';
-    analyse.measures.forEach(m=>{const risks=risksOfMeasure(m.id);
-      h+='<tr><td>'+esc(m.id)+'</td><td>'+esc(m.label)+'</td><td>'+(m.type?esc(typeLabel(m.type)):"—")+'</td><td>'+statusBadge(m.status)+'</td><td>'+esc(m.responsible||"—")+'</td><td>'+esc(m.due_date||"—")+'</td><td>'+(risks.length?risks.map(esc).join(", "):"—")+'</td></tr>';
-    });
-    h+='</tbody></table></div>';
-  }
-
-  // 6b. Détail des mesures (avec descriptions)
-  if(nM){
-    h+='<div class="rp-card"><h2>'+esc(t("rp_measure_details"))+'</h2>';
-    analyse.measures.forEach(m=>{
-      const sub=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,m.due_date,(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).map(esc).join(" · ");
-      h+='<div class="rp-item"><div><b>'+esc(m.id)+' — '+esc(m.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
-      if(m.description)h+='<div class="md">'+mdToHTML(m.description)+'</div>';
-      if(m.comment)h+='<div class="rp-note md">'+mdToHTML(m.comment)+'</div>';
-      h+=cfReportNotes("measure",m.custom);
-      h+='</div>';
-    });
-    h+='</div>';
-  }
-
-  // 7. Liens risque ↔ mesure
-  h+='<div class="rp-card"><h2>'+esc(t("links_title"))+'</h2>';
-  const withLinks=analyse.risks.filter(r=>measuresOfRisk(r.id).length);
-  if(!withLinks.length)h+='<div class="rp-sub">—</div>';
-  else h+='<table><thead><tr><th>'+esc(t("th_risk"))+'</th><th>'+esc(t("linked_measures_title"))+'</th></tr></thead><tbody>'+
-    withLinks.map(r=>'<tr><td>'+esc(r.id)+' — '+esc(r.label)+'</td><td>'+measuresOfRisk(r.id).map(id=>{const m=measureById(id);return esc(id)+(m?" — "+esc(m.label):"");}).join("<br>")+'</td></tr>').join("")+
-    '</tbody></table>';
-  h+='</div>';
-
-  // 7b. Détail des liens (note + champs perso), même présentation que Détail des risques/mesures
-  const lcf=customFieldsFor("link");
-  if(analyse.treatments.length&&(lcf.length||analyse.treatments.some(linkEnriched))){
-    h+='<div class="rp-card"><h2>'+esc(t("rp_link_details"))+'</h2>';
-    analyse.treatments.forEach(tr=>{
-      const r=riskById(tr.risk),m=measureById(tr.measure);
-      const sub=[r&&r.label,m&&m.label].filter(Boolean).map(esc).join(" → ");
-      h+='<div class="rp-item"><div><b>'+esc(tr.risk)+' → '+esc(tr.measure)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
-      if(tr.comment)h+='<div class="rp-note md">'+mdToHTML(tr.comment)+'</div>';
-      h+=cfReportNotes("link",tr.custom);
-      h+='</div>';
-    });
-    h+='</div>';
-  }
-
+  // Orientation : largeur d'aperçu + format de page à l'impression (PDF).
+  host.classList.toggle("report-landscape",cfg.orientation==="landscape");
+  const ps=document.getElementById("reportPageStyle");
+  if(ps)ps.textContent="@page{size:A4 "+(cfg.orientation==="landscape"?"landscape":"portrait")+"}";
   host.innerHTML=h;
 }
 document.getElementById("btnPrintReport").addEventListener("click",()=>window.print());
@@ -5969,14 +6291,17 @@ function dxRun(txt,f){f=f||{};
     (f.mono?'<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>':'')+
     (f.color?'<w:color w:val="'+f.color+'"/>':'')+(f.sz?'<w:sz w:val="'+f.sz+'"/>':'')+'</w:rPr>'+dxT(txt)+'</w:r>';}
 function dxP(runs,p){p=p||{};
-  return '<w:p><w:pPr>'+(p.ind?'<w:ind w:left="'+p.ind+'"/>':'')+(p.center?'<w:jc w:val="center"/>':'')+
-    '<w:spacing w:before="'+(p.sb||0)+'" w:after="'+(p.sa==null?120:p.sa)+'"/></w:pPr>'+runs+'</w:p>';}
+  return '<w:p><w:pPr>'+(p.style?'<w:pStyle w:val="'+p.style+'"/>':'')+(p.ind?'<w:ind w:left="'+p.ind+'"/>':'')+(p.center?'<w:jc w:val="center"/>':'')+
+    (p.tabs||'')+'<w:spacing w:before="'+(p.sb||0)+'" w:after="'+(p.sa==null?120:p.sa)+'"/></w:pPr>'+runs+'</w:p>';}
 /* rows : lignes de cellules {txt|runs, b, color, fill, center, sz}. Chaque cellule Word
    doit contenir au moins un paragraphe. */
 function dxTbl(rows,widths){
   let h='<w:tbl><w:tblPr><w:tblW w:w="'+widths.reduce((a,b)=>a+b,0)+'" w:type="dxa"/><w:tblBorders>'+
     ["top","left","bottom","right","insideH","insideV"].map(x=>'<w:'+x+' w:val="single" w:sz="4" w:color="D0D7E5"/>').join("")+
-    '</w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+widths.map(w=>'<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>';
+    '</w:tblBorders><w:tblLayout w:type="fixed"/>'+
+    /* Marges internes des cellules : 0,2 cm ≈ 113 twips à gauche et à droite. */
+    '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="113" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="113" w:type="dxa"/></w:tblCellMar>'+
+    '</w:tblPr><w:tblGrid>'+widths.map(w=>'<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>';
   rows.forEach(cells=>{
     h+='<w:tr>';
     cells.forEach((c,i)=>{
@@ -6047,9 +6372,9 @@ function mdDocxBlocks(md){
   [...host.children].forEach(block);
   return out;
 }
-function dxImage(rid,idn,wPx,hPx){
-  const maxW=640,w=Math.min(wPx,maxW),hh=Math.round(hPx*w/wPx),cx=Math.round(w*9525),cy=Math.round(hh*9525);
-  return '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="160"/></w:pPr><w:r><w:drawing>'+
+// Run image (dessin inline) — utilisable dans un paragraphe, un en-tête ou un pied. cx/cy en EMU.
+function dxDrawingRun(rid,idn,cx,cy){
+  return '<w:r><w:drawing>'+
     '<wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/>'+
     '<wp:docPr id="'+idn+'" name="Image'+idn+'"/>'+
     '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
@@ -6057,8 +6382,110 @@ function dxImage(rid,idn,wPx,hPx){
     '<pic:nvPicPr><pic:cNvPr id="'+idn+'" name="Image'+idn+'"/><pic:cNvPicPr/></pic:nvPicPr>'+
     '<pic:blipFill><a:blip r:embed="'+rid+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
     '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'+
-    '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
+    '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
 }
+// Image centrée occupant son propre paragraphe. maxW borne la largeur (px).
+function dxImage(rid,idn,wPx,hPx,maxW){
+  maxW=maxW||640;const w=Math.min(wPx,maxW),hh=Math.round(hPx*w/wPx),cx=Math.round(w*9525),cy=Math.round(hh*9525);
+  return '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="160"/></w:pPr>'+dxDrawingRun(rid,idn,cx,cy)+'</w:p>';
+}
+// Charge un logo (data URI png/jpeg/svg) et le rend en PNG via canvas -> octets + dimensions.
+function dxLoadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+async function dxLogoPng(dataUri){
+  const img=await dxLoadImg(dataUri);
+  const w=img.naturalWidth||img.width||200,h=img.naturalHeight||img.height||80;
+  const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+  const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
+  return {bytes:new Uint8Array(await blob.arrayBuffer()),w:w,h:h};
+}
+/* ---- Tableaux de registre pilotés par les colonnes choisies (voir reportCfg) ---- */
+const DX_COLW={id:.6,risk:2,measure:2,cat:1.1,owner:1.1,initial:1.2,residual:1.2,evolution:1.1,measures:1.5,
+  type:1,status:1.1,resp:1.1,due:1,cost:.8,covered:1.5,rid:.7,mid:.7,notes:1.8};
+function dxCellFor(tbl,key,row){
+  if(tbl==="risks"){
+    if(key==="id")return {txt:row.id,b:true};
+    if(key==="risk")return {txt:row.label};
+    if(key==="cat")return {txt:row.category||"—"};
+    if(key==="owner")return {txt:row.owner||"—"};
+    if(key==="initial"){const ev=row.initial_assessment,c=critOfEval(ev);return dxBadgeCell(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color);}
+    if(key==="residual"){const ev=residual(row),c=critOfEval(ev);return dxBadgeCell(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color);}
+    if(key==="evolution"){const d=scoreOf(residual(row).probability,residual(row).severity)-scoreOf(row.initial_assessment.probability,row.initial_assessment.severity);return {txt:(d>0?"+":"")+d,center:true};}
+    if(key==="measures"){const m=measuresOfRisk(row.id);return {txt:m.length?m.join(", "):"—"};}
+  }else if(tbl==="measures"){
+    if(key==="id")return {txt:row.id,b:true};
+    if(key==="measure")return {txt:row.label};
+    if(key==="type")return {txt:row.type?typeLabel(row.type):"—"};
+    if(key==="status"){const sc=row.status?STATUS_COLORS[row.status]:null;return sc?dxBadgeCell(statusLabel(row.status),sc.bg):{txt:row.status?statusLabel(row.status):"—",center:true};}
+    if(key==="resp")return {txt:row.responsible||"—"};
+    if(key==="due")return {txt:row.due_date||"—"};
+    if(key==="cost")return {txt:(row.cost!=null&&row.cost!=="")?String(row.cost):"—"};
+    if(key==="covered"){const rk=risksOfMeasure(row.id);return {txt:rk.length?rk.join(", "):"—"};}
+  }else if(tbl==="links"){
+    if(key==="rid")return {txt:row.risk,b:true};
+    if(key==="risk"){const r=riskById(row.risk);return {txt:r?r.label:"—"};}
+    if(key==="mid")return {txt:row.measure,b:true};
+    if(key==="measure"){const m=measureById(row.measure);return {txt:m?m.label:"—"};}
+    if(key==="notes")return {txt:mdToText(row.comment)||"—"};
+  }
+  if(key.indexOf("cf:")===0){
+    const f=customFieldsFor(cfTargetOf(tbl)).find(x=>"cf:"+x.code===key);
+    if(f){const v=cfDisplay(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
+  }
+  return {txt:"—"};
+}
+function dxReportTable(tbl,colKeys,rows,cw){
+  cw=cw||DX_CW;
+  const cm=colMap(tbl),keys=(colKeys||[]).filter(k=>cm[k]&&cm[k].pinned!=="last");
+  if(!keys.length)return dxP(dxRun("—",{color:"7A8699"}),{sa:120});
+  const wts=keys.map(k=>DX_COLW[k]!=null?DX_COLW[k]:(k.indexOf("cf:")===0?1.2:1)),sum=wts.reduce((a,b)=>a+b,0);
+  const widths=wts.map(w=>Math.max(700,Math.round(cw*w/sum)));
+  const centered={initial:1,residual:1,evolution:1,status:1};
+  const header=keys.map(k=>({txt:cm[k].label,b:true,fill:"EEF2F8",center:!!centered[k]}));
+  const data=rows.length?rows.map(row=>keys.map(k=>dxCellFor(tbl,k,row))):[keys.map((k,i)=>({txt:i===0?"—":"",center:i===0}))];
+  return dxTbl([header].concat(data),widths);
+}
+function dxPlanTable(list,cw){return dxReportTable("measures",["id","measure","status","resp","due"],list,cw);}
+function dxCfNotes(target,custom){
+  let out="";
+  customFieldsFor(target).forEach(f=>{
+    const raw=(custom||{})[f.code],v=cfDisplay(f,raw);if(!v)return;
+    if(f.type==="textarea"){out+=dxP(dxRun(cfLabel(f),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
+    else out+=dxP(dxRun(cfLabel(f)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
+  });
+  return out;
+}
+function dxPageBreak(){return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';}
+// Champ Word (PAGE / NUMPAGES) avec un résultat de repli affiché avant mise à jour.
+function dxField(instr){return '<w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> '+instr+' </w:instrText></w:r>'+
+  '<w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="18"/><w:color w:val="7A8699"/></w:rPr><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r>';}
+// Champ TOC natif (niveaux 1), mis à jour à l'ouverture via settings.xml (updateFields).
+function dxTocField(){
+  return '<w:p><w:pPr><w:spacing w:after="120"/></w:pPr>'+
+    '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'+
+    '<w:r><w:instrText xml:space="preserve"> TOC \\o &quot;1-1&quot; \\h \\z \\u </w:instrText></w:r>'+
+    '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'+
+    '<w:r><w:rPr><w:color w:val="7A8699"/></w:rPr>'+dxT(t("rp_toc"))+'</w:r>'+
+    '<w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>';
+}
+// Zone d'en-tête/pied : substitution des variables texte + {page}/{pages} en champs Word.
+function dxZoneRuns(text,fields){
+  const subOther=s=>String(s).replace(/\{title\}/g,fields.title).replace(/\{organization\}/g,fields.organization)
+    .replace(/\{author\}/g,fields.author).replace(/\{date\}/g,fields.date)
+    .replace(/\{version\}/g,fields.version).replace(/\{confidentiality\}/g,fields.confidentiality);
+  let out="",re=/\{(page|pages)\}/g,last=0,m;
+  while((m=re.exec(text))){
+    const before=text.slice(last,m.index);if(before)out+=dxRun(subOther(before),{sz:18,color:"7A8699"});
+    out+=dxField(m[1]==="page"?"PAGE":"NUMPAGES");last=re.lastIndex;
+  }
+  const rest=text.slice(last);if(rest)out+=dxRun(subOther(rest),{sz:18,color:"7A8699"});
+  return out;
+}
+// Bande en-tête/pied à trois zones (gauche/centre/droite) via taquets de tabulation.
+function dxBandPara(b,fields,logoRun){
+  const tabs='<w:tabs><w:tab w:val="center" w:pos="'+Math.round(DX_CW/2)+'"/><w:tab w:val="right" w:pos="'+DX_CW+'"/></w:tabs>';
+  return dxP((logoRun||"")+dxZoneRuns(b.left||"",fields)+'<w:r><w:tab/></w:r>'+dxZoneRuns(b.center||"",fields)+'<w:r><w:tab/></w:r>'+dxZoneRuns(b.right||"",fields),{sb:0,sa:0,tabs:tabs});
+}
+const DX_HFNS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="'+OD_REL+'" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"';
 // Matrices du rapport en PNG (rendu ×2 pour l'impression), avec leurs dimensions d'affichage.
 async function reportImagesPNG(){
   const out=[];
@@ -6071,154 +6498,254 @@ async function reportImagesPNG(){
   }
   return out;
 }
+/* Rapport Word (.docx) piloté par la configuration (voir reportCfg()/renderReport()) :
+   page de garde, table des matières native, en-tête/pied natifs (avec {page}/{pages}),
+   sections dans l'ordre choisi, colonnes des tableaux, matrices empilées = 2 images,
+   plan d'action selon la vue, périmètre complet ou filtré. */
 async function buildDocx(){
-  const md=analyse.metadata||{},g=analyse.grid,nR=analyse.risks.length,nM=analyse.measures.length;
+  const cfg=reportCfg(),md=analyse.metadata||{},g=analyse.grid;
+  const land=cfg.orientation==="landscape";
+  // Largeur utile (twips) : A4 portrait 11906 ou paysage 16838, moins 2×1134 de marges.
+  const CW=(land?16838:11906)-2268;
   const title=(md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle);
-  let body="";
-  const H2=txt=>body+=dxP(dxRun(txt,{b:true,sz:30,color:"1F2937"}),{sb:360,sa:120});
-  const H3=txt=>body+=dxP(dxRun(txt,{b:true,sz:24,color:"3B4A63"}),{sb:200,sa:60});
-  const sub=txt=>body+=dxP(dxRun(txt,{color:"7A8699"}),{sa:120});
-  // 1. Titre + cartouche
-  body+=dxP(dxRun(title,{b:true,sz:40}),{sa:160});
-  const metaRows=[[t("f_author"),md.author],[t("f_org"),md.organization],[t("f_scope"),md.scope],
-    [t("f_methodology"),md.methodology_reference],[t("rp_created"),md.created_at],[t("rp_updated"),md.updated_at],
-    [t("rp_revision"),md.revision],[t("th_status"),metaStatusLabel(md.status)]].filter(r=>r[1]);
-  if(metaRows.length)body+=dxTbl(metaRows.map(r=>[{txt:r[0],color:"7A8699"},{txt:String(r[1])}]),[2600,DX_CW-2600]);
-  // 1b. Présentation (description + champs perso de l'analyse)
-  const cfA=customFieldsFor("analysis").map(f=>[f,cfDisplay(f,(analyse.custom||{})[f.code]),(analyse.custom||{})[f.code]]).filter(x=>x[1]);
-  if(md.description||cfA.length){
-    H2(t("rp_presentation"));
-    if(md.description)body+=mdDocxBlocks(md.description);
-    cfA.forEach(x=>{
-      if(x[0].type==="textarea"){body+=dxP(dxRun(cfLabel(x[0]),{b:true}),{sb:120,sa:40});body+=mdDocxBlocks(String(x[2]||""));}
-      else body+=dxP(dxRun(cfLabel(x[0])+" : ",{b:true,color:"3B4A63"})+dxRun(x[1],{}),{sa:60});
-    });
-  }
-  // 2. Synthèse
+  const RISKS=cfg.scope==="filtered"?visibleRisks():analyse.risks;
+  const MEAS =cfg.scope==="filtered"?visibleMeasures():analyse.measures;
+  const TRs  =cfg.scope==="filtered"?visibleTreatments():analyse.treatments;
+  const nR=RISKS.length,nM=MEAS.length;
+  const treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
   const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
-  const count=w=>{const c={};cats.forEach(x=>c[x.code]=0);
-    analyse.risks.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
+  const count=w=>{const c={};cats.forEach(x=>c[x.code]=0);RISKS.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
   const ci=count("i"),cr=count("r");
-  const treated=analyse.risks.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
-  H2(t("rp_summary"));
-  body+=dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:String(nR)}],
-    [{txt:t("stat_measures"),color:"7A8699"},{txt:String(nM)}],
-    [{txt:t("stat_reduced"),color:"7A8699"},{txt:String(treated)}]],[2600,2000]);
-  H3(t("stat_distribution"));
-  body+=dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("th_initial"),b:true,fill:"EEF2F8",center:true},{txt:t("th_residual"),b:true,fill:"EEF2F8",center:true}]]
-    .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:String(ci[c.code]||0),center:true},{txt:String(cr[c.code]||0),center:true}])),[3200,1600,1600]);
-  // 3. Grille de cotation
-  H2(t("settings_grid"));
-  sub(t("score_method")+" : "+t("method."+((g.score&&g.score.method)||"product")));
-  const axTbl=ax=>dxTbl([[{txt:t("rp_value"),b:true,fill:"EEF2F8"},{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("f_description"),b:true,fill:"EEF2F8"}]]
-    .concat(ax.levels.map(nv=>[{txt:String(nv.value),center:true},{txt:nv.label},{txt:nv.description||""}])),[900,2400,DX_CW-3300]);
-  H3(t("axis_vertical")+" — "+g.vertical_axis.label);body+=axTbl(g.vertical_axis);
-  H3(t("axis_horizontal")+" — "+g.horizontal_axis.label);body+=axTbl(g.horizontal_axis);
-  H3(t("crit_title"));
-  body+=dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("rp_range"),b:true,fill:"EEF2F8"},{txt:t("th_acceptance"),b:true,fill:"EEF2F8"},{txt:t("f_description"),b:true,fill:"EEF2F8"}]]
-    .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:c.score_min+" – "+c.score_max,center:true},{txt:accLabel(c.acceptance||"")},{txt:c.description||""}])),[2200,1300,1700,DX_CW-5200]);
-  // 4. Matrices (images PNG)
-  const media={},docRels=[];let imgXml="";
-  if(nR){
-    const imgs=await reportImagesPNG();
-    imgs.forEach((im,i)=>{
-      const rid="rImg"+(i+1);
-      media["word/media/image"+(i+1)+".png"]=im.bytes;
-      docRels.push('<Relationship Id="'+rid+'" Type="'+OD_REL+'/image" Target="media/image'+(i+1)+'.png"/>');
-      imgXml+=dxImage(rid,i+1,im.w,im.h);
-    });
+
+  const media={},docRels=[];let pid=0,imgN=0;
+  async function addSvgImage(svg){
+    const m=/width="(\d+(?:\.\d+)?)" height="(\d+(?:\.\d+)?)"/.exec(svg);
+    const W=m?Math.round(+m[1]):800,H=m?Math.round(+m[2]):600;
+    const blob=await rasterizePNG(svg,W,H,2);imgN++;
+    const rid="rImg"+imgN,fn="image"+imgN+".png";
+    media["word/media/"+fn]=new Uint8Array(await blob.arrayBuffer());
+    docRels.push('<Relationship Id="'+rid+'" Type="'+OD_REL+'/image" Target="media/'+fn+'"/>');
+    return dxImage(rid,++pid,W,H);
   }
-  H2(t("tab_matrices"));
-  body+=nR?imgXml:dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
-  // 5. Registre des risques
-  H2(t("risks_title"));
-  if(!nR)sub(t("risks_empty"));
-  else body+=dxTbl([[{txt:t("th_id"),b:true,fill:"EEF2F8"},{txt:t("th_risk"),b:true,fill:"EEF2F8"},{txt:t("th_category"),b:true,fill:"EEF2F8"},{txt:t("th_initial"),b:true,fill:"EEF2F8",center:true},{txt:t("th_residual"),b:true,fill:"EEF2F8",center:true},{txt:t("th_measures"),b:true,fill:"EEF2F8"}]]
-    .concat(analyse.risks.map(r=>{
-      const evi=r.initial_assessment,evr=residual(r),cci=critOfEval(evi),ccr=critOfEval(evr);
-      const si=scoreOf(evi.probability,evi.severity),sr=scoreOf(evr.probability,evr.severity),mes=measuresOfRisk(r.id);
-      return [{txt:r.id,b:true},{txt:r.label},{txt:r.category||"—"},
-        dxBadgeCell(cci.label+" · "+si,cci.color),dxBadgeCell(ccr.label+" · "+sr,ccr.color),
-        {txt:mes.length?mes.join(", "):"—"}];
-    })),[800,2638,1400,1600,1600,1600]);
-  // 5b. Détail des risques
-  const cfNotes=(target,custom)=>{
-    customFieldsFor(target).forEach(f=>{
-      const raw=(custom||{})[f.code],v=cfDisplay(f,raw);if(!v)return;
-      if(f.type==="textarea"){body+=dxP(dxRun(cfLabel(f),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});body+=mdDocxBlocks(String(raw||""));}
-      else body+=dxP(dxRun(cfLabel(f)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
-    });
+
+  // Logo (partagé page de garde / en-tête) rendu en PNG une seule fois.
+  let logoInfo=null;
+  if(cfg.cover.logo&&((cfg.cover.on)||cfg.header.logo)){
+    try{logoInfo=await dxLogoPng(cfg.cover.logo);media["word/media/logo.png"]=logoInfo.bytes;}catch(_){logoInfo=null;}
+  }
+  let coverLogoXml="";
+  if(cfg.cover.on&&logoInfo){
+    docRels.push('<Relationship Id="rLogoDoc" Type="'+OD_REL+'/image" Target="media/logo.png"/>');
+    coverLogoXml=dxImage("rLogoDoc",++pid,logoInfo.w,logoInfo.h,200);
+  }
+
+  // ---- En-tête / pied natifs ----
+  const fields={title:title,organization:md.organization||"",author:md.author||"",date:md.updated_at||today(),
+    version:cfg.cover.version||md.revision||"",confidentiality:cfg.cover.confidentiality||""};
+  const needHeader=!!(cfg.header.left||cfg.header.center||cfg.header.right||(cfg.header.logo&&logoInfo));
+  const needFooter=!!(cfg.footer.left||cfg.footer.center||cfg.footer.right);
+  let headerXml="",footerXml="",headerRelsXml="";
+  if(needHeader){
+    let logoRun="";
+    if(cfg.header.logo&&logoInfo){
+      headerRelsXml=XMLD+'<Relationships '+RELS_XMLNS+'><Relationship Id="rLogoHdr" Type="'+OD_REL+'/image" Target="media/logo.png"/></Relationships>';
+      const cy=Math.round(0.26*914400),cx=Math.round(cy*(logoInfo.w/Math.max(1,logoInfo.h)));
+      logoRun=dxDrawingRun("rLogoHdr",++pid,cx,cy)+'<w:r><w:rPr><w:sz w:val="18"/></w:rPr><w:t xml:space="preserve">  </w:t></w:r>';
+    }
+    headerXml=XMLD+'<w:hdr '+DX_HFNS+'>'+dxBandPara(cfg.header,fields,logoRun)+'</w:hdr>';
+  }
+  if(needFooter)footerXml=XMLD+'<w:ftr '+DX_HFNS+'>'+dxBandPara(cfg.footer,fields,"")+'</w:ftr>';
+
+  // ---- Corps ----
+  let body="";
+  const heading=txt=>dxP(dxRun(txt,{b:true,sz:30,color:"1F2937"}),{sb:360,sa:120,style:"Heading1"});
+  const h3=txt=>dxP(dxRun(txt,{b:true,sz:24,color:"3B4A63"}),{sb:200,sa:60});
+
+  // Page de garde
+  if(cfg.cover.on){
+    const c=cfg.cover;
+    if(coverLogoXml)body+=coverLogoXml;
+    body+=dxP(dxRun(c.title||title,{b:true,sz:44}),{sb:120,sa:120,center:true});
+    if(c.subtitle)body+=dxP(dxRun(c.subtitle,{sz:28,color:"5F6B83"}),{sa:120,center:true});
+    const meta=[];
+    if(c.show_organization&&md.organization)meta.push(md.organization);
+    if(c.show_author&&md.author)meta.push(md.author);
+    if(c.show_date&&md.updated_at)meta.push(md.updated_at);
+    const ver=c.version||md.revision;if(ver)meta.push(t("rp_revision")+" "+ver);
+    if(meta.length)body+=dxP(dxRun(meta.join("   ·   "),{color:"7A8699"}),{sa:80,center:true});
+    if(c.confidentiality)body+=dxP(dxRun(c.confidentiality,{b:true,color:hex6("#D64545")}),{sb:200,sa:80,center:true});
+    if(c.free_text)body+=mdDocxBlocks(c.free_text);
+    body+=dxPageBreak();
+  }
+
+  const enabled=cfg.sections.filter(s=>s.on);
+  // Table des matières native
+  if(cfg.toc.on&&enabled.length){
+    body+=dxP(dxRun(t("rp_toc"),{b:true,sz:30,color:"1F2937"}),{sb:120,sa:120});
+    body+=dxTocField();
+    body+=dxPageBreak();
+  }
+  // Périmètre filtré : rappel des filtres actifs et du nombre d'éléments retenus.
+  if(cfg.scope==="filtered"){
+    const flts=reportActiveFilters();
+    body+=heading(t("rp_filter_summary"));
+    body+=dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:String(nR)}],[{txt:t("stat_measures"),color:"7A8699"},{txt:String(nM)}]]
+      .concat(flts.map(f=>[{txt:f.label,color:"7A8699"},{txt:String(f.value)}])),[3200,CW-3200]);
+    if(!flts.length)body+=dxP(dxRun(t("rp_filter_none"),{color:"7A8699"}),{sa:120});
+  }
+
+  // Registre des sections (retourne du XML ; certaines sont asynchrones : matrices).
+  const RD={
+    metadata:s=>{
+      let out=heading(t("rp_metadata"));
+      const DEF={author:[t("f_author"),md.author],organization:[t("f_org"),md.organization],scope:[t("f_scope"),md.scope],
+        methodology:[t("f_methodology"),md.methodology_reference],created:[t("rp_created"),md.created_at],
+        updated:[t("rp_updated"),md.updated_at],revision:[t("rp_revision"),md.revision],status:[t("th_status"),metaStatusLabel(md.status)]};
+      const rows=s.rows.filter(x=>x.on).map(x=>DEF[x.id]).filter(r=>r&&r[1]);
+      if(rows.length)out+=dxTbl(rows.map(r=>[{txt:r[0],color:"7A8699"},{txt:String(r[1])}]),[2600,CW-2600]);
+      return out;
+    },
+    presentation:s=>{
+      const acf=customFieldsFor("analysis"),cust=analyse.custom||{};let out="",any=false;
+      s.items.filter(x=>x.on).forEach(it=>{
+        if(it.id==="description"){if(md.description){out+=mdDocxBlocks(md.description);any=true;}return;}
+        const f=acf.find(x=>"cf:"+x.code===it.id);
+        if(f&&cfHasVal(cust[f.code])){any=true;
+          if(f.type==="textarea"){out+=dxP(dxRun(cfLabel(f),{b:true,color:"3B4A63"}),{sb:120,sa:40});out+=mdDocxBlocks(String(cust[f.code]||""));}
+          else out+=dxP(dxRun(cfLabel(f)+" : ",{b:true,color:"3B4A63"})+dxRun(cfDisplay(f,cust[f.code]),{}),{sa:60});}
+      });
+      return any?heading(t("rp_presentation"))+out:"";
+    },
+    summary_counts:()=>heading(t("rp_summary"))+dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:String(nR)}],
+      [{txt:t("stat_measures"),color:"7A8699"},{txt:String(nM)}],
+      [{txt:t("stat_reduced"),color:"7A8699"},{txt:String(treated)}]],[2600,2000]),
+    summary_distribution:()=>heading(t("stat_distribution"))+dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("th_initial"),b:true,fill:"EEF2F8",center:true},{txt:t("th_residual"),b:true,fill:"EEF2F8",center:true}]]
+      .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:String(ci[c.code]||0),center:true},{txt:String(cr[c.code]||0),center:true}])),[3200,1600,1600]),
+    grid_axes:()=>{
+      const axTbl=ax=>dxTbl([[{txt:t("rp_value"),b:true,fill:"EEF2F8"},{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("f_description"),b:true,fill:"EEF2F8"}]]
+        .concat(ax.levels.map(nv=>[{txt:String(nv.value),center:true},{txt:nv.label},{txt:nv.description||""}])),[900,2400,CW-3300]);
+      return heading(t("settings_grid"))+dxP(dxRun(t("score_method")+" : "+t("method."+((g.score&&g.score.method)||"product")),{color:"7A8699"}),{sa:120})+
+        h3(t("axis_vertical")+" — "+g.vertical_axis.label)+axTbl(g.vertical_axis)+
+        h3(t("axis_horizontal")+" — "+g.horizontal_axis.label)+axTbl(g.horizontal_axis);
+    },
+    grid_criticality:()=>heading(t("crit_title"))+dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("rp_range"),b:true,fill:"EEF2F8"},{txt:t("th_acceptance"),b:true,fill:"EEF2F8"},{txt:t("f_description"),b:true,fill:"EEF2F8"}]]
+      .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:c.score_min+" – "+c.score_max,center:true},{txt:accLabel(c.acceptance||"")},{txt:c.description||""}])),[2200,1300,1700,CW-5200]),
+    matrix_ir:async()=>{
+      let out=heading(t("mtx_both_side"));
+      out+=nR?await addSvgImage(reportMatrixSVG("side")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      return out;
+    },
+    matrix_initial:async()=>{
+      let out=heading(t("mtx_initial_only"));
+      out+=nR?await addSvgImage(reportSingleMatrixSVG("initial")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      return out;
+    },
+    matrix_residual:async()=>{
+      let out=heading(t("mtx_residual_only"));
+      out+=nR?await addSvgImage(reportSingleMatrixSVG("residual")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      return out;
+    },
+    matrix_traj:async()=>{
+      let out=heading(t("mtx_traj"));
+      out+=nR?await addSvgImage(reportMatrixSVG("traj")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      return out;
+    },
+    risks_table:s=>heading(t("risks_title"))+(nR?dxReportTable("risks",s.columns,RISKS,CW):dxP(dxRun(t("risks_empty"),{color:"7A8699"}),{sa:120})),
+    measures_table:s=>heading(t("measures_title"))+(nM?dxReportTable("measures",s.columns,MEAS,CW):dxP(dxRun(t("measures_empty"),{color:"7A8699"}),{sa:120})),
+    links_table:s=>heading(t("links_title"))+(TRs.length?dxReportTable("links",s.columns,TRs,CW):dxP(dxRun("—",{color:"7A8699"}),{sa:120})),
+    risks_detail:()=>{
+      if(!nR)return "";
+      let out=heading(t("rp_risk_details"));
+      RISKS.forEach(r=>{
+        const s2=[r.category,r.owner].filter(Boolean).join(" · ");
+        out+=dxP(dxRun(r.id+" — "+r.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
+        if(r.description)out+=mdDocxBlocks(r.description);
+        const ji=r.initial_assessment&&r.initial_assessment.justification,jr=r.residual_assessment&&r.residual_assessment.justification;
+        if(ji)out+=dxP(dxRun(t("th_initial")+" : ",{b:true,sz:20})+dxRun(mdToText(ji),{sz:20,color:"555F6E"}),{sa:20});
+        if(jr)out+=dxP(dxRun(t("th_residual")+" : ",{b:true,sz:20})+dxRun(mdToText(jr),{sz:20,color:"555F6E"}),{sa:20});
+        if(r.comment)out+=mdDocxBlocks(r.comment);
+        out+=dxCfNotes("risk",r.custom);
+      });
+      return out;
+    },
+    measures_detail:()=>{
+      if(!nM)return "";
+      let out=heading(t("rp_measure_details"));
+      MEAS.forEach(m=>{
+        const s2=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,m.due_date,(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).join(" · ");
+        out+=dxP(dxRun(m.id+" — "+m.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
+        if(m.description)out+=mdDocxBlocks(m.description);
+        if(m.comment)out+=mdDocxBlocks(m.comment);
+        out+=dxCfNotes("measure",m.custom);
+      });
+      return out;
+    },
+    links_detail:()=>{
+      const lcf=customFieldsFor("link");
+      if(!(TRs.length&&(lcf.length||TRs.some(linkEnriched))))return "";
+      let out=heading(t("rp_link_details"));
+      TRs.forEach(tr=>{
+        const r=riskById(tr.risk),m=measureById(tr.measure);
+        const s2=[r&&r.label,m&&m.label].filter(Boolean).join(" → ");
+        out+=dxP(dxRun(tr.risk+" → "+tr.measure,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
+        if(tr.comment)out+=mdDocxBlocks(tr.comment);
+        out+=dxCfNotes("link",tr.custom);
+      });
+      return out;
+    },
+    action_plan:s=>{
+      let out=heading(t("tab_plan"));
+      if(!nM){out+=dxP(dxRun(t("measures_empty"),{color:"7A8699"}),{sa:120});return out;}
+      if(s.view==="status"){
+        STATUS_CODES.forEach(code=>{const l=MEAS.filter(m=>(m.status||"proposed")===code);if(l.length)out+=h3(statusLabel(code))+dxPlanTable(l,CW);});
+      }else if(s.view==="responsible"){
+        const by={};MEAS.forEach(m=>{const k=m.responsible||"—";(by[k]=by[k]||[]).push(m);});
+        Object.keys(by).sort((a,b)=>a==="—"?1:b==="—"?-1:a.localeCompare(b)).forEach(k=>out+=h3(k)+dxPlanTable(by[k],CW));
+      }else{
+        const withD=MEAS.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:0);
+        out+=dxPlanTable(withD.concat(MEAS.filter(m=>!m.due_date)),CW);
+      }
+      return out;
+    }
   };
-  if(nR){
-    H2(t("rp_risk_details"));
-    analyse.risks.forEach(r=>{
-      const s2=[r.category,r.owner].filter(Boolean).join(" · ");
-      body+=dxP(dxRun(r.id+" — "+r.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
-      if(r.description)body+=mdDocxBlocks(r.description);
-      const ji=r.initial_assessment&&r.initial_assessment.justification,jr=r.residual_assessment&&r.residual_assessment.justification;
-      if(ji)body+=dxP(dxRun(t("th_initial")+" : ",{b:true,sz:20})+dxRun(mdToText(ji),{sz:20,color:"555F6E"}),{sa:20});
-      if(jr)body+=dxP(dxRun(t("th_residual")+" : ",{b:true,sz:20})+dxRun(mdToText(jr),{sz:20,color:"555F6E"}),{sa:20});
-      if(r.comment)body+=mdDocxBlocks(r.comment);
-      cfNotes("risk",r.custom);
-    });
-  }
-  // 6. Mesures + détail
-  H2(t("measures_title"));
-  if(!nM)sub(t("measures_empty"));
-  else body+=dxTbl([[{txt:t("th_id"),b:true,fill:"EEF2F8"},{txt:t("th_measure"),b:true,fill:"EEF2F8"},{txt:t("th_type"),b:true,fill:"EEF2F8"},{txt:t("th_status"),b:true,fill:"EEF2F8",center:true},{txt:t("th_responsible"),b:true,fill:"EEF2F8"},{txt:t("f_due_date"),b:true,fill:"EEF2F8"},{txt:t("th_covered_risks"),b:true,fill:"EEF2F8"}]]
-    .concat(analyse.measures.map(m=>{
-      const sc=m.status?STATUS_COLORS[m.status]:null,rk2=risksOfMeasure(m.id);
-      return [{txt:m.id,b:true},{txt:m.label},{txt:m.type?typeLabel(m.type):"—"},
-        sc?dxBadgeCell(statusLabel(m.status),sc.bg):{txt:m.status?statusLabel(m.status):"—",center:true},
-        {txt:m.responsible||"—"},{txt:m.due_date||"—"},{txt:rk2.length?rk2.join(", "):"—"}];
-    })),[800,2338,1250,1350,1300,1200,1400]);
-  if(nM){
-    H2(t("rp_measure_details"));
-    analyse.measures.forEach(m=>{
-      const s2=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,m.due_date,(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).join(" · ");
-      body+=dxP(dxRun(m.id+" — "+m.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
-      if(m.description)body+=mdDocxBlocks(m.description);
-      if(m.comment)body+=mdDocxBlocks(m.comment);
-      cfNotes("measure",m.custom);
-    });
-  }
-  // 7. Liens + détail
-  H2(t("links_title"));
-  const withLinks=analyse.risks.filter(r=>measuresOfRisk(r.id).length);
-  if(!withLinks.length)sub("—");
-  else body+=dxTbl([[{txt:t("th_risk"),b:true,fill:"EEF2F8"},{txt:t("linked_measures_title"),b:true,fill:"EEF2F8"}]]
-    .concat(withLinks.map(r=>[{txt:r.id+" — "+r.label},
-      {txt:measuresOfRisk(r.id).map(id=>{const m=measureById(id);return id+(m?" — "+m.label:"");}).join("\n")}])),[3800,DX_CW-3800]);
-  const lcf=customFieldsFor("link");
-  if(analyse.treatments.length&&(lcf.length||analyse.treatments.some(linkEnriched))){
-    H2(t("rp_link_details"));
-    analyse.treatments.forEach(tr=>{
-      const r=riskById(tr.risk),m=measureById(tr.measure);
-      const s2=[r&&r.label,m&&m.label].filter(Boolean).join(" → ");
-      body+=dxP(dxRun(tr.risk+" → "+tr.measure,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
-      if(tr.comment)body+=mdDocxBlocks(tr.comment);
-      cfNotes("link",tr.custom);
-    });
-  }
-  // Assemblage du paquet
+  for(const s of enabled){const fn=RD[s.id];if(fn){const r=await fn(s);if(r)body+=r;}}
+
+  // ---- Assemblage du paquet ----
+  const secRefs=(needHeader?'<w:headerReference w:type="default" r:id="rHdr1"/>':'')+(needFooter?'<w:footerReference w:type="default" r:id="rFtr1"/>':'');
+  const pgSz=land?'<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>':'<w:pgSz w:w="11906" w:h="16838"/>';
+  const sectPr='<w:sectPr>'+secRefs+pgSz+'<w:pgMar w:top="1418" w:right="1134" w:bottom="1418" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>';
   const doc=XMLD+'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="'+OD_REL+'" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'+
-    '<w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    '<w:body>'+body+sectPr+'</w:body></w:document>';
   const styles=XMLD+'<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'+
     '<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="21"/></w:rPr></w:rPrDefault>'+
     '<w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>'+
-    '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>';
+    '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>'+
+    '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/>'+
+    '<w:pPr><w:keepNext/><w:spacing w:before="360" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr>'+
+    '<w:rPr><w:b/><w:color w:val="1F2937"/><w:sz w:val="30"/></w:rPr></w:style></w:styles>';
+  const settings=XMLD+'<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:updateFields w:val="true"/></w:settings>';
   const docRelsXml=XMLD+'<Relationships '+RELS_XMLNS+'>'+docRels.join("")+
-    '<Relationship Id="rSty" Type="'+OD_REL+'/styles" Target="styles.xml"/></Relationships>';
+    '<Relationship Id="rSty" Type="'+OD_REL+'/styles" Target="styles.xml"/>'+
+    '<Relationship Id="rSet" Type="'+OD_REL+'/settings" Target="settings.xml"/>'+
+    (needHeader?'<Relationship Id="rHdr1" Type="'+OD_REL+'/header" Target="header1.xml"/>':'')+
+    (needFooter?'<Relationship Id="rFtr1" Type="'+OD_REL+'/footer" Target="footer1.xml"/>':'')+
+    '</Relationships>';
   const types=XMLD+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
     '<Default Extension="xml" ContentType="application/xml"/>'+
     '<Default Extension="png" ContentType="image/png"/>'+
     '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+
     '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'+
+    '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>'+
+    (needHeader?'<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>':'')+
+    (needFooter?'<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>':'')+
     '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>';
   const files=Object.assign({"[Content_Types].xml":types,"_rels/.rels":pkgRelsXML("word/document.xml"),
-    "docProps/core.xml":corePropsXML(),"word/document.xml":doc,"word/styles.xml":styles,
+    "docProps/core.xml":corePropsXML(),"word/document.xml":doc,"word/styles.xml":styles,"word/settings.xml":settings,
     "word/_rels/document.xml.rels":docRelsXml},media);
+  if(needHeader)files["word/header1.xml"]=headerXml;
+  if(needFooter)files["word/footer1.xml"]=footerXml;
+  if(headerRelsXml)files["word/_rels/header1.xml.rels"]=headerRelsXml;
   return ooxmlBlob(files,"application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
 async function exportDocx(){
@@ -6328,9 +6855,214 @@ function setParamMode(m){
   paramMode=m;
   document.querySelectorAll("#paramSeg button").forEach(b=>b.classList.toggle("active",b.dataset.pmode===m));
   document.querySelectorAll("#view-settings .ppanel").forEach(p=>{p.style.display=(p.dataset.pmode===m)?"":"none";});
+  if(m==="report")renderReportSettings();
   syncSegAria();
 }
 document.getElementById("paramSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setParamMode(b.dataset.pmode);});
+
+/* ============================================================
+   SOUS-ONGLET PARAMÈTRES › RAPPORT — personnalisation du rapport
+
+   Édite analyse.extensions.display.report (voir reportCfg()/renderReport()).
+   L'UI est reconstruite depuis reportCfg() à chaque affichage ; toute
+   modification recolle la configuration complète depuis le DOM (collectReportCfg),
+   de sorte que le fichier enregistré porte une configuration canonique et complète.
+   ============================================================ */
+function reportMetaRowTitle(id){return ({author:t("f_author"),organization:t("f_org"),scope:t("f_scope"),
+  methodology:t("f_methodology"),created:t("rp_created"),updated:t("rp_updated"),revision:t("rp_revision"),
+  status:t("th_status")})[id]||id;}
+function reportPresItemTitle(id){
+  if(id==="description")return t("rc_pres_description");
+  const f=customFieldsFor("analysis").find(x=>"cf:"+x.code===id);return f?cfLabel(f):id;}
+function rcSubrowsHTML(domId,rows){
+  return '<div class="rc-subrows" id="'+domId+'">'+rows.map(r=>
+    '<div class="rc-subrow" data-sub="'+esc(r.id)+'" draggable="true"><span class="rc-grip">⠿</span>'+
+    '<input type="checkbox"'+(r.on?" checked":"")+'><span class="rc-name">'+esc(r.label)+
+    (r.cf?' <span class="rc-badge">'+esc(t("rc_cf"))+'</span>':"")+'</span></div>').join("")+'</div>';
+}
+function rcTableColRows(tbl,saved){
+  const avail=allCols(tbl).filter(c=>c.pinned!=="last"), byKey={};avail.forEach(c=>byKey[c.key]=c);
+  const rows=[],seen={};
+  (saved||[]).forEach(k=>{if(byKey[k]&&!seen[k]){seen[k]=1;rows.push({id:k,on:true,label:byKey[k].label,cf:k.indexOf("cf:")===0});}});
+  avail.forEach(c=>{if(!seen[c.key])rows.push({id:c.key,on:false,label:c.label,cf:c.key.indexOf("cf:")===0});});
+  return rows;
+}
+function rcSecItemHTML(s){
+  const title=reportSectionTitle(s.id);let ctrl="",sub="";
+  if(s.id==="metadata"){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-metadata">'+esc(t("rc_lines"))+' ▾</button>';
+    sub=rcSubrowsHTML("rcsub-metadata",s.rows.map(r=>({id:r.id,on:r.on,label:reportMetaRowTitle(r.id)})));}
+  else if(s.id==="presentation"){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-presentation">'+esc(t("rc_items"))+' ▾</button>';
+    sub=rcSubrowsHTML("rcsub-presentation",s.items.map(it=>({id:it.id,on:it.on,label:reportPresItemTitle(it.id),cf:it.id.indexOf("cf:")===0})));}
+  else if(reportTableId(s.id)){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-'+s.id+'">'+esc(t("rc_columns"))+' ▾</button>';
+    sub=rcSubrowsHTML("rcsub-"+s.id,rcTableColRows(reportTableId(s.id),s.columns));}
+  else if(s.id==="action_plan"){ctrl='<select class="rc-rowctrl" data-role="view">'+
+    [["due_date","rc_view_due"],["status","rc_view_status"],["responsible","rc_view_resp"]].map(a=>
+      '<option value="'+a[0]+'"'+(s.view===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';}
+  return '<div class="rc-secitem'+(s.on?"":" rc-off")+'" data-sec="'+s.id+'" draggable="true">'+
+    '<div class="rc-secrow"><span class="rc-grip">⠿</span><input type="checkbox"'+(s.on?" checked":"")+'>'+
+    '<span class="rc-name">'+esc(title)+'</span>'+ctrl+'</div>'+sub+'</div>';
+}
+function renderReportSettings(){
+  const p=document.getElementById("reportCfgPanel");if(!p)return;
+  const cfg=reportCfg(),c=cfg.cover;
+  const pin=(id,name,on)=>'<div class="rc-secrow rc-pinned" data-pin="'+id+'"><span class="rc-grip">⠿</span>'+
+    '<input type="checkbox"'+(on?" checked":"")+'><span class="rc-name">'+esc(name)+'</span>'+
+    '<span class="rc-badge">'+esc(t("rc_pinned"))+'</span></div>';
+  const zone=(id,lab,v)=>'<label class="rc-field"><span class="rc-lab">'+esc(lab)+'</span><input type="text" id="'+id+'" value="'+esc(v||"")+'"></label>';
+  let h="";
+  // 1. Sections
+  h+='<div class="card"><h2>'+esc(t("rc_sections_title"))+'</h2><div class="caption">'+esc(t("rc_sections_cap"))+'</div>'+
+    '<div class="rc-seclist" id="rcSeclist">'+pin("cover",t("rc_cover_row"),cfg.cover.on)+pin("toc",t("rp_toc"),cfg.toc.on)+
+    cfg.sections.map(rcSecItemHTML).join("")+'</div></div>';
+  // 2. Page de garde
+  h+='<div class="card"><h2>'+esc(t("rc_cover_row"))+'</h2><div class="caption">'+esc(t("rc_cover_cap"))+'</div>'+
+    '<input type="hidden" id="rcLogoData" value="'+esc(c.logo||"")+'">'+
+    '<div class="rc-field"><span class="rc-lab">'+esc(t("rc_logo"))+'</span>'+
+      '<div class="rc-dropzone" id="rcLogoDrop">'+esc(t("rc_logo_drop"))+'</div>'+
+      '<input type="file" id="rcLogoFile" accept="image/*" style="display:none">'+
+      '<div class="rc-logo-prev" id="rcLogoPrev">'+(c.logo?'<img src="'+esc(c.logo)+'" alt=""><button type="button" class="btn ghost sm" id="rcLogoRemove">'+esc(t("rc_logo_remove"))+'</button>':"")+'</div>'+
+    '</div>'+
+    '<div class="rc-grid2">'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("f_title"))+'</span><input type="text" id="rcCoverTitle" value="'+esc(c.title||"")+'" placeholder="'+esc(t("rc_title_ph"))+'"></label>'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_subtitle"))+'</span><input type="text" id="rcCoverSub" value="'+esc(c.subtitle||"")+'"></label>'+
+    '</div>'+
+    '<div class="rc-checks">'+
+      '<label><input type="checkbox" id="rcShowOrg"'+(c.show_organization?" checked":"")+'> '+esc(t("rc_show_org"))+'</label>'+
+      '<label><input type="checkbox" id="rcShowAuthor"'+(c.show_author?" checked":"")+'> '+esc(t("rc_show_author"))+'</label>'+
+      '<label><input type="checkbox" id="rcShowDate"'+(c.show_date?" checked":"")+'> '+esc(t("rc_show_date"))+'</label>'+
+    '</div>'+
+    '<div class="rc-grid2">'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_version"))+'</span><input type="text" id="rcVersion" value="'+esc(c.version||"")+'" placeholder="'+esc(t("rc_version_ph"))+'"></label>'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_confid"))+'</span><input type="text" id="rcConfid" value="'+esc(c.confidentiality||"")+'" placeholder="'+esc(t("rc_confid_ph"))+'"></label>'+
+    '</div>'+
+    '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_free"))+'</span><textarea id="rcFree" placeholder="'+esc(t("rc_free_ph"))+'">'+esc(c.free_text||"")+'</textarea></label>'+
+  '</div>';
+  // 3. En-tête / pied
+  h+='<div class="card"><h2>'+esc(t("rc_headfoot_title"))+'</h2><div class="caption">'+esc(t("rc_headfoot_cap"))+'</div>'+
+    '<h3>'+esc(t("rc_head"))+'</h3><div class="rc-zones">'+zone("rcHL",t("rc_zone_left"),cfg.header.left)+zone("rcHC",t("rc_zone_center"),cfg.header.center)+zone("rcHR",t("rc_zone_right"),cfg.header.right)+'</div>'+
+    '<label class="rc-checks" style="margin-top:10px"><input type="checkbox" id="rcHeadLogo"'+(cfg.header.logo?" checked":"")+'> '+esc(t("rc_head_logo"))+'</label>'+
+    '<h3>'+esc(t("rc_foot"))+'</h3><div class="rc-zones">'+zone("rcFL",t("rc_zone_left"),cfg.footer.left)+zone("rcFC",t("rc_zone_center"),cfg.footer.center)+zone("rcFR",t("rc_zone_right"),cfg.footer.right)+'</div>'+
+    '<div class="rc-chips">'+["{title}","{organization}","{author}","{date}","{version}","{confidentiality}","{page}","{pages}"].map(v=>'<span class="rc-chip">'+v+'</span>').join("")+'</div>'+
+    '<div class="rc-hint">ℹ '+esc(t("rc_head_hint"))+'</div></div>';
+  // 4. Orientation
+  h+='<div class="card"><h2>'+esc(t("rc_orient_title"))+'</h2>'+
+    '<select class="rc-rowctrl" id="rcOrient" data-role="orientation">'+
+    '<option value="portrait"'+(cfg.orientation!=="landscape"?" selected":"")+'>'+esc(t("rc_orient_portrait"))+'</option>'+
+    '<option value="landscape"'+(cfg.orientation==="landscape"?" selected":"")+'>'+esc(t("rc_orient_landscape"))+'</option></select></div>';
+  // 5. Périmètre
+  h+='<div class="card"><h2>'+esc(t("rc_scope_title"))+'</h2><div class="rc-radio">'+
+    '<label><input type="radio" name="rcScope" value="all"'+(cfg.scope!=="filtered"?" checked":"")+'> '+esc(t("rc_scope_all"))+'</label>'+
+    '<label><input type="radio" name="rcScope" value="filtered"'+(cfg.scope==="filtered"?" checked":"")+'> '+esc(t("rc_scope_filtered"))+'</label></div></div>';
+  // 5. Pied : note + reset
+  h+='<div class="card rc-foot"><span class="rc-note">🔒 '+esc(t("rc_saved_note"))+'</span>'+
+    '<button type="button" class="btn ghost sm" id="rcReset">↺ '+esc(t("rc_reset"))+'</button></div>';
+  p.innerHTML=h;
+  rcWire(p);
+}
+function rcVal(sel){const e=document.querySelector(sel);return e?e.value:"";}
+function rcChk(sel){const e=document.querySelector(sel);return !!(e&&e.checked);}
+function collectReportCfg(){
+  const p=document.getElementById("reportCfgPanel");if(!p)return;
+  const store={};
+  store.scope=((p.querySelector('input[name="rcScope"]:checked')||{}).value==="filtered")?"filtered":"all";
+  store.orientation=(rcVal("#rcOrient")==="landscape")?"landscape":"portrait";
+  store.cover={on:p.querySelector('[data-pin="cover"] input').checked,logo:rcVal("#rcLogoData"),
+    title:rcVal("#rcCoverTitle"),subtitle:rcVal("#rcCoverSub"),
+    show_organization:rcChk("#rcShowOrg"),show_author:rcChk("#rcShowAuthor"),show_date:rcChk("#rcShowDate"),
+    version:rcVal("#rcVersion"),confidentiality:rcVal("#rcConfid"),free_text:rcVal("#rcFree")};
+  store.toc={on:p.querySelector('[data-pin="toc"] input').checked};
+  store.header={left:rcVal("#rcHL"),center:rcVal("#rcHC"),right:rcVal("#rcHR"),logo:rcChk("#rcHeadLogo")};
+  store.footer={left:rcVal("#rcFL"),center:rcVal("#rcFC"),right:rcVal("#rcFR")};
+  const secs=[];
+  p.querySelectorAll("#rcSeclist .rc-secitem").forEach(it=>{
+    const id=it.dataset.sec,o={id:id,on:it.querySelector(".rc-secrow input[type=checkbox]").checked};
+    if(id==="metadata"||id==="presentation"){
+      const arr=[];it.querySelectorAll(".rc-subrow").forEach(sr=>arr.push({id:sr.dataset.sub,on:sr.querySelector("input").checked}));
+      if(id==="metadata")o.rows=arr;else o.items=arr;
+    }else if(reportTableId(id)){
+      const cols=[];it.querySelectorAll(".rc-subrow").forEach(sr=>{if(sr.querySelector("input").checked)cols.push(sr.dataset.sub);});o.columns=cols;
+    }else if(id==="action_plan")o.view=(it.querySelector('[data-role="view"]')||{}).value||"due_date";
+    secs.push(o);
+  });
+  store.sections=secs;
+  reportCfgStore();analyse.extensions.display.report=store;markDirty();
+}
+let rcLastZone=null;
+function rcSetLogo(data){
+  const inp=document.getElementById("rcLogoData");if(inp)inp.value=data||"";
+  const prev=document.getElementById("rcLogoPrev");
+  if(prev)prev.innerHTML=data?'<img src="'+esc(data)+'" alt=""><button type="button" class="btn ghost sm" id="rcLogoRemove">'+esc(t("rc_logo_remove"))+'</button>':"";
+}
+function rcLoadLogo(f){
+  if(!f||!/^image\//.test(f.type))return;
+  const rd=new FileReader();
+  rd.onload=()=>{const src=rd.result;
+    if(f.type==="image/svg+xml"){rcSetLogo(src);collectReportCfg();return;}
+    const img=new Image();
+    img.onload=()=>{const max=400;let w=img.width||1,hh=img.height||1;const sc=Math.min(1,max/Math.max(w,hh));
+      w=Math.max(1,Math.round(w*sc));hh=Math.max(1,Math.round(hh*sc));
+      const cv=document.createElement("canvas");cv.width=w;cv.height=hh;
+      try{cv.getContext("2d").drawImage(img,0,0,w,hh);rcSetLogo(cv.toDataURL("image/png"));}catch(_){rcSetLogo(src);}
+      collectReportCfg();};
+    img.onerror=()=>{rcSetLogo(src);collectReportCfg();};
+    img.src=src;};
+  rd.readAsDataURL(f);
+}
+function rcInsertChip(v){
+  const el=rcLastZone||document.getElementById("rcHC");if(!el)return;
+  const a=el.selectionStart==null?el.value.length:el.selectionStart,b=el.selectionEnd==null?a:el.selectionEnd;
+  el.value=el.value.slice(0,a)+v+el.value.slice(b);const pos=a+v.length;el.focus();try{el.setSelectionRange(pos,pos);}catch(_){}
+  collectReportCfg();
+}
+function rcReset(){
+  const d=analyse.extensions&&analyse.extensions.display;if(d&&d.report)delete d.report;
+  markDirty();renderReportSettings();
+}
+let rcDragEl=null;
+function rcEnableDrag(container,selector){
+  if(!container)return;
+  container.querySelectorAll(selector).forEach(el=>{
+    el.addEventListener("dragstart",e=>{rcDragEl=el;el.style.opacity=.4;e.stopPropagation();});
+    el.addEventListener("dragend",()=>{el.style.opacity="";rcDragClear();});
+    el.addEventListener("dragover",e=>{if(!rcDragEl||rcDragEl===el||rcDragEl.parentNode!==el.parentNode)return;
+      e.preventDefault();e.stopPropagation();rcDragClear();const r=el.getBoundingClientRect();
+      el.classList.add((e.clientY-r.top)>r.height/2?"rc-drop-below":"rc-drop-above");});
+    el.addEventListener("drop",e=>{if(!rcDragEl||rcDragEl===el||rcDragEl.parentNode!==el.parentNode)return;
+      e.preventDefault();e.stopPropagation();const r=el.getBoundingClientRect(),after=(e.clientY-r.top)>r.height/2;
+      el.parentNode.insertBefore(rcDragEl,after?el.nextSibling:el);rcDragClear();collectReportCfg();});
+  });
+}
+function rcDragClear(){document.querySelectorAll("#reportCfgPanel .rc-drop-above,#reportCfgPanel .rc-drop-below").forEach(x=>x.classList.remove("rc-drop-above","rc-drop-below"));}
+function rcWire(p){
+  // Écouteurs délégués : attachés une seule fois sur le panneau (innerHTML est
+  // remplacé à chaque rendu mais l'élément #reportCfgPanel, lui, persiste).
+  if(!p.dataset.rcWired){
+    p.dataset.rcWired="1";
+    p.addEventListener("input",e=>{if(e.target.matches('input[type=text],textarea'))collectReportCfg();});
+    p.addEventListener("change",e=>{const el=e.target;
+      if(el.matches('input[type=checkbox],input[type=radio],select')){
+        if(el.matches('.rc-secrow > input[type=checkbox]')){const it=el.closest(".rc-secitem");if(it)it.classList.toggle("rc-off",!el.checked);}
+        collectReportCfg();}});
+    p.addEventListener("click",e=>{
+      const exp=e.target.closest("[data-exp]");if(exp){const s=document.getElementById(exp.dataset.exp);if(s)s.classList.toggle("rc-open");return;}
+      const chip=e.target.closest(".rc-chip");if(chip){rcInsertChip(chip.textContent);return;}
+      if(e.target.closest("#rcLogoRemove")){rcSetLogo("");collectReportCfg();return;}
+      if(e.target.closest("#rcLogoDrop")){const fi=document.getElementById("rcLogoFile");if(fi)fi.click();return;}
+      if(e.target.closest("#rcReset")){rcReset();return;}
+    });
+    p.addEventListener("focusin",e=>{if(e.target.matches(".rc-zones input"))rcLastZone=e.target;});
+  }
+  // Écouteurs sur éléments recréés à chaque rendu (glisser-déposer, sélecteur de fichier).
+  rcLastZone=null;
+  const fi=document.getElementById("rcLogoFile");
+  if(fi)fi.addEventListener("change",()=>{const f=fi.files&&fi.files[0];if(f)rcLoadLogo(f);fi.value="";});
+  const dz=document.getElementById("rcLogoDrop");
+  if(dz){dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("rc-drag");});
+    dz.addEventListener("dragleave",()=>dz.classList.remove("rc-drag"));
+    dz.addEventListener("drop",e=>{e.preventDefault();dz.classList.remove("rc-drag");const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)rcLoadLogo(f);});}
+  rcEnableDrag(document.getElementById("rcSeclist"),".rc-secitem");
+  p.querySelectorAll(".rc-subrows").forEach(sr=>rcEnableDrag(sr,".rc-subrow"));
+}
 function renderSettings(){
   // Grille déjà cotée : bandeau d'impact — modifier axes/niveaux/méthode réinterprète l'existant.
   const gw=document.getElementById("gridRatedWarn");
@@ -7547,7 +8279,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="1.7.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="1.8.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */
 const LOGO_SVG='<svg viewBox="0 0 18.585251 18.585253" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(-29.633334,-127.52917)" stroke-width="0.329" stroke-miterlimit="8" fill-rule="evenodd">'+
