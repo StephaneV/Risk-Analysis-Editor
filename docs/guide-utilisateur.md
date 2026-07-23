@@ -275,6 +275,8 @@ Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisis
 
 ### Personnaliser le rapport (Paramètres › Rapport)
 
+![Paramètres : personnalisation du rapport](images/guide-22-parametres-rapport.png)
+
 Le sous-onglet **Paramètres › Rapport** permet d'adapter finement le contenu et la mise en forme du rapport. Les préférences sont **enregistrées dans le fichier** `.rae.json` et pilotent à la fois l'aperçu à l'écran, l'impression PDF et l'export Word.
 
 - **Sections & ordre** — cochez les sections à inclure et **glissez la poignée ⠿** pour les réordonner. La page de garde et la table des matières restent en tête.
