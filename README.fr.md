@@ -4,7 +4,7 @@
 
 Outil autonome de **construction et de visualisation de matrices de risque** — risque initial (brut) et risque résiduel (net) — avec un format de fichier ouvert et documenté, le `.rae.json`.
 
-### ▶️ [Ouvrir l'application](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📊 [Démo EBIOS RM](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-systeme-d-information.rae.json) · 🛡️ [Démo AIPD](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-aipd-sst.rae.json) · ⬇️ [Télécharger](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
+### 🌐 [risk-analysis-editor.com](https://www.risk-analysis-editor.com/) · ▶️ [Ouvrir l'application](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📖 [**Guide utilisateur**](docs/guide-utilisateur.md) · 📊 [Démo EBIOS RM](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-systeme-d-information.rae.json) · 🛡️ [Démo AIPD](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-aipd-sst.rae.json) · ⬇️ [Télécharger](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
 
 *Aucune installation : l'outil s'exécute entièrement dans votre navigateur. Deux démos prêtes à ouvrir : une analyse de risques **inspirée d'EBIOS RM** (12 risques, 11 mesures) et une **AIPD suivant la méthode PIA de la CNIL** pour un service de santé au travail (12 risques, 12 mesures) — toutes deux illustrant descriptions, notes, **tags** colorés, **barres de progression**, responsables et justifications de liens. Le téléchargement fournit **l'unique fichier HTML** de la [dernière version](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest) : double-cliquez-le pour travailler **hors-ligne**.*
 
@@ -23,6 +23,10 @@ Elle permet de mener une analyse de risque complète : définir une grille de co
 L'outil est **indépendant de toute méthodologie** (ISO 27005, EBIOS RM, AIPD/PIA CNIL, référentiel interne…) : la grille (taille, libellés, seuils, couleurs, méthode de calcul) est entièrement paramétrable et enregistrée dans le fichier.
 
 Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risques, mesures, liens et cotations initiale/résiduelle. Le format est **spécifié** ([documentation technique](specs/SPEC-format-analyse-risque.md)) et validé par un **schéma JSON** ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Les noms de propriétés sont en anglais ; les valeurs (libellés, descriptions) restent dans la langue de l'analyse.
+
+**Site web :** [www.risk-analysis-editor.com](https://www.risk-analysis-editor.com/) — présentation, captures d'écran et liens.
+
+**Pour démarrer :** le **[guide utilisateur illustré](docs/guide-utilisateur.md)** détaille chaque écran et chaque fonction.
 
 **Point d'entrée :** [ouvrir l'application en ligne](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — ou, pour un usage **hors-ligne**, télécharger le dépôt et ouvrir [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) par un simple double-clic.
 

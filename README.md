@@ -4,7 +4,7 @@
 
 Standalone tool for **building and visualizing risk matrices** — inherent (gross) risk and residual (net) risk — with an open, documented file format, `.rae.json`.
 
-### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📊 [EBIOS RM demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-information-system.rae.json) · 🛡️ [DPIA demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-dpia-ohs.rae.json) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
+### 🌐 [risk-analysis-editor.com](https://www.risk-analysis-editor.com/) · ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📖 [**User guide**](docs/guide-utilisateur.md) · 📊 [EBIOS RM demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-information-system.rae.json) · 🛡️ [DPIA demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-dpia-ohs.rae.json) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
 
 *No installation: the tool runs entirely in your browser. Two ready-to-open demos: an **EBIOS RM–inspired** risk analysis (12 risks, 11 measures) and a **DPIA following the CNIL PIA method** for an occupational health service (12 risks, 12 measures) — both showcasing descriptions, notes, colored **tags**, **progress bars**, owners and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
 
@@ -23,6 +23,10 @@ It lets you carry out a complete risk analysis: define a scoring grid, enter ris
 The tool is **methodology-agnostic** (ISO 27005, EBIOS RM, DPIA/PIA, internal framework…): the grid (size, labels, thresholds, colors, scoring method) is fully configurable and saved inside the file.
 
 The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, measures, links and initial/residual assessments. The format is **specified** ([technical documentation](specs/SPEC-format-analyse-risque.md), in French) and validated by a **JSON schema** ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Property names are in English; values (labels, descriptions) stay in the analysis's own language.
+
+**Website:** [www.risk-analysis-editor.com](https://www.risk-analysis-editor.com/) — presentation, screenshots and links.
+
+**Getting started:** the illustrated **[user guide](docs/guide-utilisateur.md)** (in French) walks through every screen and feature.
 
 **Entry point:** [open the app online](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — or, for **offline** use, download the repository and open [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) with a simple double-click.
 
