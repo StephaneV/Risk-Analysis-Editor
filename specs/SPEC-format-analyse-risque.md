@@ -312,11 +312,13 @@ Un fichier portant `"filterable": true` hors de ces conditions reste valide : la
 
 La propagation n'a lieu que dans le sens où elle en a un : sans filtre de mesure ni de lien, un risque dépourvu de lien reste affiché — aucun critère ne l'écarte. Dès qu'un filtre de mesure ou de lien est actif, ce même risque disparaît, faute de lien retenu pour le rattacher.
 
-Le bouton **Réinitialiser** efface tous les filtres personnalisés, quelle que soit la barre d'où il est actionné : un filtre d'une autre famille continuerait sinon, par propagation, de masquer des fiches dans la vue courante.
+Le bouton **Réinitialiser** efface **tous les filtres propagés** (catégorie, type, statut et champs personnalisés), quelle que soit la barre d'où il est actionné : un filtre d'une autre famille continuerait sinon, par propagation, de masquer des fiches dans la vue courante.
 
 **Règles de correspondance.** Pour `select`, la valeur de la fiche doit être égale au code retenu ; pour `checklist` et `tags`, elle doit figurer parmi les valeurs de la fiche ; pour `boolean`, « Non » retient également les fiches où la case n'a jamais été cochée.
 
-**Filtrage par l'adresse.** Le paramètre d'URL `?filter=code:valeur;code:valeur` applique un filtrage au démarrage — par exemple `?filter=evenement_redoute:acces;supports:messagerie`. Un couple par champ, séparés par des points-virgules ; codes et valeurs peuvent être encodés (`encodeURIComponent`). Les codes inconnus, les champs non filtrables et les valeurs hors liste sont **ignorés en silence**, afin qu'une adresse partagée continue d'ouvrir l'analyse après un renommage. L'adresse est tenue à jour lorsque l'utilisateur change un filtre, ce qui rend une vue filtrée partageable par simple copie.
+**Filtre enregistré dans le fichier.** Le filtrage propagé (catégorie, type, statut **et** champs personnalisés) est enregistré avec l'analyse, sous `extensions.display.filters` (§6), et **réappliqué à la réouverture**. Modifier un filtre marque le fichier comme *à enregistrer*. Les valeurs périmées (catégorie/type/statut disparu, champ dévalidé ou renommé) sont **ignorées en silence**.
+
+**Paramètre d'adresse `?filter=`.** Au démarrage, le paramètre d'URL `?filter=code:valeur;code:valeur` (champs personnalisés uniquement) applique un filtrage — par exemple `?filter=evenement_redoute:acces;supports:messagerie`. Un couple par champ, séparés par des points-virgules ; codes et valeurs peuvent être encodés (`encodeURIComponent`) ; codes inconnus et valeurs hors liste **ignorés en silence**. S'il est présent, il **écrase la partie « champs personnalisés »** du filtre enregistré, puis il est retiré de la barre d'adresse. L'application ne propage **plus** le filtrage dans l'URL : les fichiers `.rae.json` étant locaux, une URL ne suffit pas à rouvrir la vue.
 
 Le placement manuel des pastilles et l'évitement des collisions dans les matrices continuent de raisonner sur **tous** les risques : masquer une pastille ne déplace pas les autres.
 
@@ -346,6 +348,7 @@ Un fichier est **valide** s'il respecte le schéma JSON (§8) **et** les règles
 - **Préférences d'affichage `extensions.display` (non normatif) :** l'application y stocke des choix de présentation propres à l'analyse.
   - `arrangement` : disposition des pastilles dans les matrices.
   - `columns` : personnalisation des colonnes des registres. Objet dont les clés sont `risks`, `measures` et `links` ; chaque valeur est la **liste ordonnée des colonnes visibles** du registre correspondant (la colonne « Actions » est implicite et toujours affichée). Une colonne de champ personnalisé est désignée par `cf:<code>` ; une colonne inconnue (champ supprimé) est ignorée. Absent : ordre par défaut. Exemple : `{ "risks": ["id","risk","initial","residual","cf:source_risque"] }`.
+  - `filters` : **filtrage propagé** enregistré avec l'analyse et réappliqué à la réouverture. `{ risk_category, measure_type, measure_status, custom }`, où `custom` est un objet `code → valeur` pour les champs personnalisés filtrables (ce que reflète le paramètre d'adresse `?filter=`). Ne couvre pas la recherche texte ni les filtres locaux du plan d'action (responsable, « en retard »). Les valeurs périmées sont ignorées ; absent : aucun filtre.
   - `report` : personnalisation du rapport (rendu écran/PDF **et** export Word, pilotés par la même configuration). Sous-clés :
     - `scope` : `"all"` (analyse complète) ou `"filtered"` (sous-ensemble selon les filtres et la recherche actifs).
     - `orientation` : `"portrait"` (défaut) ou `"landscape"` — orientation de la page à l'impression PDF et à l'export Word.

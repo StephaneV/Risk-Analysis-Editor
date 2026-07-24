@@ -2677,7 +2677,7 @@ function pickerOpts(base){
 function newAnalysis(){
   const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
     dirty=false;isFresh=true;startDismissed=true;   // demande explicite : pas de mode d'emploi
-    cfFilterReset();cfFilterSyncURL();            // les filtres de l'analyse précédente n'ont plus d'objet
+    cfFilterReset();natPropagatingReset();cfFilterStripURL();   // les filtres de l'analyse précédente n'ont plus d'objet
     autosaveClear();renderAll();goToPresentation();toast(t("toast_new"));};
   if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
 }
@@ -2686,7 +2686,7 @@ function newAnalysis(){
 function backToStart(){
   const go=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
     dirty=false;isFresh=true;startDismissed=false;
-    cfFilterReset();cfFilterSyncURL();autosaveClear();renderAll();goToPresentation();};
+    cfFilterReset();natPropagatingReset();cfFilterStripURL();autosaveClear();renderAll();goToPresentation();};
   if(dirty)confirmModal(t("confirm_home"),go); else go();
 }
 /* Enregistrer comme modèle : produit un fichier .template.rae.json — squelette reprenant la
@@ -2763,11 +2763,12 @@ function applyLoadedData(data,name,withQuery){
   if(lastLoadWasTemplate)fileHandle=null;
   dirty=false;isFresh=false;
   startDismissed=true;   // un chargement explicite vaut prise en main
-  /* Les filtres portent sur les champs de l'analyse précédente : les conserver masquerait
-     des fiches sans raison visible. On repart à zéro, puis on applique ceux de l'adresse
-     quand le chargement vient d'un ?file= — l'adresse décrit alors l'analyse à afficher. */
-  cfFilterReset();
-  if(withQuery)cfFilterParseURL(); else cfFilterSyncURL();
+  /* Les filtres de l'analyse précédente n'ont plus d'objet : on repart à zéro, puis on
+     applique ceux ENREGISTRÉS DANS LE FICHIER (base + champs perso). Un ?filter= présent
+     (chargement via ?file=) écrase ensuite la partie « champs perso ». */
+  cfFilterReset();natPropagatingReset();
+  filtersApplyFromFile();
+  if(withQuery)cfFilterParseURL();
   // Langue de l'interface au chargement : ?lang (si withQuery) > langue du fichier > localStorage > navigateur > anglais.
   const fileLang=analyse.metadata&&analyse.metadata.language;
   lang=resolveLang(fileLang,withQuery);
@@ -4731,8 +4732,8 @@ const listState={
    vues qui affichent l'entité correspondante.
 
    L'état est **commun à toutes les vues** : filtrer les risques sur un champ restreint à la
-   fois le registre, les matrices et les liens. C'est ce qui permet de décrire le filtrage
-   d'une analyse entière dans une seule adresse, et d'éviter qu'une vue contredise l'autre.
+   fois le registre, les matrices et les liens. Le filtrage propagé (base + champs perso) est
+   enregistré dans le fichier (extensions.display.filters) et restauré à la réouverture.
    ============================================================ */
 const CF_CLOSED=["select","checklist","tags","boolean"];   // types à valeurs énumérables
 function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
@@ -4748,6 +4749,57 @@ function cfFilterableFields(target){
 let cfFilters={};
 function cfFilterCount(){return Object.keys(cfFilters).filter(k=>cfFilters[k]).length;}
 function cfFilterReset(){cfFilters={};}
+/* ---- Persistance du filtre propagé ----
+   Le filtre qui restreint TOUTES les vues — catégorie (risque), type et statut (mesure) et
+   champs personnalisés — est enregistré dans le fichier, sous extensions.display.filters,
+   pour être retrouvé à la réouverture. Restent hors persistance (locaux à leur vue) : la
+   recherche texte et les filtres propres au Plan d'action (responsable, « en retard »). */
+function filtersStore(){
+  analyse.extensions=analyse.extensions||{};
+  analyse.extensions.display=analyse.extensions.display||{};
+  const d=analyse.extensions.display;
+  const cat=(listState.risks&&listState.risks.cat)||"";
+  const ty=(listState.measures&&listState.measures.type)||"";
+  const st=(listState.measures&&listState.measures.status)||"";
+  const custom={};
+  Object.keys(cfFilters).forEach(k=>{if(cfFilters[k])custom[k]=cfFilters[k];});
+  const hasCustom=Object.keys(custom).length>0;
+  if(cat||ty||st||hasCustom){
+    const f={};
+    if(cat)f.risk_category=cat;
+    if(ty)f.measure_type=ty;
+    if(st)f.measure_status=st;
+    if(hasCustom)f.custom=custom;
+    d.filters=f;
+  }else if(d.filters){delete d.filters;}
+}
+/* Changement INTERACTIF du filtre : on met à jour la copie dans le fichier et on marque à
+   sauver. Charger/appliquer un filtre (fichier ou ?filter=) ne passe pas par ici : cela ne
+   doit pas salir le fichier. */
+function filtersChanged(){filtersStore();markDirty();}
+/* Applique le filtre enregistré dans le fichier, en écartant en silence les valeurs périmées
+   (catégorie/type/statut disparus, champ renommé ou dévalidé…). N'écrit rien et ne marque pas
+   à sauver : c'est l'état d'origine du fichier. */
+function filtersApplyFromFile(){
+  const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.filters;
+  if(!d||typeof d!=="object")return;
+  const cats=new Set(analyse.risks.map(r=>r.category).filter(Boolean));
+  const types=new Set(analyse.measures.map(m=>m.type).filter(Boolean));
+  if(listState.risks)listState.risks.cat=(d.risk_category&&cats.has(d.risk_category))?d.risk_category:"";
+  if(listState.measures){
+    listState.measures.type=(d.measure_type&&types.has(d.measure_type))?d.measure_type:"";
+    listState.measures.status=(d.measure_status&&STATUS_CODES.indexOf(d.measure_status)>=0)?d.measure_status:"";
+  }
+  if(d.custom&&typeof d.custom==="object"){
+    const connus={};["risk","measure","link"].forEach(tg=>cfFilterableFields(tg).forEach(f=>{connus[f.code]=f;}));
+    Object.keys(d.custom).forEach(code=>{
+      const f=connus[code], val=d.custom[code];
+      if(!f||!val)return;
+      if(!cfFilterChoices(f).some(c=>c[0]===val))return;
+      cfFilters[code]=val;
+    });
+  }
+}
 /* Valeurs proposées : les items du champ, ou Oui/Non pour un booléen. */
 function cfFilterChoices(f){
   if(f.type==="boolean")return [["true",t("cf_yes")],["false",t("cf_no")]];
@@ -4858,13 +4910,13 @@ function natBool(key,label,get,set){
    Le statut est unique (listState.measures.status) : c'est aussi le filtre statut du Plan. */
 function natCatDesc(){return natSelect("fltRiskCat",()=>t("f_category"),
   ()=>[...new Set(analyse.risks.map(r=>r.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(c=>[c,c]),
-  ()=>listState.risks.cat, v=>listState.risks.cat=v);}
+  ()=>listState.risks.cat, v=>{listState.risks.cat=v;filtersChanged();});}
 function natTypeDesc(){return natSelect("fltMeasureType",()=>t("th_type"),
   ()=>[...new Set(analyse.measures.map(m=>m.type).filter(Boolean))].sort().map(c=>[c,typeLabel(c)]),
-  ()=>listState.measures.type, v=>listState.measures.type=v);}
+  ()=>listState.measures.type, v=>{listState.measures.type=v;filtersChanged();});}
 function natStatusDesc(){return natSelect("fltMeasureStatus",()=>t("th_status"),
   ()=>STATUS_CODES.filter(c=>analyse.measures.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),
-  ()=>listState.measures.status, v=>listState.measures.status=v);}
+  ()=>listState.measures.status, v=>{listState.measures.status=v;filtersChanged();});}
 function natPropagating(){return [natCatDesc(),natTypeDesc(),natStatusDesc()];}
 const FILTER_BARS=[
   {cle:"risks", vue:"view-risks", panneau:null, search:"fltRiskQ", natives:()=>[natCatDesc()]},
@@ -4903,7 +4955,7 @@ function cfDescriptor(f){
   return {key:f.code,label:cfLabel(f),kind:f.type==="boolean"?"bool":"select",
     options:()=>cfFilterChoices(f),color:v=>cfChoiceColor(f,v),
     value:()=>cfFilters[f.code]||"",
-    set:v=>{if(v)cfFilters[f.code]=v;else delete cfFilters[f.code];cfFilterSyncURL();}};
+    set:v=>{if(v)cfFilters[f.code]=v;else delete cfFilters[f.code];filtersChanged();}};
 }
 let CHIP_REG={};   // reconstruit à chaque renderFilterBars ; consulté au clic
 function filterChipHTML(d,bcle){
@@ -5012,7 +5064,7 @@ function filterBarReset(cle){
   b.natives().forEach(d=>d.set(""));
   natPropagatingReset();   // les filtres propages (categorie/type/statut) masquent aussi ici
   cfFilterReset();
-  cfFilterSyncURL();renderAll();
+  filtersChanged();renderAll();
 }
 /* Décompte et bouton, publiés par la fonction de rendu de chaque vue : elle seule connaît
    le nombre réellement affiché après tous les critères. */
@@ -5033,13 +5085,13 @@ function renderFilterBars(){
      l'expliquer. On la purge avant de redessiner. */
   const encoreFiltrables={};
   ["risk","measure","link"].forEach(tg=>cfFilterableFields(tg).forEach(f=>{encoreFiltrables[f.code]=f;}));
-  let purge=false;
   Object.keys(cfFilters).forEach(code=>{
     const f=encoreFiltrables[code];
-    if(!f||!cfFilterChoices(f).some(c=>c[0]===cfFilters[code])){delete cfFilters[code];purge=true;}
+    /* Champ ayant perdu « filtrable », changé de type ou disparu : on retire sa valeur de
+       l'état courant. Le fichier sera réaligné au prochain changement interactif de filtre —
+       un simple redessin ne doit pas le marquer à sauver. */
+    if(!f||!cfFilterChoices(f).some(c=>c[0]===cfFilters[code]))delete cfFilters[code];
   });
-  // L'adresse ne doit pas conserver un filtre qui ne s'applique plus.
-  if(purge)cfFilterSyncURL();
 
   CHIP_REG={};                            // registre reconstruit à chaque rendu
   const champs=cfAllFilterableFields().map(cfDescriptor);   // les mêmes dans toutes les barres
@@ -5102,16 +5154,20 @@ document.addEventListener("keydown",e=>{
 // Clic hors d'une puce : on referme. mousedown, pour agir avant le clic sur un autre contrôle.
 document.addEventListener("mousedown",e=>{if(!(e.target.closest&&e.target.closest(".fwrap")))cfCloseMenus();});
 
-/* ---- Adresse ----
-   Format : ?filter=code:valeur;code:valeur — un couple par champ, séparés par des
-   points-virgules. Les codes inconnus et les valeurs hors liste sont ignorés en silence :
-   une adresse partagée doit continuer d'ouvrir l'analyse même si un champ a été renommé. */
+/* ---- Paramètre d'adresse ?filter= ----
+   Format : ?filter=code:valeur;code:valeur — un couple par champ PERSONNALISÉ, séparés par des
+   points-virgules ; codes inconnus et valeurs hors liste ignorés en silence. Ce paramètre est
+   LU au démarrage s'il est présent : il écrase alors la partie « champs perso » du filtre
+   éventuellement enregistré dans le fichier. L'application ne le PROPAGE plus (les fichiers
+   .rae.json sont locaux : une URL ne suffit pas à rouvrir la vue) — le filtrage est désormais
+   mémorisé dans le fichier, sous extensions.display.filters. */
 function cfFilterParseURL(){
   let raw;
   try{raw=new URLSearchParams(location.search).get("filter");}catch(e){return;}
   if(!raw)return;
   const connus={};
   ["risk","measure","link"].forEach(tg=>cfFilterableFields(tg).forEach(f=>{connus[f.code]=f;}));
+  cfFilters={};   // ?filter= redéfinit la partie « champs perso » (les filtres de base restent)
   raw.split(";").forEach(part=>{
     const i=part.indexOf(":");if(i<0)return;
     const code=decodeURIComponent(part.slice(0,i)).trim();
@@ -5120,20 +5176,17 @@ function cfFilterParseURL(){
     if(!cfFilterChoices(f).some(c=>c[0]===val))return;
     cfFilters[code]=val;
   });
-  /* L'adresse est réécrite à partir de ce qui a réellement été retenu : elle ne doit pas
-     continuer d'annoncer un filtre écarté (champ inconnu, non filtrable, valeur périmée),
-     que l'utilisateur croirait actif en lisant la barre d'adresse. */
-  cfFilterSyncURL();
+  cfFilterStripURL();
 }
-/* L'adresse reflète le filtrage courant, de sorte qu'une vue filtrée se partage par
-   simple copie de l'URL. replaceState : pas d'entrée supplémentaire dans l'historique. */
-function cfFilterSyncURL(){
+/* Nettoyage ponctuel : une fois ?filter= appliqué, on le retire de la barre d'adresse pour
+   qu'il ne « colle » pas à une vue qu'il ne décrit plus (le filtrage n'est plus propagé dans
+   l'URL). replaceState : pas d'entrée supplémentaire dans l'historique. */
+function cfFilterStripURL(){
   if(!window.history||!history.replaceState)return;
   try{
     const p=new URLSearchParams(location.search);
-    const actifs=Object.keys(cfFilters).filter(k=>cfFilters[k])
-      .map(k=>encodeURIComponent(k)+":"+encodeURIComponent(cfFilters[k]));
-    if(actifs.length)p.set("filter",actifs.join(";"));else p.delete("filter");
+    if(!p.has("filter"))return;
+    p.delete("filter");
     const qs=p.toString();
     history.replaceState(null,"",location.pathname+(qs?"?"+qs:"")+location.hash);
   }catch(e){}

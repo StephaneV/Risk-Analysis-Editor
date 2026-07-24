@@ -101,6 +101,21 @@
               },
               "description": "Colonnes visibles, dans l'ordre d'affichage, pour chaque registre (clés « risks », « measures », « links »). Une entrée liste les colonnes retenues (la colonne « Actions » est implicite et toujours affichée). Les colonnes de champ personnalisé sont désignées par « cf:<code> ». Absent : ordre par défaut."
             },
+            "filters": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Filtrage propagé enregistré avec l'analyse et réappliqué à la réouverture : il restreint tous les registres, les matrices et le rapport. Ne couvre PAS la recherche texte ni les filtres locaux du plan d'action (responsable, « en retard »). Les valeurs périmées (catégorie/type/statut disparu, champ dévalidé ou renommé) sont ignorées en silence. Absent : aucun filtre.",
+              "properties": {
+                "risk_category": { "type": "string", "description": "Filtre « catégorie » du risque (même valeur que risks[].category)." },
+                "measure_type": { "type": "string", "description": "Filtre « type » de mesure (même valeur que measures[].type)." },
+                "measure_status": { "type": "string", "description": "Filtre « statut » de mesure (mêmes codes que measures[].status)." },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" },
+                  "description": "Filtres par champ personnalisé filtrable : clé = code du champ, valeur = code de la valeur retenue. C'est ce que reflète le paramètre d'adresse ?filter=code:valeur."
+                }
+              }
+            },
             "report": {
               "type": "object",
               "additionalProperties": true,
