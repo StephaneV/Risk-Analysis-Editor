@@ -4603,9 +4603,10 @@ function renderPlanSummary(){
     '</div></div>';
 }
 function filteredPlanMeasures(){
+  // Le statut est desormais le filtre propage (applique par visibleMeasures) ; le Plan ne
+  // filtre plus localement que par responsable, retard et recherche.
   const st=listState.plan, q=normV(st.q);
   return visibleMeasures().filter(m=>{
-    if(st.status && (m.status||"")!==st.status)return false;
     if(st.resp && (m.responsible||"")!==st.resp)return false;
     // « En retard » est désormais un filtre à trois états : tout / en retard / pas en retard.
     if(st.overdue==="true" && !isOverdue(m))return false;
@@ -4711,7 +4712,7 @@ document.getElementById("planSeg").addEventListener("click",e=>{const b=e.target
 const listState={
   risks:{q:"",cat:"",sort:"",dir:1},
   measures:{q:"",type:"",status:"",sort:"",dir:1},
-  plan:{q:"",status:"",resp:"",overdue:""},   // overdue : "" | "true" | "false"
+  plan:{q:"",resp:"",overdue:""},   // le statut est le filtre propagé (listState.measures.status) ; overdue : "" | "true" | "false"
   links:{sort:"rid",dir:1} // défaut : code risque puis code mesure
 };
 /* ============================================================
@@ -4843,22 +4844,25 @@ function natBool(key,label,get,set){
   return {key,label:label(),kind:"bool",native:true,color:()=>null,
     options:()=>[["true",t("cf_yes")],["false",t("cf_no")]],value:get,set};
 }
+/* Filtres natifs PROPAGES (categorie du risque, type et statut de la mesure) : descripteurs
+   partages, pour pouvoir les rendre dans leur barre d'origine ET, quand ils sont actifs, dans
+   les autres barres ou ils agissent (leur valeur reste ainsi visible et modifiable partout).
+   Le statut est unique (listState.measures.status) : c'est aussi le filtre statut du Plan. */
+function natCatDesc(){return natSelect("fltRiskCat",()=>t("f_category"),
+  ()=>[...new Set(analyse.risks.map(r=>r.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(c=>[c,c]),
+  ()=>listState.risks.cat, v=>listState.risks.cat=v);}
+function natTypeDesc(){return natSelect("fltMeasureType",()=>t("th_type"),
+  ()=>[...new Set(analyse.measures.map(m=>m.type).filter(Boolean))].sort().map(c=>[c,typeLabel(c)]),
+  ()=>listState.measures.type, v=>listState.measures.type=v);}
+function natStatusDesc(){return natSelect("fltMeasureStatus",()=>t("th_status"),
+  ()=>STATUS_CODES.filter(c=>analyse.measures.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),
+  ()=>listState.measures.status, v=>listState.measures.status=v);}
+function natPropagating(){return [natCatDesc(),natTypeDesc(),natStatusDesc()];}
 const FILTER_BARS=[
-  {cle:"risks", vue:"view-risks", panneau:null, search:"fltRiskQ", natives:()=>[
-    natSelect("fltRiskCat",()=>t("f_category"),
-      ()=>[...new Set(analyse.risks.map(r=>r.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(c=>[c,c]),
-      ()=>listState.risks.cat, v=>listState.risks.cat=v)]},
-  {cle:"measures", vue:"view-measures", panneau:null, search:"fltMeasureQ", natives:()=>[
-    natSelect("fltMeasureType",()=>t("th_type"),
-      ()=>[...new Set(analyse.measures.map(m=>m.type).filter(Boolean))].sort().map(c=>[c,typeLabel(c)]),
-      ()=>listState.measures.type, v=>listState.measures.type=v),
-    natSelect("fltMeasureStatus",()=>t("th_status"),
-      ()=>STATUS_CODES.filter(c=>analyse.measures.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),
-      ()=>listState.measures.status, v=>listState.measures.status=v)]},
+  {cle:"risks", vue:"view-risks", panneau:null, search:"fltRiskQ", natives:()=>[natCatDesc()]},
+  {cle:"measures", vue:"view-measures", panneau:null, search:"fltMeasureQ", natives:()=>[natTypeDesc(),natStatusDesc()]},
   {cle:"plan", vue:"view-plan", panneau:null, search:"fltPlanQ", natives:()=>[
-    natSelect("fltPlanStatus",()=>t("th_status"),
-      ()=>STATUS_CODES.filter(c=>analyse.measures.some(m=>m.status===c)).map(c=>[c,statusLabel(c)]),
-      ()=>listState.plan.status, v=>listState.plan.status=v),
+    natStatusDesc(),   // meme filtre statut que les mesures (fusionne, propage)
     natSelect("fltPlanResp",()=>t("th_responsible"),
       ()=>[...new Set(analyse.measures.map(m=>m.responsible).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(r=>[r,r]),
       ()=>listState.plan.resp, v=>listState.plan.resp=v),
@@ -5038,8 +5042,13 @@ function renderFilterBars(){
     let zone=host.querySelector("[data-flt-cf]");
     if(!zone){zone=document.createElement("span");zone.setAttribute("data-flt-cf","");
       zone.style.display="contents";host.appendChild(zone);}
-    const natives=b.natives();
-    zone.innerHTML=natives.concat(champs).map(d=>filterChipHTML(d,b.cle)).join("");
+    const natives=b.natives(), homeKeys={};
+    natives.forEach(d=>homeKeys[d.key]=1);
+    /* Filtres propagés actifs mais absents nativement de cette barre : on les ajoute pour que
+       leur valeur reste visible et modifiable depuis tous les onglets où ils agissent. */
+    const propActifs=natPropagating().filter(d=>!homeKeys[d.key]&&d.value());
+    const chips=natives.concat(propActifs).concat(champs);
+    zone.innerHTML=chips.map(d=>filterChipHTML(d,b.cle)).join("");
     let cnt=host.querySelector("[data-flt-count]");
     if(!cnt){cnt=document.createElement("span");cnt.className="flt-count";
       cnt.setAttribute("data-flt-count","");host.appendChild(cnt);}
@@ -5047,10 +5056,9 @@ function renderFilterBars(){
     if(!btn){btn=document.createElement("button");btn.type="button";btn.className="btn ghost sm";
       btn.setAttribute("data-flt-reset",b.cle);host.appendChild(btn);}
     btn.textContent=t("flt_clear");btn.dataset.fltReset=b.cle;
-    // Une barre sans recherche, sans filtre natif ni champ filtrable (matrices, tableau
-    // croisé sans champ perso) n'a pas lieu d'occuper de la place — sauf si un filtre
-    // propagé (catégorie/type/statut) réduit la vue : on montre alors décompte + réinitialiser.
-    host.hidden=!b.search&&!natives.length&&!champs.length&&!natPropagatingActive();
+    // Une barre sans recherche ni la moindre puce (matrices/croisé sans champ perso et sans
+    // filtre propagé actif) n'a pas lieu d'occuper de la place.
+    host.hidden=!b.search&&!chips.length;
     setFilterInfo(b.cle,cnt.textContent);
   });
 }
