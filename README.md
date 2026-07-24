@@ -6,7 +6,7 @@ Standalone tool for **building and visualizing risk matrices** — inherent (gro
 
 ### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📖 [**User guide**](docs/guide-utilisateur.md) · 📊 [EBIOS RM demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-information-system.rae.json) · 🛡️ [DPIA demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-dpia-ohs.rae.json) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
 
-*No installation: the tool runs entirely in your browser. Two ready-to-open demos: an **EBIOS RM–inspired** risk analysis (12 risks, 11 measures) and a **DPIA following the CNIL PIA method** for an occupational health service (12 risks, 12 measures) — both showcasing descriptions, notes, colored **tags**, **progress bars**, owners and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
+*No installation: the tool runs entirely in your browser. Two ready-to-open demos: an **EBIOS RM–inspired** risk analysis (12 risks, 11 measures) and an example of the risk-analysis part of a DPIA, inspired by the CNIL PIA method, focused on feared events, controls and residual risk (12 risks, 12 measures) — both showcasing descriptions, notes, colored **tags**, **progress bars**, owners and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
 
 ![Matrices › Trajectory view of the "Information system" analysis (light theme)](docs/images/capture-trajectoire.png)
 
@@ -16,11 +16,11 @@ Standalone tool for **building and visualizing risk matrices** — inherent (gro
 
 ## Overview
 
-**Risk Analysis Editor** is a **standalone** web app: a single HTML file, with no external dependency, that works **offline** (a simple double-click is enough — no installation, no server).
+**Risk Analysis Editor** is a **standalone** web app: a single HTML file, with no network or external service dependency at runtime, that works **offline** (a simple double-click is enough — no installation, no server).
 
-It lets you carry out a complete risk analysis: define a scoring grid, enter risks and controls, link them, then **visualize** the shift from **inherent** to **residual** risk as matrices or arrowed trajectories.
+It lets you carry out a generic, structured risk analysis: scoring configuration, entry of risks and measures, initial and residual assessment, action plan, visualizations and reports.
 
-The tool is **methodology-agnostic** (ISO 27005, EBIOS RM, DPIA/PIA, internal framework…): the grid (size, labels, thresholds, colors, scoring method) is fully configurable and saved inside the file.
+The tool builds on a generic, configurable model, adaptable to an internal framework and usable to structure and present analyses conducted within approaches such as ISO 27005, EBIOS RM or the DPIA. The grid is broadly configurable: dimensions, axes, levels, labels, thresholds, colors and scoring method; it is saved inside the file.
 
 The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, measures, links and initial/residual assessments. The format is **specified** ([technical documentation](specs/SPEC-format-analyse-risque.md), in French) and validated by a **JSON schema** ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Property names are in English; values (labels, descriptions) stay in the analysis's own language.
 
@@ -30,6 +30,14 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 
 **Entry point:** [open the app online](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) — or, for **offline** use, download the repository and open [`app/risk-analysis-editor.html`](app/risk-analysis-editor.html) with a simple double-click.
 
+### Methodological positioning
+
+RAE focuses on **structuring, assessing and presenting risk and measure registers**: defining the scoring grid, initial and residual assessment, linking measures to risks, tracking the action plan, visualizing the matrices and generating reports.
+
+Its generic, configurable model lets you work with different approaches — notably ISO 27005, EBIOS RM, DPIA/PIA CNIL or an internal framework — without imposing a single methodology. The provided templates and examples are **inspired by these approaches** and serve as ready-to-adapt starting points. RAE does not, however, aim to reproduce the full set of steps, objects and controls specific to each method: their complete implementation remains guided by the applicable frameworks and by the context of the analysis.
+
+RAE thus offers a framework that is **more structured and consistent than a set of spreadsheets**, while remaining **lighter, more portable and simpler to deploy than a GRC platform**. It is particularly suited to standalone analyses, workshops, consulting engagements and organizations that want to keep local control of their data in an open, documented format.
+
 ---
 
 ## Features
@@ -37,7 +45,7 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 ### Visualization
 - **Two side-by-side matrices**: *inherent (gross)* and *residual (net)* risk.
 - **Trajectory view**: an arrow links each risk's initial position to its residual position; unreduced risks are highlighted.
-- **Optimized trajectory layouts**: straight arrows, minimized crossings and overlaps, centered square grid.
+- **Layout algorithms** for the trajectories aiming to reduce crossings and overlaps: straight arrows, centered square grid.
 - **Chip layout strategies** when a cell holds several risks: grid, row, column, cluster/spiral, "+N" overflow…
 - **Manual placement** of chips by drag-and-drop, with a configurable N×N snap grid and positions saved in the file.
 - **Statistics**: distribution by criticality level (initial → residual), number of reduced risks.
@@ -65,11 +73,11 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 - **New / Load / Save** in `.rae.json` format.
 - **Load by URL**: opening the tool with `?file=<url>` (alias `?url=`) automatically loads the pointed analysis at startup — e.g. `risk-analysis-editor.html?file=../examples/risk-analysis-information-system.rae.json`. Requires the tool to be served over HTTP(S) (the `file://` protocol blocks this read).
 - **Startup URL parameters** (combinable): `?lang=fr|en|it` forces the interface language (overrides the file's saved language and the browser language); `?tab=<tab>[.<sub-tab>]` opens a given tab, and optionally its sub-tab — e.g. `?tab=matrices.traj` (Matrices › Trajectory), `?tab=settings.grid`, `?tab=plan`; `?filter=code:value;code:value` applies custom-field filters — e.g. `?filter=feared_event:access`. Unknown tokens are ignored.
-- **Filtering by custom field**: a field with closed values (dropdown, checklist, tags, yes/no) can be flagged *usable as a filter*. Every filter bar then lists **all** filterable fields — risk, measure and link alike — in every view, since a filter of any family affects every view. All active criteria apply together (AND) and **propagate along the links**: filtering on a risk keeps its links and the measures that treat it, and symmetrically for a measure or link filter. The current filtering is reflected in the URL, so a filtered view can be shared by copying the address.
-- **Image export** of the matrices: **PNG** (×1 / ×2 / ×3 resolution) and **SVG**, copy to clipboard, with title, subtitle, axis labels and legend.
-- **Word export (.docx)** of the report and **Excel export (.xlsx)** of the analysis: *File* menu (and a button in the *Report* tab for Word). The Word file follows the **same configuration** as the report (sections, order, columns, scope) and adds a **cover page**, a **table of contents** and a **native page header/footer** (with page numbers) — metadata, presentation, summary, grid, **matrices as embedded images**, registers and detailed sheets — ready to merge into a corporate template; the Excel workbook has four styled sheets (Summary / Risks / Measures / Links) with typed cells (real dates and numbers), criticality and status colors, frozen header rows and autofilters. Both are generated **locally, offline**: hand-written OOXML plus the embedded MIT-licensed [fflate](https://github.com/101arrowz/fflate) library for the ZIP container — still a single HTML file, no external dependency.
-- **Printable report**: the *Report* tab generates a complete document (metadata, an **Overview block** with the analysis description and custom fields, summary, grid and criticality levels with descriptions, Initial/Residual and Trajectory matrices as vectors, risk register, detailed risk and measure lists with their descriptions **and custom field values**, links), rendered in a light, printable style (→ PDF via the browser).
-- **Customizable report** (*Settings › Report*): choose the **sections** and their **order** (drag-and-drop), the **cover page** (logo, title, subtitle, notices, confidentiality, free text), the **table of contents**, a three-zone **header/footer** with variables (`{title}`, `{date}`, `{page}/{pages}`…), each table's **columns**, the metadata rows, the Initial/Residual matrix layout (side by side or stacked) and the action-plan view, plus the **scope** (full analysis or filtered subset). The same configuration drives the **on-screen/PDF** render and the **Word export** (with native table of contents and header/footer); it is saved in the file (`extensions.display.report`).
+- **Propagated filtering**: the base dropdown filters — **category** (risk), **type** and **status** (measure) — and any **custom field** flagged *usable as a filter* (closed values: dropdown, checklist, tags, yes/no) all **propagate along the links**, restricting every tab, the matrices and the report: filtering on a risk keeps only the measures and links that relate to it, and symmetrically for a measure filter. Criteria combine (AND), and when a propagated filter is active its **value stays visible and editable** in the filter bar of every tab where it applies. Text search and the Action plan's own *owner* / *overdue* filters stay local to their view. Custom-field filtering is reflected in the URL (`?filter=code:value`), so a filtered view can be shared by copying the address.
+- **Matrix export** as **PNG** (×1 / ×2 / ×3) and **SVG**, with title, subtitle, axis labels and legend; copy to clipboard when this feature is supported and allowed by the browser and the runtime context.
+- **Word export (.docx)** of the report and **Excel export (.xlsx)** of the analysis: *File* menu (and a button in the *Report* tab for Word). The Word file reuses the sections, their order, the columns and the scope configured for the report, and adds a **cover page**, a **table of contents** native to Word, refreshable on open if needed, and a **native page header/footer** (with page numbers) — metadata, presentation, summary, grid, **matrices as embedded images**, registers and detailed sheets — usable as a basis for integration into a corporate template; the Excel workbook has four styled sheets (Summary / Risks / Measures / Links) with typed cells (real dates and numbers), criticality and status colors, frozen header rows and autofilters. Both are generated **locally, offline**: hand-written OOXML plus the embedded MIT-licensed [fflate](https://github.com/101arrowz/fflate) library for the ZIP container — still distributed as a single HTML file, with no external resource needed at runtime.
+- **Printable report**: the *Report* tab generates a configurable report from the information managed in RAE (metadata, an **Overview block** with the analysis description and custom fields, summary, grid and criticality levels with descriptions, Initial/Residual and Trajectory matrices as vectors, risk register, detailed risk and measure lists with their descriptions **and custom field values**, links), rendered in a light, printable style (→ PDF via the browser).
+- **Customizable report** (*Settings › Report*): choose the **sections** and their **order** (drag-and-drop), the **cover page** (logo, title, subtitle, notices, confidentiality, free text), the **table of contents**, a three-zone **header/footer** with variables (`{title}`, `{date}`, `{page}/{pages}`…), each table's **columns**, the metadata rows, the Initial/Residual matrix layout (side by side or stacked) and the action-plan view, plus the **scope** (full analysis or filtered subset). The same configuration determines the sections, their order, the columns and the scope of the **on-screen/PDF** and **Word** renders (with native table of contents and header/footer); it is saved in the file (`extensions.display.report`).
 
 ### Customization
 - **Themes**: dark, light.
@@ -84,8 +92,8 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 | [`app/`](app/) | The application (`risk-analysis-editor.html`). |
 | [`docs/`](docs/) | **User documentation** (in French): the illustrated [user guide](docs/guide-utilisateur.md), and shared images. |
 | [`specs/`](specs/) | **Specifications** (in French): file-format specification, JSON schema and layout strategies. |
-| [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including two **complete demos**: an **EBIOS RM–inspired** risk analysis (`demo-ebios-rm-*.rae.json`) and a **DPIA following the CNIL PIA method** for an occupational health service (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — with colored tags, progress bars, owners and justified links. |
-| [`templates/`](templates/) | **Methodology templates** (`xxx.template.<lang>.rae.json`, one file per language): blank skeletons — grid, criticality levels and custom fields preconfigured, no risks or measures. **EBIOS RM**, **CNIL PIA / DPIA**, **ISO/IEC 27005** and a **generic** 5×5, each in **French, English and Italian**. Listed under *Start from a template* in the onboarding block (the file matching the current interface language is loaded); opening one (from there, or via *Load…*) starts a new, **unlinked** analysis. You can also turn the current analysis into a template with **File › Save as template…**, and return to the onboarding block with **File › Home screen**. |
+| [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including two **populated demos representative of RAE's features**: an **EBIOS RM–inspired** risk analysis (`demo-ebios-rm-*.rae.json`) and an example of the risk-analysis part of a DPIA, inspired by the CNIL PIA method, for an occupational health service (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — with colored tags, progress bars, owners and justified links. |
+| [`templates/`](templates/) | **Starter templates** (`xxx.template.<lang>.rae.json`, one file per language) for analyses inspired by common methods and frameworks: blank skeletons — grid, criticality levels and custom fields preconfigured, no risks or measures. **EBIOS RM**, **CNIL PIA / DPIA**, **ISO/IEC 27005** and a **generic** 5×5, each in **French, English and Italian**. Listed under *Start from a template* in the onboarding block (the file matching the current interface language is loaded); opening one (from there, or via *Load…*) starts a new, **unlinked** analysis. You can also turn the current analysis into a template with **File › Save as template…**, and return to the onboarding block with **File › Home screen**. |
 
 ---
 
@@ -101,9 +109,9 @@ The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, m
 
 **Prerequisites**: a recent desktop browser (evergreen version) with JavaScript enabled — nothing else. No server, no network access and no installation are required; the app runs from a simple `file://` double-click. Only **Load by URL** (`?file=…`) needs the tool to be served over HTTP(S).
 
-Development and testing are done primarily with **Microsoft Edge (Chromium)**; any Chromium-based browser (Chrome, Edge, Opera, Brave…) offers the full experience. Known differences with other engines:
+Development and testing are done primarily with **Microsoft Edge (Chromium)**; recent desktop browsers based on Chromium (Chrome, Edge, Opera, Brave…) are the primarily tested environment and should offer the most complete experience. Known differences with other engines:
 
-- **Firefox / Safari** — the File System Access API (`showSaveFilePicker`) is not available: *Save* falls back to a standard **download** of the `.rae.json` file (and *Load* to a classic file picker) instead of writing directly into the opened file. Everything else works identically.
+- **Firefox / Safari** — the File System Access API (`showSaveFilePicker`) is not available: *Save* falls back to a standard **download** of the `.rae.json` file (and *Load* to a classic file picker) instead of writing directly into the opened file. The main features remain available on Firefox and Safari, but differences may exist, notably for the clipboard, file handling, printing and the rendering of generated documents.
 - **Older Firefox (< 127)** — copying a matrix to the clipboard **as an image** (`ClipboardItem`) is not supported; the PNG and SVG download buttons remain available.
 - **Touch devices** — drag-and-drop interactions (chips, kanban, column headers) target mouse usage; keyboard and menu alternatives exist (Ctrl+arrows in the kanban and matrices, ▲/▼ arrows in the column menu), but the tool is designed for desktop use.
 
@@ -111,7 +119,7 @@ Development and testing are done primarily with **Microsoft Edge (Chromium)**; a
 
 ## Credits
 
-RAE embeds exactly **one third-party library**: [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (MIT license, © Arjun Barrett), a tiny, fast ZIP/deflate implementation. It provides the ZIP container required by the Word (`.docx`) and Excel (`.xlsx`) exports — OOXML files being ZIP archives of XML parts. The library is **vendored inline** in the HTML file, with its license notice, so the app keeps working fully offline with no external dependency. Everything else (Markdown engine, SVG/PNG export, OOXML generation, UI components) is written from scratch for this project.
+RAE embeds exactly **one third-party library**: [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (MIT license, © Arjun Barrett), a tiny, fast ZIP/deflate implementation. It provides the ZIP container required by the Word (`.docx`) and Excel (`.xlsx`) exports — OOXML files being ZIP archives of XML parts. The library is **vendored inline** in the HTML file, with its license notice, so the app keeps working fully offline, with no external resource needed at runtime. Everything else (Markdown engine, SVG/PNG export, OOXML generation, UI components) is written from scratch for this project.
 
 ---
 
