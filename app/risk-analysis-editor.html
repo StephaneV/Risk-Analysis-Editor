@@ -4204,7 +4204,12 @@ function attachTip(el,r,kind){
 function metaStatusLabel(v){return v?(t("meta_status."+v)!=="meta_status."+v?t("meta_status."+v):v):"";}
 /* Rend les matrices hors-écran (dans le rapport, palette claire) et renvoie le SVG d'export.
    mode : 'side' (Initial + Résiduel) | 'traj' (Trajectoire). */
-function reportMatrixSVG(mode){
+/* Périmètre des matrices : normalement visibleRisks() (filtres live) ; pendant la
+   construction des matrices du RAPPORT, on force le jeu de risques du périmètre choisi
+   (analyse complète OU sous-ensemble filtré) via cet override, consulté par visibleRisks(). */
+let gridRiskOverride=null;
+function reportMatrixSVG(mode,risks){
+  const _prevGR=gridRiskOverride;if(risks)gridRiskOverride=risks;
   /* Conteneur de mesure ancré sur <body>, PAS sur #reportBody : ce dernier vit dans
      l'onglet Rapport (.view en display:none tant qu'il n'a pas été affiché), où toute
      mesure getBoundingClientRect vaut 0 — l'export Word depuis un autre onglet
@@ -4242,6 +4247,7 @@ function reportMatrixSVG(mode){
   holder.appendChild(legend);
   const svg=buildExportSVG(blocks,legend,holder,mode==="traj").svg;
   holder.remove();
+  gridRiskOverride=_prevGR;
   return svg;
 }
 /* ============================================================
@@ -4329,7 +4335,8 @@ function reportCfg(){
   }
 }
 /* Matrice unique (mode « stacked » : Initial seule, puis Résiduel seule). */
-function reportSingleMatrixSVG(which){
+function reportSingleMatrixSVG(which,risks){
+  const _prevGR=gridRiskOverride;if(risks)gridRiskOverride=risks;
   const holder=document.createElement("div");
   holder.style.cssText="position:absolute;left:-99999px;top:0;width:520px;background:#ffffff";
   document.body.appendChild(holder);
@@ -4342,6 +4349,7 @@ function reportSingleMatrixSVG(which){
   holder.appendChild(legend);
   const svg=buildExportSVG([b],legend,holder,false).svg;
   holder.remove();
+  gridRiskOverride=_prevGR;
   return svg;
 }
 
@@ -4415,22 +4423,22 @@ function renderReport(){
       cats.map(c=>'<tr><td><span class="rp-swatch" style="background:'+c.color+'"></span>'+esc(c.label)+'</td><td>'+c.score_min+' – '+c.score_max+'</td><td>'+esc(accLabel(c.acceptance||""))+'</td><td>'+esc(c.description||"")+'</td></tr>').join("")+'</tbody></table>'),
     matrix_ir:()=>{
       let inner='<h2>'+esc(t("mtx_both_side"))+'</h2>';
-      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("side");
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("side",RISKS);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_ir">'+inner+'</div>';
     },
     matrix_initial:()=>{
       let inner='<h2>'+esc(t("mtx_initial_only"))+'</h2>';
-      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("initial");
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("initial",RISKS);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_initial">'+inner+'</div>';
     },
     matrix_residual:()=>{
       let inner='<h2>'+esc(t("mtx_residual_only"))+'</h2>';
-      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("residual");
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("residual",RISKS);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_residual">'+inner+'</div>';
     },
     matrix_traj:()=>{
       let inner='<h2>'+esc(t("mtx_traj"))+'</h2>';
-      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("traj");
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("traj",RISKS);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_traj">'+inner+'</div>';
     },
     risks_table:s=>card("risks_table",'<h2>'+esc(t("risks_title"))+'</h2>'+reportTable("risks",s.columns,RISKS)),
@@ -4810,7 +4818,7 @@ function cfVisibleSets(){
 /* Le placement manuel et l'évitement des collisions continuent de raisonner sur la
    totalité des risques : masquer une pastille ne doit pas déplacer les autres, sans quoi
    la disposition changerait à chaque coup de filtre. */
-function visibleRisks(){const v=cfVisibleSets();return analyse.risks.filter(r=>v.risks.has(r.id));}
+function visibleRisks(){if(gridRiskOverride)return gridRiskOverride;const v=cfVisibleSets();return analyse.risks.filter(r=>v.risks.has(r.id));}
 function visibleMeasures(){const v=cfVisibleSets();return analyse.measures.filter(m=>v.measures.has(m.id));}
 function visibleTreatments(){return cfVisibleSets().links;}
 
@@ -6670,22 +6678,22 @@ async function buildDocx(){
       .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:c.score_min+" – "+c.score_max,center:true},{txt:accLabel(c.acceptance||"")},{txt:c.description||""}])),[2200,1300,1700,CW-5200]),
     matrix_ir:async()=>{
       let out=heading(t("mtx_both_side"));
-      out+=nR?await addSvgImage(reportMatrixSVG("side")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      out+=nR?await addSvgImage(reportMatrixSVG("side",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
     matrix_initial:async()=>{
       let out=heading(t("mtx_initial_only"));
-      out+=nR?await addSvgImage(reportSingleMatrixSVG("initial")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      out+=nR?await addSvgImage(reportSingleMatrixSVG("initial",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
     matrix_residual:async()=>{
       let out=heading(t("mtx_residual_only"));
-      out+=nR?await addSvgImage(reportSingleMatrixSVG("residual")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      out+=nR?await addSvgImage(reportSingleMatrixSVG("residual",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
     matrix_traj:async()=>{
       let out=heading(t("mtx_traj"));
-      out+=nR?await addSvgImage(reportMatrixSVG("traj")):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      out+=nR?await addSvgImage(reportMatrixSVG("traj",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
     risks_table:s=>heading(t("risks_title"))+(nR?dxReportTable("risks",s.columns,RISKS,CW):dxP(dxRun(t("risks_empty"),{color:"7A8699"}),{sa:120})),
