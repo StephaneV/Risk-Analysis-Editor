@@ -126,7 +126,7 @@ Le développement et les tests sont réalisés principalement avec **Microsoft E
 
 ---
 
-## Crédits
+## Code tiers
 
 RAE embarque exactement **une bibliothèque tierce** : [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (licence MIT, © Arjun Barrett), une implémentation ZIP/deflate minuscule et rapide. Elle fournit le conteneur ZIP requis par les exports Word (`.docx`) et Excel (`.xlsx`) — les fichiers OOXML étant des archives ZIP de parties XML. La bibliothèque est **incorporée** dans le fichier HTML, avec sa notice de licence, afin que l'application reste pleinement hors-ligne, sans ressource externe nécessaire à l'exécution. Tout le reste (moteur Markdown, export SVG/PNG, génération OOXML, composants d'interface) est écrit sur mesure pour ce projet.
 

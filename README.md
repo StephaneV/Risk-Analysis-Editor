@@ -127,7 +127,7 @@ Development and testing are done primarily with **Microsoft Edge (Chromium)**; r
 
 ---
 
-## Credits
+## Third-party code
 
 RAE embeds exactly **one third-party library**: [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (MIT license, © Arjun Barrett), a tiny, fast ZIP/deflate implementation. It provides the ZIP container required by the Word (`.docx`) and Excel (`.xlsx`) exports — OOXML files being ZIP archives of XML parts. The library is **vendored inline** in the HTML file, with its license notice, so the app keeps working fully offline, with no external resource needed at runtime. Everything else (Markdown engine, SVG/PNG export, OOXML generation, UI components) is written from scratch for this project.
 
