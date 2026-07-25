@@ -12,6 +12,14 @@ Outil autonome de **construction et de visualisation de matrices de risque** —
 
 > *Vue **Matrices › Trajectoire** : chaque flèche relie la position initiale (contour pointillé) à la position résiduelle (contour plein) d'un risque.*
 
+![Onglet Statistiques — tableau de bord chiffré](docs/images/capture-statistiques.png)
+
+> *Onglet **Statistiques** : compteurs clés et répartitions — par criticité (initial → résiduel), catégorie, type et statut de mesure, champ personnalisé, et couverture — en tableaux et/ou graphiques (anneau ou camembert). La grille est personnalisable et réorganisable au glisser-déposer, et suit le filtre actif.*
+
+![Plan d'action — échéancier](docs/images/capture-plan-echeancier.png)
+
+> ***Plan d'action** — échéancier : mesures triées par échéance, avec responsable, statut et risques couverts. Aussi disponible en **kanban par statut** et **par responsable**, avec suivi d'avancement et des retards.*
+
 ---
 
 ## Présentation

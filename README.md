@@ -12,6 +12,14 @@ Standalone tool for **building and visualizing risk matrices** — inherent (gro
 
 > ***Matrices › Trajectory** view: each arrow links a risk's initial position (dashed outline) to its residual position (solid outline).*
 
+![Statistics tab — figures dashboard](docs/images/capture-statistiques.png)
+
+> ***Statistics** tab: key counters and distributions — by criticality (initial → residual), category, measure type and status, custom field, and coverage — as tables and/or charts (donut or pie). The grid is customizable and rearrangeable by drag-and-drop, and follows the active filter.*
+
+![Action plan — timeline](docs/images/capture-plan-echeancier.png)
+
+> ***Action plan** — timeline: controls sorted by due date, with owner, status and covered risks. Also available as a **status board (kanban)** and **by owner**, with progress and overdue tracking.*
+
 ---
 
 ## Overview
