@@ -133,6 +133,12 @@ RAE embeds exactly **one third-party library**: [**fflate** v0.8.2](https://gith
 
 ---
 
+## Reporting bugs & ideas
+
+Found a bug or have a suggestion? [Open a GitHub issue](https://github.com/StephaneV/Risk-Analysis-Editor/issues). For bugs, please include your browser and OS, the app version (shown in *About*), what you expected, what actually happened, and — when possible — a minimal `.rae.json` that reproduces it (zip it or paste it in a code block, since GitHub does not accept `.json` attachments directly).
+
+---
+
 ## License
 
 Distributed under the **MIT** license — see [`LICENSE`](LICENSE).

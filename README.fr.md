@@ -132,6 +132,12 @@ RAE embarque exactement **une bibliothèque tierce** : [**fflate** v0.8.2](https
 
 ---
 
+## Signaler un bug ou proposer une idée
+
+Un bug ou une suggestion ? [Ouvrez une issue GitHub](https://github.com/StephaneV/Risk-Analysis-Editor/issues). Pour un bug, précisez votre navigateur et votre système, la version de l'application (indiquée dans *À propos*), ce que vous attendiez, ce qui s'est passé, et — si possible — un fichier `.rae.json` minimal qui reproduit le problème (compressez-le en `.zip` ou collez-le dans un bloc de code, GitHub n'acceptant pas les pièces jointes `.json` directement).
+
+---
+
 ## Licence
 
 Distribué sous licence **MIT** — voir [`LICENSE`](LICENSE).
