@@ -1148,6 +1148,21 @@
       <div class="caption" data-i18n="cfg_contrast_hint">Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.</div>
     </div>
 
+    <!-- -------- Affichage : format des dates -------- -->
+    <div class="card ppanel" data-pmode="display">
+      <h2 data-i18n="cfg_date_title">Format des dates</h2>
+      <div class="caption" data-i18n="cfg_date_caption">Format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports. Les dates restent enregistrées au format ISO dans le fichier.</div>
+      <label class="field" style="max-width:420px">
+        <span class="lab" data-i18n="cfg_date_format">Format</span>
+        <select id="cfgDateFormat">
+          <option value="iso" data-i18n="datefmt.iso">ISO — AAAA-MM-JJ (2025-12-31)</option>
+          <option value="eu" data-i18n="datefmt.eu">Jour/Mois/Année — JJ/MM/AAAA (31/12/2025)</option>
+          <option value="us" data-i18n="datefmt.us">Mois/Jour/Année — MM/JJ/AAAA (12/31/2025)</option>
+          <option value="long" data-i18n="datefmt.long">Long — selon la langue (31 décembre 2025)</option>
+        </select>
+      </label>
+    </div>
+
     <!-- -------- Sous-onglet : Grille de cotation -------- -->
     <div class="card ppanel" data-pmode="grid" style="display:none">
       <div class="caption" data-i18n="settings_grid_caption">Les axes définissent la taille de la matrice. Le score et les couleurs sont recalculés automatiquement.</div>
@@ -1456,6 +1471,9 @@ const I18N = {
     "contrast.classic":"Classique — luminosité perçue (rendu d'origine)",
     "contrast.wcag":"Contraste renforcé — couleur calculée (WCAG AA)",
     "cfg_contrast_hint":"Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.",
+    cfg_date_title:"Format des dates", cfg_date_format:"Format",
+    cfg_date_caption:"Format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports. Les dates restent enregistrées au format ISO dans le fichier.",
+    "datefmt.iso":"ISO — AAAA-MM-JJ (2025-12-31)","datefmt.eu":"Jour/Mois/Année — JJ/MM/AAAA (31/12/2025)","datefmt.us":"Mois/Jour/Année — MM/JJ/AAAA (12/31/2025)","datefmt.long":"Long — selon la langue (31 décembre 2025)",
     a11y_plan_card:"Mesure {0} — {1}. Statut : {2}.",
     plan_moved:"{0} déplacée vers « {1} ».",
     req_legend:"Les champs marqués d'un * sont obligatoires.",
@@ -1769,6 +1787,9 @@ const I18N = {
     "contrast.classic":"Classic — perceived brightness (original rendering)",
     "contrast.wcag":"Enhanced contrast — computed colour (WCAG AA)",
     "cfg_contrast_hint":"Classic: black or white text based on the perceived brightness of the background (historical threshold). Enhanced: choice based on the actual WCAG contrast, guaranteeing 4.5:1 on any background — this darkens the text of red and blue badges.",
+    cfg_date_title:"Date format", cfg_date_format:"Format",
+    cfg_date_caption:"Display format for dates (due dates, report dates, custom date fields) in the app and reports. Dates remain stored in ISO format in the file.",
+    "datefmt.iso":"ISO — YYYY-MM-DD (2025-12-31)","datefmt.eu":"Day/Month/Year — DD/MM/YYYY (31/12/2025)","datefmt.us":"Month/Day/Year — MM/DD/YYYY (12/31/2025)","datefmt.long":"Long — language-specific (December 31, 2025)",
     a11y_plan_card:"Measure {0} — {1}. Status: {2}.",
     plan_moved:"{0} moved to “{1}”.",
     req_legend:"Fields marked with * are required.",
@@ -2080,6 +2101,9 @@ const I18N = {
     "contrast.classic":"Classica — luminosità percepita (resa originale)",
     "contrast.wcag":"Contrasto rafforzato — colore calcolato (WCAG AA)",
     "cfg_contrast_hint":"Classica: testo nero o bianco secondo la luminosità percepita dello sfondo (soglia storica). Rafforzata: scelta basata sul contrasto WCAG reale, che garantisce 4,5:1 su qualsiasi sfondo — scurisce il testo dei badge rossi e blu.",
+    cfg_date_title:"Formato delle date", cfg_date_format:"Formato",
+    cfg_date_caption:"Formato di visualizzazione delle date (scadenze, date del rapporto, campi personalizzati di tipo data) nell'applicazione e nei rapporti. Le date restano memorizzate in formato ISO nel file.",
+    "datefmt.iso":"ISO — AAAA-MM-GG (2025-12-31)","datefmt.eu":"Giorno/Mese/Anno — GG/MM/AAAA (31/12/2025)","datefmt.us":"Mese/Giorno/Anno — MM/GG/AAAA (12/31/2025)","datefmt.long":"Esteso — secondo la lingua (31 dicembre 2025)",
     a11y_plan_card:"Misura {0} — {1}. Stato: {2}.",
     plan_moved:"{0} spostata in «{1}».",
     req_legend:"I campi contrassegnati con * sono obbligatori.",
@@ -4024,6 +4048,27 @@ function getGridStep(){const v=analyse.extensions&&analyse.extensions.display&&a
 function getPngScale(){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.png_scale;return (v==null||v<1)?1:+v;}
 function getShowGrid(){return !!(analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.show_grid);}
 function setDisplaySetting(k,v){analyse.extensions=analyse.extensions||{};analyse.extensions.display=analyse.extensions.display||{};analyse.extensions.display[k]=v;markDirty();}
+/* Format d'affichage des dates (Paramètres › Affichage), mémorisé dans le fichier
+   (extensions.display.date_format). Les dates sont stockées en ISO (AAAA-MM-JJ) ; seul
+   l'affichage (listes, plan, rapport) change. Saisie, tri et exports CSV restent en ISO. */
+const DATE_FORMATS=["iso","eu","us","long"];
+const DATE_LOCALE={fr:"fr-FR",en:"en-GB",it:"it-IT"};
+function dateFormatPref(){
+  const d=(typeof analyse!=="undefined"&&analyse&&analyse.extensions&&analyse.extensions.display)||{};
+  return DATE_FORMATS.indexOf(d.date_format)>=0?d.date_format:"iso";
+}
+function fmtDate(s){
+  if(s==null||s==="")return s;
+  const str=String(s).trim(),m=str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m)return str;                                   // pas une date ISO simple : tel quel
+  const f=dateFormatPref();
+  if(f==="eu")return m[3]+"/"+m[2]+"/"+m[1];
+  if(f==="us")return m[2]+"/"+m[3]+"/"+m[1];
+  if(f==="long"){const dt=new Date(+m[1],+m[2]-1,+m[3]);
+    if(!isNaN(dt.getTime())){try{return dt.toLocaleDateString(DATE_LOCALE[lang]||"fr-FR",{year:"numeric",month:"long",day:"numeric"});}catch(e){}}
+    return str;}
+  return str;                                         // "iso" (défaut)
+}
 function placementStore(){analyse.extensions=analyse.extensions||{};if(!analyse.extensions.placement)analyse.extensions.placement={};return analyse.extensions.placement;}
 function getPlace(id,which){const s=placementStore()[id];const N=getGridStep();
   if(s&&s[which]){return {col:Math.max(0,Math.min(N-1,s[which].col)),row:Math.max(0,Math.min(N-1,s[which].row))};}return null;}
@@ -4849,7 +4894,7 @@ function renderReport(){
 
   // ---- En-tête / pied de document (variables ; {page}/{pages} vides à l'écran) ----
   const subst=s=>String(s||"").replace(/\{title\}/g,title).replace(/\{organization\}/g,md.organization||"")
-    .replace(/\{author\}/g,md.author||"").replace(/\{date\}/g,md.updated_at||today())
+    .replace(/\{author\}/g,md.author||"").replace(/\{date\}/g,fmtDate(md.updated_at||today()))
     .replace(/\{version\}/g,cfg.cover.version||md.revision||"").replace(/\{confidentiality\}/g,cfg.cover.confidentiality||"")
     .replace(/\{page\}/g,"").replace(/\{pages\}/g,"");
   const band=(b,cls,withLogo)=>{
@@ -4864,8 +4909,8 @@ function renderReport(){
     metadata:s=>{
       let h='<h1>'+esc(title)+'</h1>';
       const DEF={author:[t("f_author"),md.author],organization:[t("f_org"),md.organization],scope:[t("f_scope"),md.scope],
-        methodology:[t("f_methodology"),md.methodology_reference],created:[t("rp_created"),md.created_at],
-        updated:[t("rp_updated"),md.updated_at],revision:[t("rp_revision"),md.revision],status:[t("th_status"),metaStatusLabel(md.status)]};
+        methodology:[t("f_methodology"),md.methodology_reference],created:[t("rp_created"),fmtDate(md.created_at)],
+        updated:[t("rp_updated"),fmtDate(md.updated_at)],revision:[t("rp_revision"),md.revision],status:[t("th_status"),metaStatusLabel(md.status)]};
       const rows=s.rows.filter(x=>x.on).map(x=>DEF[x.id]).filter(r=>r&&r[1]);
       if(rows.length)h+='<table class="meta-tbl"><tbody>'+rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join("")+'</tbody></table>';
       return card("metadata",h);
@@ -4942,7 +4987,7 @@ function renderReport(){
       if(!nM)return "";
       let h='<h2>'+esc(t("rp_measure_details"))+'</h2>';
       MEAS.forEach(m=>{
-        const sub=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,m.due_date,(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).map(esc).join(" · ");
+        const sub=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,fmtDate(m.due_date),(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).map(esc).join(" · ");
         h+='<div class="rp-item"><div><b>'+esc(m.id)+' — '+esc(m.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
         if(m.description)h+='<div class="md">'+mdToHTML(m.description)+'</div>';
         if(m.comment)h+='<div class="rp-note md">'+mdToHTML(m.comment)+'</div>';
@@ -5000,7 +5045,7 @@ function renderReport(){
     const meta=[];
     if(c.show_organization&&md.organization)meta.push(esc(md.organization));
     if(c.show_author&&md.author)meta.push(esc(md.author));
-    if(c.show_date&&md.updated_at)meta.push(esc(md.updated_at));
+    if(c.show_date&&md.updated_at)meta.push(esc(fmtDate(md.updated_at)));
     const ver=c.version||md.revision;if(ver)meta.push(esc(t("rp_revision"))+' '+esc(ver));
     if(meta.length)cv+='<div class="rp-cover-meta">'+meta.join(' · ')+'</div>';
     if(c.confidentiality)cv+='<div class="rp-cover-confid">'+esc(c.confidentiality)+'</div>';
@@ -5050,7 +5095,7 @@ function planRow(m){
     '<td><span class="id-badge">'+esc(m.id)+'</span></td>'+
     '<td><b>'+esc(m.label)+'</b></td>'+
     '<td class="muted">'+esc(m.responsible||"—")+'</td>'+
-    '<td>'+(m.due_date?esc(m.due_date)+(ov?' <span class="plan-late">'+esc(t("plan_overdue"))+'</span>':''):'<span class="muted">—</span>')+'</td>'+
+    '<td>'+(m.due_date?esc(fmtDate(m.due_date))+(ov?' <span class="plan-late">'+esc(t("plan_overdue"))+'</span>':''):'<span class="muted">—</span>')+'</td>'+
     '<td>'+statusBadge(m.status)+'</td>'+
     '<td>'+planCovered(m.id)+'</td></tr>';
 }
@@ -5068,7 +5113,7 @@ function planCard(m){
   return '<div class="plan-card'+(ov?" overdue":"")+'" data-mid="'+esc(m.id)+'" draggable="true" style="cursor:pointer"'+
     ' tabindex="0" role="button" aria-label="'+esc(nom)+'"><div><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
     ((m.due_date||m.responsible)?'<div class="muted" style="margin-top:4px;font-size:11px">'+
-      (m.due_date?'<span'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(m.due_date)+(ov?' ⚠':'')+'</span>':'')+
+      (m.due_date?'<span'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(fmtDate(m.due_date))+(ov?' ⚠':'')+'</span>':'')+
       (m.due_date&&m.responsible?' · ':'')+(m.responsible?esc(m.responsible):'')+'</div>':'')+
     (risks.length?'<div class="pill-list" style="margin-top:5px">'+risks.map(id=>'<span class="pill" data-tip-r="'+esc(id)+'">'+esc(id)+'</span>').join("")+'</div>':'')+
     customFieldsFor("measure").filter(f=>(f.type==="tags"||f.type==="progress")&&cfHasVal((m.custom||{})[f.code]))
@@ -5781,7 +5826,7 @@ function builtinCols(table){
     {key:"type",label:t("th_type"),sort:"type",cell:m=>'<span class="muted">'+(m.type?esc(typeLabel(m.type)):"—")+'</span>'},
     {key:"status",label:t("th_status"),sort:"status",cell:m=>statusBadge(m.status)},
     {key:"resp",label:t("th_responsible"),sort:"resp",cell:m=>'<span class="muted">'+esc(m.responsible||"—")+'</span>'},
-    {key:"due",label:t("f_due_date"),sort:"due",def:false,cell:m=>'<span class="muted">'+esc(m.due_date||"—")+'</span>'},
+    {key:"due",label:t("f_due_date"),sort:"due",def:false,cell:m=>'<span class="muted">'+esc(fmtDate(m.due_date)||"—")+'</span>'},
     {key:"cost",label:t("f_cost"),sort:"cost",def:false,cell:m=>'<span class="muted">'+(m.cost!=null&&m.cost!==""?esc(m.cost):"—")+'</span>'},
     {key:"covered",label:t("th_covered_risks"),cell:m=>{const rk=risksOfMeasure(m.id);return rk.length?'<span class="pill-list">'+rk.map(id=>measurePillsFor(id)).join("")+'</span>':'<span class="muted">—</span>';}},
   ];
@@ -6488,7 +6533,7 @@ function crossCardHTML(rid,mid){
   if(!r||!m)return "";
   const sousR=[r.category,r.owner].filter(Boolean).join(" · ");
   const sousM=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,
-               m.responsible,m.due_date].filter(Boolean).join(" · ");
+               m.responsible,fmtDate(m.due_date)].filter(Boolean).join(" · ");
   let h=crossFicheHTML(r.id,r.label,sousR)+crossFicheHTML(m.id,m.label,sousM)+"<hr>";
   if(!tr)return h+'<div class="l-none">'+esc(t("link_none"))+'</div>';
   let det="";
@@ -7021,7 +7066,7 @@ function dxCellFor(tbl,key,row){
     if(key==="type")return {txt:row.type?typeLabel(row.type):"—"};
     if(key==="status"){const sc=row.status?STATUS_COLORS[row.status]:null;return sc?dxBadgeCell(statusLabel(row.status),sc.bg):{txt:row.status?statusLabel(row.status):"—",center:true};}
     if(key==="resp")return {txt:row.responsible||"—"};
-    if(key==="due")return {txt:row.due_date||"—"};
+    if(key==="due")return {txt:fmtDate(row.due_date)||"—"};
     if(key==="cost")return {txt:(row.cost!=null&&row.cost!=="")?String(row.cost):"—"};
     if(key==="covered"){const rk=risksOfMeasure(row.id);return {txt:rk.length?rk.join(", "):"—"};}
   }else if(tbl==="links"){
@@ -7033,7 +7078,7 @@ function dxCellFor(tbl,key,row){
   }
   if(key.indexOf("cf:")===0){
     const f=customFieldsFor(cfTargetOf(tbl)).find(x=>"cf:"+x.code===key);
-    if(f){const v=cfDisplay(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
+    if(f){const v=cfDisplayTxt(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
   }
   return {txt:"—"};
 }
@@ -7052,7 +7097,7 @@ function dxPlanTable(list,cw){return dxReportTable("measures",["id","measure","s
 function dxCfNotes(target,custom){
   let out="";
   customFieldsFor(target).forEach(f=>{
-    const raw=(custom||{})[f.code],v=cfDisplay(f,raw);if(!v)return;
+    const raw=(custom||{})[f.code],v=cfDisplayTxt(f,raw);if(!v)return;
     if(f.type==="textarea"){out+=dxP(dxRun(cfLabel(f),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
     else out+=dxP(dxRun(cfLabel(f)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
   });
@@ -7144,7 +7189,7 @@ async function buildDocx(){
   }
 
   // ---- En-tête / pied natifs ----
-  const fields={title:title,organization:md.organization||"",author:md.author||"",date:md.updated_at||today(),
+  const fields={title:title,organization:md.organization||"",author:md.author||"",date:fmtDate(md.updated_at||today()),
     version:cfg.cover.version||md.revision||"",confidentiality:cfg.cover.confidentiality||""};
   const needHeader=!!(cfg.header.left||cfg.header.center||cfg.header.right||(cfg.header.logo&&logoInfo));
   const needFooter=!!(cfg.footer.left||cfg.footer.center||cfg.footer.right);
@@ -7174,7 +7219,7 @@ async function buildDocx(){
     const meta=[];
     if(c.show_organization&&md.organization)meta.push(md.organization);
     if(c.show_author&&md.author)meta.push(md.author);
-    if(c.show_date&&md.updated_at)meta.push(md.updated_at);
+    if(c.show_date&&md.updated_at)meta.push(fmtDate(md.updated_at));
     const ver=c.version||md.revision;if(ver)meta.push(t("rp_revision")+" "+ver);
     if(meta.length)body+=dxP(dxRun(meta.join("   ·   "),{color:"7A8699"}),{sa:80,center:true});
     if(c.confidentiality)body+=dxP(dxRun(c.confidentiality,{b:true,color:hex6("#D64545")}),{sb:200,sa:80,center:true});
@@ -7203,8 +7248,8 @@ async function buildDocx(){
     metadata:s=>{
       let out=heading(t("rp_metadata"));
       const DEF={author:[t("f_author"),md.author],organization:[t("f_org"),md.organization],scope:[t("f_scope"),md.scope],
-        methodology:[t("f_methodology"),md.methodology_reference],created:[t("rp_created"),md.created_at],
-        updated:[t("rp_updated"),md.updated_at],revision:[t("rp_revision"),md.revision],status:[t("th_status"),metaStatusLabel(md.status)]};
+        methodology:[t("f_methodology"),md.methodology_reference],created:[t("rp_created"),fmtDate(md.created_at)],
+        updated:[t("rp_updated"),fmtDate(md.updated_at)],revision:[t("rp_revision"),md.revision],status:[t("th_status"),metaStatusLabel(md.status)]};
       const rows=s.rows.filter(x=>x.on).map(x=>DEF[x.id]).filter(r=>r&&r[1]);
       if(rows.length)out+=dxTbl(rows.map(r=>[{txt:r[0],color:"7A8699"},{txt:String(r[1])}]),[2600,CW-2600]);
       return out;
@@ -7276,7 +7321,7 @@ async function buildDocx(){
       if(!nM)return "";
       let out=heading(t("rp_measure_details"));
       MEAS.forEach(m=>{
-        const s2=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,m.due_date,(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).join(" · ");
+        const s2=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,fmtDate(m.due_date),(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).join(" · ");
         out+=dxP(dxRun(m.id+" — "+m.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
         if(m.description)out+=mdDocxBlocks(m.description);
         if(m.comment)out+=mdDocxBlocks(m.comment);
@@ -7683,6 +7728,7 @@ function renderSettings(){
   document.getElementById("cfgEchelle").value=getPngScale();
   document.getElementById("cfgAfficherGrille").checked=getShowGrid();
   document.getElementById("cfgContraste").value=labelContrast();
+  document.getElementById("cfgDateFormat").value=dateFormatPref();
   renderCrit();
   renderMatrixEditor();
   renderCustomFields();
@@ -7931,6 +7977,9 @@ function cfDisplay(f,v){
   if(f.type==="progress")return Math.max(0,Math.min(100,Math.round(+v||0)))+" %";
   return String(v);
 }
+/* Comme cfDisplay, mais applique le format de date choisi (contextes d'affichage : rapport
+   Word). cfDisplay reste brut (ISO) pour le tri, la recherche et les exports CSV. */
+function cfDisplayTxt(f,v){return f.type==="date"?(fmtDate(v)||""):cfDisplay(f,v);}
 // Couleur (texte contrasté) sur fond de tag.
 /* Couleur de texte lisible sur un fond quelconque : on compare le contraste WCAG réel
    du blanc et de l'encre sombre, et on garde le meilleur. L'ancienne heuristique de
@@ -8030,6 +8079,7 @@ function updatePalettePreview(){
    Sinon (tableaux, cartes) : texte brut débarrassé du balisage. */
 function cfDisplayHTML(f,v,rich){
   if(!cfHasVal(v))return "";
+  if(f.type==="date")return esc(fmtDate(v));
   if(f.type==="textarea")return rich?mdToHTML(v):esc(mdToText(v));
   if(f.type==="url"||f.type==="email"||f.type==="tel"){
     const href=cfHref(f,v);
@@ -8324,6 +8374,11 @@ document.getElementById("view-settings").addEventListener("change",e=>{
   if(e.target.id==="cfgContraste"){
     setDisplaySetting("label_contrast",e.target.value==="wcag"?"wcag":"classic");
     applyContrastMode();renderAll();
+    if(document.getElementById("view-report").classList.contains("active"))renderReport();
+  }
+  if(e.target.id==="cfgDateFormat"){
+    setDisplaySetting("date_format",DATE_FORMATS.indexOf(e.target.value)>=0?e.target.value:"iso");
+    renderAll();
     if(document.getElementById("view-report").classList.contains("active"))renderReport();
   }
   const cell=e.target.closest("#matrixEditor select");

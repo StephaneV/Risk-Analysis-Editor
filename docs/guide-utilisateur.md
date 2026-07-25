@@ -129,7 +129,8 @@ Ce sous-onglet règle le rendu visuel :
 - **Espacement** des cases, **arrondi** des angles, **pas** de la grille de placement manuel (N×N) ;
 - **Résolution de l'export PNG** (×1, ×2, ×3) ;
 - affichage de la **grille d'accroche** pour le placement manuel, et bouton de **réinitialisation des positions** ;
-- **Lisibilité des étiquettes colorées** : mode *Classique* (luminosité perçue) ou *Contraste renforcé (WCAG AA)*, qui calcule une couleur de texte garantissant un contraste suffisant sur n'importe quel fond.
+- **Lisibilité des étiquettes colorées** : mode *Classique* (luminosité perçue) ou *Contraste renforcé (WCAG AA)*, qui calcule une couleur de texte garantissant un contraste suffisant sur n'importe quel fond ;
+- **Format des dates** : format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports — *ISO* (AAAA-MM-JJ, défaut), *JJ/MM/AAAA*, *MM/JJ/AAAA* ou *Long* (localisé selon la langue). Les dates restent enregistrées au format ISO dans le fichier ; seul l'affichage change.
 
 Les champs personnalisés sont traités en [section 13](#13-les-champs-personnalisés).
 
