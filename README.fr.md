@@ -48,6 +48,7 @@ RAE offre ainsi un cadre **plus structuré et cohérent qu'un ensemble de feuill
 - **Algorithmes de disposition** des trajectoires visant à réduire les croisements et les chevauchements : flèches droites, grille carrée centrée.
 - **Stratégies de disposition des pastilles** lorsqu'une case contient plusieurs risques : grille, rangée, colonne, amas/spirale, débordement « +N »…
 - **Placement manuel** des pastilles en glisser-déposer, avec grille d'accroche (*snap* N×N paramétrable) et positions enregistrées dans le fichier.
+- **Pastilles interactives** : **cliquer** une pastille ouvre la fiche du risque pour l'éditer ; la **glisser** vers une autre case **recote** le risque (au clavier : `Entrée`/`Espace` pour éditer, `Ctrl`+flèches pour recoter).
 - **Statistiques** : répartition par niveau de criticité (initial → résiduel), nombre de risques réduits.
 
 ### Grille de cotation

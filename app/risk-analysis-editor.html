@@ -664,7 +664,7 @@
   .report .rp-item .rp-note{margin-top:4px;font-size:12px;color:var(--muted);white-space:pre-wrap}
 
   /* ---- Rapport personnalisable : page de garde, table des matières, en-tête/pied ---- */
-  .report .rp-cover{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  .report .rp-cover{display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;gap:12px;padding:40px 26px;background:var(--panel);border:1px solid var(--border);
     border-radius:12px;margin-bottom:18px;page-break-after:always}
   .report .rp-cover-logo{max-height:120px;max-width:60%;object-fit:contain;margin-bottom:10px}
@@ -3641,6 +3641,9 @@ function commitManualDrop(mc,r,which,px,py){
 /* Déplacement au clavier : Ctrl+flèches sur la pastille focalisée. Vaut dans toutes les
    dispositions, manuelle comprise, pour ne pas laisser une fonction réservée à la souris. */
 document.getElementById("view-matrices").addEventListener("keydown",e=>{
+  // Entrée/Espace sur une pastille focalisée : éditer le risque (équivalent clavier du clic).
+  const chipK=e.target.closest&&e.target.closest(".chip,.ov-chip");
+  if(chipK&&chipK.dataset.rid&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openRiskModal(chipK.dataset.rid);return;}
   if(!e.ctrlKey||e.altKey||e.shiftKey)return;
   const d={ArrowRight:[0,1],ArrowLeft:[0,-1],ArrowUp:[1,0],ArrowDown:[-1,0]}[e.key];
   if(!d)return;
@@ -3723,6 +3726,7 @@ function attachManualDrag(chip,mc,r,which){
     const up=ev=>{
       finish();
       if(moved)commitManualDrop(mc,r,which,ev.clientX-m.left,ev.clientY-m.top);
+      else openRiskModal(r.id);   // clic sans glisser : éditer le risque
     };
     chip.addEventListener("pointermove",move);chip.addEventListener("pointerup",up);
     chip.addEventListener("pointercancel",annuler);
@@ -4160,7 +4164,7 @@ function attachCellDrag(chip,r,kind){
     const up=ev=>{
       const bouge=moved;
       finish();
-      if(!bouge)return;
+      if(!bouge){openRiskModal(r.id);return;}   // clic sans glisser : éditer le risque
       /* Case sous le curseur, cherchée par géométrie dans la matrice d'origine.
          elementFromPoint ne convient pas : en vue Trajectoire une couche de pastilles
          recouvre la grille et masquerait toujours les cases. Restreindre la recherche à
@@ -4194,6 +4198,7 @@ function attachTip(el,r,kind){
   /* Clavier et tactile : la pastille est atteignable et l'infobulle s'ouvre au focus.
      Sans cela, l'information de la matrice n'existe qu'à la souris. */
   el.tabIndex=0;
+  el.setAttribute("role","button");
   el.setAttribute("aria-label",build().text);
   el.addEventListener("focus",()=>{const b=el.getBoundingClientRect();show(b.right+8,b.bottom+8);});
   el.addEventListener("blur",()=>tip.style.opacity=0);
@@ -4536,8 +4541,8 @@ function renderReport(){
     const flts=reportActiveFilters();
     let fb='<div class="rp-card" id="rsec-filter"><h2>'+esc(t("rp_filter_summary"))+'</h2>'+
       '<table class="meta-tbl"><tbody>'+
-      '<tr><td>'+esc(t("stat_risks"))+'</td><td>'+nR+'</td></tr>'+
-      '<tr><td>'+esc(t("stat_measures"))+'</td><td>'+nM+'</td></tr>'+
+      '<tr><td>'+esc(t("stat_risks"))+'</td><td>'+nR+' / '+analyse.risks.length+'</td></tr>'+
+      '<tr><td>'+esc(t("stat_measures"))+'</td><td>'+nM+' / '+analyse.measures.length+'</td></tr>'+
       flts.map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(f.value)+'</td></tr>').join("")+
       '</tbody></table>';
     if(!flts.length)fb+='<div class="rp-sub">'+esc(t("rp_filter_none"))+'</div>';
@@ -6688,7 +6693,7 @@ async function buildDocx(){
   if(cfg.scope==="filtered"){
     const flts=reportActiveFilters();
     body+=heading(t("rp_filter_summary"));
-    body+=dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:String(nR)}],[{txt:t("stat_measures"),color:"7A8699"},{txt:String(nM)}]]
+    body+=dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:nR+" / "+analyse.risks.length}],[{txt:t("stat_measures"),color:"7A8699"},{txt:nM+" / "+analyse.measures.length}]]
       .concat(flts.map(f=>[{txt:f.label,color:"7A8699"},{txt:String(f.value)}])),[3200,CW-3200]);
     if(!flts.length)body+=dxP(dxRun(t("rp_filter_none"),{color:"7A8699"}),{sa:120});
   }

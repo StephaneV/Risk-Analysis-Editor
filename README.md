@@ -48,6 +48,7 @@ RAE thus offers a framework that is **more structured and consistent than a set 
 - **Layout algorithms** for the trajectories aiming to reduce crossings and overlaps: straight arrows, centered square grid.
 - **Chip layout strategies** when a cell holds several risks: grid, row, column, cluster/spiral, "+N" overflow…
 - **Manual placement** of chips by drag-and-drop, with a configurable N×N snap grid and positions saved in the file.
+- **Interactive chips**: **clicking** a chip opens the risk record to edit it; **dragging** it to another cell **re-scores** the risk (keyboard: `Enter`/`Space` to edit, `Ctrl`+arrows to re-score).
 - **Statistics**: distribution by criticality level (initial → residual), number of reduced risks.
 
 ### Scoring grid

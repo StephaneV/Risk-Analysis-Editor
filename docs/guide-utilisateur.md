@@ -247,6 +247,8 @@ Autres commandes :
 
 > **Recoter au glisser-déposer.** Dans **toutes les matrices** (Initial, Résiduel, Trajectoire) et **quelle que soit la disposition**, vous pouvez **faire glisser une pastille vers une autre case** : la **cotation** du risque est mise à jour en conséquence — sa **vraisemblance (P)** et sa **gravité (G)** prennent les valeurs de la case d'arrivée, et un message confirme la nouvelle cotation. Dans la vue Initial/Résiduel, déplacer la pastille de gauche modifie la cotation **initiale**, celle de droite la cotation **résiduelle** ; en Trajectoire, le déplacement ajuste la position **résiduelle**. Au clavier, `Ctrl` + les flèches déplacent la pastille sélectionnée de case en case.
 
+> **Éditer au clic.** Un **clic** sur une pastille ouvre la **fiche du risque** (au clavier : `Entrée` ou `Espace` sur la pastille sélectionnée). Le clic et le glisser-déposer ne se confondent pas : un simple clic édite, un glisser recote.
+
 > Les pastilles portent un numéro. Lorsque tous les identifiants sont au format `R…` (comme dans la démo), c'est le numéro de l'identifiant ; sinon les risques sont numérotés selon leur ordre dans le fichier. Le survol d'une pastille affiche l'identifiant complet, le libellé et la cotation.
 
 ---
@@ -289,7 +291,7 @@ Le sous-onglet **Paramètres › Rapport** permet d'adapter finement le contenu 
 - **Matrices** — trois sections indépendantes : *initiale et résiduelle accolées* (cochée par défaut), *initiale seule*, *résiduelle seule*.
 - **Plan d'action** — présentation au choix : échéancier, par statut ou par responsable.
 - **Orientation** — portrait (par défaut) ou paysage.
-- **Périmètre** — *analyse complète* ou *sous-ensemble filtré* (selon les filtres actifs). En mode filtré, une section **« Périmètre filtré »** récapitule les filtres appliqués et le nombre d'éléments retenus.
+- **Périmètre** — *analyse complète* ou *sous-ensemble filtré* (selon les filtres actifs). En mode filtré, une section **« Périmètre filtré »** récapitule les filtres appliqués et le nombre d'éléments retenus **sur le total** (`n / N`), pour les risques et les mesures.
 
 Le bouton **↺ Réinitialiser le rapport par défaut** efface la personnalisation et rétablit le modèle par défaut.
 
