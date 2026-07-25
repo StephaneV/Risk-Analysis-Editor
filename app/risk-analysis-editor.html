@@ -314,6 +314,78 @@
   .stat{flex:1;min-width:140px;background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
   .stat .n{font-size:24px;font-weight:700}
   .stat .l{color:var(--muted);font-size:12px;margin-top:2px}
+  /* ---- Onglet Statistiques ---- */
+  .st-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+  @media(max-width:820px){.st-grid{grid-template-columns:1fr}}
+  .st-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 20px 18px;display:flex;flex-direction:column;position:relative}
+  .st-card.full{grid-column:1 / -1}
+  .st-card>h3{margin:0 0 14px;font-size:15px;font-weight:700}
+  .st-content{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .st-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:640px){.st-tiles{grid-template-columns:repeat(2,1fr)}}
+  .st-tile{background:var(--panel-2);border:1px solid var(--border);border-radius:11px;padding:16px 18px}
+  .st-tile .n{font-size:30px;font-weight:800;letter-spacing:-.5px}
+  .st-tile .l{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .st-dist{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}
+  @media(max-width:520px){.st-dist{grid-template-columns:1fr;justify-items:center}}
+  .st-tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .st-tbl th{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;padding:0 8px 8px;border-bottom:1px solid var(--border)}
+  .st-tbl th.num,.st-tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .st-tbl td{padding:8px;border-bottom:1px solid var(--border)}
+  .st-tbl tr:last-child td{border-bottom:none}
+  .st-tbl tr.tot td{font-weight:700;border-top:1.5px solid var(--border);border-bottom:none;padding-top:9px}
+  .st-tbl tr.tot td:first-child{color:var(--muted)}
+  .st-tbl .pct{color:var(--muted)}
+  .st-sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+  .st-donut{border-radius:50%;position:relative;flex:none}
+  .st-hole{position:absolute;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .st-hole .n{font-weight:800;font-size:22px;line-height:1}
+  .st-hole .l{color:var(--muted);font-size:11px;margin-top:2px}
+  .st-pie-wrap{position:relative;flex:none}
+  .st-pie{width:100%;height:100%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}
+  .st-slab{position:absolute;transform:translate(-50%,-50%);font-size:12.5px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none}
+  .st-duo{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+  .st-duo figure{margin:0;text-align:center}
+  .st-duo figcaption{color:var(--muted);font-size:12px;margin-top:8px}
+  .st-legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:13px}
+  .st-legend li{display:flex;align-items:center;gap:9px}
+  .st-legend .lab{flex:1;min-width:0}
+  .st-legend b{font-variant-numeric:tabular-nums}
+  .st-legend .pct{color:var(--muted);font-variant-numeric:tabular-nums;width:46px;text-align:right}
+  /* manipulation directe */
+  .st-card>h3{cursor:grab;padding-right:58px;user-select:none}
+  .st-card>h3 .st-mv{color:var(--muted);letter-spacing:-2px;font-size:14px;margin-right:5px}
+  .st-tools{position:absolute;top:13px;right:13px;display:inline-flex;gap:1px;opacity:0;transition:opacity .12s;z-index:2}
+  .st-card:hover .st-tools,.st-card:focus-within .st-tools{opacity:1}
+  .st-tools button{border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:4px 6px;border-radius:6px}
+  .st-tools button:hover{background:var(--panel-2);color:var(--text)}
+  .st-tools .st-remove:hover{color:var(--red)}
+  .st-card.st-dragging{opacity:.45}
+  .st-card.st-drop{outline:2px dashed var(--accent);outline-offset:2px}
+  /* sous-onglet Paramètres › Statistiques */
+  .st2-list{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
+  .st2-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);background:var(--panel)}
+  .st2-row:last-child{border-bottom:none}
+  .st2-row.off{opacity:.55}
+  .st2-row.st2-dragging{opacity:.4}
+  .st2-row.st2-drop{box-shadow:inset 0 2px 0 var(--accent)}
+  .st2-grip{cursor:grab;color:var(--muted);letter-spacing:-2px;font-size:15px;flex:none}
+  .st2-chk{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);background:none;flex:none;cursor:pointer;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .st2-chk.on{background:var(--accent);border-color:var(--accent)}
+  .st2-name{flex:1;min-width:120px;display:flex;align-items:center;gap:8px}
+  .st2-name .t{font-weight:600}
+  .st2-field{border:1px solid var(--border);background:var(--panel-2);color:var(--text);border-radius:8px;padding:6px 9px;font-size:13px;max-width:100%}
+  .st2-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;flex:none}
+  .st2-del:hover{color:var(--red)}
+  .st2-ctrls{display:flex;align-items:center;gap:10px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+  .st2-grp{display:flex;flex-direction:column;gap:3px;align-items:center}
+  .st2-grp .cap{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+  .st2-fixed{font-size:12px;color:var(--muted);padding:5px 2px}
+  .st2-seg{display:inline-flex;gap:2px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:2px}
+  .st2-seg span{padding:5px 9px;border-radius:6px;font-size:11.5px;color:var(--muted);white-space:nowrap;cursor:pointer}
+  .st2-seg span.on{background:var(--panel-3);color:var(--text);font-weight:600}
+  .st2-seg.off{opacity:.4;pointer-events:none}
+  .st2-actions{display:flex;gap:10px;flex-wrap:wrap}
   .crit-bars{display:flex;flex-direction:column;gap:8px}
   .crit-bar{display:flex;align-items:center;gap:10px;font-size:12px}
   .crit-bar .name{width:150px;color:var(--muted)}
@@ -408,6 +480,9 @@
   .pill[data-open-m],.pill[data-open-r]{cursor:pointer}
   .pill[data-open-m]:hover,.pill[data-open-r]:hover{border-color:var(--accent);filter:brightness(1.06)}
   .pill[data-open-m]:focus-visible,.pill[data-open-r]:focus-visible{outline:2px solid var(--focus-ring);outline-offset:1px}
+  /* Rapport : pastilles = simples identifiants, non interactifs (document). */
+  .report .pill[data-open-m],.report .pill[data-open-r]{cursor:default}
+  .report .pill[data-open-m]:hover,.report .pill[data-open-r]:hover{border-color:var(--border);filter:none}
   /* Bouton d'action dans le toast (annulation d'une suppression). */
   #toast .t-act{margin-left:12px;background:none;border:1px solid currentColor;color:inherit;
     border-radius:6px;padding:2px 10px;cursor:pointer;font-weight:700;font-size:12px}
@@ -418,6 +493,7 @@
      à la ligne sous la poignée. La colonne ID est toujours épinglée en tête. */
   #risksTable td:first-child,#measuresTable td:first-child{white-space:nowrap}
   tr:hover .row-grip{opacity:.7}
+  .report .row-grip{display:none}   /* pas de poignée de réordonnancement dans le rapport */
   .row-grip:focus-visible{opacity:1;outline:2px solid var(--focus-ring);outline-offset:1px;border-radius:3px}
   tr.row-dragging{opacity:.45}
   tr.drop-above>td{box-shadow:inset 0 2px 0 0 var(--accent)}
@@ -531,7 +607,8 @@
   .plan-card b{font-weight:600}
   .plan-card.dragging{opacity:.45}
   .kanban-col.drop-target{outline:2px dashed var(--accent);outline-offset:-4px;border-radius:8px}
-  tr[data-mid]:hover td,.plan-card[data-mid]:hover{background:var(--panel-2)}
+  #planArea tr[data-mid]{cursor:pointer}   /* lignes du plan cliquables dans la vue, pas dans le rapport */
+  #planArea tr[data-mid]:hover td,#planArea .plan-card[data-mid]:hover{background:var(--panel-2)}
 
   /* ---------- Liens crosstab ---------- */
   /* max-width : sans borne, le conteneur s'étire à la taille du tableau et pousse la page
@@ -825,6 +902,7 @@
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-measures" data-view="measures"><span data-i18n="tab_measures">Mesures</span> <span class="badge" id="badgeMeasures">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-links" data-view="links"><span data-i18n="tab_links">Liens</span> <span class="badge" id="badgeLinks">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-matrices" data-view="matrices" data-i18n="tab_matrices">Matrices</button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-stats" data-view="stats" data-i18n="tab_stats">Statistiques</button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-plan" data-view="plan"><span data-i18n="tab_plan">Plan d'action</span> <span class="badge" id="badgePlan" style="display:none">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-report" data-view="report" data-i18n="tab_report">Rapport</button>
   <button type="button" class="tab tab-right" role="tab" aria-selected="false" aria-controls="view-settings" data-view="settings" data-i18n="tab_settings">Paramètres</button>
@@ -833,9 +911,6 @@
 <main id="mainContent">
   <!-- ============ MATRICES ============ -->
   <section class="view" id="view-matrices">
-    <div class="card">
-      <div class="stats" id="stats"></div>
-    </div>
     <div class="card">
       <div class="matrix-toolbar">
         <div class="seg" id="viewSeg">
@@ -849,6 +924,11 @@
       <div id="matrixArea"></div>
       <div class="legend" id="matrixLegend"></div>
     </div>
+  </section>
+
+  <!-- ============ STATISTIQUES ============ -->
+  <section class="view" id="view-stats">
+    <div id="stats"></div>
   </section>
 
   <!-- ============ RISQUES ============ -->
@@ -999,14 +1079,16 @@
   <!-- ============ PARAMÈTRES ============ -->
   <section class="view" id="view-settings">
     <div class="seg" id="paramSeg" style="margin-bottom:14px">
-      <button data-pmode="display" class="active" data-i18n="settings_display">Affichage des matrices</button>
+      <button data-pmode="display" class="active" data-i18n="settings_display">Affichage</button>
       <button data-pmode="grid" data-i18n="settings_grid">Grille de cotation</button>
       <button data-pmode="fields" data-i18n="cf_section">Champs personnalisés</button>
       <button data-pmode="report" data-i18n="settings_report">Rapport</button>
+      <button data-pmode="stats" data-i18n="settings_stats">Statistiques</button>
     </div>
 
     <!-- -------- Sous-onglet : Affichage des matrices -------- -->
     <div class="card ppanel" data-pmode="display">
+      <h2 data-i18n="settings_matrix_display">Affichage des matrices</h2>
       <div class="caption" data-i18n="settings_display_caption">Disposition des pastilles lorsqu'une même case contient plusieurs risques (vues Initial / Résiduel). Les pastilles sont triées par identifiant.</div>
       <label class="field" style="max-width:380px">
         <span class="lab" data-i18n="dispo_side_title">Stratégie de disposition « Initial / Résiduel »</span>
@@ -1108,6 +1190,7 @@
 
     <!-- -------- Sous-onglet : Rapport (personnalisation) -------- -->
     <div class="ppanel" data-pmode="report" style="display:none" id="reportCfgPanel"></div>
+    <div class="card ppanel" data-pmode="stats" style="display:none" id="statsCfgPanel"><p class="muted">Personnalisation des statistiques — à venir.</p></div>
   </section>
 
   <!-- ============ RAPPORT ============ -->
@@ -1191,7 +1274,7 @@ const I18N = {
     transpose_short:"⇄ Transposer", transpose_top_title:"Transposer les axes (échanger horizontal / vertical)",
     btn_new:"Nouveau", btn_load:"Charger…", btn_save:"Enregistrer",
     save_pending_tip:"Écrire les modifications dans le fichier .rae.json", save_clean_tip:"Aucune modification à enregistrer",
-    tab_presentation:"Présentation", tab_matrices:"Matrices", tab_risks:"Risques", tab_measures:"Mesures", tab_links:"Liens", tab_settings:"Paramètres",
+    tab_presentation:"Présentation", tab_matrices:"Matrices", tab_stats:"Statistiques", settings_stats:"Statistiques", tab_risks:"Risques", tab_measures:"Mesures", tab_links:"Liens", tab_settings:"Paramètres",
     seg_side:"Initial / Résiduel", seg_traj:"Trajectoire",
     hint_side:"Deux matrices : positions avant et après mesures.",
     hint_traj:"Trajectoire : position initiale → position résiduelle.",
@@ -1278,7 +1361,7 @@ const I18N = {
     f_title:"Titre", f_author:"Auteur", f_org:"Organisation", f_scope:"Périmètre", f_methodology:"Référence méthodologique",
     methodology_ph:"ISO 27005, EBIOS RM, interne…",
     "meta_status.draft":"Brouillon","meta_status.approved":"Validé","meta_status.archived":"Archivé",
-    settings_display:"Affichage des matrices",
+    settings_display:"Affichage", settings_matrix_display:"Affichage des matrices",
     settings_display_caption:"Disposition des pastilles lorsqu'une même case contient plusieurs risques (vues Initial / Résiduel). Les pastilles sont triées par identifiant.",
     cfg_spacing:"Espacement des cases (px)", cfg_corner:"Arrondi des angles (px)", cfg_step:"Pas de la grille de placement (N×N)",
     cfg_png:"Résolution de l'export PNG", "png.1":"×1 (écran)", "png.2":"×2", "png.3":"×3 (impression)",
@@ -1410,6 +1493,21 @@ const I18N = {
     vs_root:"racine non-objet", vs_format:"champ 'format' incorrect", vs_grid:"grille incomplète", vs_risks:"'risks' manquant",
     stat_risks:"Risques", stat_measures:"Mesures", stat_reduced:"Risques réduits",
     stat_distribution:"Répartition par criticité (initial → résiduel)",
+    stat_counters:"Compteurs clés", stat_treated:"Risques traités",
+    stat_by_category:"Risques par catégorie", stat_by_type:"Mesures par type", stat_by_status:"Mesures par statut",
+    stat_initial:"Initial", stat_residual:"Résiduel", stat_criticality:"Criticité",
+    stat_count:"Nombre", stat_share:"Part", stat_total:"Total", stat_unset:"Non renseigné",
+    stat_by_owner_risk:"Risques par responsable", stat_by_owner_measure:"Mesures par responsable",
+    stat_by_field:"Répartition par « {0} »", stat_coverage:"Couverture",
+    stat_cov_risks:"Risques sans mesure", stat_cov_measures:"Mesures orphelines",
+    stat_tg_risk:"risques", stat_tg_measure:"mesures", stat_tg_link:"liens",
+    stat_move:"Déplacer", stat_resize:"Redimensionner", stat_remove:"Retirer",
+    stat_size:"Taille", stat_display:"Affichage", stat_shape:"Forme",
+    stat_size_full:"Pleine", stat_size_half:"Demi",
+    stat_disp_table:"Tableau", stat_disp_chart:"Graphique", stat_disp_both:"Les deux",
+    stat_shape_donut:"Anneau", stat_shape_pie:"Camembert", stat_tiles:"Tuiles", stat_values:"valeurs",
+    stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
+    stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
     dist_initial:"← initial", dist_residual:"résiduel →",
     tab_report:"Rapport", report_print:"🖨 Imprimer",
     report_hint:"Aperçu ci-dessous. Le bouton Imprimer ouvre la boîte d'impression du navigateur (→ PDF).",
@@ -1492,7 +1590,7 @@ const I18N = {
     transpose_short:"⇄ Transpose", transpose_top_title:"Transpose axes (swap horizontal / vertical)",
     btn_new:"New", btn_load:"Load…", btn_save:"Save",
     save_pending_tip:"Write the changes to the .rae.json file", save_clean_tip:"No changes to save",
-    tab_presentation:"Overview", tab_matrices:"Matrices", tab_risks:"Risks", tab_measures:"Measures", tab_links:"Links", tab_settings:"Settings",
+    tab_presentation:"Overview", tab_matrices:"Matrices", tab_stats:"Statistics", settings_stats:"Statistics", tab_risks:"Risks", tab_measures:"Measures", tab_links:"Links", tab_settings:"Settings",
     seg_side:"Initial / Residual", seg_traj:"Trajectory",
     hint_side:"Two matrices: positions before and after measures.",
     hint_traj:"Trajectory: initial position → residual position.",
@@ -1579,7 +1677,7 @@ const I18N = {
     f_title:"Title", f_author:"Author", f_org:"Organization", f_scope:"Scope", f_methodology:"Methodology reference",
     methodology_ph:"ISO 27005, EBIOS RM, internal…",
     "meta_status.draft":"Draft","meta_status.approved":"Approved","meta_status.archived":"Archived",
-    settings_display:"Matrix display",
+    settings_display:"Display", settings_matrix_display:"Matrix display",
     settings_display_caption:"Chip arrangement when a cell holds several risks (Initial / Residual views). Chips are sorted by identifier.",
     cfg_spacing:"Cell spacing (px)", cfg_corner:"Corner radius (px)", cfg_step:"Placement grid step (N×N)",
     cfg_png:"PNG export resolution", "png.1":"×1 (screen)", "png.2":"×2", "png.3":"×3 (print)",
@@ -1706,6 +1804,21 @@ const I18N = {
     vs_root:"root is not an object", vs_format:"invalid 'format' field", vs_grid:"incomplete grid", vs_risks:"'risks' missing",
     stat_risks:"Risks", stat_measures:"Measures", stat_reduced:"Reduced risks",
     stat_distribution:"Distribution by criticality (initial → residual)",
+    stat_counters:"Key figures", stat_treated:"Treated risks",
+    stat_by_category:"Risks by category", stat_by_type:"Measures by type", stat_by_status:"Measures by status",
+    stat_initial:"Initial", stat_residual:"Residual", stat_criticality:"Criticality",
+    stat_count:"Count", stat_share:"Share", stat_total:"Total", stat_unset:"Not set",
+    stat_by_owner_risk:"Risks by owner", stat_by_owner_measure:"Measures by owner",
+    stat_by_field:"Distribution by « {0} »", stat_coverage:"Coverage",
+    stat_cov_risks:"Risks without a control", stat_cov_measures:"Orphan controls",
+    stat_tg_risk:"risks", stat_tg_measure:"measures", stat_tg_link:"links",
+    stat_move:"Move", stat_resize:"Resize", stat_remove:"Remove",
+    stat_size:"Size", stat_display:"Display", stat_shape:"Shape",
+    stat_size_full:"Full", stat_size_half:"Half",
+    stat_disp_table:"Table", stat_disp_chart:"Chart", stat_disp_both:"Both",
+    stat_shape_donut:"Donut", stat_shape_pie:"Pie", stat_tiles:"Tiles", stat_values:"values",
+    stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
+    stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
     dist_initial:"← initial", dist_residual:"residual →",
     tab_report:"Report", report_print:"🖨 Print",
     report_hint:"Preview below. The Print button opens the browser's print dialog (→ PDF).",
@@ -1788,7 +1901,7 @@ const I18N = {
     transpose_short:"⇄ Trasponi", transpose_top_title:"Trasponi gli assi (scambia orizzontale / verticale)",
     btn_new:"Nuovo", btn_load:"Carica…", btn_save:"Salva",
     save_pending_tip:"Scrivi le modifiche nel file .rae.json", save_clean_tip:"Nessuna modifica da salvare",
-    tab_presentation:"Presentazione", tab_matrices:"Matrici", tab_risks:"Rischi", tab_measures:"Misure", tab_links:"Collegamenti", tab_settings:"Impostazioni",
+    tab_presentation:"Presentazione", tab_matrices:"Matrici", tab_stats:"Statistiche", settings_stats:"Statistiche", tab_risks:"Rischi", tab_measures:"Misure", tab_links:"Collegamenti", tab_settings:"Impostazioni",
     seg_side:"Iniziale / Residuo", seg_traj:"Traiettoria",
     hint_side:"Due matrici: posizioni prima e dopo le misure.",
     hint_traj:"Traiettoria: posizione iniziale → posizione residua.",
@@ -1875,7 +1988,7 @@ const I18N = {
     f_title:"Titolo", f_author:"Autore", f_org:"Organizzazione", f_scope:"Ambito", f_methodology:"Riferimento metodologico",
     methodology_ph:"ISO 27005, EBIOS RM, interno…",
     "meta_status.draft":"Bozza","meta_status.approved":"Validata","meta_status.archived":"Archiviata",
-    settings_display:"Visualizzazione delle matrici",
+    settings_display:"Visualizzazione", settings_matrix_display:"Visualizzazione delle matrici",
     settings_display_caption:"Disposizione dei pallini quando una stessa cella contiene più rischi (viste Iniziale / Residuo). I pallini sono ordinati per identificatore.",
     cfg_spacing:"Spaziatura delle celle (px)", cfg_corner:"Arrotondamento degli angoli (px)", cfg_step:"Passo della griglia di posizionamento (N×N)",
     cfg_png:"Risoluzione dell'esportazione PNG", "png.1":"×1 (schermo)", "png.2":"×2", "png.3":"×3 (stampa)",
@@ -2002,6 +2115,21 @@ const I18N = {
     vs_root:"radice non-oggetto", vs_format:"campo 'format' non valido", vs_grid:"griglia incompleta", vs_risks:"'risks' mancante",
     stat_risks:"Rischi", stat_measures:"Misure", stat_reduced:"Rischi ridotti",
     stat_distribution:"Distribuzione per criticità (iniziale → residuo)",
+    stat_counters:"Indicatori chiave", stat_treated:"Rischi trattati",
+    stat_by_category:"Rischi per categoria", stat_by_type:"Misure per tipo", stat_by_status:"Misure per stato",
+    stat_initial:"Iniziale", stat_residual:"Residuo", stat_criticality:"Criticità",
+    stat_count:"Numero", stat_share:"Quota", stat_total:"Totale", stat_unset:"Non indicato",
+    stat_by_owner_risk:"Rischi per responsabile", stat_by_owner_measure:"Misure per responsabile",
+    stat_by_field:"Distribuzione per « {0} »", stat_coverage:"Copertura",
+    stat_cov_risks:"Rischi senza misura", stat_cov_measures:"Misure orfane",
+    stat_tg_risk:"rischi", stat_tg_measure:"misure", stat_tg_link:"collegamenti",
+    stat_move:"Sposta", stat_resize:"Ridimensiona", stat_remove:"Rimuovi",
+    stat_size:"Dimensione", stat_display:"Visualizzazione", stat_shape:"Forma",
+    stat_size_full:"Piena", stat_size_half:"Metà",
+    stat_disp_table:"Tabella", stat_disp_chart:"Grafico", stat_disp_both:"Entrambi",
+    stat_shape_donut:"Anello", stat_shape_pie:"Torta", stat_tiles:"Riquadri", stat_values:"valori",
+    stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
+    stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
     dist_initial:"← iniziale", dist_residual:"residuo →",
     tab_report:"Rapporto", report_print:"🖨 Stampa",
     report_hint:"Anteprima qui sotto. Il pulsante Stampa apre la finestra di stampa del browser (→ PDF).",
@@ -2595,6 +2723,7 @@ function activateView(view){
   document.getElementById("view-"+view).classList.add("active");
   if(view==="presentation") renderPresentation();
   if(view==="matrices") requestAnimationFrame(renderMatrices);
+  if(view==="stats") renderStats();
   if(view==="links") renderLinks();
   if(view==="settings") renderSettings();
   if(view==="plan") renderPlan();
@@ -2628,7 +2757,7 @@ document.querySelectorAll(".view").forEach(v=>{
 
 /* Ouverture sur un onglet/sous-onglet via ?tab=<onglet>[.<sous-onglet>]
    (ex. ?tab=matrices.traj, ?tab=settings.grid, ?tab=plan). Token inconnu -> ignoré. */
-const VIEW_TOKENS=["presentation","risks","measures","links","matrices","plan","report","settings"];
+const VIEW_TOKENS=["presentation","risks","measures","links","matrices","stats","plan","report","settings"];
 /* Sous-onglets : boutons à deux états. `aria-pressed` reflète la classe .active
    (le motif « tab » complet imposerait de câbler des tabpanels pour chaque sous-vue). */
 function syncSegAria(){document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.classList.contains("active")?"true":"false"));}
@@ -2637,7 +2766,7 @@ const SUBTABS={
   matrices:{tokens:["side","traj"],set:m=>{matrixMode=m;syncSeg("viewSeg",m);}},
   plan:{tokens:["due_date","status","responsible"],set:m=>{planMode=m;syncSeg("planSeg",m);}},
   links:{tokens:["grid","details"],set:m=>setLinkMode(m)},
-  settings:{tokens:["display","grid","fields","report"],set:m=>setParamMode(m)}
+  settings:{tokens:["display","grid","fields","report","stats"],set:m=>setParamMode(m)}
 };
 function applyTabParam(){
   let raw;
@@ -3067,6 +3196,7 @@ function renderAll(){
   renderLinks();
   renderPlan();
   updateBadges();
+  renderStats();
   requestAnimationFrame(renderMatrices);
   // le rapport est lourd (SVG) : on ne le régénère que s'il est affiché
   if(document.getElementById("view-report").classList.contains("active"))renderReport();
@@ -3096,49 +3226,322 @@ document.getElementById("viewSeg").addEventListener("click",e=>{
   requestAnimationFrame(renderMatrices);
 });
 
+/* ============================================================
+   VUE STATISTIQUES
+   Blocs (compteurs, criticité, répartitions) rendus en grille, suivant le filtre
+   propagé. Chaque bloc : tableau et/ou graphique (anneau/camembert). L'ordre, la
+   taille et le rendu viendront de extensions.display.stats (personnalisation : phase
+   ultérieure) ; pour l'instant, les blocs par défaut.
+   ============================================================ */
+const STAT_PALETTE=["#4c7dff","#2bb3a3","#e6862e","#7a5cff","#d64545","#2e9e5b","#e0b93a","#c05aa8","#5aa8c0","#b0788a"];
+function statPal(i){return STAT_PALETTE[i%STAT_PALETTE.length];}
+/* Blocs standards connus. « on » par défaut : compteurs, criticité, catégorie, type,
+   statut. Optionnels (désactivés par défaut) : responsable (risque/mesure), couverture. */
+const STAT_STD=[
+  {id:"counters",      type:"counters",      defOn:true, size:"full"},
+  {id:"criticality",   type:"criticality",   defOn:true, size:"full"},
+  {id:"risk_category", type:"risk_category", defOn:true, size:"half"},
+  {id:"measure_type",  type:"measure_type",  defOn:true, size:"half"},
+  {id:"measure_status",type:"measure_status",defOn:true, size:"half"},
+  {id:"risk_owner",    type:"risk_owner",    defOn:false,size:"half"},
+  {id:"measure_owner", type:"measure_owner", defOn:false,size:"half"},
+  {id:"coverage",      type:"coverage",      defOn:false,size:"half"}
+];
+const STAT_STD_BYID={};STAT_STD.forEach(s=>STAT_STD_BYID[s.id]=s);
+function statNoChart(type){return type==="counters"||type==="coverage";}   // pas de graphique
+function normStatBlock(b){
+  const o={id:b.id,type:b.type,on:b.on!==false,
+    size:(b.size==="full")?"full":"half",
+    display:["table","chart","both"].indexOf(b.display)>=0?b.display:"both",
+    shape:(b.shape==="pie")?"pie":"donut"};
+  if(b.type==="custom"){o.target=b.target;o.field=b.field;}
+  if(b.type==="counters")o.size="full";            // les tuiles occupent toujours la largeur
+  if(b.type==="coverage")o.display="table";
+  return o;
+}
+/* Config effective : blocs enregistrés (validés) puis blocs standards manquants ajoutés
+   désactivés (pour rester proposés dans les options). Type inconnu ignoré ; bloc champ
+   perso dont le champ a disparu retiré silencieusement. */
+function statsCfg(){
+  const raw=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.stats;
+  const saved=(raw&&Array.isArray(raw.blocks))?raw.blocks:null;
+  const out=[],seen={};
+  if(saved)saved.forEach(b=>{
+    if(!b||seen[b.id])return;
+    if(b.type==="custom"){
+      const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);
+      if(!f)return;
+      out.push(normStatBlock(b));seen[b.id]=1;
+    }else if(STAT_STD_BYID[b.id]){out.push(normStatBlock(b));seen[b.id]=1;}
+  });
+  STAT_STD.forEach(s=>{if(!seen[s.id])out.push(normStatBlock({id:s.id,type:s.type,on:saved?false:s.defOn,size:s.size,display:"both",shape:"donut"}));});
+  return out;
+}
+function statBlocks(){return statsCfg();}
+function cleanStatBlock(b){const o={id:b.id,type:b.type,on:b.on!==false,size:b.size,display:b.display,shape:b.shape};if(b.type==="custom"){o.target=b.target;o.field=b.field;}return o;}
+/* Écrit la config, marque à sauver, redessine l'onglet ET les options. */
+function statsSetBlocks(blocks){
+  analyse.extensions=analyse.extensions||{};analyse.extensions.display=analyse.extensions.display||{};
+  analyse.extensions.display.stats={blocks:blocks.map(cleanStatBlock)};
+  markDirty();renderStats();renderStatsSettings();
+}
+function statsReset(){const d=analyse.extensions&&analyse.extensions.display;if(d&&d.stats)delete d.stats;markDirty();renderStats();renderStatsSettings();}
+function statsUpdate(id,patch){statsSetBlocks(statsCfg().map(b=>b.id===id?normStatBlock(Object.assign({},b,patch)):b));}
+/* Réordonner : place `id` avant `beforeId` (fin si null). */
+function statsMove(id,beforeId){
+  const bl=statsCfg();const i=bl.findIndex(b=>b.id===id);if(i<0)return;const m=bl.splice(i,1)[0];
+  if(beforeId==null)bl.push(m);else{const j=bl.findIndex(b=>b.id===beforeId);bl.splice(j<0?bl.length:j,0,m);}
+  statsSetBlocks(bl);
+}
+/* Champs personnalisés à valeurs fermées, candidats à un bloc de répartition. */
+function statCustomCandidates(){const out=[];["risk","measure","link"].forEach(tg=>(customFieldsFor(tg)||[]).forEach(f=>{if(cfIsClosed(f.type))out.push({target:tg,field:f.code,label:cfLabel(f)});}));return out;}
+function statCustomId(tg,code){return "custom:"+tg+":"+code;}
+function statsAddCustom(){
+  const cand=statCustomCandidates();if(!cand.length)return;
+  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="custom")used[b.id]=1;});
+  const pick=cand.find(c=>!used[statCustomId(c.target,c.field)])||cand[0];
+  bl.push(normStatBlock({id:statCustomId(pick.target,pick.field),type:"custom",on:true,size:"half",display:"both",shape:"donut",target:pick.target,field:pick.field}));
+  statsSetBlocks(bl);
+}
+function statsSetCustomField(oldId,tg,code){
+  const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
+  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statCustomId(tg,code),target:tg,field:code}));
+  statsSetBlocks(bl);
+}
+function statsRemoveBlock(id){statsSetBlocks(statsCfg().filter(b=>b.id!==id));}
+/* Répartition catégorielle d'une liste (multi-valeur supporté : un élément peut compter
+   dans plusieurs clés). Clé vide -> « non renseigné ». */
+function statDist(list,keyFn,opts){
+  opts=opts||{};
+  const counts=new Map();
+  list.forEach(it=>{let ks=keyFn(it);
+    if(ks==null||ks==="")ks=["\u0000"]; else if(!Array.isArray(ks))ks=[ks]; else if(!ks.length)ks=["\u0000"];
+    ks.forEach(k=>counts.set(k,(counts.get(k)||0)+1));});
+  const lab=k=>k==="\u0000"?t("stat_unset"):(opts.labelFn?opts.labelFn(k):String(k));
+  let keys=[...counts.keys()];
+  if(opts.order)keys.sort(opts.order); else keys.sort((a,b)=>String(lab(a)).localeCompare(String(lab(b))));
+  const rows=keys.map((k,i)=>({key:k,label:String(lab(k)),count:counts.get(k),
+    color:(k==="\u0000")?"#6f7c90":(opts.colorMap?(opts.colorMap(k)||statPal(i)):statPal(i))}));
+  return {rows,total:rows.reduce((s,r)=>s+r.count,0)};
+}
+function statCounters(){
+  const R=visibleRisks(),M=visibleMeasures();
+  const treated=R.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+  return {nR:R.length,nM:M.length,treated,pct:R.length?Math.round(treated/R.length*100):0};
+}
+function statCriticality(){
+  const R=visibleRisks();
+  const lv=analyse.grid.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
+  const ci={},cr={};lv.forEach(l=>{ci[l.code]=0;cr[l.code]=0;});
+  R.forEach(r=>{const ki=critOfEval(r.initial_assessment).code,kr=critOfEval(residual(r)).code;if(ki in ci)ci[ki]++;if(kr in cr)cr[kr]++;});
+  return {rows:lv.map(l=>({key:l.code,label:l.label,color:l.color,initial:ci[l.code],residual:cr[l.code]})),total:R.length};
+}
+/* ---- Graphiques (anneau/camembert) via conic-gradient ---- */
+function statConic(segs){let acc=0;const s=segs.filter(x=>x.frac>0).map(x=>{const a=(acc*100).toFixed(3),b=((acc+x.frac)*100).toFixed(3);acc+=x.frac;return x.color+" "+a+"% "+b+"%";});
+  return s.length?"conic-gradient("+s.join(",")+")":"var(--panel-2)";}
+function statSlabs(segs,S,lr){const c=S/2;let acc=0,h="";
+  segs.forEach(x=>{if(x.count>0){const mid=(acc+x.frac/2)*2*Math.PI,X=c+lr*Math.sin(mid),Y=c-lr*Math.cos(mid);
+    h+='<span class="st-slab" style="left:'+X.toFixed(1)+'px;top:'+Y.toFixed(1)+'px;color:'+badgeFg(x.color)+'">'+x.count+'</span>';}acc+=x.frac;});
+  return h;}
+function statChart(segs,shape,total,sub,size){size=size||140;const bg=statConic(segs);
+  if(shape==="pie")return '<div class="st-pie-wrap" style="width:'+size+'px;height:'+size+'px"><div class="st-pie" style="background:'+bg+'"></div>'+statSlabs(segs,size,size*0.3)+'</div>';
+  const ins=Math.round(size*0.18);
+  return '<div class="st-donut" style="width:'+size+'px;height:'+size+'px;background:'+bg+'"><div class="st-hole" style="inset:'+ins+'px"><div class="n">'+total+'</div>'+(sub?'<div class="l">'+esc(sub)+'</div>':'')+'</div></div>';}
+/* ---- Tables & légendes ---- */
+function statPct(n,tot){return tot?Math.round(n/tot*100)+' %':'—';}
+function statTable(colLbl,rows,total){
+  return '<table class="st-tbl"><thead><tr><th>'+esc(colLbl)+'</th><th class="num">'+esc(t("stat_count"))+'</th><th class="num">'+esc(t("stat_share"))+'</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num">'+r.count+'</td><td class="num pct">'+statPct(r.count,total)+'</td></tr>').join("")+
+    '<tr class="tot"><td>'+esc(t("stat_total"))+'</td><td class="num">'+total+'</td><td class="num pct">'+(total?'100 %':'—')+'</td></tr></tbody></table>';
+}
+function statLegendList(rows,total){
+  return '<ul class="st-legend">'+rows.map(r=>'<li><span class="st-sw" style="background:'+r.color+'"></span><span class="lab">'+esc(r.label)+'</span><b>'+r.count+'</b><span class="pct">'+statPct(r.count,total)+'</span></li>').join("")+'</ul>';
+}
+function statDistCard(block,colLbl,data,sub){
+  const disp=block.display||"both",shape=block.shape||"donut";
+  if(disp==="table")return '<div class="st-content">'+statTable(colLbl,data.rows,data.total)+'</div>';
+  const segs=data.rows.map(r=>({color:r.color,frac:data.total?r.count/data.total:0,count:r.count}));
+  const chart=statChart(segs,shape,data.total,sub);
+  if(disp==="chart")return '<div class="st-content"><div class="st-dist">'+statLegendList(data.rows,data.total)+chart+'</div></div>';
+  return '<div class="st-content"><div class="st-dist">'+statTable(colLbl,data.rows,data.total)+chart+'</div></div>';
+}
+function statTitle(b){
+  switch(b.type){
+    case "counters":return t("stat_counters");
+    case "criticality":return t("stat_distribution");
+    case "risk_category":return t("stat_by_category");
+    case "measure_type":return t("stat_by_type");
+    case "measure_status":return t("stat_by_status");
+    case "risk_owner":return t("stat_by_owner_risk");
+    case "measure_owner":return t("stat_by_owner_measure");
+    case "coverage":return t("stat_coverage");
+    case "custom":{const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);return t("stat_by_field",f?cfLabel(f):"?");}
+  }
+  return b.id;
+}
+function statCoverage(){
+  const R=visibleRisks(),M=visibleMeasures(),L=visibleTreatments();
+  const rl=new Set(L.map(x=>x.risk)),ml=new Set(L.map(x=>x.measure));
+  return {rNo:R.filter(r=>!rl.has(r.id)).length,rTot:R.length,mNo:M.filter(m=>!ml.has(m.id)).length,mTot:M.length};
+}
+function statCustomKeys(it,f){const v=(it.custom||{})[f.code];
+  if(v==null||v==="")return [];
+  if(f.type==="checklist"||f.type==="tags")return Array.isArray(v)?v:[v];
+  if(f.type==="boolean")return [v?"true":"false"];
+  return [String(v)];}
+function statCustomLabel(f,k){if(f.type==="boolean")return k==="true"?t("cf_yes"):t("cf_no");const it=(f.items||[]).find(x=>x.code===k);return it?cfItemLabel(it):k;}
+function statBlockBody(block){
+  switch(block.type){
+    case "counters":{const c=statCounters();
+      return '<div class="st-content"><div class="st-tiles">'+
+        '<div class="st-tile"><div class="n">'+c.nR+'</div><div class="l">'+esc(t("stat_risks"))+'</div></div>'+
+        '<div class="st-tile"><div class="n">'+c.nM+'</div><div class="l">'+esc(t("stat_measures"))+'</div></div>'+
+        '<div class="st-tile"><div class="n" style="color:var(--green)">'+c.treated+'</div><div class="l">'+esc(t("stat_reduced"))+'</div></div>'+
+        '<div class="st-tile"><div class="n" style="color:var(--accent)">'+c.pct+' %</div><div class="l">'+esc(t("stat_treated"))+'</div></div>'+
+      '</div></div>';}
+    case "coverage":{const cv=statCoverage();
+      return '<div class="st-content"><table class="st-tbl"><tbody>'+
+        '<tr><td>'+esc(t("stat_cov_risks"))+'</td><td class="num">'+cv.rNo+' / '+cv.rTot+'</td></tr>'+
+        '<tr><td>'+esc(t("stat_cov_measures"))+'</td><td class="num">'+cv.mNo+' / '+cv.mTot+'</td></tr>'+
+      '</tbody></table></div>';}
+    case "risk_category":return statDistCard(block,t("f_category"),statDist(visibleRisks(),r=>r.category),t("stat_risks"));
+    case "measure_type":return statDistCard(block,t("th_type"),statDist(visibleMeasures(),m=>m.type,{labelFn:c=>typeLabel(c)}),t("stat_measures"));
+    case "measure_status":return statDistCard(block,t("th_status"),statDist(visibleMeasures(),m=>m.status,{labelFn:statusLabel,order:(a,b)=>STATUS_CODES.indexOf(a)-STATUS_CODES.indexOf(b),colorMap:s=>(STATUS_COLORS[s]||{}).bg}),t("stat_measures"));
+    case "risk_owner":return statDistCard(block,t("f_owner"),statDist(visibleRisks(),r=>r.owner),t("stat_risks"));
+    case "measure_owner":return statDistCard(block,t("th_responsible"),statDist(visibleMeasures(),m=>m.responsible),t("stat_measures"));
+    case "custom":{const f=(customFieldsFor(block.target)||[]).find(x=>x.code===block.field);
+      if(!f)return '<div class="st-content"><p class="muted">—</p></div>';
+      const list=block.target==="risk"?visibleRisks():block.target==="measure"?visibleMeasures():visibleTreatments();
+      const data=statDist(list,it=>statCustomKeys(it,f),{labelFn:k=>statCustomLabel(f,k),colorMap:f.type==="tags"?(k=>cfChoiceColor(f,k)):null});
+      const sub=(f.type==="checklist"||f.type==="tags")?t("stat_values")
+        :(block.target==="risk"?t("stat_risks"):block.target==="measure"?t("stat_measures"):t("tab_links"));
+      return statDistCard(block,cfLabel(f),data,sub);}
+    case "criticality":{const d=statCriticality(),disp=block.display||"both",shape=block.shape||"donut";
+      const tbl='<table class="st-tbl"><thead><tr><th>'+esc(t("stat_criticality"))+'</th><th class="num">'+esc(t("stat_initial"))+'</th><th class="num">'+esc(t("stat_residual"))+'</th></tr></thead><tbody>'+
+        d.rows.map(r=>'<tr><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num">'+r.initial+'</td><td class="num">'+r.residual+'</td></tr>').join("")+
+        '<tr class="tot"><td>'+esc(t("stat_total"))+'</td><td class="num">'+d.total+'</td><td class="num">'+d.total+'</td></tr></tbody></table>';
+      let chart="";
+      if(disp!=="table"){
+        const segI=d.rows.map(r=>({color:r.color,frac:d.total?r.initial/d.total:0,count:r.initial}));
+        const segR=d.rows.map(r=>({color:r.color,frac:d.total?r.residual/d.total:0,count:r.residual}));
+        chart='<div class="st-duo"><figure>'+statChart(segI,shape,d.total,t("stat_initial"),128)+'<figcaption>'+esc(t("stat_initial"))+'</figcaption></figure>'+
+          '<figure>'+statChart(segR,shape,d.total,t("stat_residual"),128)+'<figcaption>'+esc(t("stat_residual"))+'</figcaption></figure></div>';
+      }
+      if(disp==="table")return '<div class="st-content">'+tbl+'</div>';
+      if(disp==="chart")return '<div class="st-content"><div class="st-dist">'+statLegendList(d.rows.map(r=>({label:r.label,count:r.initial,color:r.color})),d.total)+chart+'</div></div>';
+      return '<div class="st-content"><div class="st-dist">'+tbl+chart+'</div></div>';}
+  }
+  return "";
+}
+/* Carte d'un bloc : poignée de déplacement (devant le titre), outils redimensionner/retirer
+   au coin, poignée de redimensionnement à droite (sauf compteurs, toujours pleine largeur). */
+function statBlockHTML(block){
+  const isCounters=block.type==="counters";
+  const tools='<div class="st-tools">'+
+    (isCounters?'':'<button type="button" class="st-resize" title="'+esc(t("stat_resize"))+'" aria-label="'+esc(t("stat_resize"))+'">⤢</button>')+
+    '<button type="button" class="st-remove" title="'+esc(t("stat_remove"))+'" aria-label="'+esc(t("stat_remove"))+'">✕</button></div>';
+  return '<section class="st-card'+(block.size==="full"?" full":"")+'" data-sid="'+esc(block.id)+'">'+
+    tools+
+    '<h3><span class="st-mv" aria-hidden="true">⠿</span>'+esc(statTitle(block))+'</h3>'+
+    statBlockBody(block)+
+    '</section>';
+}
 function renderStats(){
-  const el=document.getElementById("stats");
-  /* Ce bloc appartient à l'onglet Matrices : il décrit ce que la matrice montre, et doit
-     donc suivre le filtrage. Des chiffres portant sur toute l'analyse au-dessus d'une
-     matrice filtrée se liraient comme un désaccord entre les deux. */
-  const risques=visibleRisks(), mesures=visibleMeasures();
-  const nR=risques.length, nM=mesures.length;
-  // répartition criticité initiale vs résiduelle
-  const cats=analyse.grid.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
-  const count=(which)=>{const c={};cats.forEach(x=>c[x.code]=0);
-    risques.forEach(r=>{const ev=which==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
-  const ci=count("i"), cr=count("r");
-  const treated=risques.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
-  el.innerHTML=
-    '<div class="stat"><div class="n">'+nR+'</div><div class="l">'+t("stat_risks")+'</div></div>'+
-    '<div class="stat"><div class="n">'+nM+'</div><div class="l">'+t("stat_measures")+'</div></div>'+
-    '<div class="stat"><div class="n">'+treated+'</div><div class="l">'+t("stat_reduced")+'</div></div>'+
-    '<div class="stat" style="flex:2;min-width:340px"><div class="l" style="margin-bottom:8px">'+t("stat_distribution")+'</div>'+
-      '<div style="position:relative">'+
-        '<div style="position:absolute;top:2px;bottom:2px;left:198px;width:1.5px;background:var(--border)"></div>'+
-        cats.map(c=>{
-          const max=Math.max(1,nR), bw=v=>v>0?Math.max(6,Math.round(v/max*100)):3;
-          const iv=ci[c.code], rv=cr[c.code];
-          return '<div style="position:relative;display:flex;align-items:center;padding:4px 0;font-size:12px">'+
-            '<span style="width:66px;flex:none;color:var(--muted)">'+esc(c.label)+'</span>'+
-            '<div style="width:132px;flex:none;display:flex;justify-content:flex-end;align-items:center;gap:6px;padding-right:6px">'+
-              '<span style="color:var(--muted);font-variant-numeric:tabular-nums">'+iv+'</span>'+
-              '<div style="height:14px;border-radius:3px;width:'+bw(iv)+'px;background:'+c.color+';opacity:'+(iv>0?".45":"1")+'"></div>'+
-            '</div>'+
-            '<div style="width:132px;flex:none;display:flex;justify-content:flex-start;align-items:center;gap:6px;padding-left:6px">'+
-              '<div style="height:14px;border-radius:3px;width:'+bw(rv)+'px;background:'+c.color+'"></div>'+
-              '<span style="color:'+c.color+';font-weight:700;font-variant-numeric:tabular-nums">'+rv+'</span>'+
-            '</div>'+
-          '</div>';
-        }).join('')+
-      '</div>'+
-      '<div style="display:flex;font-size:11px;color:var(--muted);margin-top:6px">'+
-        '<span style="width:66px;flex:none"></span>'+
-        '<span style="width:132px;text-align:right;padding-right:6px">'+t("dist_initial")+'</span>'+
-        '<span style="width:132px;text-align:left;padding-left:6px">'+t("dist_residual")+'</span>'+
-      '</div>'+
+  const host=document.getElementById("stats");if(!host)return;
+  host.className="st-grid";
+  host.innerHTML=statBlocks().filter(b=>b.on!==false).map(statBlockHTML).join("");
+  setFilterCount("stats",visibleRisks().length,analyse.risks.length);
+}
+/* ---- Manipulation directe sur la grille (déplacer / redimensionner / retirer) ---- */
+(function(){
+  const host=document.getElementById("stats");if(!host)return;
+  let dragId=null;
+  host.addEventListener("mousedown",e=>{const card=e.target.closest(".st-card");if(!card)return;
+    if(e.target.closest("h3")&&!e.target.closest("button"))card.setAttribute("draggable","true");else card.removeAttribute("draggable");});
+  host.addEventListener("dragstart",e=>{const card=e.target.closest(".st-card");
+    if(!card||card.getAttribute("draggable")!=="true"){e.preventDefault();return;}
+    dragId=card.dataset.sid;card.classList.add("st-dragging");e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain",dragId);}catch(_){}});
+  host.addEventListener("dragover",e=>{if(dragId==null)return;e.preventDefault();e.dataTransfer.dropEffect="move";
+    const over=e.target.closest(".st-card");host.querySelectorAll(".st-drop").forEach(x=>x.classList.remove("st-drop"));
+    if(over&&over.dataset.sid!==dragId)over.classList.add("st-drop");});
+  host.addEventListener("drop",e=>{if(dragId==null)return;e.preventDefault();
+    const over=e.target.closest(".st-card"),beforeId=(over&&over.dataset.sid!==dragId)?over.dataset.sid:null,id=dragId;
+    dragId=null;statsMove(id,beforeId);});
+  host.addEventListener("dragend",()=>{dragId=null;host.querySelectorAll(".st-card").forEach(c=>{c.removeAttribute("draggable");c.classList.remove("st-dragging","st-drop");});});
+  host.addEventListener("click",e=>{const card=e.target.closest(".st-card");if(!card)return;const id=card.dataset.sid;
+    if(e.target.closest(".st-resize")){const b=statsCfg().find(x=>x.id===id);if(b&&b.type!=="counters")statsUpdate(id,{size:b.size==="full"?"half":"full"});return;}
+    if(e.target.closest(".st-remove")){statsUpdate(id,{on:false});return;}});
+})();
+
+/* ---- Sous-onglet Paramètres › Statistiques (personnalisation) ---- */
+function statSeg(key,cap,pairs,cur,disabled){
+  return '<div class="st2-grp"><span class="cap">'+esc(cap)+'</span><div class="st2-seg'+(disabled?' off':'')+'" data-act="'+key+'">'+
+    pairs.map(p=>'<span data-val="'+p[0]+'"'+(p[0]===cur?' class="on"':'')+'>'+esc(p[1])+'</span>').join("")+'</div></div>';
+}
+function statFixed(cap,val){return '<div class="st2-grp"><span class="cap">'+esc(cap)+'</span><span class="st2-fixed">'+esc(val)+'</span></div>';}
+function statRowCtrls(b){
+  let h="";
+  if(b.type==="counters")h+=statFixed(t("stat_size"),t("stat_size_full"));
+  else h+=statSeg("size",t("stat_size"),[["full",t("stat_size_full")],["half",t("stat_size_half")]],b.size);
+  if(b.type==="counters")h+=statFixed(t("stat_display"),t("stat_tiles"));
+  else if(b.type==="coverage")h+=statFixed(t("stat_display"),t("stat_disp_table"));
+  else h+=statSeg("display",t("stat_display"),[["table",t("stat_disp_table")],["chart",t("stat_disp_chart")],["both",t("stat_disp_both")]],b.display);
+  if(!statNoChart(b.type))h+=statSeg("shape",t("stat_shape"),[["donut",t("stat_shape_donut")],["pie",t("stat_shape_pie")]],b.shape,b.display==="table");
+  return h;
+}
+function statCustomSelectHTML(b){
+  const cur=b.target+"|"+b.field;
+  return '<select class="st2-field" data-act="field">'+statCustomCandidates().map(c=>{const v=c.target+"|"+c.field;
+    return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(c.label)+' ('+esc(t("stat_tg_"+c.target))+')</option>';}).join("")+'</select>';
+}
+function statSettingsRowHTML(b){
+  const name=b.type==="custom"
+    ? statCustomSelectHTML(b)+'<button type="button" class="st2-del" data-act="del" title="'+esc(t("stat_remove"))+'" aria-label="'+esc(t("stat_remove"))+'">🗑</button>'
+    : '<span class="t">'+esc(statTitle(b))+'</span>';
+  return '<div class="st2-row'+(b.on?'':' off')+'" data-sid="'+esc(b.id)+'">'+
+    '<span class="st2-grip" title="'+esc(t("stat_move"))+'" aria-hidden="true">⠿</span>'+
+    '<button type="button" class="st2-chk'+(b.on?' on':'')+'" role="checkbox" aria-checked="'+(b.on?'true':'false')+'" data-act="toggle" aria-label="'+esc(statTitle(b))+'">'+(b.on?'✓':'')+'</button>'+
+    '<div class="st2-name">'+name+'</div>'+
+    '<div class="st2-ctrls">'+statRowCtrls(b)+'</div>'+
+  '</div>';
+}
+function renderStatsSettings(){
+  const panel=document.getElementById("statsCfgPanel");if(!panel)return;
+  const canAdd=statCustomCandidates().length>0;
+  panel.innerHTML='<p class="muted" style="margin:0 0 12px">'+esc(t("stats_cfg_intro"))+'</p>'+
+    '<div class="st2-list">'+statsCfg().map(statSettingsRowHTML).join("")+'</div>'+
+    '<div class="st2-actions">'+
+      (canAdd?'<button type="button" class="btn ghost sm" data-act="add">+ '+esc(t("stats_add_custom"))+'</button>':'')+
+      '<button type="button" class="btn ghost sm" data-act="reset">↺ '+esc(t("stats_reset"))+'</button>'+
     '</div>';
 }
+(function(){
+  const panel=document.getElementById("statsCfgPanel");if(!panel)return;
+  let dragId=null;
+  panel.addEventListener("mousedown",e=>{const row=e.target.closest(".st2-row");if(!row)return;
+    if(e.target.closest(".st2-grip"))row.setAttribute("draggable","true");else row.removeAttribute("draggable");});
+  panel.addEventListener("click",e=>{
+    const act=e.target.closest("[data-act]");
+    const opt=e.target.closest(".st2-seg span[data-val]");
+    const row=e.target.closest(".st2-row"),id=row?row.dataset.sid:null;
+    if(opt){const seg=opt.closest(".st2-seg");if(!seg.classList.contains("off")&&id)statsUpdate(id,{[seg.dataset.act]:opt.dataset.val});return;}
+    if(!act)return;const kind=act.dataset.act;
+    if(kind==="add"){statsAddCustom();return;}
+    if(kind==="reset"){statsReset();return;}
+    if(!id)return;
+    if(kind==="toggle"){const b=statsCfg().find(x=>x.id===id);if(b)statsUpdate(id,{on:!b.on});return;}
+    if(kind==="del"){statsRemoveBlock(id);return;}
+  });
+  panel.addEventListener("change",e=>{const sel=e.target.closest(".st2-field");if(!sel)return;
+    const row=e.target.closest(".st2-row"),id=row?row.dataset.sid:null;if(!id)return;
+    const p=sel.value.split("|");statsSetCustomField(id,p[0],p[1]);});
+  panel.addEventListener("dragstart",e=>{const row=e.target.closest(".st2-row");if(!row||row.getAttribute("draggable")!=="true"){e.preventDefault();return;}
+    dragId=row.dataset.sid;row.classList.add("st2-dragging");e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain",dragId);}catch(_){}});
+  panel.addEventListener("dragover",e=>{if(dragId==null)return;e.preventDefault();const over=e.target.closest(".st2-row");
+    panel.querySelectorAll(".st2-drop").forEach(x=>x.classList.remove("st2-drop"));if(over&&over.dataset.sid!==dragId)over.classList.add("st2-drop");});
+  panel.addEventListener("drop",e=>{if(dragId==null)return;e.preventDefault();const over=e.target.closest(".st2-row"),beforeId=(over&&over.dataset.sid!==dragId)?over.dataset.sid:null,id=dragId;dragId=null;statsMove(id,beforeId);});
+  panel.addEventListener("dragend",()=>{dragId=null;panel.querySelectorAll(".st2-row").forEach(r=>{r.removeAttribute("draggable");r.classList.remove("st2-dragging","st2-drop");});});
+})();
 
 /* ---------- Rendu (grille, barre d'outils, dispatcher) ---------- */
 function buildGrid(container,mode){
@@ -3234,7 +3637,6 @@ function renderArrangementBar(mode){
     bar.appendChild(buildArrangementSelect(TRAJECTORY_CODES,"traj",getTrajArrangement(),v=>{setTrajArrangement(v);requestAnimationFrame(renderMatrices);},t("dispo_traj_title")));
 }
 function renderMatrices(){
-  renderStats();
   const area=document.getElementById("matrixArea");
   const legend=document.getElementById("matrixLegend");
   area.innerHTML="";
@@ -4573,7 +4975,7 @@ function planSortByDate(list){
 }
 function planRow(m){
   const ov=isOverdue(m);
-  return '<tr'+(ov?' class="overdue-row"':'')+' data-mid="'+esc(m.id)+'" style="cursor:pointer">'+
+  return '<tr'+(ov?' class="overdue-row"':'')+' data-mid="'+esc(m.id)+'">'+
     '<td><span class="id-badge">'+esc(m.id)+'</span></td>'+
     '<td><b>'+esc(m.label)+'</b></td>'+
     '<td class="muted">'+esc(m.responsible||"—")+'</td>'+
@@ -4934,6 +5336,7 @@ const FILTER_BARS=[
     natBool("fltPlanOverdue",()=>t("flt_overdue_field"),
       ()=>listState.plan.overdue||"", v=>listState.plan.overdue=v)]},
   {cle:"matrices", vue:"view-matrices", panneau:null, search:null, natives:()=>[]},
+  {cle:"stats", vue:"view-stats", panneau:null, search:null, natives:()=>[]},
   {cle:"cross", vue:"view-links", panneau:'[data-lmode="grid"]', search:null, natives:()=>[]},
   {cle:"details", vue:"view-links", panneau:'[data-lmode="details"]', search:"fltLinkQ", natives:()=>[]}
 ];
@@ -5503,13 +5906,13 @@ function addModalSaveAndNew(reopen){
 /* Pastilles R1/M4 cliquables (souris et clavier) : ouvrent la fiche référencée.
    Les gestionnaires de ligne ignorent ces clics (garde closest dans chaque tableau). */
 document.addEventListener("click",e=>{
-  const el=e.target.closest("[data-open-m],[data-open-r]");if(!el)return;
+  const el=e.target.closest("[data-open-m],[data-open-r]");if(!el||el.closest(".report"))return;   // pastilles inertes dans le rapport
   if(el.dataset.openM)openMeasureModal(el.dataset.openM);else openRiskModal(el.dataset.openR);
 });
 document.addEventListener("keydown",e=>{
   if(e.key!=="Enter"&&e.key!==" ")return;
   const el=e.target&&e.target.closest?e.target.closest("[data-open-m],[data-open-r]"):null;
-  if(!el)return;e.preventDefault();
+  if(!el||el.closest(".report"))return;e.preventDefault();
   if(el.dataset.openM)openMeasureModal(el.dataset.openM);else openRiskModal(el.dataset.openR);
 });
 /* ---------- Aide & raccourcis ---------- */
@@ -6960,6 +7363,7 @@ function setParamMode(m){
   document.querySelectorAll("#paramSeg button").forEach(b=>b.classList.toggle("active",b.dataset.pmode===m));
   document.querySelectorAll("#view-settings .ppanel").forEach(p=>{p.style.display=(p.dataset.pmode===m)?"":"none";});
   if(m==="report")renderReportSettings();
+  if(m==="stats")renderStatsSettings();
   syncSegAria();
 }
 document.getElementById("paramSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setParamMode(b.dataset.pmode);});

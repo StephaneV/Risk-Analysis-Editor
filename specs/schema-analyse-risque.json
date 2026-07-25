@@ -116,6 +116,31 @@
                 }
               }
             },
+            "stats": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Personnalisation de l'onglet Statistiques : liste ordonnée de blocs (compteurs, répartitions, couverture, champ personnalisé) affichés en grille. Absent : blocs par défaut. Un bloc de type inconnu est ignoré ; un bloc « champ personnalisé » dont le champ a disparu est retiré.",
+              "properties": {
+                "blocks": {
+                  "type": "array",
+                  "description": "Blocs dans l'ordre d'affichage.",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "id": { "type": "string", "description": "Identifiant du bloc. Types standard : « counters », « criticality », « risk_category », « measure_type », « measure_status », « risk_owner », « measure_owner », « coverage ». Bloc champ personnalisé : « custom:<cible>:<code> »." },
+                      "type": { "type": "string", "description": "Type de bloc (voir id) ; « custom » pour une répartition par champ personnalisé." },
+                      "on": { "type": "boolean", "description": "Bloc affiché. Défaut : true." },
+                      "size": { "enum": ["full", "half"], "description": "Largeur dans la grille : pleine (« full ») ou demie (« half »). Les compteurs sont toujours en pleine largeur." },
+                      "display": { "enum": ["table", "chart", "both"], "description": "Rendu : tableau seul, graphique seul ou les deux. Sans objet pour les compteurs (tuiles) et la couverture (tableau)." },
+                      "shape": { "enum": ["donut", "pie"], "description": "Forme du graphique : anneau (« donut ») ou camembert (« pie »)." },
+                      "target": { "enum": ["risk", "measure", "link"], "description": "Bloc « custom » uniquement : entité ciblée." },
+                      "field": { "type": "string", "description": "Bloc « custom » uniquement : code du champ personnalisé (type à valeurs fermées)." }
+                    }
+                  }
+                }
+              }
+            },
             "report": {
               "type": "object",
               "additionalProperties": true,

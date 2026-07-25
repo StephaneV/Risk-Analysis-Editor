@@ -49,7 +49,7 @@ RAE thus offers a framework that is **more structured and consistent than a set 
 - **Chip layout strategies** when a cell holds several risks: grid, row, column, cluster/spiral, "+N" overflow…
 - **Manual placement** of chips by drag-and-drop, with a configurable N×N snap grid and positions saved in the file.
 - **Interactive chips**: **clicking** a chip opens the risk record to edit it; **dragging** it to another cell **re-scores** the risk (keyboard: `Enter`/`Space` to edit, `Ctrl`+arrows to re-score).
-- **Statistics**: distribution by criticality level (initial → residual), number of reduced risks.
+- **Statistics tab**: a figures dashboard — key counters, distribution by **criticality** (initial → residual), by risk **category**, by measure **type** and **status**, by **custom field**, and **coverage** (risks without a control, orphan controls). Each block as a **table and/or chart** (donut or pie). A **customizable** grid (toggle blocks, size, shape) that is **rearrangeable by drag-and-drop**; follows the propagated filter; settings saved in the file.
 
 ### Scoring grid
 - **Configurable axes** (vertical / horizontal): free number of levels, labels and tooltip descriptions.

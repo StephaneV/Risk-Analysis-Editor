@@ -49,7 +49,7 @@ RAE offre ainsi un cadre **plus structuré et cohérent qu'un ensemble de feuill
 - **Stratégies de disposition des pastilles** lorsqu'une case contient plusieurs risques : grille, rangée, colonne, amas/spirale, débordement « +N »…
 - **Placement manuel** des pastilles en glisser-déposer, avec grille d'accroche (*snap* N×N paramétrable) et positions enregistrées dans le fichier.
 - **Pastilles interactives** : **cliquer** une pastille ouvre la fiche du risque pour l'éditer ; la **glisser** vers une autre case **recote** le risque (au clavier : `Entrée`/`Espace` pour éditer, `Ctrl`+flèches pour recoter).
-- **Statistiques** : répartition par niveau de criticité (initial → résiduel), nombre de risques réduits.
+- **Onglet Statistiques** : tableau de bord chiffré — compteurs clés, répartition par **criticité** (initial → résiduel), par **catégorie** de risque, par **type** et **statut** de mesure, par **champ personnalisé**, et **couverture** (risques sans mesure, mesures orphelines). Chaque bloc en **tableau et/ou graphique** (anneau ou camembert). Grille **personnalisable** (blocs activables, taille, forme) et **réorganisable au glisser-déposer** ; suit le filtrage propagé ; réglages enregistrés dans le fichier.
 
 ### Grille de cotation
 - **Axes paramétrables** (vertical / horizontal) : nombre de niveaux libre, libellés et descriptions en infobulle.
