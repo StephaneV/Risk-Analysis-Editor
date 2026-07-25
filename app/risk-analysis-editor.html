@@ -5070,7 +5070,7 @@ function planCard(m){
     ((m.due_date||m.responsible)?'<div class="muted" style="margin-top:4px;font-size:11px">'+
       (m.due_date?'<span'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(m.due_date)+(ov?' ⚠':'')+'</span>':'')+
       (m.due_date&&m.responsible?' · ':'')+(m.responsible?esc(m.responsible):'')+'</div>':'')+
-    (risks.length?'<div class="pill-list" style="margin-top:5px">'+risks.map(id=>{const rr=riskById(id);return '<span class="pill" title="'+esc(rr?rr.label:id)+'">'+esc(id)+'</span>';}).join("")+'</div>':'')+
+    (risks.length?'<div class="pill-list" style="margin-top:5px">'+risks.map(id=>'<span class="pill" data-tip-r="'+esc(id)+'">'+esc(id)+'</span>').join("")+'</div>':'')+
     customFieldsFor("measure").filter(f=>(f.type==="tags"||f.type==="progress")&&cfHasVal((m.custom||{})[f.code]))
       .map(f=>'<div style="margin-top:5px">'+cfDisplayHTML(f,(m.custom||{})[f.code])+'</div>').join("")+
   '</div>';
@@ -5761,7 +5761,7 @@ function riskDeltaCell(r){
 }
 /* Pastille de code de risque, cliquable : ouvre la fiche du risque (pendant de measurePill). */
 function riskPill(id){const rr=riskById(id);
-  return '<span class="pill" title="'+esc(rr?rr.label:id)+'" data-open-r="'+esc(id)+'" tabindex="0" role="button">'+esc(id)+'</span>';}
+  return '<span class="pill" data-open-r="'+esc(id)+'" tabindex="0" role="button" aria-label="'+esc(rr?rr.id+" — "+rr.label:id)+'">'+esc(id)+'</span>';}
 function measurePillsFor(id){return riskPill(id);}
 // Descripteurs des colonnes intégrées (hors Actions), par table.
 function builtinCols(table){
@@ -5978,13 +5978,38 @@ function addModalSaveAndNew(reopen){
    Les gestionnaires de ligne ignorent ces clics (garde closest dans chaque tableau). */
 document.addEventListener("click",e=>{
   const el=e.target.closest("[data-open-m],[data-open-r]");if(!el||el.closest(".report"))return;   // pastilles inertes dans le rapport
+  hidePillTip();
   if(el.dataset.openM)openMeasureModal(el.dataset.openM);else openRiskModal(el.dataset.openR);
 });
 document.addEventListener("keydown",e=>{
   if(e.key!=="Enter"&&e.key!==" ")return;
   const el=e.target&&e.target.closest?e.target.closest("[data-open-m],[data-open-r]"):null;
-  if(!el||el.closest(".report"))return;e.preventDefault();
+  if(!el||el.closest(".report"))return;e.preventDefault();hidePillTip();
   if(el.dataset.openM)openMeasureModal(el.dataset.openM);else openRiskModal(el.dataset.openR);
+});
+/* Infobulle maison des pastilles R./M. (registres et plan d'action), cohérente avec les
+   autres tooltips de l'application : remplace les title natifs. Suit le curseur et reste
+   dans le viewport. Inerte dans le rapport (pastilles non interactives). */
+function pillTipHTML(kind,id){
+  if(kind==="measure"){const m=measureById(id);if(!m)return esc(id);
+    return '<b>'+esc(m.id)+' — '+esc(m.label)+'</b>'+(m.status?'<br>'+statusBadge(m.status):'');}
+  const r=riskById(id);if(!r)return esc(id);
+  return '<b>'+esc(r.id)+' — '+esc(r.label)+'</b>'+(r.category?'<br><span class="t-cat">'+esc(r.category)+'</span>':'');
+}
+let pillTipOn=false;
+function hidePillTip(){if(pillTipOn){tip.style.opacity=0;pillTipOn=false;}}
+document.addEventListener("mousemove",e=>{
+  const el=e.target&&e.target.closest?e.target.closest(".pill[data-open-m],.pill[data-open-r],.pill[data-tip-m],.pill[data-tip-r]"):null;
+  if(!el||el.closest(".report")){hidePillTip();return;}
+  const d=el.dataset,kind=(d.openM||d.tipM)?"measure":"risk";
+  const html=pillTipHTML(kind,d.openM||d.tipM||d.openR||d.tipR);
+  if(!html){hidePillTip();return;}
+  tip.classList.remove("tt-link","tt-stat");tip.innerHTML=html;tip.style.opacity=1;
+  const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;
+  let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-pad)x=e.clientX-14-w;if(x<pad)x=pad;
+  if(y+h>innerHeight-pad)y=innerHeight-pad-h;if(y<pad)y=pad;
+  tip.style.left=x+"px";tip.style.top=y+"px";pillTipOn=true;
 });
 /* ---------- Aide & raccourcis ---------- */
 function openHelpModal(){
@@ -6239,15 +6264,16 @@ function statusBadge(s){
   const c=STATUS_COLORS[s],lbl=statusLabel(s);
   return c?'<span class="tag" style="background:'+c.bg+';color:'+badgeFg(c.bg)+'">'+esc(lbl)+'</span>':'<span class="pill">'+esc(lbl)+'</span>';
 }
-/* Pastille de code de mesure, colorée selon le statut, avec libellé + statut en infobulle */
+/* Pastille de code de mesure, colorée selon le statut. Infobulle maison au survol
+   (libellé + statut), gérée par le gestionnaire délégué ; aria-label pour les lecteurs d'écran. */
 function measurePill(id){
   const m=measureById(id);
   const c=m&&m.status?STATUS_COLORS[m.status]:null;
   const statutLbl=m&&m.status?statusLabel(m.status):"";
-  const title=(m?m.label:id)+(statutLbl?" — "+statutLbl:"");
+  const aria=(m?m.id+" — "+m.label:id)+(statutLbl?" — "+statutLbl:"");
   const style=c?' style="background:'+c.bg+';color:'+badgeFg(c.bg)+';border-color:'+c.bg+'"':"";
   // data-open-m : la pastille ouvre la fiche de la mesure (navigation transversale, souris et clavier).
-  return '<span class="pill"'+style+' title="'+esc(title)+'" data-open-m="'+esc(id)+'" tabindex="0" role="button">'+esc(id)+'</span>';
+  return '<span class="pill"'+style+' data-open-m="'+esc(id)+'" tabindex="0" role="button" aria-label="'+esc(aria)+'">'+esc(id)+'</span>';
 }
 const TYPES=["technical","organizational","preventive","detective","corrective","deterrent"];
 function renderMeasures(){
