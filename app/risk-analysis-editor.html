@@ -337,18 +337,28 @@
   .st-tbl tr.tot td:first-child{color:var(--muted)}
   .st-tbl .pct{color:var(--muted)}
   .st-sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:-1px}
-  .st-donut{border-radius:50%;position:relative;flex:none}
-  .st-hole{position:absolute;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .st-hole .n{font-weight:800;font-size:22px;line-height:1}
-  .st-hole .l{color:var(--muted);font-size:11px;margin-top:2px}
-  .st-pie-wrap{position:relative;flex:none}
-  .st-pie{width:100%;height:100%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}
-  .st-slab{position:absolute;transform:translate(-50%,-50%);font-size:12.5px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none}
+  /* Survol d'une valeur (ligne, cellule, entrée de légende) : affiche la liste des éléments. */
+  .st-tbl tbody tr[data-sk]{cursor:help}
+  .st-tbl tbody tr[data-sk]:hover td{background:var(--panel-2)}
+  .st-tbl td[data-sk]{cursor:help}
+  .st-tbl td[data-sk]:hover{background:var(--panel-2)}
+  /* Graphiques SVG (anneau / camembert), un secteur = un <path> survolable. */
+  .st-chart{flex:none;position:relative}
+  .st-svg{display:block;overflow:visible}
+  .st-svg text{text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .st-arc{cursor:help;stroke:var(--panel);stroke-width:1.5;transition:opacity .12s}
+  .st-svg:hover .st-arc{opacity:.4}
+  .st-svg .st-arc:hover{opacity:1}
+  .st-c-n{font-weight:800;font-size:22px;fill:var(--text)}
+  .st-c-l{fill:var(--muted);font-size:11px}
+  .st-val{font-size:12.5px}
   .st-duo{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
   .st-duo figure{margin:0;text-align:center}
   .st-duo figcaption{color:var(--muted);font-size:12px;margin-top:8px}
   .st-legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:13px}
   .st-legend li{display:flex;align-items:center;gap:9px}
+  .st-legend li[data-sk]{cursor:help;border-radius:6px}
+  .st-legend li[data-sk]:hover{background:var(--panel-2)}
   .st-legend .lab{flex:1;min-width:0}
   .st-legend b{font-variant-numeric:tabular-nums}
   .st-legend .pct{color:var(--muted);font-variant-numeric:tabular-nums;width:46px;text-align:right}
@@ -668,6 +678,7 @@
   .tt .tag{margin:2px 0}
   /* Carte de survol du tableau croisé : plus large que l'infobulle des matrices, qui ne
      porte qu'une cotation, car elle décrit deux fiches et le contenu du lien. */
+  .tt.tt-stat{max-width:none}
   .tt.tt-link{max-width:340px;padding:10px 13px;font-size:12.5px}
   .tt-link .l-line{display:flex;gap:7px;align-items:baseline}
   .tt-link .l-line+.l-line{margin-top:5px}
@@ -1491,7 +1502,7 @@ const I18N = {
     drop_title:"Déposez pour charger", drop_sub:"Un fichier .rae.json",
     err_drop_type:"« {0} » n'est pas un fichier .rae.json. Déposez une analyse de risques.",
     vs_root:"racine non-objet", vs_format:"champ 'format' incorrect", vs_grid:"grille incomplète", vs_risks:"'risks' manquant",
-    stat_risks:"Risques", stat_measures:"Mesures", stat_reduced:"Risques réduits",
+    stat_risks:"Risques", stat_measures:"Mesures", stat_risk:"Risque", stat_measure:"Mesure", stat_link:"Lien", stat_reduced:"Risques réduits",
     stat_distribution:"Répartition par criticité (initial → résiduel)",
     stat_counters:"Compteurs clés", stat_treated:"Risques traités",
     stat_by_category:"Risques par catégorie", stat_by_type:"Mesures par type", stat_by_status:"Mesures par statut",
@@ -1802,7 +1813,7 @@ const I18N = {
     drop_title:"Drop to load", drop_sub:"A .rae.json file",
     err_drop_type:"\"{0}\" is not a .rae.json file. Drop a risk analysis.",
     vs_root:"root is not an object", vs_format:"invalid 'format' field", vs_grid:"incomplete grid", vs_risks:"'risks' missing",
-    stat_risks:"Risks", stat_measures:"Measures", stat_reduced:"Reduced risks",
+    stat_risks:"Risks", stat_measures:"Measures", stat_risk:"Risk", stat_measure:"Measure", stat_link:"Link", stat_reduced:"Reduced risks",
     stat_distribution:"Distribution by criticality (initial → residual)",
     stat_counters:"Key figures", stat_treated:"Treated risks",
     stat_by_category:"Risks by category", stat_by_type:"Measures by type", stat_by_status:"Measures by status",
@@ -2113,7 +2124,7 @@ const I18N = {
     drop_title:"Rilascia per caricare", drop_sub:"Un file .rae.json",
     err_drop_type:"« {0} » non è un file .rae.json. Rilascia un'analisi dei rischi.",
     vs_root:"radice non-oggetto", vs_format:"campo 'format' non valido", vs_grid:"griglia incompleta", vs_risks:"'risks' mancante",
-    stat_risks:"Rischi", stat_measures:"Misure", stat_reduced:"Rischi ridotti",
+    stat_risks:"Rischi", stat_measures:"Misure", stat_risk:"Rischio", stat_measure:"Misura", stat_link:"Collegamento", stat_reduced:"Rischi ridotti",
     stat_distribution:"Distribuzione per criticità (iniziale → residuo)",
     stat_counters:"Indicatori chiave", stat_treated:"Rischi trattati",
     stat_by_category:"Rischi per categoria", stat_by_type:"Misure per tipo", stat_by_status:"Misure per stato",
@@ -3313,16 +3324,36 @@ function statsRemoveBlock(id){statsSetBlocks(statsCfg().filter(b=>b.id!==id));}
    dans plusieurs clés). Clé vide -> « non renseigné ». */
 function statDist(list,keyFn,opts){
   opts=opts||{};
-  const counts=new Map();
+  const counts=new Map(),bag=new Map();
   list.forEach(it=>{let ks=keyFn(it);
     if(ks==null||ks==="")ks=["\u0000"]; else if(!Array.isArray(ks))ks=[ks]; else if(!ks.length)ks=["\u0000"];
-    ks.forEach(k=>counts.set(k,(counts.get(k)||0)+1));});
+    ks.forEach(k=>{counts.set(k,(counts.get(k)||0)+1);let a=bag.get(k);if(!a){a=[];bag.set(k,a);}a.push(it);});});
   const lab=k=>k==="\u0000"?t("stat_unset"):(opts.labelFn?opts.labelFn(k):String(k));
   let keys=[...counts.keys()];
   if(opts.order)keys.sort(opts.order); else keys.sort((a,b)=>String(lab(a)).localeCompare(String(lab(b))));
-  const rows=keys.map((k,i)=>({key:k,label:String(lab(k)),count:counts.get(k),
+  const rows=keys.map((k,i)=>({key:k,label:String(lab(k)),count:counts.get(k),items:bag.get(k)||[],
     color:(k==="\u0000")?"#6f7c90":(opts.colorMap?(opts.colorMap(k)||statPal(i)):statPal(i))}));
   return {rows,total:rows.reduce((s,r)=>s+r.count,0)};
+}
+/* Survol des blocs stats : liste des éléments d'une valeur (ligne de tableau, entrée de
+   légende, secteur de graphique). Réindexé à chaque rendu : bloc | série | index de valeur. */
+let STAT_HOVER={};
+function statReset(){STAT_HOVER={};}
+function statItemRef(it,kind){
+  if(kind==="link")return {id:(it.risk||"?")+" ↔ "+(it.measure||"?"),label:""};
+  return {id:it.id||"",label:it.label||""};
+}
+function statReg(sid,series,idx,kind,label,items){
+  STAT_HOVER[sid+"|"+(series||"")+"|"+idx]={kind:kind,label:label,items:(items||[]).map(x=>statItemRef(x,kind))};
+}
+function statTipHTML(rec){
+  const n=rec.items.length,one=n===1;
+  const kindLbl=rec.kind==="risk"?t(one?"stat_risk":"stat_risks"):rec.kind==="measure"?t(one?"stat_measure":"stat_measures"):t(one?"stat_link":"tab_links");
+  const MAX=14,shown=rec.items.slice(0,MAX);
+  let h='<b>'+esc(rec.label)+'</b><br><span class="t-cat">'+n+' '+esc(kindLbl)+'</span>';
+  if(n)h+='<br>'+shown.map(x=>'• '+esc(x.id)+(x.label?' · '+esc(x.label):'')).join('<br>');
+  if(n>MAX)h+='<br><span class="t-cat">+'+(n-MAX)+' …</span>';
+  return h;
 }
 function statCounters(){
   const R=visibleRisks(),M=visibleMeasures();
@@ -3332,36 +3363,56 @@ function statCounters(){
 function statCriticality(){
   const R=visibleRisks();
   const lv=analyse.grid.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
-  const ci={},cr={};lv.forEach(l=>{ci[l.code]=0;cr[l.code]=0;});
-  R.forEach(r=>{const ki=critOfEval(r.initial_assessment).code,kr=critOfEval(residual(r)).code;if(ki in ci)ci[ki]++;if(kr in cr)cr[kr]++;});
-  return {rows:lv.map(l=>({key:l.code,label:l.label,color:l.color,initial:ci[l.code],residual:cr[l.code]})),total:R.length};
+  const ci={},cr={},li={},lr={};lv.forEach(l=>{ci[l.code]=0;cr[l.code]=0;li[l.code]=[];lr[l.code]=[];});
+  R.forEach(r=>{const ki=critOfEval(r.initial_assessment).code,kr=critOfEval(residual(r)).code;
+    if(ki in ci){ci[ki]++;li[ki].push(r);}if(kr in cr){cr[kr]++;lr[kr].push(r);}});
+  return {rows:lv.map(l=>({key:l.code,label:l.label,color:l.color,initial:ci[l.code],residual:cr[l.code],itemsI:li[l.code],itemsR:lr[l.code]})),total:R.length};
 }
-/* ---- Graphiques (anneau/camembert) via conic-gradient ---- */
-function statConic(segs){let acc=0;const s=segs.filter(x=>x.frac>0).map(x=>{const a=(acc*100).toFixed(3),b=((acc+x.frac)*100).toFixed(3);acc+=x.frac;return x.color+" "+a+"% "+b+"%";});
-  return s.length?"conic-gradient("+s.join(",")+")":"var(--panel-2)";}
-function statSlabs(segs,S,lr){const c=S/2;let acc=0,h="";
-  segs.forEach(x=>{if(x.count>0){const mid=(acc+x.frac/2)*2*Math.PI,X=c+lr*Math.sin(mid),Y=c-lr*Math.cos(mid);
-    h+='<span class="st-slab" style="left:'+X.toFixed(1)+'px;top:'+Y.toFixed(1)+'px;color:'+badgeFg(x.color)+'">'+x.count+'</span>';}acc+=x.frac;});
-  return h;}
-function statChart(segs,shape,total,sub,size){size=size||140;const bg=statConic(segs);
-  if(shape==="pie")return '<div class="st-pie-wrap" style="width:'+size+'px;height:'+size+'px"><div class="st-pie" style="background:'+bg+'"></div>'+statSlabs(segs,size,size*0.3)+'</div>';
-  const ins=Math.round(size*0.18);
-  return '<div class="st-donut" style="width:'+size+'px;height:'+size+'px;background:'+bg+'"><div class="st-hole" style="inset:'+ins+'px"><div class="n">'+total+'</div>'+(sub?'<div class="l">'+esc(sub)+'</div>':'')+'</div></div>';}
+/* ---- Graphiques (anneau/camembert) en SVG : un <path> par secteur (survolable) ---- */
+function statArcPath(cx,cy,r,ir,a0,a1){
+  const P=(rad,a)=>[(cx+rad*Math.sin(a)).toFixed(2),(cy-rad*Math.cos(a)).toFixed(2)];
+  const large=(a1-a0)>Math.PI?1:0,o0=P(r,a0),o1=P(r,a1);
+  if(ir<=0)return 'M '+cx+' '+cy+' L '+o0[0]+' '+o0[1]+' A '+r+' '+r+' 0 '+large+' 1 '+o1[0]+' '+o1[1]+' Z';
+  const i1=P(ir,a1),i0=P(ir,a0);
+  return 'M '+o0[0]+' '+o0[1]+' A '+r+' '+r+' 0 '+large+' 1 '+o1[0]+' '+o1[1]+
+    ' L '+i1[0]+' '+i1[1]+' A '+ir+' '+ir+' 0 '+large+' 0 '+i0[0]+' '+i0[1]+' Z';
+}
+/* rows: [{count,color}] ; l'index i (data-sk) doit correspondre à l'ordre d'enregistrement (statReg). */
+function statChartSVG(rows,shape,total,sub,size,series){
+  size=size||140;series=series||"";
+  const cx=size/2,cy=size/2,r=size/2-1,ir=shape==="pie"?0:size*0.32;
+  const seg=s=>' data-sk="'+s.i+'"'+(series?' data-ss="'+series+'"':'');
+  const active=rows.map((r0,i)=>({i:i,count:r0.count,color:r0.color,frac:total?r0.count/total:0})).filter(s=>s.count>0);
+  let g="";
+  if(active.length===1){const s=active[0];
+    g+='<circle class="st-arc"'+seg(s)+' cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+s.color+'"/>';
+    if(ir>0)g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+ir+'" fill="var(--panel)"/>';
+    if(shape==="pie")g+='<text class="st-val" x="'+cx+'" y="'+cy+'" fill="'+badgeFg(s.color)+'">'+s.count+'</text>';
+  }else{let acc=0;
+    active.forEach(s=>{const a0=acc*2*Math.PI,a1=(acc+s.frac)*2*Math.PI;acc+=s.frac;
+      g+='<path class="st-arc"'+seg(s)+' d="'+statArcPath(cx,cy,r,ir,a0,a1)+'" fill="'+s.color+'"/>';
+      if(shape==="pie"){const mid=(a0+a1)/2,lr=r*0.62,X=(cx+lr*Math.sin(mid)).toFixed(1),Y=(cy-lr*Math.cos(mid)).toFixed(1);
+        g+='<text class="st-val" x="'+X+'" y="'+Y+'" fill="'+badgeFg(s.color)+'">'+s.count+'</text>';}});
+  }
+  if(ir>0){g+='<text class="st-c-n" x="'+cx+'" y="'+(cy-(sub?6:0))+'">'+total+'</text>';
+    if(sub)g+='<text class="st-c-l" x="'+cx+'" y="'+(cy+12)+'">'+esc(sub)+'</text>';}
+  return '<div class="st-chart" style="width:'+size+'px;height:'+size+'px"><svg class="st-svg" viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" role="img" aria-hidden="true">'+g+'</svg></div>';
+}
 /* ---- Tables & légendes ---- */
 function statPct(n,tot){return tot?Math.round(n/tot*100)+' %':'—';}
 function statTable(colLbl,rows,total){
   return '<table class="st-tbl"><thead><tr><th>'+esc(colLbl)+'</th><th class="num">'+esc(t("stat_count"))+'</th><th class="num">'+esc(t("stat_share"))+'</th></tr></thead><tbody>'+
-    rows.map(r=>'<tr><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num">'+r.count+'</td><td class="num pct">'+statPct(r.count,total)+'</td></tr>').join("")+
+    rows.map((r,i)=>'<tr data-sk="'+i+'"><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num">'+r.count+'</td><td class="num pct">'+statPct(r.count,total)+'</td></tr>').join("")+
     '<tr class="tot"><td>'+esc(t("stat_total"))+'</td><td class="num">'+total+'</td><td class="num pct">'+(total?'100 %':'—')+'</td></tr></tbody></table>';
 }
-function statLegendList(rows,total){
-  return '<ul class="st-legend">'+rows.map(r=>'<li><span class="st-sw" style="background:'+r.color+'"></span><span class="lab">'+esc(r.label)+'</span><b>'+r.count+'</b><span class="pct">'+statPct(r.count,total)+'</span></li>').join("")+'</ul>';
+function statLegendList(rows,total,series){series=series||"";
+  return '<ul class="st-legend">'+rows.map((r,i)=>'<li data-sk="'+i+'"'+(series?' data-ss="'+series+'"':'')+'><span class="st-sw" style="background:'+r.color+'"></span><span class="lab">'+esc(r.label)+'</span><b>'+r.count+'</b><span class="pct">'+statPct(r.count,total)+'</span></li>').join("")+'</ul>';
 }
-function statDistCard(block,colLbl,data,sub){
+function statDistCard(block,colLbl,data,sub,kind){
+  data.rows.forEach((r,i)=>statReg(block.id,"",i,kind,r.label,r.items));
   const disp=block.display||"both",shape=block.shape||"donut";
   if(disp==="table")return '<div class="st-content">'+statTable(colLbl,data.rows,data.total)+'</div>';
-  const segs=data.rows.map(r=>({color:r.color,frac:data.total?r.count/data.total:0,count:r.count}));
-  const chart=statChart(segs,shape,data.total,sub);
+  const chart=statChartSVG(data.rows,shape,data.total,sub,140,"");
   if(disp==="chart")return '<div class="st-content"><div class="st-dist">'+statLegendList(data.rows,data.total)+chart+'</div></div>';
   return '<div class="st-content"><div class="st-dist">'+statTable(colLbl,data.rows,data.total)+chart+'</div></div>';
 }
@@ -3379,11 +3430,6 @@ function statTitle(b){
   }
   return b.id;
 }
-function statCoverage(){
-  const R=visibleRisks(),M=visibleMeasures(),L=visibleTreatments();
-  const rl=new Set(L.map(x=>x.risk)),ml=new Set(L.map(x=>x.measure));
-  return {rNo:R.filter(r=>!rl.has(r.id)).length,rTot:R.length,mNo:M.filter(m=>!ml.has(m.id)).length,mTot:M.length};
-}
 function statCustomKeys(it,f){const v=(it.custom||{})[f.code];
   if(v==null||v==="")return [];
   if(f.type==="checklist"||f.type==="tags")return Array.isArray(v)?v:[v];
@@ -3399,36 +3445,40 @@ function statBlockBody(block){
         '<div class="st-tile"><div class="n" style="color:var(--green)">'+c.treated+'</div><div class="l">'+esc(t("stat_reduced"))+'</div></div>'+
         '<div class="st-tile"><div class="n" style="color:var(--accent)">'+c.pct+' %</div><div class="l">'+esc(t("stat_treated"))+'</div></div>'+
       '</div></div>';}
-    case "coverage":{const cv=statCoverage();
+    case "coverage":{const R=visibleRisks(),M=visibleMeasures(),L=visibleTreatments();
+      const rl=new Set(L.map(x=>x.risk)),ml=new Set(L.map(x=>x.measure));
+      const rNo=R.filter(r=>!rl.has(r.id)),mNo=M.filter(m=>!ml.has(m.id));
+      statReg(block.id,"",0,"risk",t("stat_cov_risks"),rNo);
+      statReg(block.id,"",1,"measure",t("stat_cov_measures"),mNo);
       return '<div class="st-content"><table class="st-tbl"><tbody>'+
-        '<tr><td>'+esc(t("stat_cov_risks"))+'</td><td class="num">'+cv.rNo+' / '+cv.rTot+'</td></tr>'+
-        '<tr><td>'+esc(t("stat_cov_measures"))+'</td><td class="num">'+cv.mNo+' / '+cv.mTot+'</td></tr>'+
+        '<tr data-sk="0"><td>'+esc(t("stat_cov_risks"))+'</td><td class="num">'+rNo.length+' / '+R.length+'</td></tr>'+
+        '<tr data-sk="1"><td>'+esc(t("stat_cov_measures"))+'</td><td class="num">'+mNo.length+' / '+M.length+'</td></tr>'+
       '</tbody></table></div>';}
-    case "risk_category":return statDistCard(block,t("f_category"),statDist(visibleRisks(),r=>r.category),t("stat_risks"));
-    case "measure_type":return statDistCard(block,t("th_type"),statDist(visibleMeasures(),m=>m.type,{labelFn:c=>typeLabel(c)}),t("stat_measures"));
-    case "measure_status":return statDistCard(block,t("th_status"),statDist(visibleMeasures(),m=>m.status,{labelFn:statusLabel,order:(a,b)=>STATUS_CODES.indexOf(a)-STATUS_CODES.indexOf(b),colorMap:s=>(STATUS_COLORS[s]||{}).bg}),t("stat_measures"));
-    case "risk_owner":return statDistCard(block,t("f_owner"),statDist(visibleRisks(),r=>r.owner),t("stat_risks"));
-    case "measure_owner":return statDistCard(block,t("th_responsible"),statDist(visibleMeasures(),m=>m.responsible),t("stat_measures"));
+    case "risk_category":return statDistCard(block,t("f_category"),statDist(visibleRisks(),r=>r.category),t("stat_risks"),"risk");
+    case "measure_type":return statDistCard(block,t("th_type"),statDist(visibleMeasures(),m=>m.type,{labelFn:c=>typeLabel(c)}),t("stat_measures"),"measure");
+    case "measure_status":return statDistCard(block,t("th_status"),statDist(visibleMeasures(),m=>m.status,{labelFn:statusLabel,order:(a,b)=>STATUS_CODES.indexOf(a)-STATUS_CODES.indexOf(b),colorMap:s=>(STATUS_COLORS[s]||{}).bg}),t("stat_measures"),"measure");
+    case "risk_owner":return statDistCard(block,t("f_owner"),statDist(visibleRisks(),r=>r.owner),t("stat_risks"),"risk");
+    case "measure_owner":return statDistCard(block,t("th_responsible"),statDist(visibleMeasures(),m=>m.responsible),t("stat_measures"),"measure");
     case "custom":{const f=(customFieldsFor(block.target)||[]).find(x=>x.code===block.field);
       if(!f)return '<div class="st-content"><p class="muted">—</p></div>';
       const list=block.target==="risk"?visibleRisks():block.target==="measure"?visibleMeasures():visibleTreatments();
       const data=statDist(list,it=>statCustomKeys(it,f),{labelFn:k=>statCustomLabel(f,k),colorMap:f.type==="tags"?(k=>cfChoiceColor(f,k)):null});
       const sub=(f.type==="checklist"||f.type==="tags")?t("stat_values")
         :(block.target==="risk"?t("stat_risks"):block.target==="measure"?t("stat_measures"):t("tab_links"));
-      return statDistCard(block,cfLabel(f),data,sub);}
+      return statDistCard(block,cfLabel(f),data,sub,block.target);}
     case "criticality":{const d=statCriticality(),disp=block.display||"both",shape=block.shape||"donut";
+      d.rows.forEach((r,i)=>{statReg(block.id,"initial",i,"risk",r.label,r.itemsI);statReg(block.id,"residual",i,"risk",r.label,r.itemsR);});
       const tbl='<table class="st-tbl"><thead><tr><th>'+esc(t("stat_criticality"))+'</th><th class="num">'+esc(t("stat_initial"))+'</th><th class="num">'+esc(t("stat_residual"))+'</th></tr></thead><tbody>'+
-        d.rows.map(r=>'<tr><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num">'+r.initial+'</td><td class="num">'+r.residual+'</td></tr>').join("")+
+        d.rows.map((r,i)=>'<tr><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num" data-sk="'+i+'" data-ss="initial">'+r.initial+'</td><td class="num" data-sk="'+i+'" data-ss="residual">'+r.residual+'</td></tr>').join("")+
         '<tr class="tot"><td>'+esc(t("stat_total"))+'</td><td class="num">'+d.total+'</td><td class="num">'+d.total+'</td></tr></tbody></table>';
       let chart="";
       if(disp!=="table"){
-        const segI=d.rows.map(r=>({color:r.color,frac:d.total?r.initial/d.total:0,count:r.initial}));
-        const segR=d.rows.map(r=>({color:r.color,frac:d.total?r.residual/d.total:0,count:r.residual}));
-        chart='<div class="st-duo"><figure>'+statChart(segI,shape,d.total,t("stat_initial"),128)+'<figcaption>'+esc(t("stat_initial"))+'</figcaption></figure>'+
-          '<figure>'+statChart(segR,shape,d.total,t("stat_residual"),128)+'<figcaption>'+esc(t("stat_residual"))+'</figcaption></figure></div>';
+        const rowsI=d.rows.map(r=>({count:r.initial,color:r.color})),rowsR=d.rows.map(r=>({count:r.residual,color:r.color}));
+        chart='<div class="st-duo"><figure>'+statChartSVG(rowsI,shape,d.total,t("stat_initial"),128,"initial")+'<figcaption>'+esc(t("stat_initial"))+'</figcaption></figure>'+
+          '<figure>'+statChartSVG(rowsR,shape,d.total,t("stat_residual"),128,"residual")+'<figcaption>'+esc(t("stat_residual"))+'</figcaption></figure></div>';
       }
       if(disp==="table")return '<div class="st-content">'+tbl+'</div>';
-      if(disp==="chart")return '<div class="st-content"><div class="st-dist">'+statLegendList(d.rows.map(r=>({label:r.label,count:r.initial,color:r.color})),d.total)+chart+'</div></div>';
+      if(disp==="chart")return '<div class="st-content"><div class="st-dist">'+statLegendList(d.rows.map(r=>({label:r.label,count:r.initial,color:r.color})),d.total,"initial")+chart+'</div></div>';
       return '<div class="st-content"><div class="st-dist">'+tbl+chart+'</div></div>';}
   }
   return "";
@@ -3448,6 +3498,7 @@ function statBlockHTML(block){
 }
 function renderStats(){
   const host=document.getElementById("stats");if(!host)return;
+  statReset();
   host.className="st-grid";
   host.innerHTML=statBlocks().filter(b=>b.on!==false).map(statBlockHTML).join("");
   setFilterCount("stats",visibleRisks().length,analyse.risks.length);
@@ -3471,6 +3522,26 @@ function renderStats(){
   host.addEventListener("click",e=>{const card=e.target.closest(".st-card");if(!card)return;const id=card.dataset.sid;
     if(e.target.closest(".st-resize")){const b=statsCfg().find(x=>x.id===id);if(b&&b.type!=="counters")statsUpdate(id,{size:b.size==="full"?"half":"full"});return;}
     if(e.target.closest(".st-remove")){statsUpdate(id,{on:false});return;}});
+  // Infobulle : liste des éléments (risques / mesures / liens) d'une valeur survolée.
+  const hideTip=()=>{if(host.__stt){tip.style.opacity=0;host.__stt=false;tip.classList.remove("tt-stat");}};
+  host.addEventListener("mousemove",e=>{
+    if(dragId!=null){hideTip();return;}
+    const el=e.target.closest("[data-sk]"),card=el&&el.closest(".st-card");
+    if(!card){hideTip();return;}
+    const rec=STAT_HOVER[card.dataset.sid+"|"+(el.dataset.ss||"")+"|"+el.dataset.sk];
+    if(!rec){hideTip();return;}
+    tip.classList.remove("tt-link");tip.classList.add("tt-stat");tip.innerHTML=statTipHTML(rec);
+    tip.style.opacity=1;
+    // Maintien dans le viewport : bascule à gauche du curseur si débordement à droite,
+    // recalage vertical si débordement en bas (l'infobulle peut être haute et large).
+    const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;
+    let x=e.clientX+14,y=e.clientY+14;
+    if(x+w>innerWidth-pad)x=e.clientX-14-w;
+    if(x<pad)x=pad;
+    if(y+h>innerHeight-pad)y=innerHeight-pad-h;
+    if(y<pad)y=pad;
+    tip.style.left=x+"px";tip.style.top=y+"px";host.__stt=true;});
+  host.addEventListener("mouseleave",hideTip);
 })();
 
 /* ---- Sous-onglet Paramètres › Statistiques (personnalisation) ---- */
@@ -6428,7 +6499,7 @@ function crossCardHTML(rid,mid){
     const gx=Math.min(x,window.innerWidth-b.width-8), gy=Math.min(y,window.innerHeight-b.height-8);
     tip.style.left=Math.max(8,gx)+"px";tip.style.top=Math.max(8,gy)+"px";
   };
-  const cacher=()=>{tip.style.opacity=0;tip.classList.remove("tt-link");};
+  const cacher=()=>{tip.style.opacity=0;tip.classList.remove("tt-link","tt-stat");};
   area.addEventListener("mousemove",e=>{
     const k=cle(e.target);
     if(!k){cacher();return;}
