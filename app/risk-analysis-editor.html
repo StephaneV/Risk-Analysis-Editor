@@ -8954,7 +8954,12 @@ const LOGO_SVG='<svg viewBox="0 0 18.585251 18.585253" xmlns="http://www.w3.org/
   '<path d="m 36.147833,140.74397 c 0,-0.19341 0.156898,-0.35031 0.350309,-0.35031 h 4.855633 c 0.19341,0 0.350308,0.1569 0.350308,0.35031 v 4.85563 c 0,0.19341 -0.156898,0.35031 -0.350308,0.35031 h -4.855633 c -0.193411,0 -0.350309,-0.1569 -0.350309,-0.35031 z" stroke="#2b5624" fill="#508343"/>'+
   '<path d="m 42.497833,140.74371 c 0,-0.19341 0.156634,-0.35005 0.350044,-0.35005 h 4.856162 c 0.193411,0 0.350044,0.15664 0.350044,0.35005 v 4.85616 c 0,0.19341 -0.156633,0.35004 -0.350044,0.35004 h -4.856162 c -0.19341,0 -0.350044,-0.15663 -0.350044,-0.35004 z" stroke="#891c0d" fill="#c7341b"/>'+
   '</g></svg>';
-(function(){const el=document.getElementById("brandLogo");if(el)el.innerHTML=LOGO_SVG;})();
+(function(){const el=document.getElementById("brandLogo");if(el)el.innerHTML=LOGO_SVG;
+  // Favicon inline (autonome, hors-ligne) : réutilise le logo, en data-URI SVG.
+  try{const link=document.querySelector('link[rel="icon"]')||document.createElement("link");
+    link.rel="icon";link.type="image/svg+xml";
+    link.href="data:image/svg+xml,"+encodeURIComponent(LOGO_SVG);
+    if(!link.parentNode)document.head.appendChild(link);}catch(e){}})();
 function openAboutModal(){
   const row=(k,v)=>'<div class="muted">'+esc(k)+'</div><div>'+v+'</div>';
   const link='<a href="'+esc(GITHUB_URL)+'" target="_blank" rel="noopener">'+esc(t("about_github"))+' →</a>';
