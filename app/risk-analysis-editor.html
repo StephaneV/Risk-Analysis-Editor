@@ -1145,7 +1145,7 @@
           <option value="wcag" data-i18n="contrast.wcag">Contraste renforcé — couleur calculée (WCAG AA)</option>
         </select>
       </label>
-      <div class="caption" data-i18n="cfg_contrast_hint">Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.</div>
+      <div class="caption" data-i18n="cfg_contrast_hint">Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, visant 4,5:1 (WCAG AA) sur la quasi-totalité des fonds — cela assombrit le texte des badges rouges et bleus.</div>
     </div>
 
     <!-- -------- Affichage : format des dates -------- -->
@@ -1470,7 +1470,7 @@ const I18N = {
     "cfg_contrast":"Mode",
     "contrast.classic":"Classique — luminosité perçue (rendu d'origine)",
     "contrast.wcag":"Contraste renforcé — couleur calculée (WCAG AA)",
-    "cfg_contrast_hint":"Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, garantissant 4,5:1 sur tout fond — cela assombrit le texte des badges rouges et bleus.",
+    "cfg_contrast_hint":"Classique : texte noir ou blanc selon la luminosité perçue du fond (seuil historique). Renforcé : choix fondé sur le contraste WCAG réel, visant 4,5:1 (WCAG AA) sur la quasi-totalité des fonds — cela assombrit le texte des badges rouges et bleus.",
     cfg_date_title:"Format des dates", cfg_date_format:"Format",
     cfg_date_caption:"Format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports. Les dates restent enregistrées au format ISO dans le fichier.",
     "datefmt.iso":"ISO — AAAA-MM-JJ (2025-12-31)","datefmt.eu":"Jour/Mois/Année — JJ/MM/AAAA (31/12/2025)","datefmt.us":"Mois/Jour/Année — MM/JJ/AAAA (12/31/2025)","datefmt.long":"Long — selon la langue (31 décembre 2025)",
@@ -1786,7 +1786,7 @@ const I18N = {
     "cfg_contrast":"Mode",
     "contrast.classic":"Classic — perceived brightness (original rendering)",
     "contrast.wcag":"Enhanced contrast — computed colour (WCAG AA)",
-    "cfg_contrast_hint":"Classic: black or white text based on the perceived brightness of the background (historical threshold). Enhanced: choice based on the actual WCAG contrast, guaranteeing 4.5:1 on any background — this darkens the text of red and blue badges.",
+    "cfg_contrast_hint":"Classic: black or white text based on the perceived brightness of the background (historical threshold). Enhanced: choice based on the actual WCAG contrast, aiming for 4.5:1 (WCAG AA) on nearly any background — this darkens the text of red and blue badges.",
     cfg_date_title:"Date format", cfg_date_format:"Format",
     cfg_date_caption:"Display format for dates (due dates, report dates, custom date fields) in the app and reports. Dates remain stored in ISO format in the file.",
     "datefmt.iso":"ISO — YYYY-MM-DD (2025-12-31)","datefmt.eu":"Day/Month/Year — DD/MM/YYYY (31/12/2025)","datefmt.us":"Month/Day/Year — MM/DD/YYYY (12/31/2025)","datefmt.long":"Long — language-specific (December 31, 2025)",
@@ -2100,7 +2100,7 @@ const I18N = {
     "cfg_contrast":"Modalità",
     "contrast.classic":"Classica — luminosità percepita (resa originale)",
     "contrast.wcag":"Contrasto rafforzato — colore calcolato (WCAG AA)",
-    "cfg_contrast_hint":"Classica: testo nero o bianco secondo la luminosità percepita dello sfondo (soglia storica). Rafforzata: scelta basata sul contrasto WCAG reale, che garantisce 4,5:1 su qualsiasi sfondo — scurisce il testo dei badge rossi e blu.",
+    "cfg_contrast_hint":"Classica: testo nero o bianco secondo la luminosità percepita dello sfondo (soglia storica). Rafforzata: scelta basata sul contrasto WCAG reale, puntando a 4,5:1 (WCAG AA) sulla quasi totalità degli sfondi — scurisce il testo dei badge rossi e blu.",
     cfg_date_title:"Formato delle date", cfg_date_format:"Formato",
     cfg_date_caption:"Formato di visualizzazione delle date (scadenze, date del rapporto, campi personalizzati di tipo data) nell'applicazione e nei rapporti. Le date restano memorizzate in formato ISO nel file.",
     "datefmt.iso":"ISO — AAAA-MM-GG (2025-12-31)","datefmt.eu":"Giorno/Mese/Anno — GG/MM/AAAA (31/12/2025)","datefmt.us":"Mese/Giorno/Anno — MM/GG/AAAA (12/31/2025)","datefmt.long":"Esteso — secondo la lingua (31 dicembre 2025)",
@@ -7604,7 +7604,7 @@ function renderReportSettings(){
     '<label><input type="radio" name="rcScope" value="all"'+(cfg.scope!=="filtered"?" checked":"")+'> '+esc(t("rc_scope_all"))+'</label>'+
     '<label><input type="radio" name="rcScope" value="filtered"'+(cfg.scope==="filtered"?" checked":"")+'> '+esc(t("rc_scope_filtered"))+'</label></div></div>';
   // 5. Pied : note + reset
-  h+='<div class="card rc-foot"><span class="rc-note">🔒 '+esc(t("rc_saved_note"))+'</span>'+
+  h+='<div class="card rc-foot"><span class="rc-note">💾 '+esc(t("rc_saved_note"))+'</span>'+
     '<button type="button" class="btn ghost sm" id="rcReset">↺ '+esc(t("rc_reset"))+'</button></div>';
   p.innerHTML=h;
   rcWire(p);
@@ -9042,13 +9042,13 @@ const DEMOS={fr:"demo-ebios-rm-systeme-d-information.rae.json",en:"demo-ebios-rm
    des chaînes non commutables : c'est un fichier par langue qui rend les modèles multilingues. */
 const TEMPLATES=[
   {base:"ebios-rm.template",
-   name:{fr:"EBIOS RM (ANSSI)",en:"EBIOS RM (ANSSI)",it:"EBIOS RM (ANSSI)"},
+   name:{fr:"Grille type EBIOS RM (ANSSI)",en:"EBIOS RM (ANSSI) grid",it:"Griglia tipo EBIOS RM (ANSSI)"},
    desc:{fr:"Vraisemblance × gravité, grille 4×4 (produit).",en:"Likelihood × severity, 4×4 grid (product).",it:"Verosimiglianza × gravità, griglia 4×4 (prodotto)."}},
   {base:"cnil-pia.template",
-   name:{fr:"AIPD — CNIL PIA",en:"DPIA — CNIL PIA",it:"DPIA — CNIL PIA"},
+   name:{fr:"Grille type AIPD (CNIL PIA)",en:"DPIA (CNIL PIA) grid",it:"Griglia tipo DPIA (CNIL PIA)"},
    desc:{fr:"Grille 4×4, niveau de risque défini par cellule.",en:"4×4 grid, risk level defined per cell.",it:"Griglia 4×4, livello di rischio definito per cella."}},
   {base:"iso-27005.template",
-   name:{fr:"ISO/IEC 27005",en:"ISO/IEC 27005",it:"ISO/IEC 27005"},
+   name:{fr:"Grille type ISO/IEC 27005",en:"ISO/IEC 27005 grid",it:"Griglia tipo ISO/IEC 27005"},
    desc:{fr:"Vraisemblance × impact, grille 5×5 (produit).",en:"Likelihood × impact, 5×5 grid (product).",it:"Verosimiglianza × impatto, griglia 5×5 (prodotto)."}},
   {base:"generique.template",
    name:{fr:"Modèle générique",en:"Generic template",it:"Modello generico"},

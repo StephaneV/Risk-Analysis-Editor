@@ -2,7 +2,7 @@
 
 Ce guide décrit l'utilisation complète de **Risk Analysis Editor**, l'éditeur d'analyses de risques au format ouvert `.rae.json`. Il commence par une **prise en main rapide**, puis détaille **chaque écran et chaque fonction**.
 
-> Toutes les captures d'écran illustrent l'analyse de démonstration **« AIPD — Système d'information du service de santé au travail »** (fictive), livrée avec l'outil : [`examples/demo-aipd-sst.rae.json`](../examples/demo-aipd-sst.rae.json). Interface en français, thème clair. Vous pouvez l'ouvrir pour reproduire pas à pas ce qui est décrit ici.
+> Toutes les captures d'écran illustrent l'analyse de démonstration **« Analyse de risques (volet AIPD) — SI d'un service de santé au travail »** (fictive), livrée avec l'outil : [`examples/demo-aipd-sst.rae.json`](../examples/demo-aipd-sst.rae.json). Interface en français, thème clair. Vous pouvez l'ouvrir pour reproduire pas à pas ce qui est décrit ici.
 
 ---
 
@@ -34,7 +34,7 @@ Ce guide décrit l'utilisation complète de **Risk Analysis Editor**, l'éditeur
 
 ## 1. Introduction
 
-**Risk Analysis Editor** est une application web **autonome** : un unique fichier HTML, sans aucune dépendance ni serveur, qui fonctionne **hors-ligne**. Un simple double-clic sur le fichier l'ouvre dans votre navigateur.
+**Risk Analysis Editor** est une application web **autonome** : un unique fichier HTML, sans dépendance réseau ni service externe, qui fonctionne **hors-ligne**. Un simple double-clic sur le fichier l'ouvre dans votre navigateur.
 
 Elle permet de mener une analyse de risque complète :
 
@@ -59,7 +59,7 @@ Vous avez quatre points de départ :
 
 - **Commencer une analyse vierge** — une grille par défaut, à personnaliser ;
 - **Charger un fichier .rae.json** — reprendre une analyse existante ;
-- **Ouvrir une analyse de démonstration** — un exemple complet pour explorer ;
+- **Ouvrir une analyse de démonstration** — un exemple renseigné pour explorer ;
 - **Démarrer d'un modèle** — un squelette méthodologique préconfiguré (EBIOS RM, AIPD — CNIL PIA, ISO/IEC 27005, ou générique).
 
 Le parcours conseillé se lit dans l'ordre des onglets :
@@ -294,7 +294,7 @@ Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par stat
 
 ![Rapport imprimable](images/guide-18-rapport.png)
 
-L'onglet **Rapport** génère un document complet, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
+L'onglet **Rapport** génère un rapport configurable, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
 
 Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §16).
 
@@ -370,7 +370,7 @@ Le CSV est idéal pour préparer ou retravailler les données dans un tableur, p
 
 ## 16. Exports Word et Excel
 
-Le menu **Fichier** propose deux exports bureautiques, générés **localement et hors-ligne** (aucune donnée n'est envoyée sur Internet) :
+Le menu **Fichier** propose deux exports bureautiques, générés **localement et hors-ligne** (le contenu de l'analyse n'est pas transmis à un service distant) :
 
 - **Exporter en Word (.docx)** — suit la **même configuration** que le rapport (voir [§12](#12-le-rapport) : sections, ordre, colonnes, périmètre, orientation) et y ajoute une **page de garde**, une **table des matières** et un **en-tête / pied de page natifs** (avec numéros de page). Cartouche, présentation, synthèse, grille, **matrices en images**, registres et fiches détaillées. Prêt à fondre dans un gabarit d'entreprise. Également accessible via le bouton *⭳ Word* de l'onglet Rapport.
 - **Exporter en Excel (.xlsx)** — un classeur à quatre feuilles (**Synthèse / Risques / Mesures / Liens**), avec cellules typées (vraies dates et nombres), couleurs de criticité et de statut, en-têtes figés et filtres automatiques.
@@ -446,7 +446,7 @@ La spécification complète et le schéma JSON de validation se trouvent dans le
 ## 21. Questions fréquentes et astuces
 
 **Où sont enregistrées mes données ?**
-Uniquement dans le fichier `.rae.json` que vous enregistrez, sur votre poste. L'outil fonctionne hors-ligne et n'envoie rien sur Internet, exports Word/Excel compris.
+Uniquement dans le fichier `.rae.json` que vous enregistrez, sur votre poste. L'outil fonctionne hors-ligne et ne transmet pas le contenu de vos analyses à un service distant, exports Word/Excel compris.
 
 **Comment revenir à l'ordre d'origine après avoir trié une colonne ?**
 Cliquez une troisième fois sur l'en-tête : le tri cycle croissant → décroissant → **ordre d'origine**.

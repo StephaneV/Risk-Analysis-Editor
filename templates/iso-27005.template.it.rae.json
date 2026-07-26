@@ -3,7 +3,7 @@
   "version": "1.0",
   "metadata": {
     "title": "Modello ISO/IEC 27005",
-    "description": "Scheletro di valutazione del rischio secondo **ISO/IEC 27005**. Griglia verosimiglianza × impatto su cinque livelli (punteggio = prodotto), con campi personalizzati orientati a beni, minacce e vulnerabilità.\n\nDa completare: ambito e criteri di accettazione, identificazione di beni, minacce e vulnerabilità, stima e valutazione del rischio, e scelta delle opzioni di trattamento.",
+    "description": "Scheletro di valutazione del rischio ispirato a **ISO/IEC 27005**. Griglia verosimiglianza × impatto su cinque livelli (punteggio = prodotto), con campi personalizzati orientati a beni, minacce e vulnerabilità.\n\nDa completare: ambito e criteri di accettazione, identificazione di beni, minacce e vulnerabilità, stima e valutazione del rischio, e scelta delle opzioni di trattamento.",
     "author": "",
     "organization": "",
     "scope": "",

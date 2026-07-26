@@ -3,7 +3,7 @@
   "version": "1.0",
   "metadata": {
     "title": "DPIA template — CNIL PIA",
-    "description": "**Data Protection Impact Assessment** skeleton following the **CNIL PIA** method. Four-level grid whose risk level is defined **per cell** (not by product), with custom fields specific to the approach.\n\nTo complete: context and processors, then for each feared event (illegitimate access, unwanted modification, unavailability) the scenarios, their initial and residual rating, and the action plan.",
+    "description": "**Data Protection Impact Assessment** skeleton inspired by the **CNIL PIA** method. Four-level grid whose risk level is defined **per cell** (not by product), with custom fields specific to the approach.\n\nTo complete: context and processors, then for each feared event (illegitimate access, unwanted modification, unavailability) the scenarios, their initial and residual rating, and the action plan.",
     "author": "",
     "organization": "",
     "scope": "",

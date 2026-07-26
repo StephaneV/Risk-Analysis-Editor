@@ -387,7 +387,7 @@ Le schéma couvre les contraintes structurelles (types, obligatoires, énumérat
 
 Un fichier d'exemple conforme, correspondant aux données des maquettes, est fourni :
 
-- Fichier : [`analyse-de-risques-systeme-d-information.rae.json`](../examples/analyse-de-risques-systeme-d-information.rae.json)
+- Fichier : [`demo-ebios-rm-systeme-d-information.rae.json`](../examples/demo-ebios-rm-systeme-d-information.rae.json)
 
 Extrait :
 

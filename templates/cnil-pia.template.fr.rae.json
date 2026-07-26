@@ -3,7 +3,7 @@
   "version": "1.0",
   "metadata": {
     "title": "Modèle AIPD — CNIL PIA",
-    "description": "Squelette d'**Analyse d'Impact sur la Protection des Données** selon la méthode **CNIL PIA**. Grille à quatre niveaux dont le niveau de risque est défini **par cellule** (et non par produit), et champs personnalisés propres à la démarche.\n\nÀ compléter : contexte et sous-traitants, puis pour chaque événement redouté (accès illégitime, modification non désirée, indisponibilité) les scénarios, leur cotation initiale et résiduelle, et le plan d'action.",
+    "description": "Squelette d'**Analyse d'Impact sur la Protection des Données** inspiré de la méthode **CNIL PIA**. Grille à quatre niveaux dont le niveau de risque est défini **par cellule** (et non par produit), et champs personnalisés propres à la démarche.\n\nÀ compléter : contexte et sous-traitants, puis pour chaque événement redouté (accès illégitime, modification non désirée, indisponibilité) les scénarios, leur cotation initiale et résiduelle, et le plan d'action.",
     "author": "",
     "organization": "",
     "scope": "",

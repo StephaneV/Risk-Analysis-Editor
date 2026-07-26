@@ -3,7 +3,7 @@
   "version": "1.0",
   "metadata": {
     "title": "Modèle ISO/IEC 27005",
-    "description": "Squelette d'appréciation du risque selon **ISO/IEC 27005**. Grille vraisemblance × impact sur cinq niveaux (score = produit), et champs personnalisés orientés actifs, menaces et vulnérabilités.\n\nÀ compléter : périmètre et critères d'acceptation, identification des actifs, des menaces et vulnérabilités, estimation puis évaluation du risque, et choix des options de traitement.",
+    "description": "Squelette d'appréciation du risque inspiré d'**ISO/IEC 27005**. Grille vraisemblance × impact sur cinq niveaux (score = produit), et champs personnalisés orientés actifs, menaces et vulnérabilités.\n\nÀ compléter : périmètre et critères d'acceptation, identification des actifs, des menaces et vulnérabilités, estimation puis évaluation du risque, et choix des options de traitement.",
     "author": "",
     "organization": "",
     "scope": "",

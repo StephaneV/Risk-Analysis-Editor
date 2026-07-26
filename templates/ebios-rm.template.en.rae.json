@@ -3,7 +3,7 @@
   "version": "1.0",
   "metadata": {
     "title": "EBIOS RM template (ANSSI)",
-    "description": "Analysis skeleton following **EBIOS Risk Manager** (ANSSI). Likelihood × severity grid, risk levels and custom fields preconfigured.\n\nTo complete: business values and supporting assets (workshop 1), risk sources and target objectives (workshop 2), strategic scenarios (workshop 3) then operational ones (workshop 4), and treatment (workshop 5).",
+    "description": "Analysis skeleton inspired by **EBIOS Risk Manager** (ANSSI). Likelihood × severity grid, risk levels and custom fields preconfigured.\n\nTo complete: business values and supporting assets (workshop 1), risk sources and target objectives (workshop 2), strategic scenarios (workshop 3) then operational ones (workshop 4), and treatment (workshop 5).",
     "author": "",
     "organization": "",
     "scope": "",

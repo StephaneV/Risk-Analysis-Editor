@@ -3,7 +3,7 @@
   "version": "1.0",
   "metadata": {
     "title": "Modello DPIA — CNIL PIA",
-    "description": "Scheletro di **Valutazione d'Impatto sulla Protezione dei Dati** secondo il metodo **CNIL PIA**. Griglia a quattro livelli il cui livello di rischio è definito **per cella** (non per prodotto), con campi personalizzati propri all'approccio.\n\nDa completare: contesto e responsabili del trattamento, poi per ogni evento temuto (accesso illegittimo, modifica indesiderata, indisponibilità) gli scenari, la valutazione iniziale e residua, e il piano d'azione.",
+    "description": "Scheletro di **Valutazione d'Impatto sulla Protezione dei Dati** ispirato al metodo **CNIL PIA**. Griglia a quattro livelli il cui livello di rischio è definito **per cella** (non per prodotto), con campi personalizzati propri all'approccio.\n\nDa completare: contesto e responsabili del trattamento, poi per ogni evento temuto (accesso illegittimo, modifica indesiderata, indisponibilità) gli scenari, la valutazione iniziale e residua, e il piano d'azione.",
     "author": "",
     "organization": "",
     "scope": "",

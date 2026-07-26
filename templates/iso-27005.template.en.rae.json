@@ -3,7 +3,7 @@
   "version": "1.0",
   "metadata": {
     "title": "ISO/IEC 27005 template",
-    "description": "Risk assessment skeleton following **ISO/IEC 27005**. Five-level likelihood × impact grid (score = product), with custom fields oriented towards assets, threats and vulnerabilities.\n\nTo complete: scope and acceptance criteria, identification of assets, threats and vulnerabilities, risk estimation then evaluation, and choice of treatment options.",
+    "description": "Risk assessment skeleton inspired by **ISO/IEC 27005**. Five-level likelihood × impact grid (score = product), with custom fields oriented towards assets, threats and vulnerabilities.\n\nTo complete: scope and acceptance criteria, identification of assets, threats and vulnerabilities, risk estimation then evaluation, and choice of treatment options.",
     "author": "",
     "organization": "",
     "scope": "",
