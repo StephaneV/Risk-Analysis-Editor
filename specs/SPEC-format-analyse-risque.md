@@ -244,6 +244,7 @@ Objet `items[]` (§4.6.2) :
 |---|---|---|---|
 | `code` | chaîne | O | Identifiant de l'item, **unique** dans le champ. C'est cette valeur qui est stockée. |
 | `label` | objet | O | Libellé multilingue de l'item, même forme que `label` du champ. |
+| `description` | objet | F | Définition multilingue de la valeur (même forme que `label`). Reprise dans la section **« Référentiels et légendes des champs »** du rapport (un tableau valeur → description par champ à valeurs fermées portant au moins une description). |
 | `color` | chaîne | F | Type `tags` : couleur de l'étiquette, hexadécimal `#RRGGBB`. |
 
 #### 4.6.3 Valeurs (`custom`)

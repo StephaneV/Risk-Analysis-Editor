@@ -223,6 +223,11 @@
             "fr": "Accès illégitime à des données",
             "en": "Illegitimate access to data",
             "it": "Accesso illegittimo ai dati"
+          },
+          "description": {
+            "fr": "Violation de confidentialité : des données personnelles sont consultées par des personnes non autorisées",
+            "en": "Confidentiality breach: personal data is accessed by unauthorised persons",
+            "it": "Violazione della riservatezza: dati personali consultati da persone non autorizzate"
           }
         },
         {
@@ -231,6 +236,11 @@
             "fr": "Modification non désirée de données",
             "en": "Unwanted modification of data",
             "it": "Modifica indesiderata dei dati"
+          },
+          "description": {
+            "fr": "Violation d'intégrité : des données sont altérées, faussées ou modifiées de façon non voulue",
+            "en": "Integrity breach: data is altered, corrupted or changed in an unintended way",
+            "it": "Violazione dell'integrità: dati alterati, falsati o modificati in modo indesiderato"
           }
         },
         {
@@ -239,6 +249,11 @@
             "fr": "Indisponibilité ou disparition de données",
             "en": "Unavailability or loss of data",
             "it": "Indisponibilità o perdita di dati"
+          },
+          "description": {
+            "fr": "Violation de disponibilité : des données deviennent inaccessibles, perdues ou détruites",
+            "en": "Availability breach: data becomes inaccessible, lost or destroyed",
+            "it": "Violazione della disponibilità: dati resi inaccessibili, persi o distrutti"
           }
         }
       ]
@@ -263,7 +278,12 @@
             "en": "Malicious internal source",
             "it": "Fonte interna malevola"
           },
-          "color": "#922b21"
+          "color": "#922b21",
+          "description": {
+            "fr": "Personne interne à l'organisme agissant intentionnellement pour nuire",
+            "en": "Person inside the organisation acting deliberately to cause harm",
+            "it": "Persona interna all'organismo che agisce intenzionalmente per nuocere"
+          }
         },
         {
           "code": "interne-acc",
@@ -272,7 +292,12 @@
             "en": "Accidental internal source",
             "it": "Fonte interna accidentale"
           },
-          "color": "#e67e22"
+          "color": "#e67e22",
+          "description": {
+            "fr": "Personne interne provoquant un dommage par erreur, négligence ou méconnaissance",
+            "en": "Insider causing harm through error, negligence or lack of awareness",
+            "it": "Persona interna che provoca un danno per errore, negligenza o inconsapevolezza"
+          }
         },
         {
           "code": "externe",
@@ -281,7 +306,12 @@
             "en": "External source",
             "it": "Fonte esterna"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Acteur extérieur à l'organisme cherchant à exploiter ou compromettre les données",
+            "en": "Actor outside the organisation seeking to exploit or compromise the data",
+            "it": "Attore esterno all'organismo che cerca di sfruttare o compromettere i dati"
+          }
         },
         {
           "code": "prestataire",
@@ -290,7 +320,12 @@
             "en": "Third party",
             "it": "Fornitore"
           },
-          "color": "#1abc9c"
+          "color": "#1abc9c",
+          "description": {
+            "fr": "Sous-traitant ou fournisseur ayant accès aux données dans le cadre de sa prestation",
+            "en": "Subcontractor or supplier with access to the data as part of its service",
+            "it": "Subappaltatore o fornitore con accesso ai dati nell'ambito della propria prestazione"
+          }
         },
         {
           "code": "environnement",
@@ -299,7 +334,12 @@
             "en": "Environmental / hardware",
             "it": "Ambiente / hardware"
           },
-          "color": "#7f8c8d"
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Source non humaine : défaillance matérielle, sinistre ou événement naturel affectant les supports",
+            "en": "Non-human source: hardware failure, disaster or natural event affecting the media",
+            "it": "Fonte non umana: guasto materiale, sinistro o evento naturale che colpisce i supporti"
+          }
         }
       ]
     },
@@ -323,7 +363,12 @@
             "en": "Hardware",
             "it": "Hardware"
           },
-          "color": "#2e86de"
+          "color": "#2e86de",
+          "description": {
+            "fr": "Équipements physiques hébergeant les données (serveurs, postes, supports amovibles)",
+            "en": "Physical equipment hosting the data (servers, workstations, removable media)",
+            "it": "Apparecchiature fisiche che ospitano i dati (server, postazioni, supporti rimovibili)"
+          }
         },
         {
           "code": "logiciel",
@@ -332,7 +377,12 @@
             "en": "Software",
             "it": "Software"
           },
-          "color": "#148f77"
+          "color": "#148f77",
+          "description": {
+            "fr": "Programmes et systèmes d'exploitation traitant les données personnelles",
+            "en": "Programs and operating systems processing the personal data",
+            "it": "Programmi e sistemi operativi che trattano i dati personali"
+          }
         },
         {
           "code": "canal-info",
@@ -341,7 +391,12 @@
             "en": "Digital channel",
             "it": "Canale informatico"
           },
-          "color": "#1f618d"
+          "color": "#1f618d",
+          "description": {
+            "fr": "Voie de transmission électronique des données (réseaux, connexions informatiques)",
+            "en": "Electronic channel transmitting the data (networks, IT connections)",
+            "it": "Canale di trasmissione elettronica dei dati (reti, connessioni informatiche)"
+          }
         },
         {
           "code": "papier",
@@ -350,7 +405,12 @@
             "en": "Paper",
             "it": "Supporto cartaceo"
           },
-          "color": "#b9770e"
+          "color": "#b9770e",
+          "description": {
+            "fr": "Documents imprimés ou manuscrits contenant des données personnelles",
+            "en": "Printed or handwritten documents containing personal data",
+            "it": "Documenti stampati o manoscritti contenenti dati personali"
+          }
         },
         {
           "code": "canal-papier",
@@ -359,7 +419,12 @@
             "en": "Paper channel",
             "it": "Canale cartaceo"
           },
-          "color": "#ca6f1e"
+          "color": "#ca6f1e",
+          "description": {
+            "fr": "Moyen d'acheminement physique des documents (courrier, transport de papier)",
+            "en": "Physical means of conveying documents (mail, transport of paper)",
+            "it": "Mezzo di trasporto fisico dei documenti (posta, trasporto cartaceo)"
+          }
         },
         {
           "code": "personne",
@@ -368,7 +433,12 @@
             "en": "Person",
             "it": "Persona"
           },
-          "color": "#af7ac5"
+          "color": "#af7ac5",
+          "description": {
+            "fr": "Individu détenteur ou porteur de connaissances relatives aux données",
+            "en": "Individual holding or possessing knowledge relating to the data",
+            "it": "Individuo detentore o portatore di conoscenze relative ai dati"
+          }
         }
       ]
     },
@@ -392,7 +462,12 @@
             "en": "Physical",
             "it": "Fisico"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Atteinte à l'intégrité physique de la personne concernée (blessure, atteinte à la santé)",
+            "en": "Harm to the physical integrity of the data subject (injury, harm to health)",
+            "it": "Lesione dell'integrità fisica dell'interessato (ferite, danno alla salute)"
+          }
         },
         {
           "code": "materiel-imp",
@@ -401,7 +476,12 @@
             "en": "Material",
             "it": "Materiale"
           },
-          "color": "#b7950b"
+          "color": "#b7950b",
+          "description": {
+            "fr": "Préjudice patrimonial ou financier subi par la personne (perte, fraude, coûts)",
+            "en": "Material or financial loss suffered by the data subject (loss, fraud, costs)",
+            "it": "Pregiudizio patrimoniale o finanziario subito dalla persona (perdita, frode, costi)"
+          }
         },
         {
           "code": "moral",
@@ -410,7 +490,12 @@
             "en": "Moral",
             "it": "Morale"
           },
-          "color": "#6c3483"
+          "color": "#6c3483",
+          "description": {
+            "fr": "Atteinte psychologique ou à la réputation (détresse, discrimination, humiliation)",
+            "en": "Psychological or reputational harm (distress, discrimination, humiliation)",
+            "it": "Danno psicologico o alla reputazione (sofferenza, discriminazione, umiliazione)"
+          }
         }
       ]
     },
@@ -432,6 +517,11 @@
             "fr": "Mesure complémentaire",
             "en": "Additional measure",
             "it": "Misura aggiuntiva"
+          },
+          "description": {
+            "fr": "Mesure ajoutée spécifiquement pour réduire un risque identifié",
+            "en": "Measure added specifically to reduce an identified risk",
+            "it": "Misura aggiunta specificamente per ridurre un rischio individuato"
           }
         },
         {
@@ -440,6 +530,11 @@
             "fr": "Ajustement d'une mesure existante",
             "en": "Adjustment of an existing measure",
             "it": "Adeguamento di una misura esistente"
+          },
+          "description": {
+            "fr": "Renforcement ou adaptation d'une mesure déjà en place",
+            "en": "Strengthening or adaptation of a measure already in place",
+            "it": "Rafforzamento o adattamento di una misura già in essere"
           }
         },
         {
@@ -448,6 +543,11 @@
             "fr": "Principe fondamental",
             "en": "Fundamental principle",
             "it": "Principio fondamentale"
+          },
+          "description": {
+            "fr": "Exigence fondamentale du RGPD (finalité, minimisation, base légale) à respecter en tout état de cause",
+            "en": "Fundamental GDPR requirement (purpose, minimisation, legal basis) to be met in all cases",
+            "it": "Requisito fondamentale del GDPR (finalità, minimizzazione, base giuridica) da rispettare in ogni caso"
           }
         }
       ]

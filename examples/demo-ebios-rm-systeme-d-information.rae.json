@@ -899,7 +899,12 @@
             "fr": "EBIOS RM",
             "en": "EBIOS RM"
           },
-          "color": "#3a63d6"
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Méthode EBIOS Risk Manager de l'ANSSI pour apprécier et traiter les risques numériques par scénarios stratégiques et opérationnels",
+            "en": "ANSSI's EBIOS Risk Manager method to assess and treat digital risks through strategic and operational scenarios",
+            "it": "Metodo EBIOS Risk Manager dell'ANSSI per valutare e trattare i rischi digitali tramite scenari strategici e operativi"
+          }
         },
         {
           "code": "iso-27005",
@@ -907,7 +912,12 @@
             "fr": "ISO 27005",
             "en": "ISO 27005"
           },
-          "color": "#4c7dff"
+          "color": "#4c7dff",
+          "description": {
+            "fr": "Norme internationale de gestion des risques liés à la sécurité de l'information, complémentaire à l'ISO 27001",
+            "en": "International standard for information security risk management, complementary to ISO 27001",
+            "it": "Norma internazionale per la gestione dei rischi di sicurezza delle informazioni, complementare alla ISO 27001"
+          }
         },
         {
           "code": "rgpd",
@@ -915,7 +925,12 @@
             "fr": "RGPD",
             "en": "GDPR"
           },
-          "color": "#e25631"
+          "color": "#e25631",
+          "description": {
+            "fr": "Règlement européen encadrant le traitement des données à caractère personnel et les obligations de protection associées",
+            "en": "European regulation governing the processing of personal data and the associated protection obligations",
+            "it": "Regolamento europeo che disciplina il trattamento dei dati personali e i relativi obblighi di protezione"
+          }
         },
         {
           "code": "nis2",
@@ -923,7 +938,12 @@
             "fr": "NIS2",
             "en": "NIS2"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Directive européenne renforçant la cybersécurité des entités essentielles et importantes et leurs obligations de gestion des risques",
+            "en": "European directive strengthening the cybersecurity of essential and important entities and their risk management obligations",
+            "it": "Direttiva europea che rafforza la cybersicurezza dei soggetti essenziali e importanti e i loro obblighi di gestione del rischio"
+          }
         },
         {
           "code": "pssi",
@@ -931,7 +951,12 @@
             "fr": "PSSI",
             "en": "ISSP"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Politique de sécurité du système d'information définissant les règles et objectifs de sécurité de l'organisation",
+            "en": "Information system security policy defining the organisation's security rules and objectives",
+            "it": "Politica di sicurezza del sistema informativo che definisce le regole e gli obiettivi di sicurezza dell'organizzazione"
+          }
         }
       ]
     },
@@ -997,7 +1022,12 @@
             "fr": "Cybercriminel",
             "en": "Cybercriminal"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Acteur motivé par le gain financier, recourant à rançongiciels, fraude ou revente de données volées",
+            "en": "Actor driven by financial gain, using ransomware, fraud or resale of stolen data",
+            "it": "Attore mosso dal guadagno economico, che ricorre a ransomware, frode o rivendita di dati rubati"
+          }
         },
         {
           "code": "etatique",
@@ -1005,7 +1035,12 @@
             "fr": "Étatique",
             "en": "State-sponsored"
           },
-          "color": "#6c3483"
+          "color": "#6c3483",
+          "description": {
+            "fr": "Acteur soutenu par un État menant de l'espionnage ou du sabotage à des fins stratégiques",
+            "en": "State-sponsored actor conducting espionage or sabotage for strategic purposes",
+            "it": "Attore sostenuto da uno Stato che conduce spionaggio o sabotaggio per fini strategici"
+          }
         },
         {
           "code": "hacktiviste",
@@ -1013,7 +1048,12 @@
             "fr": "Hacktiviste",
             "en": "Hacktivist"
           },
-          "color": "#d35400"
+          "color": "#d35400",
+          "description": {
+            "fr": "Acteur militant cherchant à défendre une cause idéologique par des attaques visibles ou des divulgations",
+            "en": "Activist actor seeking to defend an ideological cause through visible attacks or disclosures",
+            "it": "Attore militante che difende una causa ideologica tramite attacchi visibili o divulgazioni"
+          }
         },
         {
           "code": "concurrent",
@@ -1021,7 +1061,12 @@
             "fr": "Concurrent",
             "en": "Competitor"
           },
-          "color": "#b7950b"
+          "color": "#b7950b",
+          "description": {
+            "fr": "Organisation rivale cherchant à obtenir un avantage économique par espionnage industriel ou déstabilisation",
+            "en": "Rival organisation seeking economic advantage through industrial espionage or destabilisation",
+            "it": "Organizzazione rivale che cerca un vantaggio economico tramite spionaggio industriale o destabilizzazione"
+          }
         },
         {
           "code": "initie",
@@ -1029,7 +1074,12 @@
             "fr": "Initié malveillant",
             "en": "Malicious insider"
           },
-          "color": "#922b21"
+          "color": "#922b21",
+          "description": {
+            "fr": "Membre interne abusant de ses accès légitimes pour nuire, détourner ou exfiltrer des informations",
+            "en": "Internal member abusing legitimate access to harm, divert or exfiltrate information",
+            "it": "Membro interno che abusa dei propri accessi legittimi per danneggiare, sottrarre o esfiltrare informazioni"
+          }
         },
         {
           "code": "erreur",
@@ -1037,7 +1087,12 @@
             "fr": "Erreur humaine",
             "en": "Human error"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Faute non intentionnelle d'un utilisateur ou administrateur entraînant une exposition ou une altération des données",
+            "en": "Unintentional mistake by a user or administrator leading to data exposure or alteration",
+            "it": "Errore involontario di un utente o amministratore che causa esposizione o alterazione dei dati"
+          }
         },
         {
           "code": "prestataire",
@@ -1045,7 +1100,12 @@
             "fr": "Prestataire",
             "en": "Third party"
           },
-          "color": "#1abc9c"
+          "color": "#1abc9c",
+          "description": {
+            "fr": "Fournisseur ou sous-traitant dont les accès ou défaillances peuvent compromettre le système d'information",
+            "en": "Supplier or subcontractor whose access or failures may compromise the information system",
+            "it": "Fornitore o subappaltatore i cui accessi o guasti possono compromettere il sistema informativo"
+          }
         },
         {
           "code": "environnement",
@@ -1053,7 +1113,12 @@
             "fr": "Environnement",
             "en": "Environmental"
           },
-          "color": "#7f8c8d"
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Événement environnemental (panne, incendie, dégât des eaux) affectant la disponibilité des systèmes et des données",
+            "en": "Environmental event (outage, fire, water damage) affecting the availability of systems and data",
+            "it": "Evento ambientale (guasto, incendio, allagamento) che compromette la disponibilità di sistemi e dati"
+          }
         }
       ]
     },
@@ -1074,7 +1139,12 @@
             "fr": "Financier",
             "en": "Financial"
           },
-          "color": "#b7950b"
+          "color": "#b7950b",
+          "description": {
+            "fr": "Pertes financières directes ou indirectes : fraude, interruption d'activité, sanctions ou coûts de remédiation",
+            "en": "Direct or indirect financial losses: fraud, business interruption, penalties or remediation costs",
+            "it": "Perdite finanziarie dirette o indirette: frode, interruzione dell'attività, sanzioni o costi di ripristino"
+          }
         },
         {
           "code": "juridique",
@@ -1082,7 +1152,12 @@
             "fr": "Juridique / RGPD",
             "en": "Legal / GDPR"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Conséquences légales et réglementaires, notamment sanctions RGPD, contentieux ou manquements contractuels",
+            "en": "Legal and regulatory consequences, notably GDPR penalties, litigation or contractual breaches",
+            "it": "Conseguenze legali e normative, in particolare sanzioni GDPR, contenziosi o inadempimenti contrattuali"
+          }
         },
         {
           "code": "reputation",
@@ -1090,7 +1165,12 @@
             "fr": "Réputation",
             "en": "Reputation"
           },
-          "color": "#e67e22"
+          "color": "#e67e22",
+          "description": {
+            "fr": "Atteinte à l'image et à la confiance des clients, partenaires et du public envers l'organisation",
+            "en": "Damage to the image and trust of clients, partners and the public towards the organisation",
+            "it": "Danno all'immagine e alla fiducia di clienti, partner e pubblico nei confronti dell'organizzazione"
+          }
         },
         {
           "code": "operationnel",
@@ -1098,7 +1178,12 @@
             "fr": "Opérationnel",
             "en": "Operational"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Perturbation des activités et processus métier : indisponibilité, dégradation de service ou perte de production",
+            "en": "Disruption of business activities and processes: unavailability, service degradation or production loss",
+            "it": "Perturbazione delle attività e dei processi aziendali: indisponibilità, degrado del servizio o perdita di produzione"
+          }
         },
         {
           "code": "humain",
@@ -1106,7 +1191,12 @@
             "fr": "Humain",
             "en": "Human"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Atteinte à la sécurité ou à l'intégrité des personnes, incluant les risques pour la santé et la sûreté",
+            "en": "Harm to the safety or integrity of individuals, including risks to health and physical safety",
+            "it": "Danno alla sicurezza o all'integrità delle persone, inclusi i rischi per la salute e l'incolumità"
+          }
         },
         {
           "code": "donnees",
@@ -1114,7 +1204,12 @@
             "fr": "Données personnelles",
             "en": "Personal data"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Compromission de données personnelles : divulgation, altération ou perte affectant les personnes concernées",
+            "en": "Compromise of personal data: disclosure, alteration or loss affecting the data subjects",
+            "it": "Compromissione di dati personali: divulgazione, alterazione o perdita che colpisce gli interessati"
+          }
         }
       ]
     },
@@ -1147,7 +1242,12 @@
             "fr": "Identifier",
             "en": "Identify"
           },
-          "color": "#34495e"
+          "color": "#34495e",
+          "description": {
+            "fr": "Comprendre le contexte, les actifs et les risques pour gouverner la cybersécurité (fonction Identify du NIST CSF)",
+            "en": "Understand context, assets and risks to govern cybersecurity (NIST CSF Identify function)",
+            "it": "Comprendere contesto, asset e rischi per governare la cybersicurezza (funzione Identify del NIST CSF)"
+          }
         },
         {
           "code": "proteger",
@@ -1155,7 +1255,12 @@
             "fr": "Protéger",
             "en": "Protect"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Mettre en place les mesures de protection limitant l'impact d'un incident (fonction Protect du NIST CSF)",
+            "en": "Implement safeguards to limit the impact of an incident (NIST CSF Protect function)",
+            "it": "Attuare le misure di protezione per limitare l'impatto di un incidente (funzione Protect del NIST CSF)"
+          }
         },
         {
           "code": "detecter",
@@ -1163,7 +1268,12 @@
             "fr": "Détecter",
             "en": "Detect"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Identifier rapidement la survenue d'un événement de cybersécurité (fonction Detect du NIST CSF)",
+            "en": "Promptly identify the occurrence of a cybersecurity event (NIST CSF Detect function)",
+            "it": "Individuare tempestivamente il verificarsi di un evento di cybersicurezza (funzione Detect del NIST CSF)"
+          }
         },
         {
           "code": "repondre",
@@ -1171,7 +1281,12 @@
             "fr": "Répondre",
             "en": "Respond"
           },
-          "color": "#e67e22"
+          "color": "#e67e22",
+          "description": {
+            "fr": "Agir face à un incident détecté pour en contenir et réduire les effets (fonction Respond du NIST CSF)",
+            "en": "Act on a detected incident to contain and reduce its effects (NIST CSF Respond function)",
+            "it": "Agire di fronte a un incidente rilevato per contenerne e ridurne gli effetti (funzione Respond del NIST CSF)"
+          }
         },
         {
           "code": "retablir",
@@ -1179,7 +1294,12 @@
             "fr": "Rétablir",
             "en": "Recover"
           },
-          "color": "#27ae60"
+          "color": "#27ae60",
+          "description": {
+            "fr": "Restaurer les capacités et services altérés par un incident (fonction Recover du NIST CSF)",
+            "en": "Restore capabilities and services impaired by an incident (NIST CSF Recover function)",
+            "it": "Ripristinare le capacità e i servizi compromessi da un incidente (funzione Recover del NIST CSF)"
+          }
         }
       ]
     },
@@ -1200,7 +1320,12 @@
             "fr": "Technique",
             "en": "Technical"
           },
-          "color": "#3a63d6"
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Mesure reposant sur des dispositifs technologiques : chiffrement, cloisonnement, journalisation ou contrôle d'accès",
+            "en": "Control based on technological means: encryption, segmentation, logging or access control",
+            "it": "Misura basata su strumenti tecnologici: cifratura, segmentazione, registrazione o controllo degli accessi"
+          }
         },
         {
           "code": "organisationnel",
@@ -1208,7 +1333,12 @@
             "fr": "Organisationnel",
             "en": "Organizational"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure relevant de la gouvernance et des procédures : politiques, sensibilisation, gestion des rôles et responsabilités",
+            "en": "Control relating to governance and procedures: policies, awareness, management of roles and responsibilities",
+            "it": "Misura relativa a governance e procedure: politiche, sensibilizzazione, gestione di ruoli e responsabilità"
+          }
         },
         {
           "code": "physique",
@@ -1216,7 +1346,12 @@
             "fr": "Physique",
             "en": "Physical"
           },
-          "color": "#7f8c8d"
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Mesure de sécurité physique protégeant locaux, équipements et supports contre les accès et sinistres",
+            "en": "Physical security control protecting premises, equipment and media against access and incidents",
+            "it": "Misura di sicurezza fisica che protegge locali, apparecchiature e supporti da accessi e sinistri"
+          }
         },
         {
           "code": "juridique",
@@ -1224,7 +1359,12 @@
             "fr": "Juridique",
             "en": "Legal"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure de nature contractuelle ou réglementaire : clauses, engagements de conformité et obligations de sous-traitance",
+            "en": "Control of a contractual or regulatory nature: clauses, compliance commitments and subcontracting obligations",
+            "it": "Misura di natura contrattuale o normativa: clausole, impegni di conformità e obblighi di subappalto"
+          }
         }
       ]
     },
@@ -1245,7 +1385,12 @@
             "fr": "Réduit la vraisemblance",
             "en": "Reduces likelihood"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Mesure diminuant la probabilité qu'un scénario de risque se réalise",
+            "en": "Control reducing the likelihood of a risk scenario occurring",
+            "it": "Misura che riduce la probabilità che uno scenario di rischio si realizzi"
+          }
         },
         {
           "code": "gravite",
@@ -1253,7 +1398,12 @@
             "fr": "Réduit la gravité",
             "en": "Reduces severity"
           },
-          "color": "#e67e22"
+          "color": "#e67e22",
+          "description": {
+            "fr": "Mesure limitant l'ampleur des conséquences si le scénario de risque se produit",
+            "en": "Control limiting the severity of consequences should the risk scenario occur",
+            "it": "Misura che limita l'entità delle conseguenze qualora lo scenario di rischio si verifichi"
+          }
         },
         {
           "code": "detecte",
@@ -1261,7 +1411,12 @@
             "fr": "Détecte",
             "en": "Detects"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure permettant de repérer la survenue du scénario de risque afin de réagir",
+            "en": "Control enabling detection of the risk scenario's occurrence in order to react",
+            "it": "Misura che consente di rilevare il verificarsi dello scenario di rischio per poter reagire"
+          }
         },
         {
           "code": "transfere",
@@ -1269,7 +1424,12 @@
             "fr": "Transfère",
             "en": "Transfers"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure reportant tout ou partie du risque vers un tiers, par assurance ou externalisation",
+            "en": "Control transferring all or part of the risk to a third party, through insurance or outsourcing",
+            "it": "Misura che trasferisce in tutto o in parte il rischio a terzi, tramite assicurazione o esternalizzazione"
+          }
         }
       ]
     }

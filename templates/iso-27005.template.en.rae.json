@@ -224,6 +224,11 @@
             "fr": "Actif primaire (information, processus)",
             "en": "Primary asset (information, process)",
             "it": "Bene primario (informazione, processo)"
+          },
+          "description": {
+            "fr": "Information ou processus métier essentiel dont dépend directement l'activité de l'organisation",
+            "en": "Essential information or business process on which the organisation's activity directly depends",
+            "it": "Informazione o processo aziendale essenziale da cui dipende direttamente l'attività dell'organizzazione"
           }
         },
         {
@@ -232,6 +237,11 @@
             "fr": "Actif support (matériel, logiciel, réseau, personne, site)",
             "en": "Supporting asset (hardware, software, network, person, site)",
             "it": "Bene di supporto (hardware, software, rete, persona, sito)"
+          },
+          "description": {
+            "fr": "Élément (matériel, logiciel, réseau, personnel, site) sur lequel reposent les actifs primaires",
+            "en": "Element (hardware, software, network, personnel, site) underpinning the primary assets",
+            "it": "Elemento (hardware, software, rete, personale, sito) su cui poggiano gli asset primari"
           }
         }
       ]
@@ -256,7 +266,12 @@
             "en": "Unauthorised access",
             "it": "Accesso non autorizzato"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Obtention d'un accès aux systèmes ou aux informations sans autorisation",
+            "en": "Gaining access to systems or information without authorisation",
+            "it": "Ottenimento di un accesso ai sistemi o alle informazioni senza autorizzazione"
+          }
         },
         {
           "code": "compromission-info",
@@ -265,7 +280,12 @@
             "en": "Compromise of information",
             "it": "Compromissione di informazioni"
           },
-          "color": "#922b21"
+          "color": "#922b21",
+          "description": {
+            "fr": "Atteinte à la confidentialité ou à l'intégrité de l'information (interception, divulgation, vol)",
+            "en": "Compromise of the confidentiality or integrity of information (interception, disclosure, theft)",
+            "it": "Compromissione della riservatezza o dell'integrità dell'informazione (intercettazione, divulgazione, furto)"
+          }
         },
         {
           "code": "defaillance",
@@ -274,7 +294,12 @@
             "en": "Technical failure",
             "it": "Guasto tecnico"
           },
-          "color": "#7f8c8d"
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Panne ou dysfonctionnement d'un équipement ou d'un logiciel",
+            "en": "Failure or malfunction of equipment or software",
+            "it": "Guasto o malfunzionamento di un'apparecchiatura o di un software"
+          }
         },
         {
           "code": "actions-na",
@@ -283,7 +308,12 @@
             "en": "Unauthorised actions",
             "it": "Azioni non autorizzate"
           },
-          "color": "#a04000"
+          "color": "#a04000",
+          "description": {
+            "fr": "Utilisation illicite ou détournée de ressources (usage non autorisé, copie frauduleuse)",
+            "en": "Unlawful or improper use of resources (unauthorised use, fraudulent copying)",
+            "it": "Uso illecito o improprio delle risorse (utilizzo non autorizzato, copia fraudolenta)"
+          }
         },
         {
           "code": "compromission-fct",
@@ -292,7 +322,12 @@
             "en": "Compromise of functions",
             "it": "Compromissione di funzioni"
           },
-          "color": "#6c3483"
+          "color": "#6c3483",
+          "description": {
+            "fr": "Altération du bon fonctionnement (abus de droits, erreur d'exploitation, reniement d'actions)",
+            "en": "Impairment of proper functioning (abuse of rights, operating error, repudiation of actions)",
+            "it": "Alterazione del corretto funzionamento (abuso di diritti, errore d'esercizio, disconoscimento di azioni)"
+          }
         },
         {
           "code": "dommages",
@@ -301,7 +336,12 @@
             "en": "Physical damage",
             "it": "Danni fisici"
           },
-          "color": "#b9770e"
+          "color": "#b9770e",
+          "description": {
+            "fr": "Atteintes physiques aux biens (incendie, dégât des eaux, destruction, vol de matériel)",
+            "en": "Physical damage to assets (fire, water damage, destruction, theft of equipment)",
+            "it": "Danni fisici ai beni (incendio, danni da acqua, distruzione, furto di apparecchiature)"
+          }
         },
         {
           "code": "naturel",
@@ -310,7 +350,12 @@
             "en": "Natural event",
             "it": "Evento naturale"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Phénomène naturel affectant les installations (séisme, inondation, conditions climatiques)",
+            "en": "Natural phenomenon affecting facilities (earthquake, flood, climatic conditions)",
+            "it": "Fenomeno naturale che colpisce gli impianti (sisma, inondazione, condizioni climatiche)"
+          }
         },
         {
           "code": "perte-service",
@@ -319,7 +364,12 @@
             "en": "Loss of essential services",
             "it": "Perdita di servizi essenziali"
           },
-          "color": "#1f618d"
+          "color": "#1f618d",
+          "description": {
+            "fr": "Interruption d'un service essentiel (alimentation électrique, climatisation, télécommunications)",
+            "en": "Loss of an essential service (power supply, air conditioning, telecommunications)",
+            "it": "Perdita di un servizio essenziale (alimentazione elettrica, climatizzazione, telecomunicazioni)"
+          }
         }
       ]
     },
@@ -352,6 +402,11 @@
             "fr": "Réduire (modifier)",
             "en": "Reduce (modify)",
             "it": "Ridurre (modificare)"
+          },
+          "description": {
+            "fr": "Mettre en place des mesures de sécurité pour ramener le risque à un niveau acceptable",
+            "en": "Implementing security controls to bring the risk down to an acceptable level",
+            "it": "Attuare misure di sicurezza per riportare il rischio a un livello accettabile"
           }
         },
         {
@@ -360,6 +415,11 @@
             "fr": "Accepter (maintenir)",
             "en": "Accept (retain)",
             "it": "Accettare (mantenere)"
+          },
+          "description": {
+            "fr": "Assumer le risque en connaissance de cause, sans mesure de traitement supplémentaire",
+            "en": "Knowingly accepting the risk without any further treatment",
+            "it": "Assumere consapevolmente il rischio, senza ulteriori misure di trattamento"
           }
         },
         {
@@ -368,6 +428,11 @@
             "fr": "Éviter (supprimer)",
             "en": "Avoid (remove)",
             "it": "Evitare (eliminare)"
+          },
+          "description": {
+            "fr": "Supprimer la source du risque en renonçant à l'activité ou au bien concerné",
+            "en": "Removing the source of the risk by abandoning the activity or asset concerned",
+            "it": "Eliminare la fonte del rischio rinunciando all'attività o al bene interessato"
           }
         },
         {
@@ -376,6 +441,11 @@
             "fr": "Partager (transférer)",
             "en": "Share (transfer)",
             "it": "Condividere (trasferire)"
+          },
+          "description": {
+            "fr": "Transférer tout ou partie du risque à un tiers (assurance, sous-traitance)",
+            "en": "Transferring all or part of the risk to a third party (insurance, outsourcing)",
+            "it": "Trasferire in tutto o in parte il rischio a un terzo (assicurazione, esternalizzazione)"
           }
         }
       ]

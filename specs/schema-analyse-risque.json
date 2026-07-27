@@ -266,6 +266,7 @@
             "properties": {
               "code": { "type": "string", "minLength": 1 },
               "label": { "$ref": "#/$defs/i18nText" },
+              "description": { "$ref": "#/$defs/i18nText", "description": "Définition de la valeur (multilingue), reprise dans la section « Référentiels » du rapport." },
               "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "description": "Type tags : couleur de la puce." }
             }
           }

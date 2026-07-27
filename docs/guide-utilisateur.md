@@ -294,7 +294,7 @@ Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par stat
 
 ![Rapport imprimable](images/guide-18-rapport.png)
 
-L'onglet **Rapport** génère un rapport configurable, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
+L'onglet **Rapport** génère un rapport configurable, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **référentiels et légendes des champs** (valeurs des listes/tags accompagnées de leur description), les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
 
 Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §16).
 
@@ -335,6 +335,8 @@ Chaque champ possède :
 ![Éditeur d'un champ personnalisé](images/guide-06-champ-editeur.png)
 
 Les **valeurs** des champs se saisissent ensuite dans les fiches (risque, mesure, lien) et, pour les champs d'analyse, dans l'onglet *Présentation*. Elles sont reprises dans le **rapport**, l'**import/export CSV** et les **exports Word/Excel**, et peuvent devenir des **colonnes** dans les registres.
+
+Pour les listes (**liste déroulante**, **liste à cocher**, **tags**), chaque **valeur** peut recevoir une **description** (saisie sous la valeur dans l'éditeur). Ces descriptions s'affichent en **infobulle** au survol des **tags** (dans les fiches comme dans les registres) et alimentent une section **« Référentiels et légendes des champs »** du rapport : un tableau *valeur → description* pour chaque champ concerné, utile pour documenter le vocabulaire de la méthode (sources de risque, événements redoutés, types de menace…). Dans *Paramètres › Rapport*, la sous-liste **« Éléments »** de cette section permet de **choisir et d'ordonner** les champs à y inclure. Les modèles et les démonstrations fournis en sont déjà pourvus.
 
 > Les libellés et l'aide se saisissent dans la langue de l'interface active ; à défaut de traduction, le code du champ est affiché.
 

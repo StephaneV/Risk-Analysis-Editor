@@ -533,6 +533,10 @@
   .cf-progress-edit input[type=range]{flex:1}
   .cf-pal-preview{height:12px;border-radius:20px;border:1px solid var(--border);margin-top:2px}
   .cf-desc{margin-top:4px}
+  /* Éditeur d'items : ligne principale (code/libellé/couleur) + description sur 2e ligne. */
+  .cf-item{margin-bottom:12px}
+  .cf-item-desc{width:100%;margin-top:5px;font-size:12.5px}
+  .cf-item-desc::placeholder{font-style:italic}
   /* ---------- Rendu Markdown (rapport, bloc Présentation, aperçu) ---------- */
   .md>*:first-child{margin-top:0}
   .md>*:last-child{margin-bottom:0}
@@ -1570,6 +1574,7 @@ const I18N = {
     rc_reset:"Réinitialiser le rapport par défaut",
     rp_revision:"Révision", rp_value:"Valeur", rp_range:"Plage de score",
     rp_risk_details:"Détail des risques", rp_measure_details:"Détail des mesures", rp_link_details:"Détail des liens",
+    rp_field_glossary:"Référentiels et légendes des champs",
     tab_plan:"Plan d'action", plan_caption:"Suivi des mesures de maîtrise : échéances, statut et avancement. Sur le tableau par statut, au clavier : Entrée pour ouvrir une mesure, Ctrl+flèches pour changer sa colonne.",
     plan_view_echeance:"Échéancier", plan_view_statut:"Par statut", plan_view_responsable:"Par responsable",
     plan_progress:"Avancement", plan_overdue:"en retard", plan_overdue_n:"{0} en retard",
@@ -1598,6 +1603,7 @@ const I18N = {
     cf_label:"Libellé", cf_help:"Aide", cf_description:"Description", md_preview:"Aperçu", md_edit:"Éditer", md_supports:"Markdown pris en charge",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
     cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_label:"Libellé",
+    cf_item_desc_ph:"Description (documentation dans le rapport)",
     cf_err_code:"Le code est obligatoire.", cf_err_code_dup:"Ce code de champ existe déjà.", cf_err_label:"Le libellé est obligatoire (au moins une langue).",
     cf_err_items:"Une liste doit contenir au moins un item.", cf_err_item_code:"Chaque item doit avoir un code unique.", cf_err_minmax:"Le minimum ne peut pas dépasser le maximum.",
     cf_del_confirm:"Supprimer ce champ personnalisé ?",
@@ -1884,6 +1890,7 @@ const I18N = {
     rc_reset:"Reset to default report",
     rp_revision:"Revision", rp_value:"Value", rp_range:"Score range",
     rp_risk_details:"Risk details", rp_measure_details:"Measure details", rp_link_details:"Link details",
+    rp_field_glossary:"Field reference and legends",
     tab_plan:"Action plan", plan_caption:"Follow-up of controls: due dates, status and progress. On the status board, keyboard: Enter to open a measure, Ctrl+arrows to move it between columns.",
     plan_view_echeance:"Timeline", plan_view_statut:"By status", plan_view_responsable:"By owner",
     plan_progress:"Progress", plan_overdue:"overdue", plan_overdue_n:"{0} overdue",
@@ -1912,6 +1919,7 @@ const I18N = {
     cf_label:"Label", cf_help:"Help", cf_description:"Description", md_preview:"Preview", md_edit:"Edit", md_supports:"Supports Markdown",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
     cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_label:"Label",
+    cf_item_desc_ph:"Description (documentation in the report)",
     cf_err_code:"Code is required.", cf_err_code_dup:"This field code already exists.", cf_err_label:"A label is required (at least one language).",
     cf_err_items:"A list must contain at least one item.", cf_err_item_code:"Each item must have a unique code.", cf_err_minmax:"Minimum cannot exceed maximum.",
     cf_del_confirm:"Delete this custom field?",
@@ -2198,6 +2206,7 @@ const I18N = {
     rc_reset:"Ripristina il report predefinito",
     rp_revision:"Revisione", rp_value:"Valore", rp_range:"Intervallo di punteggio",
     rp_risk_details:"Dettaglio dei rischi", rp_measure_details:"Dettaglio delle misure", rp_link_details:"Dettaglio dei collegamenti",
+    rp_field_glossary:"Riferimenti e legende dei campi",
     tab_plan:"Piano d'azione", plan_caption:"Monitoraggio delle misure di controllo: scadenze, stato e avanzamento. Nella bacheca per stato, da tastiera: Invio per aprire una misura, Ctrl+frecce per spostarla di colonna.",
     plan_view_echeance:"Scadenzario", plan_view_statut:"Per stato", plan_view_responsable:"Per responsabile",
     plan_progress:"Avanzamento", plan_overdue:"in ritardo", plan_overdue_n:"{0} in ritardo",
@@ -2226,6 +2235,7 @@ const I18N = {
     cf_label:"Etichetta", cf_help:"Aiuto", cf_description:"Descrizione", md_preview:"Anteprima", md_edit:"Modifica", md_supports:"Markdown supportato",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
     cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_label:"Etichetta",
+    cf_item_desc_ph:"Descrizione (documentazione nel rapporto)",
     cf_err_code:"Il codice è obbligatorio.", cf_err_code_dup:"Questo codice di campo esiste già.", cf_err_label:"È richiesta un'etichetta (almeno una lingua).",
     cf_err_items:"Un elenco deve contenere almeno un elemento.", cf_err_item_code:"Ogni elemento deve avere un codice univoco.", cf_err_minmax:"Il minimo non può superare il massimo.",
     cf_del_confirm:"Eliminare questo campo personalizzato?",
@@ -4780,12 +4790,21 @@ function reportMatrixSVG(mode,risks){
    (page de garde, table des matières, toutes les sections activées, ordre par défaut).
    ============================================================ */
 const REPORT_SECTION_IDS=["metadata","presentation","summary_counts","summary_distribution",
-  "grid_axes","grid_criticality","matrix_ir","matrix_initial","matrix_residual","matrix_traj","risks_table","risks_detail",
+  "grid_axes","grid_criticality","field_glossary","matrix_ir","matrix_initial","matrix_residual","matrix_traj","risks_table","risks_detail",
   "measures_table","measures_detail","links_table","links_detail","action_plan"];
 const REPORT_META_ROW_IDS=["author","organization","scope","methodology","created","updated","revision","status"];
 /* Par défaut (sans configuration), toutes les sections sont activées SAUF les matrices
    « seules » (initiale seule, résiduelle seule) : seule la version accolée est cochée. */
-function reportSectionDefaultOn(id){return !(id==="matrix_initial"||id==="matrix_residual");}
+/* Champs à valeurs fermées portant au moins une description d'item (alimentent la section « Référentiels »). */
+function cfHasItemDesc(f){return cfNeedsItems(f.type)&&(f.items||[]).some(it=>it.description&&Object.keys(it.description).length);}
+function glossaryFieldList(){const out=[];["analysis","risk","measure","link"].forEach(tg=>customFieldsFor(tg).forEach(f=>{if(cfHasItemDesc(f))out.push({target:tg,field:f});}));return out;}
+function reportGlossaryItemTitle(id){const i=id.indexOf(":"),tg=id.slice(0,i),code=id.slice(i+1);const f=customFieldsFor(tg).find(x=>x.code===code);return (f?cfLabel(f):code)+" ("+cfTargetLabel(tg)+")";}
+function reportSectionDefaultOn(id){
+  if(id==="matrix_initial"||id==="matrix_residual")return false;
+  // Section « Référentiels » : activée par défaut seulement si au moins un item porte une description.
+  if(id==="field_glossary")return glossaryFieldList().length>0;
+  return true;
+}
 /* Filtres actifs (natifs propagés + champs personnalisés) décrivant le sous-ensemble filtré : [{label,value}]. */
 function reportActiveFilters(){
   const out=[];
@@ -4810,7 +4829,7 @@ function reportDefaultCols(secId){return ({
   links_table:["rid","risk","mid","measure","notes"]})[secId]||[];}
 function reportSectionTitle(id){return ({
   metadata:t("rp_metadata"), presentation:t("rp_presentation"), summary_counts:t("rp_summary"),
-  summary_distribution:t("stat_distribution"), grid_axes:t("settings_grid"), grid_criticality:t("crit_title"),
+  summary_distribution:t("stat_distribution"), grid_axes:t("settings_grid"), grid_criticality:t("crit_title"), field_glossary:t("rp_field_glossary"),
   matrix_ir:t("mtx_both_side"), matrix_initial:t("mtx_initial_only"), matrix_residual:t("mtx_residual_only"),
   matrix_traj:t("mtx_traj"), risks_table:t("risks_title"), risks_detail:t("rp_risk_details"),
   measures_table:t("measures_title"), measures_detail:t("rp_measure_details"), links_table:t("links_title"),
@@ -4853,6 +4872,7 @@ function reportCfg(){
     const o={id:s.id, on:s.on!==false};
     if(s.id==="metadata")o.rows=ordered(s.rows,REPORT_META_ROW_IDS,true);
     else if(s.id==="presentation")o.items=ordered(s.items,["description"].concat(customFieldsFor("analysis").map(f=>"cf:"+f.code)),true);
+    else if(s.id==="field_glossary")o.items=ordered(s.items,glossaryFieldList().map(x=>x.target+":"+x.field.code),true);
     else if(reportTableId(s.id))o.columns=columns(s.columns,reportTableId(s.id),reportDefaultCols(s.id));
     else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
     return o;
@@ -4945,6 +4965,25 @@ function renderReport(){
     grid_criticality:()=>card("grid_criticality",'<h2>'+esc(t("crit_title"))+'</h2>'+
       '<table><thead><tr><th style="width:180px">'+esc(t("th_label"))+'</th><th style="width:90px">'+esc(t("rp_range"))+'</th><th style="width:110px">'+esc(t("th_acceptance"))+'</th><th>'+esc(t("f_description"))+'</th></tr></thead><tbody>'+
       cats.map(c=>'<tr><td><span class="rp-swatch" style="background:'+c.color+'"></span>'+esc(c.label)+'</td><td>'+c.score_min+' – '+c.score_max+'</td><td>'+esc(accLabel(c.acceptance||""))+'</td><td>'+esc(c.description||"")+'</td></tr>').join("")+'</tbody></table>'),
+    field_glossary:s=>{
+      // Section « Référentiels » : un tableau valeur → description par champ à valeurs fermées
+      // sélectionné (sous-liste « Éléments »), dans l'ordre choisi ; toutes les valeurs définies.
+      let body="";
+      ((s&&s.items)||[]).filter(x=>x.on).forEach(it=>{
+        const i=it.id.indexOf(":"),tg=it.id.slice(0,i),code=it.id.slice(i+1);
+        const f=customFieldsFor(tg).find(x=>x.code===code);
+        if(!f||!cfHasItemDesc(f))return;
+        body+='<h3>'+esc(cfLabel(f))+' <span class="rp-item-sub">('+esc(cfTargetLabel(f.target))+')</span></h3>';
+        const fd=(f.description&&f.description[lang])||"";
+        if(fd)body+='<div class="rp-sub">'+esc(fd)+'</div>';
+        body+='<table><thead><tr><th style="width:210px">'+esc(t("rp_value"))+'</th><th>'+esc(t("f_description"))+'</th></tr></thead><tbody>'+
+          f.items.map(x=>{const lbl=cfItemLabel(x);
+            const cell=f.type==="tags"?'<span class="tag" style="background:'+x.color+';color:'+badgeFg(x.color)+'">'+esc(lbl)+'</span>':esc(lbl);
+            return '<tr><td>'+cell+'</td><td>'+esc(cfItemDesc(x))+'</td></tr>';}).join("")+'</tbody></table>';
+      });
+      if(!body)return "";
+      return card("field_glossary",'<h2>'+esc(t("rp_field_glossary"))+'</h2>'+body);
+    },
     matrix_ir:()=>{
       let inner='<h2>'+esc(t("mtx_both_side"))+'</h2>';
       inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("side",RISKS);
@@ -6055,6 +6094,21 @@ document.addEventListener("mousemove",e=>{
   if(x+w>innerWidth-pad)x=e.clientX-14-w;if(x<pad)x=pad;
   if(y+h>innerHeight-pad)y=innerHeight-pad-h;if(y<pad)y=pad;
   tip.style.left=x+"px";tip.style.top=y+"px";pillTipOn=true;
+});
+/* Infobulle de description au survol des valeurs de listes/tags (pastilles affichées et
+   sélecteur de la fiche). Inerte dans le rapport. */
+let cfDescTipOn=false;
+document.addEventListener("mousemove",e=>{
+  const el=e.target&&e.target.closest?e.target.closest("[data-cfdesc]"):null;
+  if(!el||el.closest(".report")){if(cfDescTipOn){tip.style.opacity=0;cfDescTipOn=false;}return;}
+  const d=el.getAttribute("data-cfdesc");if(!d){if(cfDescTipOn){tip.style.opacity=0;cfDescTipOn=false;}return;}
+  tip.classList.remove("tt-link","tt-stat");
+  tip.innerHTML='<b>'+esc(el.textContent.trim())+'</b><br>'+esc(d);tip.style.opacity=1;
+  const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;
+  let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-pad)x=e.clientX-14-w;if(x<pad)x=pad;
+  if(y+h>innerHeight-pad)y=innerHeight-pad-h;if(y<pad)y=pad;
+  tip.style.left=x+"px";tip.style.top=y+"px";cfDescTipOn=true;
 });
 /* ---------- Aide & raccourcis ---------- */
 function openHelpModal(){
@@ -7279,6 +7333,22 @@ async function buildDocx(){
     },
     grid_criticality:()=>heading(t("crit_title"))+dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("rp_range"),b:true,fill:"EEF2F8"},{txt:t("th_acceptance"),b:true,fill:"EEF2F8"},{txt:t("f_description"),b:true,fill:"EEF2F8"}]]
       .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:c.score_min+" – "+c.score_max,center:true},{txt:accLabel(c.acceptance||"")},{txt:c.description||""}])),[2200,1300,1700,CW-5200]),
+    field_glossary:s=>{
+      let out="", any=false;
+      ((s&&s.items)||[]).filter(x=>x.on).forEach(it=>{
+        const i=it.id.indexOf(":"),tg=it.id.slice(0,i),code=it.id.slice(i+1);
+        const f=customFieldsFor(tg).find(x=>x.code===code);
+        if(!f||!cfHasItemDesc(f))return;
+        if(!any){out=heading(t("rp_field_glossary"));any=true;}
+        out+=h3(cfLabel(f)+" — "+cfTargetLabel(f.target));
+        const fd=(f.description&&f.description[lang])||"";
+        if(fd)out+=dxP(dxRun(fd,{color:"7A8699",sz:20}),{sa:60});
+        const head=[{txt:t("rp_value"),b:true,fill:"EEF2F8"},{txt:t("f_description"),b:true,fill:"EEF2F8"}];
+        const rows=f.items.map(x=>[f.type==="tags"?dxBadgeCell(cfItemLabel(x),x.color):{txt:cfItemLabel(x)},{txt:cfItemDesc(x)}]);
+        out+=dxTbl([head].concat(rows),[2600,CW-2600]);
+      });
+      return out;
+    },
     matrix_ir:async()=>{
       let out=heading(t("mtx_both_side"));
       out+=nR?await addSvgImage(reportMatrixSVG("side",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
@@ -7543,6 +7613,8 @@ function rcSecItemHTML(s){
     sub=rcSubrowsHTML("rcsub-metadata",s.rows.map(r=>({id:r.id,on:r.on,label:reportMetaRowTitle(r.id)})));}
   else if(s.id==="presentation"){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-presentation">'+esc(t("rc_items"))+' ▾</button>';
     sub=rcSubrowsHTML("rcsub-presentation",s.items.map(it=>({id:it.id,on:it.on,label:reportPresItemTitle(it.id),cf:it.id.indexOf("cf:")===0})));}
+  else if(s.id==="field_glossary"){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-field_glossary">'+esc(t("rc_items"))+' ▾</button>';
+    sub=rcSubrowsHTML("rcsub-field_glossary",(s.items||[]).map(it=>({id:it.id,on:it.on,label:reportGlossaryItemTitle(it.id),cf:true})));}
   else if(reportTableId(s.id)){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-'+s.id+'">'+esc(t("rc_columns"))+' ▾</button>';
     sub=rcSubrowsHTML("rcsub-"+s.id,rcTableColRows(reportTableId(s.id),s.columns));}
   else if(s.id==="action_plan"){ctrl='<select class="rc-rowctrl" data-role="view">'+
@@ -7626,7 +7698,7 @@ function collectReportCfg(){
   const secs=[];
   p.querySelectorAll("#rcSeclist .rc-secitem").forEach(it=>{
     const id=it.dataset.sec,o={id:id,on:it.querySelector(".rc-secrow input[type=checkbox]").checked};
-    if(id==="metadata"||id==="presentation"){
+    if(id==="metadata"||id==="presentation"||id==="field_glossary"){
       const arr=[];it.querySelectorAll(".rc-subrow").forEach(sr=>arr.push({id:sr.dataset.sub,on:sr.querySelector("input").checked}));
       if(id==="metadata")o.rows=arr;else o.items=arr;
     }else if(reportTableId(id)){
@@ -7757,6 +7829,8 @@ function cfLabel(f){const L=f&&f.label||{};return L[lang]||(f&&f.code)||"";}
 function cfTypeLabel(ty){return t("cft."+ty);}
 function cfTargetLabel(tg){return t("cf_t."+tg);}
 function cfItemLabel(it){const L=it&&it.label||{};return L[lang]||(it&&it.code)||"";}
+/* Description d'un item (langue courante, sinon vide) — pour la documentation du rapport. */
+function cfItemDesc(it){const D=it&&it.description||{};return D[lang]||"";}
 function cfNeedsItems(ty){return ty==="select"||ty==="checklist"||ty==="tags";}
 function cfBoundKind(ty){ // 'num' | 'date' | 'len' | 'items' | null
   if(ty==="integer"||ty==="float")return "num";
@@ -7818,11 +7892,15 @@ function cfBoundsHTML(f){
     '<label class="field"><span class="lab">'+esc(hi)+'</span>'+inp("cfMax",f.max)+'</label></div>';
 }
 function cfItemsRowsHTML(items,withColor){
-  return items.map((it,i)=>'<div class="inline" data-cfi="'+i+'" style="margin-bottom:6px">'+
-    '<input placeholder="'+esc(t("cf_item_code"))+'" data-if="code" value="'+esc(it.code||"")+'" style="max-width:120px">'+
-    '<input placeholder="'+esc(t("cf_item_label"))+'" data-if="lab" value="'+esc((it.label&&it.label[lang])||"")+'">'+
-    (withColor?'<input type="color" data-if="color" title="'+esc(t("cf_item_color"))+'" value="'+esc(it.color||"#4c7dff")+'" style="width:42px;flex:none;padding:2px;height:34px">':'')+
-    '<button class="btn icon sm" style="flex:none" data-cfi-del="'+i+'" type="button"'+a11y("a11y_del_item",(it.label&&it.label[lang])||it.code||(i+1))+'>🗑</button></div>').join("");
+  return items.map((it,i)=>'<div class="cf-item" data-cfi="'+i+'">'+
+    '<div class="inline">'+
+      '<input placeholder="'+esc(t("cf_item_code"))+'" data-if="code" value="'+esc(it.code||"")+'" style="max-width:120px">'+
+      '<input placeholder="'+esc(t("cf_item_label"))+'" data-if="lab" value="'+esc((it.label&&it.label[lang])||"")+'">'+
+      (withColor?'<input type="color" data-if="color" title="'+esc(t("cf_item_color"))+'" value="'+esc(it.color||"#4c7dff")+'" style="width:42px;flex:none;padding:2px;height:34px">':'')+
+      '<button class="btn icon sm" style="flex:none" data-cfi-del="'+i+'" type="button"'+a11y("a11y_del_item",(it.label&&it.label[lang])||it.code||(i+1))+'>🗑</button>'+
+    '</div>'+
+    '<input class="cf-item-desc" placeholder="'+esc(t("cf_item_desc_ph"))+'" data-if="desc" value="'+esc((it.description&&it.description[lang])||"")+'">'+
+    '</div>').join("");
 }
 // Options spécifiques à un type dans la modale de définition (multiple pour tags, couleur pour progress).
 function cfTypeOptsHTML(f){
@@ -7872,7 +7950,8 @@ function openCustomFieldModal(idx){
     it.code=r.querySelector('[data-if=code]').value.trim();it.label=it.label||{};
     const v=r.querySelector('[data-if=lab]').value.trim();
     if(v)it.label[lang]=v;else delete it.label[lang];
-    const cv=r.querySelector('[data-if=color]');if(cv)it.color=cv.value;});};
+    const cv=r.querySelector('[data-if=color]');if(cv)it.color=cv.value;
+    const dv=r.querySelector('[data-if=desc]');if(dv){it.description=it.description||{};const d=dv.value.trim();if(d)it.description[lang]=d;else delete it.description[lang];}});};
   openModal(isNew?t("cf_new"):t("cf_edit"),body,()=>{
     const code=val("cfCode").trim(), type=val("cfType"), target=val("cfTarget");
     if(!code){modalMsg(t("cf_err_code"));return false;}
@@ -7909,7 +7988,8 @@ function openCustomFieldModal(idx){
       if(!items.length){modalMsg(t("cf_err_items"));return false;}
       const codes=new Set();
       for(const it of items){if(!it.code||codes.has(it.code)){modalMsg(t("cf_err_item_code"));return false;}codes.add(it.code);}
-      obj.items=items.map(it=>{const o={code:it.code,label:Object.assign({},it.label)};if(type==="tags")o.color=it.color||"#4c7dff";return o;});
+      obj.items=items.map(it=>{const o={code:it.code,label:Object.assign({},it.label)};if(type==="tags")o.color=it.color||"#4c7dff";
+        if(it.description&&Object.keys(it.description).length)o.description=Object.assign({},it.description);return o;});
     }
     const list=customFields();
     const commit=()=>{
@@ -8086,8 +8166,8 @@ function cfDisplayHTML(f,v,rich){
     return href?'<a href="'+esc(href)+'"'+(f.type==="url"?' target="_blank" rel="noopener"':'')+'>'+esc(v)+'</a>':esc(v);
   }
   if(f.type==="tags"){const arr=Array.isArray(v)?v:[];
-    return '<span class="cf-chips">'+arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code),col=(it&&it.color)||"#888";
-      return '<span class="cf-chip" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(it?cfItemLabel(it):code)+'</span>';}).join("")+'</span>';}
+    return '<span class="cf-chips">'+arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code),col=(it&&it.color)||"#888",dsc=it?cfItemDesc(it):"";
+      return '<span class="cf-chip" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'"'+(dsc?' data-cfdesc="'+esc(dsc)+'"':'')+'>'+esc(it?cfItemLabel(it):code)+'</span>';}).join("")+'</span>';}
   if(f.type==="progress"){const pv=Math.max(0,Math.min(100,Math.round(+v||0)));
     return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
   return esc(cfDisplay(f,v));
@@ -8152,7 +8232,7 @@ function cfControlHTML(f,value){
       c='<div style="display:flex;flex-direction:column;gap:4px;padding-top:4px">'+(f.items||[]).map(it=>'<label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" data-cfchk value="'+esc(it.code)+'" style="width:15px;height:15px;flex:none"'+(vals.includes(it.code)?" checked":"")+'> '+esc(cfItemLabel(it))+'</label>').join("")+'</div>';break;}
     case "tags":{full=true;const vals=Array.isArray(value)?value:[];
       c='<div class="cf-tags" data-cfmulti="'+(f.multiple?1:0)+'">'+(f.items||[]).map(it=>{const on=vals.includes(it.code),col=it.color||"#888";
-        return '<button type="button" class="cf-tag'+(on?" on":"")+'" data-cftag="'+esc(it.code)+'" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(cfItemLabel(it))+'</button>';}).join("")+'</div>';break;}
+        return '<button type="button" class="cf-tag'+(on?" on":"")+'" data-cftag="'+esc(it.code)+'"'+(cfItemDesc(it)?' data-cfdesc="'+esc(cfItemDesc(it))+'"':'')+' style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(cfItemLabel(it))+'</button>';}).join("")+'</div>';break;}
     case "progress":{full=true;const pv=(value!=null&&value!=="")?Math.max(0,Math.min(100,Math.round(+value||0))):0;const cols=progressColors(f);const colStr=cols?cols.join(","):"";
       c='<div class="cf-progress-edit"><input type="range" min="0" max="100" step="'+(f.step||10)+'" data-cfv data-pcolors="'+esc(colStr)+'" style="accent-color:'+(cols&&cols.length?paletteColor(cols,pv):"var(--accent)")+'" value="'+pv+'"><output class="cf-progress-val">'+pv+' %</output></div>';break;}
   }

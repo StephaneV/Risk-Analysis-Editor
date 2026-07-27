@@ -1030,7 +1030,12 @@
             "fr": "RGPD",
             "en": "GDPR"
           },
-          "color": "#e25631"
+          "color": "#e25631",
+          "description": {
+            "fr": "Règlement général sur la protection des données, socle des obligations de traitement des données de santé des salariés",
+            "en": "General Data Protection Regulation, the basis for obligations when processing employees' health data",
+            "it": "Regolamento generale sulla protezione dei dati, base degli obblighi per il trattamento dei dati sanitari dei lavoratori"
+          }
         },
         {
           "code": "pia-cnil",
@@ -1038,7 +1043,12 @@
             "fr": "Méthode PIA (CNIL)",
             "en": "CNIL PIA method"
           },
-          "color": "#3a63d6"
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Méthode d'analyse d'impact de la CNIL, structurant l'appréciation des risques sur la vie privée des personnes concernées",
+            "en": "CNIL's privacy impact assessment method, structuring the evaluation of risks to the data subjects' privacy",
+            "it": "Metodo PIA della CNIL, che struttura la valutazione dei rischi per la vita privata degli interessati"
+          }
         },
         {
           "code": "code-travail",
@@ -1046,7 +1056,12 @@
             "fr": "Code du travail",
             "en": "French Labour Code"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Dispositions du Code du travail encadrant la santé au travail et le suivi médical des salariés",
+            "en": "French Labour Code provisions governing occupational health and the medical monitoring of employees",
+            "it": "Disposizioni del Codice del lavoro che regolano la salute sul lavoro e la sorveglianza sanitaria dei lavoratori"
+          }
         },
         {
           "code": "secret-medical",
@@ -1054,7 +1069,12 @@
             "fr": "Secret médical",
             "en": "Medical confidentiality"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Obligation légale de confidentialité protégeant les informations médicales relatives aux personnes concernées",
+            "en": "Legal confidentiality obligation protecting medical information relating to the data subjects",
+            "it": "Obbligo legale di riservatezza a tutela delle informazioni mediche relative agli interessati"
+          }
         },
         {
           "code": "hds",
@@ -1062,7 +1082,12 @@
             "fr": "Hébergeur HDS",
             "en": "HDS health data host"
           },
-          "color": "#f39c12"
+          "color": "#f39c12",
+          "description": {
+            "fr": "Certification exigée pour héberger des données de santé, garantissant la sécurité et la confidentialité de l'hébergement",
+            "en": "Certification required to host health data, guaranteeing the security and confidentiality of the hosting",
+            "it": "Certificazione richiesta per ospitare dati sanitari, che garantisce la sicurezza e la riservatezza dell'hosting"
+          }
         }
       ]
     },
@@ -1152,7 +1177,12 @@
             "fr": "Personnel interne",
             "en": "Internal staff"
           },
-          "color": "#922b21"
+          "color": "#922b21",
+          "description": {
+            "fr": "Personnel du service de santé au travail susceptible d'accéder indûment aux données ou de commettre un abus",
+            "en": "Occupational health service staff who may improperly access data or commit misuse",
+            "it": "Personale del servizio di medicina del lavoro che può accedere indebitamente ai dati o commettere abusi"
+          }
         },
         {
           "code": "externe",
@@ -1160,7 +1190,12 @@
             "fr": "Attaquant externe",
             "en": "External attacker"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Attaquant extérieur cherchant à accéder illégitimement aux données de santé par intrusion ou hameçonnage",
+            "en": "External attacker seeking illegitimate access to health data through intrusion or phishing",
+            "it": "Attaccante esterno che cerca un accesso illegittimo ai dati sanitari tramite intrusione o phishing"
+          }
         },
         {
           "code": "soustraitant",
@@ -1168,7 +1203,12 @@
             "fr": "Sous-traitant / hébergeur",
             "en": "Processor / host"
           },
-          "color": "#1abc9c"
+          "color": "#1abc9c",
+          "description": {
+            "fr": "Sous-traitant ou hébergeur dont les accès ou défaillances peuvent compromettre les données de santé",
+            "en": "Subcontractor or host whose access or failures may compromise health data",
+            "it": "Subappaltatore o hosting provider i cui accessi o guasti possono compromettere i dati sanitari"
+          }
         },
         {
           "code": "erreur",
@@ -1176,7 +1216,12 @@
             "fr": "Erreur humaine",
             "en": "Human error"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Faute non intentionnelle d'un agent entraînant une divulgation ou une perte de données de santé",
+            "en": "Unintentional mistake by an agent leading to disclosure or loss of health data",
+            "it": "Errore involontario di un operatore che causa divulgazione o perdita di dati sanitari"
+          }
         },
         {
           "code": "nonhumaine",
@@ -1184,7 +1229,12 @@
             "fr": "Source non humaine (panne, sinistre)",
             "en": "Non-human source (failure, disaster)"
           },
-          "color": "#7f8c8d"
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Source non humaine (panne, sinistre, défaillance matérielle) affectant la disponibilité ou l'intégrité des données",
+            "en": "Non-human source (outage, disaster, hardware failure) affecting the availability or integrity of data",
+            "it": "Fonte non umana (guasto, sinistro, avaria hardware) che compromette la disponibilità o l'integrità dei dati"
+          }
         }
       ]
     },
@@ -1274,7 +1324,12 @@
             "fr": "Atteinte au secret médical",
             "en": "Breach of medical confidentiality"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Événement redouté où la divulgation d'informations médicales rompt le secret médical des personnes concernées",
+            "en": "Feared event where disclosure of medical information breaches the data subjects' medical confidentiality",
+            "it": "Evento temuto in cui la divulgazione di informazioni mediche viola il segreto medico degli interessati"
+          }
         },
         {
           "code": "vie-privee",
@@ -1282,7 +1337,12 @@
             "fr": "Atteinte à la vie privée",
             "en": "Invasion of privacy"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Atteinte à la vie privée des personnes concernées par l'exposition d'informations sensibles les concernant",
+            "en": "Harm to the data subjects' privacy through exposure of sensitive information about them",
+            "it": "Lesione della vita privata degli interessati tramite l'esposizione di informazioni sensibili che li riguardano"
+          }
         },
         {
           "code": "discrimination",
@@ -1290,7 +1350,12 @@
             "fr": "Discrimination à l'emploi",
             "en": "Employment discrimination"
           },
-          "color": "#d35400"
+          "color": "#d35400",
+          "description": {
+            "fr": "Usage détourné des données de santé conduisant à une discrimination à l'emploi des personnes concernées",
+            "en": "Misuse of health data leading to employment discrimination against the data subjects",
+            "it": "Uso improprio dei dati sanitari che porta a discriminazione nell'impiego degli interessati"
+          }
         },
         {
           "code": "moral",
@@ -1298,7 +1363,12 @@
             "fr": "Préjudice moral",
             "en": "Emotional harm"
           },
-          "color": "#e67e22"
+          "color": "#e67e22",
+          "description": {
+            "fr": "Préjudice moral subi par les personnes concernées : stress, sentiment d'atteinte ou perte de confiance",
+            "en": "Non-material harm suffered by the data subjects: stress, sense of intrusion or loss of trust",
+            "it": "Danno morale subito dagli interessati: stress, senso di violazione o perdita di fiducia"
+          }
         },
         {
           "code": "suivi",
@@ -1306,7 +1376,12 @@
             "fr": "Perte de suivi médical",
             "en": "Loss of medical follow-up"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Perte ou altération des données compromettant la continuité du suivi médical des personnes concernées",
+            "en": "Loss or alteration of data compromising the continuity of the data subjects' medical monitoring",
+            "it": "Perdita o alterazione dei dati che compromette la continuità della sorveglianza sanitaria degli interessati"
+          }
         },
         {
           "code": "financier",
@@ -1314,7 +1389,12 @@
             "fr": "Préjudice financier",
             "en": "Financial harm"
           },
-          "color": "#b7950b"
+          "color": "#b7950b",
+          "description": {
+            "fr": "Préjudice financier pour les personnes concernées, par exemple refus d'assurance ou d'emploi lié à leurs données",
+            "en": "Financial harm to the data subjects, for example denial of insurance or employment linked to their data",
+            "it": "Danno finanziario per gli interessati, ad esempio rifiuto di assicurazione o impiego legato ai loro dati"
+          }
         }
       ]
     },
@@ -1347,7 +1427,12 @@
             "fr": "Juridique",
             "en": "Legal"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure de nature contractuelle ou réglementaire : clauses de confidentialité, engagements de conformité et encadrement de la sous-traitance",
+            "en": "Control of a contractual or regulatory nature: confidentiality clauses, compliance commitments and subcontracting framework",
+            "it": "Misura di natura contrattuale o normativa: clausole di riservatezza, impegni di conformità e disciplina del subappalto"
+          }
         },
         {
           "code": "organisationnelle",
@@ -1355,7 +1440,12 @@
             "fr": "Organisationnelle",
             "en": "Organizational"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure de gouvernance et de procédure : habilitations, sensibilisation du personnel et gestion des accès aux dossiers",
+            "en": "Governance and procedural control: authorisations, staff awareness and management of access to records",
+            "it": "Misura di governance e procedura: autorizzazioni, sensibilizzazione del personale e gestione degli accessi ai fascicoli"
+          }
         },
         {
           "code": "technique",
@@ -1363,7 +1453,12 @@
             "fr": "Technique",
             "en": "Technical"
           },
-          "color": "#3a63d6"
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Mesure technologique protégeant les données de santé : chiffrement, journalisation, cloisonnement et contrôle d'accès",
+            "en": "Technological control protecting health data: encryption, logging, segmentation and access control",
+            "it": "Misura tecnologica a protezione dei dati sanitari: cifratura, registrazione, segmentazione e controllo degli accessi"
+          }
         },
         {
           "code": "physique",
@@ -1371,7 +1466,12 @@
             "fr": "Physique",
             "en": "Physical"
           },
-          "color": "#7f8c8d"
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Mesure de sécurité physique protégeant locaux, dossiers et supports médicaux contre les accès non autorisés",
+            "en": "Physical security control protecting premises, records and medical media against unauthorised access",
+            "it": "Misura di sicurezza fisica che protegge locali, fascicoli e supporti medici da accessi non autorizzati"
+          }
         }
       ]
     },
@@ -1392,7 +1492,12 @@
             "fr": "Confidentialité",
             "en": "Confidentiality"
           },
-          "color": "#c0392b"
+          "color": "#c0392b",
+          "description": {
+            "fr": "Garantir que les données de santé ne sont accessibles qu'aux personnes dûment habilitées",
+            "en": "Ensure health data is accessible only to duly authorised persons",
+            "it": "Garantire che i dati sanitari siano accessibili solo alle persone debitamente autorizzate"
+          }
         },
         {
           "code": "integrite",
@@ -1400,7 +1505,12 @@
             "fr": "Intégrité",
             "en": "Integrity"
           },
-          "color": "#e67e22"
+          "color": "#e67e22",
+          "description": {
+            "fr": "Préserver l'exactitude et l'intégrité des données de santé contre toute altération non autorisée",
+            "en": "Preserve the accuracy and integrity of health data against any unauthorised alteration",
+            "it": "Preservare l'esattezza e l'integrità dei dati sanitari da ogni alterazione non autorizzata"
+          }
         },
         {
           "code": "disponibilite",
@@ -1408,7 +1518,12 @@
             "fr": "Disponibilité",
             "en": "Availability"
           },
-          "color": "#27ae60"
+          "color": "#27ae60",
+          "description": {
+            "fr": "Assurer l'accès aux données de santé au moment voulu par les personnes autorisées",
+            "en": "Ensure health data is available when needed to authorised persons",
+            "it": "Assicurare l'accesso ai dati sanitari nel momento necessario alle persone autorizzate"
+          }
         },
         {
           "code": "tracabilite",
@@ -1416,7 +1531,12 @@
             "fr": "Traçabilité",
             "en": "Traceability"
           },
-          "color": "#34495e"
+          "color": "#34495e",
+          "description": {
+            "fr": "Conserver la trace des accès et actions sur les données de santé afin de les imputer",
+            "en": "Retain a record of access and actions on health data to enable accountability",
+            "it": "Conservare traccia degli accessi e delle azioni sui dati sanitari per garantirne l'imputabilità"
+          }
         },
         {
           "code": "minimisation",
@@ -1424,7 +1544,12 @@
             "fr": "Minimisation",
             "en": "Minimization"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Limiter la collecte et la conservation des données de santé au strict nécessaire à la finalité",
+            "en": "Limit the collection and retention of health data to what is strictly necessary for the purpose",
+            "it": "Limitare la raccolta e la conservazione dei dati sanitari allo stretto necessario per la finalità"
+          }
         },
         {
           "code": "droits",
@@ -1432,7 +1557,12 @@
             "fr": "Droits des personnes",
             "en": "Data subject rights"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Permettre l'exercice effectif des droits des personnes concernées : information, accès, rectification et opposition",
+            "en": "Enable effective exercise of the data subjects' rights: information, access, rectification and objection",
+            "it": "Consentire l'esercizio effettivo dei diritti degli interessati: informazione, accesso, rettifica e opposizione"
+          }
         }
       ]
     },
@@ -1453,7 +1583,12 @@
             "fr": "Réduit la vraisemblance",
             "en": "Reduces likelihood"
           },
-          "color": "#2980b9"
+          "color": "#2980b9",
+          "description": {
+            "fr": "Mesure diminuant la probabilité que l'événement redouté se réalise",
+            "en": "Control reducing the likelihood of the feared event occurring",
+            "it": "Misura che riduce la probabilità che l'evento temuto si realizzi"
+          }
         },
         {
           "code": "gravite",
@@ -1461,7 +1596,12 @@
             "fr": "Réduit la gravité",
             "en": "Reduces severity"
           },
-          "color": "#e67e22"
+          "color": "#e67e22",
+          "description": {
+            "fr": "Mesure limitant l'ampleur des conséquences pour les personnes concernées si l'événement redouté survient",
+            "en": "Control limiting the severity of consequences for the data subjects should the feared event occur",
+            "it": "Misura che limita l'entità delle conseguenze per gli interessati qualora l'evento temuto si verifichi"
+          }
         },
         {
           "code": "detecte",
@@ -1469,7 +1609,12 @@
             "fr": "Détecte",
             "en": "Detects"
           },
-          "color": "#16a085"
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure permettant de repérer la survenue de l'événement redouté afin de réagir",
+            "en": "Control enabling detection of the feared event's occurrence in order to react",
+            "it": "Misura che consente di rilevare il verificarsi dell'evento temuto per poter reagire"
+          }
         },
         {
           "code": "transfere",
@@ -1477,7 +1622,12 @@
             "fr": "Transfère",
             "en": "Transfers"
           },
-          "color": "#8e44ad"
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure reportant tout ou partie du risque vers un tiers, par assurance ou externalisation",
+            "en": "Control transferring all or part of the risk to a third party, through insurance or outsourcing",
+            "it": "Misura che trasferisce in tutto o in parte il rischio a terzi, tramite assicurazione o esternalizzazione"
+          }
         }
       ]
     }
