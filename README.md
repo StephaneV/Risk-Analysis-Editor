@@ -4,7 +4,7 @@
 
 Standalone tool for **building and visualizing risk matrices** — inherent (gross) risk and residual (net) risk — with an open, documented file format, `.rae.json`.
 
-### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📖 [**User guide**](docs/guide-utilisateur.md) · 🎬 [Video tutorial](https://youtu.be/D3VLcJyTAHU) · 📊 [EBIOS RM demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-information-system.rae.json) · 🛡️ [DPIA demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-dpia-ohs.rae.json) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
+### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📖 [**User guide**](docs/guide-utilisateur.md) · 🎬 [Video tutorial](https://youtu.be/D3VLcJyTAHU)<br>📊 [EBIOS RM demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-information-system.rae.json) · 🛡️ [DPIA demo](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-dpia-ohs.rae.json) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
 
 *No installation: the tool runs entirely in your browser. Two ready-to-open demos: an **EBIOS RM–inspired** risk analysis (12 risks, 11 measures) and an example of the risk-analysis part of a DPIA, inspired by the CNIL PIA method, focused on feared events, controls and residual risk (12 risks, 12 measures) — both showcasing descriptions, notes, colored **tags**, **progress bars**, owners and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
 
@@ -33,6 +33,8 @@ The tool builds on a generic, configurable model, adaptable to an internal frame
 The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, measures, links and initial/residual assessments. The format is **specified** ([technical documentation](specs/SPEC-format-analyse-risque.md), in French) and comes with a **JSON schema** for validation ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Property names are in English; values (labels, descriptions) stay in the analysis's own language.
 
 **Official website:** [www.risk-analysis-editor.com](https://www.risk-analysis-editor.com/) — presentation, screenshots and links.
+
+**YouTube channel:** [@RiskAnalysisEditor](https://www.youtube.com/@RiskAnalysisEditor) — video tutorials.
 
 **Getting started:** the illustrated **[user guide](docs/guide-utilisateur.md)** (in French) walks through every screen and feature.
 
