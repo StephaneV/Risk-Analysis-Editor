@@ -4,7 +4,7 @@
 
 Standalone tool for **building and visualizing risk matrices** — inherent (gross) risk and residual (net) risk — with an open, documented file format, `.rae.json`.
 
-### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📖 [**User guide**](docs/guide-utilisateur.md) · 🎬 [Video tutorial](https://youtu.be/D3VLcJyTAHU) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
+### ▶️ [Open the app](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html) · 📖 [**User guide**](docs/guide-utilisateur.md) · 🎬 [Video tutorial](https://youtu.be/NfDHNyK3x-E) · ⬇️ [Download](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest/download/risk-analysis-editor.html)
 
 *No installation: the tool runs entirely in your browser. Two ready-to-open demos: 📊 an [**EBIOS RM–inspired** risk analysis](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-ebios-rm-information-system.rae.json) (12 risks, 11 measures) and 🛡️ [an example of the risk-analysis part of a DPIA](https://stephanev.github.io/Risk-Analysis-Editor/app/risk-analysis-editor.html?file=../examples/demo-dpia-ohs.rae.json), inspired by the CNIL PIA method, focused on feared events, controls and residual risk (12 risks, 12 measures) — both showcasing descriptions, notes, colored **tags**, **progress bars**, owners and per-link rationale. The download provides **the single HTML file** of the [latest release](https://github.com/StephaneV/Risk-Analysis-Editor/releases/latest): double-click it to work **offline**.*
 
