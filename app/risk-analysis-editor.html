@@ -404,6 +404,8 @@
 
   /* ---------- Filtres & tri des listes ---------- */
   .filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .flt-label{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap}
+  .flt-label svg{flex:none;opacity:.85}
   .filterbar input,.filterbar select{width:auto;max-width:240px}
   .filterbar input[type=search]{min-width:180px}
   .filterbar label.chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);white-space:nowrap}
@@ -1584,7 +1586,7 @@ const I18N = {
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
     flt_overdue_field:"En retard",
     flt_none:"Aucun résultat pour ce filtre.",
-    flt_by_field:"Filtrer par « {0} »", flt_field_all:"{0} : tout", flt_clear:"Réinitialiser les filtres", flt_all:"Tout", flt_clear_one:"Retirer ce filtre",
+    flt_by_field:"Filtrer par « {0} »", flt_field_all:"{0} : tout", flt_clear:"Réinitialiser les filtres", flt_all:"Tout", flt_clear_one:"Retirer ce filtre", flt_label:"Filtres :",
     cf_section:"Champs personnalisés", cf_caption:"Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.",
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
@@ -1900,7 +1902,7 @@ const I18N = {
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
     flt_overdue_field:"Overdue",
     flt_none:"No result for this filter.",
-    flt_by_field:"Filter by \"{0}\"", flt_field_all:"{0}: all", flt_clear:"Clear filters", flt_all:"All", flt_clear_one:"Remove this filter",
+    flt_by_field:"Filter by \"{0}\"", flt_field_all:"{0}: all", flt_clear:"Clear filters", flt_all:"All", flt_clear_one:"Remove this filter", flt_label:"Filters:",
     cf_section:"Custom fields", cf_caption:"Define extra fields attached to the analysis, risks or measures.",
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
@@ -2216,7 +2218,7 @@ const I18N = {
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
     flt_overdue_field:"In ritardo",
     flt_none:"Nessun risultato per questo filtro.",
-    flt_by_field:"Filtra per « {0} »", flt_field_all:"{0} : tutto", flt_clear:"Azzera i filtri", flt_all:"Tutto", flt_clear_one:"Rimuovi questo filtro",
+    flt_by_field:"Filtra per « {0} »", flt_field_all:"{0} : tutto", flt_clear:"Azzera i filtri", flt_all:"Tutto", flt_clear_one:"Rimuovi questo filtro", flt_label:"Filtri:",
     cf_section:"Campi personalizzati", cf_caption:"Definisci campi aggiuntivi associati all'analisi, ai rischi o alle misure.",
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
@@ -5447,12 +5449,13 @@ function visibleTreatments(){return cfVisibleSets().links;}
    filtrée se confond avec une analyse pauvre — c'est ce qui manquait au Plan d'action,
    aux Matrices et à Liens › Détails.
 
-   Chaque barre propose TOUS les champs filtrables — risque, mesure et lien confondus — quel
-   que soit l'onglet. Les critères se propageant le long des liens, un filtre de mesure agit
-   sur le registre des risques comme sur les statistiques : le proposer là où il produit un
-   effet, c'est le proposer partout. Les filtres natifs « catégorie » (risque), « type » et
-   « statut » (mesure) se propagent de la même façon (via cfVisibleSets). Restent propres à
-   leur vue : la recherche texte, et les filtres du Plan d'action (responsable, « en retard »). */
+   Chaque barre propose par défaut les filtres de SA cible : filtres de base + champs perso du
+   risque (Risques, Matrices), de la mesure (Mesures, Plan d'action), du risque ET de la mesure
+   (Statistiques, qui affiche les deux) ou du lien (Liens). Comme les critères se propagent le long des liens (via cfVisibleSets), un filtre
+   d'une AUTRE cible reste affiché — donc visible et modifiable — dès qu'il est actif, dans tous
+   les onglets où il produit un effet. Les filtres natifs « catégorie » (risque), « type » et
+   « statut » (mesure) se propagent de la même façon. Restent propres à leur vue : la recherche
+   texte, et les filtres du Plan d'action (responsable, « en retard »). */
 /* Filtres « natifs » (catégorie, type, statut, responsable, en retard) : autrefois des
    <select> et une case à cocher, désormais servis par la MÊME puce à menu que les champs
    personnalisés. Chaque descripteur sait lire et écrire son état (dans listState) et
@@ -5481,25 +5484,21 @@ function natStatusDesc(){return natSelect("fltMeasureStatus",()=>t("th_status"),
   ()=>listState.measures.status, v=>{listState.measures.status=v;filtersChanged();});}
 function natPropagating(){return [natCatDesc(),natTypeDesc(),natStatusDesc()];}
 const FILTER_BARS=[
-  {cle:"risks", vue:"view-risks", panneau:null, search:"fltRiskQ", natives:()=>[natCatDesc()]},
-  {cle:"measures", vue:"view-measures", panneau:null, search:"fltMeasureQ", natives:()=>[natTypeDesc(),natStatusDesc()]},
-  {cle:"plan", vue:"view-plan", panneau:null, search:"fltPlanQ", natives:()=>[
+  {cle:"risks", vue:"view-risks", panneau:null, cible:"risk", search:"fltRiskQ", natives:()=>[natCatDesc()]},
+  {cle:"measures", vue:"view-measures", panneau:null, cible:"measure", search:"fltMeasureQ", natives:()=>[natTypeDesc(),natStatusDesc()]},
+  {cle:"plan", vue:"view-plan", panneau:null, cible:"measure", search:"fltPlanQ", natives:()=>[
+    natTypeDesc(),     // type, comme l'onglet Mesures (fusionne, propage)
     natStatusDesc(),   // meme filtre statut que les mesures (fusionne, propage)
     natSelect("fltPlanResp",()=>t("th_responsible"),
       ()=>[...new Set(analyse.measures.map(m=>m.responsible).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(r=>[r,r]),
       ()=>listState.plan.resp, v=>listState.plan.resp=v),
     natBool("fltPlanOverdue",()=>t("flt_overdue_field"),
       ()=>listState.plan.overdue||"", v=>listState.plan.overdue=v)]},
-  {cle:"matrices", vue:"view-matrices", panneau:null, search:null, natives:()=>[]},
-  {cle:"stats", vue:"view-stats", panneau:null, search:null, natives:()=>[]},
-  {cle:"cross", vue:"view-links", panneau:'[data-lmode="grid"]', search:null, natives:()=>[]},
-  {cle:"details", vue:"view-links", panneau:'[data-lmode="details"]', search:"fltLinkQ", natives:()=>[]}
+  {cle:"matrices", vue:"view-matrices", panneau:null, cible:"risk", search:null, natives:()=>[natCatDesc()]},
+  {cle:"stats", vue:"view-stats", panneau:null, cible:["risk","measure"], search:null, natives:()=>[natCatDesc(),natTypeDesc(),natStatusDesc()]},
+  {cle:"cross", vue:"view-links", panneau:'[data-lmode="grid"]', cible:"link", search:null, natives:()=>[]},
+  {cle:"details", vue:"view-links", panneau:'[data-lmode="details"]', cible:"link", search:"fltLinkQ", natives:()=>[]}
 ];
-/* Tous les champs filtrables, dans un ordre stable (risque, puis mesure, puis lien). */
-function cfAllFilterableFields(){
-  const l=[];["risk","measure","link"].forEach(tg=>cfFilterableFields(tg).forEach(f=>l.push(f)));
-  return l;
-}
 function filterBarDef(cle){return FILTER_BARS.filter(b=>b.cle===cle)[0];}
 
 /* ---- Puce de filtre à menu déroulant ----
@@ -5631,16 +5630,28 @@ function filterBarReset(cle){
 }
 /* Décompte et bouton, publiés par la fonction de rendu de chaque vue : elle seule connaît
    le nombre réellement affiché après tous les critères. */
+/* Décompte GLOBAL, identique dans toutes les barres : « Risques : x sur X · Mesures : y sur Y ».
+   S'appuie sur cfVisibleSets (via visibleRisks/visibleMeasures), donc sur le filtrage propagé. */
+function filterSummary(){
+  return t("flt_results_named",t("tab_risks"),visibleRisks().length,analyse.risks.length)+" · "+
+         t("flt_results_named",t("tab_measures"),visibleMeasures().length,analyse.measures.length);
+}
 function setFilterInfo(cle,texte){
   const b=filterBarDef(cle);if(!b)return;
   const host=filterBarHost(b);if(!host)return;
   const actif=barreActive(b);
   const cnt=host.querySelector("[data-flt-count]");
-  if(cnt)cnt.textContent=actif?texte:"";
+  /* Un filtre propagé (catégorie/type/statut) ou un champ perso a un effet GLOBAL : on affiche
+     alors le même décompte Risques/Mesures dans toutes les barres. La recherche et les filtres
+     locaux (responsable, « en retard ») gardent le décompte propre à la barre. */
+  if(cnt)cnt.textContent=!actif?"":((natPropagatingActive()||cfFilterCount()>0)?filterSummary():texte);
   const btn=host.querySelector("[data-flt-reset]");
   if(btn)btn.hidden=!actif;
 }
 function setFilterCount(cle,montres,total){setFilterInfo(cle,t("flt_results",montres,total));}
+/* Icône entonnoir préfixant chaque barre de filtres. */
+const FUNNEL_SVG='<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">'+
+  '<path fill="currentColor" d="M1.6 2.5h12.8a.5.5 0 0 1 .38.83L10 9.2v3.4a.5.5 0 0 1-.28.45l-2.4 1.2A.5.5 0 0 1 6.6 13.8V9.2L1.22 3.33A.5.5 0 0 1 1.6 2.5z"/></svg>';
 
 function renderFilterBars(){
   /* Un champ peut avoir perdu l'option « filtrable », changé de type ou disparu : sa valeur
@@ -5657,21 +5668,41 @@ function renderFilterBars(){
   });
 
   CHIP_REG={};                            // registre reconstruit à chaque rendu
-  const champs=cfAllFilterableFields().map(cfDescriptor);   // les mêmes dans toutes les barres
   FILTER_BARS.forEach(b=>{
     const host=filterBarHost(b);if(!host)return;
-    /* La recherche vient du gabarit ; on ne réécrit que notre propre zone (puces natives puis
-       puces de champs perso), créée une fois pour toutes juste après la recherche. */
+    /* La recherche vient du gabarit et NE se propage PAS le long des liens (contrairement aux
+       filtres) : on la laisse en tête, à part. On ne réécrit que notre propre zone (puces
+       natives puis champs perso). */
     let zone=host.querySelector("[data-flt-cf]");
     if(!zone){zone=document.createElement("span");zone.setAttribute("data-flt-cf","");
       zone.style.display="contents";host.appendChild(zone);}
+    /* Préfixe « entonnoir + Filtres : » placé APRÈS la recherche et juste AVANT les puces
+       (créé une fois, repositionné et texte réactualisé à chaque rendu). */
+    let lab=host.querySelector("[data-flt-label]");
+    if(!lab){lab=document.createElement("span");lab.setAttribute("data-flt-label","");lab.className="flt-label";
+      lab.innerHTML=FUNNEL_SVG+'<span class="flt-label-txt"></span>';}
+    host.insertBefore(lab,zone);
+    lab.querySelector(".flt-label-txt").textContent=t("flt_label");
     const natives=b.natives(), homeKeys={};
     natives.forEach(d=>homeKeys[d.key]=1);
-    /* Filtres propagés actifs mais absents nativement de cette barre : on les ajoute pour que
-       leur valeur reste visible et modifiable depuis tous les onglets où ils agissent. */
-    const propActifs=natPropagating().filter(d=>!homeKeys[d.key]&&d.value());
-    const chips=natives.concat(propActifs).concat(champs);
+    /* Cible(s) de l'onglet : une seule (risque/mesure/lien) ou plusieurs — les Statistiques
+       affichent risques ET mesures, leur barre propose donc les deux familles. */
+    const homeTg=Array.isArray(b.cible)?b.cible:[b.cible];
+    /* Puces perso de la/des CIBLE(S) de l'onglet : proposées par défaut, même sans filtre appliqué. */
+    const homeCf=[];
+    homeTg.forEach(tg=>cfFilterableFields(tg).forEach(f=>homeCf.push(cfDescriptor(f))));
+    /* Filtres des AUTRES cibles : affichés UNIQUEMENT s'ils sont actifs, pour rester visibles
+       et modifiables partout où ils agissent (propagation le long des liens) —
+       natifs propagés (catégorie/type/statut) posés ailleurs, puis champs perso non vides. */
+    const crossNat=natPropagating().filter(d=>!homeKeys[d.key]&&d.value());
+    const crossCf=[];
+    ["risk","measure","link"].forEach(tg=>{ if(homeTg.indexOf(tg)<0)
+      cfFilterableFields(tg).forEach(f=>{ if(cfFilters[f.code])crossCf.push(cfDescriptor(f)); }); });
+    const chips=natives.concat(homeCf).concat(crossNat).concat(crossCf);
     zone.innerHTML=chips.map(d=>filterChipHTML(d,b.cle)).join("");
+    // Pas la moindre puce (ex. Liens sans champ filtrable) : le préfixe « Filtres : » n'a pas
+    // lieu d'être. (style.display, car .flt-label force display:inline-flex sur l'attribut hidden.)
+    lab.style.display=chips.length?"":"none";
     let cnt=host.querySelector("[data-flt-count]");
     if(!cnt){cnt=document.createElement("span");cnt.className="flt-count";
       cnt.setAttribute("data-flt-count","");host.appendChild(cnt);}
