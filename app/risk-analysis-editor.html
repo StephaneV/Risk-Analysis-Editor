@@ -55,6 +55,9 @@
     font-family:"Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.45;font-size:14px}
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
+  /* Navigation par ancre (ex. table des matières du rapport) : décale la cible sous les barres
+     supérieures fixes (topbar + onglets, ~104 px), sinon le titre visé passe dessous. */
+  html{scroll-padding-top:112px}
 
   /* ---------- Barre supérieure ---------- */
   .topbar{display:flex;align-items:center;gap:14px;padding:12px 20px;
@@ -730,6 +733,17 @@
   .report{max-width:900px;margin:0 auto;color:var(--text)}
   .report.report-landscape{max-width:1240px}
   .report .rp-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:18px}
+  .report .rp-chapter{break-before:page;margin-bottom:8px}
+  .report .rp-chapter:first-of-type{break-before:auto}
+  .report .rp-chapter-head{border-bottom:2px solid var(--accent);margin:0 0 14px;padding-bottom:6px}
+  .report .rp-chapter-head h1{font-size:21px;margin:0}
+  .report .rp-chapter-head .rp-sub{margin-top:3px}
+  .report .rp-appendix{break-before:page}
+  .report .rp-appendix>.rp-apxhead{font-size:21px;font-weight:700;border-bottom:2px solid var(--border);margin:0 0 14px;padding-bottom:6px}
+  .report .rp-toc ol{list-style:none;counter-reset:rpi;padding-left:0;margin:0}
+  .report .rp-toc ol ol{margin:2px 0 6px 22px;color:var(--muted);font-size:12.5px}
+  .report .rp-toc li{counter-increment:rpi}
+  .report .rp-toc li>a::before{content:counters(rpi,".") "  ";color:var(--muted);font-variant-numeric:tabular-nums}
   .report h1{font-size:22px;margin:0 0 6px;color:var(--text)}
   .report h2{font-size:15px;margin:0 0 12px;font-weight:600;color:var(--text)}
   .report h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
@@ -1572,6 +1586,16 @@ const I18N = {
     rc_orient_title:"Orientation du rapport", rc_orient_portrait:"Portrait", rc_orient_landscape:"Paysage",
     rc_scope_title:"Périmètre du rapport", rc_scope_all:"Analyse complète",
     rc_scope_filtered:"Sous-ensemble filtré (selon les filtres et la recherche actifs)",
+    rc_iterate_title:"Rapport éclaté", rc_iterate_cap:"Répéter le rapport pour chaque valeur d'un critère (chapitres filtrés). Les sections se répartissent en tête / répétées / annexe.",
+    rc_iterate_by:"Éclater par", rc_iterate_sort:"Tri des chapitres",
+    rc_structure_title:"Structure du rapport", rc_layout_title:"Mise en page",
+    it_none:"Aucun (rapport unique)", it_risk_category:"Catégorie de risque", it_measure_type:"Type de mesure",
+    it_risk_owner:"Propriétaire du risque", it_measure_responsible:"Responsable de la mesure",
+    it_per_risk:"Un chapitre par risque", it_cf:"Champ perso : {0}",
+    it_sort_criticality:"Par criticité", it_sort_alpha:"Alphabétique", it_sort_count:"Par nombre de risques",
+    rc_zone_header:"En tête", rc_zone_repeated:"Répété", rc_zone_appendix:"Annexe",
+    rp_it_appendix:"Annexe (analyse complète)", rp_it_uncat:"Non catégorisé", rp_it_noowner:"Sans propriétaire",
+    rp_it_notype:"Sans type", rp_it_noresp:"Sans responsable", rp_it_novalue:"Non renseigné",
     rc_saved_note:"Préférences enregistrées dans le fichier .rae.json (rubrique extensions.display.report).",
     rc_reset:"Réinitialiser le rapport par défaut",
     rp_revision:"Révision", rp_value:"Valeur", rp_range:"Plage de score",
@@ -1888,6 +1912,16 @@ const I18N = {
     rc_orient_title:"Report orientation", rc_orient_portrait:"Portrait", rc_orient_landscape:"Landscape",
     rc_scope_title:"Report scope", rc_scope_all:"Full analysis",
     rc_scope_filtered:"Filtered subset (per active filters and search)",
+    rc_iterate_title:"Split report", rc_iterate_cap:"Repeat the report for each value of a criterion (filtered chapters). Sections are placed in header / repeated / appendix.",
+    rc_iterate_by:"Split by", rc_iterate_sort:"Chapter order",
+    rc_structure_title:"Report structure", rc_layout_title:"Page layout",
+    it_none:"None (single report)", it_risk_category:"Risk category", it_measure_type:"Measure type",
+    it_risk_owner:"Risk owner", it_measure_responsible:"Measure owner",
+    it_per_risk:"One chapter per risk", it_cf:"Custom field: {0}",
+    it_sort_criticality:"By criticality", it_sort_alpha:"Alphabetical", it_sort_count:"By risk count",
+    rc_zone_header:"Header", rc_zone_repeated:"Repeated", rc_zone_appendix:"Appendix",
+    rp_it_appendix:"Appendix (full analysis)", rp_it_uncat:"Uncategorised", rp_it_noowner:"No owner",
+    rp_it_notype:"No type", rp_it_noresp:"No owner", rp_it_novalue:"Not set",
     rc_saved_note:"Preferences saved in the .rae.json file (extensions.display.report).",
     rc_reset:"Reset to default report",
     rp_revision:"Revision", rp_value:"Value", rp_range:"Score range",
@@ -2204,6 +2238,16 @@ const I18N = {
     rc_orient_title:"Orientamento del report", rc_orient_portrait:"Verticale", rc_orient_landscape:"Orizzontale",
     rc_scope_title:"Ambito del report", rc_scope_all:"Analisi completa",
     rc_scope_filtered:"Sottoinsieme filtrato (secondo i filtri e la ricerca attivi)",
+    rc_iterate_title:"Report suddiviso", rc_iterate_cap:"Ripeti il report per ogni valore di un criterio (capitoli filtrati). Le sezioni si dividono in intestazione / ripetute / allegato.",
+    rc_iterate_by:"Suddividi per", rc_iterate_sort:"Ordine dei capitoli",
+    rc_structure_title:"Struttura del report", rc_layout_title:"Impaginazione",
+    it_none:"Nessuno (report unico)", it_risk_category:"Categoria di rischio", it_measure_type:"Tipo di misura",
+    it_risk_owner:"Titolare del rischio", it_measure_responsible:"Responsabile della misura",
+    it_per_risk:"Un capitolo per rischio", it_cf:"Campo pers.: {0}",
+    it_sort_criticality:"Per criticità", it_sort_alpha:"Alfabetico", it_sort_count:"Per numero di rischi",
+    rc_zone_header:"Intestazione", rc_zone_repeated:"Ripetuto", rc_zone_appendix:"Allegato",
+    rp_it_appendix:"Allegato (analisi completa)", rp_it_uncat:"Non categorizzato", rp_it_noowner:"Senza titolare",
+    rp_it_notype:"Senza tipo", rp_it_noresp:"Senza responsabile", rp_it_novalue:"Non indicato",
     rc_saved_note:"Preferenze salvate nel file .rae.json (sezione extensions.display.report).",
     rc_reset:"Ripristina il report predefinito",
     rp_revision:"Revisione", rp_value:"Valore", rp_range:"Intervallo di punteggio",
@@ -4838,6 +4882,16 @@ function reportSectionTitle(id){return ({
   links_detail:t("rp_link_details"), action_plan:t("tab_plan")})[id]||id;}
 function reportCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.report;return (d&&typeof d==="object")?d:null;}
 function reportCfgStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.report=d.report||{};}
+/* Rapport éclaté : sections d'intro (« en tête »), le reste « répété » par chapitre. */
+const REPORT_HEADER_SECS=["metadata","presentation","summary_counts","summary_distribution","grid_axes","grid_criticality","field_glossary"];
+function reportDefaultZone(id){return REPORT_HEADER_SECS.indexOf(id)>=0?"header":"repeated";}
+/* Critère d'éclatement valide ? (risque/mesure natif, un-par-risque, ou champ perso filtrable). */
+function reportIterationValid(by){
+  if(["none","risk_category","measure_type","risk_owner","measure_responsible","per_risk"].indexOf(by)>=0)return true;
+  if(/^cf:.+$/.test(by||"")){const code=by.slice(3);
+    return !!["risk","measure"].some(tg=>customFieldsFor(tg).some(f=>f.code===code&&cfFilterOptionApplies(f.target,f.type)));}
+  return false;
+}
 /* Config effective, normalisée : valeurs par défaut + robustesse (id inconnu ignoré ;
    section/ligne/colonne connue absente d'une config existante => ajoutée désactivée). */
 function reportCfg(){
@@ -4869,9 +4923,12 @@ function reportCfg(){
   });
   REPORT_SECTION_IDS.forEach(id=>{if(!seen[id])secs.push(normSec({id,on:false}));});
   cfg.sections=secs;
+  const rawIt=raw.iteration||{};
+  cfg.iteration={ by: reportIterationValid(rawIt.by)?rawIt.by:"none",
+                  sort: ["criticality","alpha","count"].indexOf(rawIt.sort)>=0?rawIt.sort:"criticality" };
   return cfg;
   function normSec(s){
-    const o={id:s.id, on:s.on!==false};
+    const o={id:s.id, on:s.on!==false, zone:["header","repeated","appendix"].indexOf(s.zone)>=0?s.zone:reportDefaultZone(s.id)};
     if(s.id==="metadata")o.rows=ordered(s.rows,REPORT_META_ROW_IDS,true);
     else if(s.id==="presentation")o.items=ordered(s.items,["description"].concat(customFieldsFor("analysis").map(f=>"cf:"+f.code)),true);
     else if(s.id==="field_glossary")o.items=ordered(s.items,glossaryFieldList().map(x=>x.target+":"+x.field.code),true);
@@ -4899,19 +4956,77 @@ function reportSingleMatrixSVG(which,risks){
   return svg;
 }
 
+/* ---- Rapport éclaté : moteur de regroupement ----
+   Un sous-ensemble se propage le long des liens (comme cfVisibleSets) : à partir d'un lot de
+   risques (ou de mesures), on prend les entités reliées puis les liens entre elles. */
+function riskScoreNet(r){const rv=residual(r);return scoreOf(rv.probability,rv.severity);}
+function subsetFromRisks(riskItems,R0,M0,T0){
+  const R=new Set(riskItems.map(r=>r.id));
+  const L=T0.filter(x=>R.has(x.risk)), mIds=new Set(L.map(x=>x.measure));
+  return {risks:R0.filter(r=>R.has(r.id)), measures:M0.filter(m=>mIds.has(m.id)), treatments:L};
+}
+function subsetFromMeasures(measItems,R0,M0,T0){
+  const M=new Set(measItems.map(m=>m.id));
+  const L=T0.filter(x=>M.has(x.measure)), rIds=new Set(L.map(x=>x.risk));
+  return {risks:R0.filter(r=>rIds.has(r.id)), measures:M0.filter(m=>M.has(m.id)), treatments:L};
+}
+function iterationGroups(by,R0,M0,T0,sort){
+  let groups=[];
+  if(by==="per_risk"){
+    groups=R0.map(r=>({label:r.id+" — "+r.label, empty:false,
+      _subset:subsetFromRisks([r],R0,M0,T0), _count:1, _crit:riskScoreNet(r)}));
+  }else{
+    const cf=/^cf:(.+)$/.exec(by);
+    let kind,pool,getVals,emptyLabel,cfField=null;
+    if(by==="risk_category"){kind="risk";pool=R0;getVals=r=>[r.category||""];emptyLabel=t("rp_it_uncat");}
+    else if(by==="risk_owner"){kind="risk";pool=R0;getVals=r=>[r.owner||""];emptyLabel=t("rp_it_noowner");}
+    else if(by==="measure_type"){kind="measure";pool=M0;getVals=m=>[m.type||""];emptyLabel=t("rp_it_notype");}
+    else if(by==="measure_responsible"){kind="measure";pool=M0;getVals=m=>[m.responsible||""];emptyLabel=t("rp_it_noresp");}
+    else if(cf){const code=cf[1];
+      cfField=["risk","measure"].map(tg=>customFieldsFor(tg).find(f=>f.code===code)).find(Boolean);
+      if(!cfField)return [];
+      kind=cfField.target==="measure"?"measure":"risk"; pool=kind==="measure"?M0:R0;
+      getVals=it=>{const v=(it.custom||{})[code]; if(v==null||v==="")return [""];
+        return Array.isArray(v)?(v.length?v:[""]):[v];};                 // choix multiple : plusieurs chapitres
+      emptyLabel=t("rp_it_novalue");
+    }else return [];
+    const map={},order=[];
+    pool.forEach(it=>getVals(it).forEach(v=>{if(!(v in map)){map[v]=[];order.push(v);}map[v].push(it);}));
+    groups=order.map(v=>{
+      let label;
+      if(v==="")label=emptyLabel;
+      else if(cfField){const item=(cfField.items||[]).find(x=>x.code===v);label=item?cfItemLabel(item):v;}
+      else if(by==="measure_type")label=typeLabel(v);
+      else label=v;
+      const items=map[v], sub=kind==="measure"?subsetFromMeasures(items,R0,M0,T0):subsetFromRisks(items,R0,M0,T0);
+      return {label:label, empty:v==="", _subset:sub, _count:sub.risks.length,
+              _crit:sub.risks.reduce((mx,r)=>Math.max(mx,riskScoreNet(r)),0)};
+    });
+  }
+  const cmp = sort==="alpha" ? (a,b)=>(""+a.label).localeCompare(""+b.label)
+            : sort==="count" ? (a,b)=>(b._count-a._count)||(b._crit-a._crit)
+            : (a,b)=>(b._crit-a._crit)||(b._count-a._count);   // criticité par défaut
+  return groups.filter(g=>!g.empty).sort(cmp).concat(groups.filter(g=>g.empty));   // « valeur vide » en dernier
+}
+
 function renderReport(){
   const host=document.getElementById("reportBody");if(!host)return;
   const md=analyse.metadata||{}, g=analyse.grid, cfg=reportCfg();
   const title=(md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle);
-  // Périmètre : analyse complète ou sous-ensemble filtré.
-  const RISKS = cfg.scope==="filtered"?visibleRisks():analyse.risks;
-  const MEAS  = cfg.scope==="filtered"?visibleMeasures():analyse.measures;
-  const TRs   = cfg.scope==="filtered"?visibleTreatments():analyse.treatments;
-  const nR=RISKS.length, nM=MEAS.length;
-  const treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+  // Périmètre de base. Modes exclusifs : analyse complète / sous-ensemble filtré / éclaté.
+  // L'éclaté (iteration.by != none) part toujours de l'analyse complète, chaque chapitre filtrant.
+  const _filt = cfg.iteration.by==="none" && cfg.scope==="filtered";
+  const RISKS0 = _filt?visibleRisks():analyse.risks;
+  const MEAS0  = _filt?visibleMeasures():analyse.measures;
+  const TRs0   = _filt?visibleTreatments():analyse.treatments;
   const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
+  // Rapport éclaté : le périmètre courant (RISKS/MEAS/TRs et dérivés) est réaffecté par chapitre.
+  let RISKS=RISKS0, MEAS=MEAS0, TRs=TRs0, nR, nM, treated, ci, cr;
   const count=(w)=>{const c={};cats.forEach(x=>c[x.code]=0);RISKS.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
-  const ci=count("i"), cr=count("r");
+  function setScope(rg,mg,tg){RISKS=rg;MEAS=mg;TRs=tg;nR=RISKS.length;nM=MEAS.length;
+    treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+    ci=count("i");cr=count("r");}
+  setScope(RISKS0,MEAS0,TRs0);
   const card=(id,inner)=>'<div class="rp-card" id="rsec-'+id+'">'+inner+'</div>';
 
   // ---- En-tête / pied de document (variables ; {page}/{pages} vides à l'écran) ----
@@ -5093,10 +5208,9 @@ function renderReport(){
     if(c.free_text)cv+='<div class="rp-cover-free md">'+mdToHTML(c.free_text)+'</div>';
     h+=cv+'</div>';
   }
-  if(cfg.toc.on&&enabled.length)h+='<div class="rp-card rp-toc" id="rsec-toc"><h2>'+esc(t("rp_toc"))+'</h2><ol>'+
-    enabled.map(s=>'<li><a href="#rsec-'+s.id+'">'+esc(reportSectionTitle(s.id))+'</a></li>').join("")+'</ol></div>';
-  // Périmètre filtré : rappel des filtres actifs et du nombre d'éléments retenus.
-  if(cfg.scope==="filtered"){
+  const renderSecs=list=>{let o="";list.forEach(s=>{if(R[s.id])o+=R[s.id](s);});return o;};
+  const filterSummary=()=>{
+    if(cfg.scope!=="filtered")return "";
     const flts=reportActiveFilters();
     let fb='<div class="rp-card" id="rsec-filter"><h2>'+esc(t("rp_filter_summary"))+'</h2>'+
       '<table class="meta-tbl"><tbody>'+
@@ -5105,9 +5219,49 @@ function renderReport(){
       flts.map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(f.value)+'</td></tr>').join("")+
       '</tbody></table>';
     if(!flts.length)fb+='<div class="rp-sub">'+esc(t("rp_filter_none"))+'</div>';
-    h+=fb+'</div>';
+    return fb+'</div>';
+  };
+
+  if(cfg.iteration.by==="none"){
+    if(cfg.toc.on&&enabled.length)h+='<div class="rp-card rp-toc" id="rsec-toc"><h2>'+esc(t("rp_toc"))+'</h2><ol>'+
+      enabled.map(s=>'<li><a href="#rsec-'+s.id+'">'+esc(reportSectionTitle(s.id))+'</a></li>').join("")+'</ol></div>';
+    h+=filterSummary();
+    h+=renderSecs(enabled);
+  }else{
+    // ---- Rapport éclaté : intro (une fois) → chapitres filtrés → annexe (une fois, non filtrée) ----
+    const secCfgById={};cfg.sections.forEach(s=>secCfgById[s.id]=s);
+    const headerSecs=enabled.filter(s=>s.zone==="header");
+    const apxSecs=enabled.filter(s=>s.zone==="appendix");
+    let repeatedSecs=enabled.filter(s=>s.zone==="repeated");
+    if(cfg.iteration.by==="per_risk")   // bucket répété fixe : fiche détaillée + trajectoire + mesures
+      repeatedSecs=["risks_detail","matrix_traj","measures_table"].map(id=>secCfgById[id]).filter(Boolean);
+    const groups=iterationGroups(cfg.iteration.by,RISKS0,MEAS0,TRs0,cfg.iteration.sort);
+    if(cfg.toc.on){
+      let toc='<div class="rp-card rp-toc" id="rsec-toc"><h2>'+esc(t("rp_toc"))+'</h2><ol>';
+      headerSecs.forEach(s=>toc+='<li><a href="#rsec-'+s.id+'">'+esc(reportSectionTitle(s.id))+'</a></li>');
+      groups.forEach((gr,i)=>{ toc+='<li><a href="#rchap-'+i+'">'+esc(gr.label)+'</a>';
+        if(repeatedSecs.length)toc+='<ol>'+repeatedSecs.map(s=>'<li><a href="#rchap-'+i+'-'+s.id+'">'+esc(reportSectionTitle(s.id))+'</a></li>').join("")+'</ol>';
+        toc+='</li>'; });
+      apxSecs.forEach(s=>toc+='<li><a href="#rsec-'+s.id+'">'+esc(reportSectionTitle(s.id))+' — '+esc(t("rp_it_appendix"))+'</a></li>');
+      h+=toc+'</ol></div>';
+    }
+    h+=filterSummary();
+    setScope(RISKS0,MEAS0,TRs0); h+=renderSecs(headerSecs);
+    groups.forEach((gr,i)=>{
+      const sub=gr._subset; setScope(sub.risks,sub.measures,sub.treatments);
+      // Chaque section répétée reçoit un id unique « rchap-<i>-<section> » : les entrées de 2e
+      // niveau de la TdM ciblent celui-ci (les ids « rsec-… » seraient dupliqués entre chapitres).
+      let cb="";
+      repeatedSecs.forEach(s=>{ const html=R[s.id]?R[s.id](s):""; cb+='<div id="rchap-'+i+'-'+s.id+'">'+html+'</div>'; });
+      h+='<div class="rp-chapter" id="rchap-'+i+'"><div class="rp-chapter-head"><h1>'+esc(gr.label)+'</h1>'+
+         '<div class="rp-sub">'+esc(t("stat_risks"))+' : '+nR+' · '+esc(t("stat_measures"))+' : '+nM+'</div></div>'+
+         cb+'</div>';
+    });
+    if(apxSecs.length){
+      setScope(analyse.risks,analyse.measures,analyse.treatments);
+      h+='<div class="rp-appendix"><div class="rp-apxhead">'+esc(t("rp_it_appendix"))+'</div>'+renderSecs(apxSecs)+'</div>';
+    }
   }
-  enabled.forEach(s=>{if(R[s.id])h+=R[s.id](s);});
 
   // Orientation : largeur d'aperçu + format de page à l'impression (PDF).
   host.classList.toggle("report-landscape",cfg.orientation==="landscape");
@@ -7192,11 +7346,11 @@ function dxPageBreak(){return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';}
 // Champ Word (PAGE / NUMPAGES) avec un résultat de repli affiché avant mise à jour.
 function dxField(instr){return '<w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> '+instr+' </w:instrText></w:r>'+
   '<w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="18"/><w:color w:val="7A8699"/></w:rPr><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r>';}
-// Champ TOC natif (niveaux 1), mis à jour à l'ouverture via settings.xml (updateFields).
+// Champ TOC natif (niveaux 1-2 : chapitres + sections du rapport éclaté), mis à jour à l'ouverture.
 function dxTocField(){
   return '<w:p><w:pPr><w:spacing w:after="120"/></w:pPr>'+
     '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'+
-    '<w:r><w:instrText xml:space="preserve"> TOC \\o &quot;1-1&quot; \\h \\z \\u </w:instrText></w:r>'+
+    '<w:r><w:instrText xml:space="preserve"> TOC \\o &quot;1-2&quot; \\h \\z \\u </w:instrText></w:r>'+
     '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'+
     '<w:r><w:rPr><w:color w:val="7A8699"/></w:rPr>'+dxT(t("rp_toc"))+'</w:r>'+
     '<w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>';
@@ -7242,14 +7396,18 @@ async function buildDocx(){
   // Largeur utile (twips) : A4 portrait 11906 ou paysage 16838, moins 2×1134 de marges.
   const CW=(land?16838:11906)-2268;
   const title=(md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle);
-  const RISKS=cfg.scope==="filtered"?visibleRisks():analyse.risks;
-  const MEAS =cfg.scope==="filtered"?visibleMeasures():analyse.measures;
-  const TRs  =cfg.scope==="filtered"?visibleTreatments():analyse.treatments;
-  const nR=RISKS.length,nM=MEAS.length;
-  const treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+  // Périmètre de base (modes exclusifs) ; l'éclaté part de l'analyse complète, chaque chapitre filtrant.
+  const _filt=cfg.iteration.by==="none"&&cfg.scope==="filtered";
+  const RISKS0=_filt?visibleRisks():analyse.risks;
+  const MEAS0 =_filt?visibleMeasures():analyse.measures;
+  const TRs0  =_filt?visibleTreatments():analyse.treatments;
   const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
+  let RISKS=RISKS0,MEAS=MEAS0,TRs=TRs0,nR,nM,treated,ci,cr;
   const count=w=>{const c={};cats.forEach(x=>c[x.code]=0);RISKS.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
-  const ci=count("i"),cr=count("r");
+  function setScope(rg,mg,tg){RISKS=rg;MEAS=mg;TRs=tg;nR=RISKS.length;nM=MEAS.length;
+    treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+    ci=count("i");cr=count("r");}
+  setScope(RISKS0,MEAS0,TRs0);
 
   const media={},docRels=[];let pid=0,imgN=0;
   async function addSvgImage(svg){
@@ -7292,7 +7450,12 @@ async function buildDocx(){
 
   // ---- Corps ----
   let body="";
-  const heading=txt=>dxP(dxRun(txt,{b:true,sz:30,color:"1F2937"}),{sb:360,sa:120,style:"Heading1"});
+  // Niveau de titre courant : 1 par défaut ; 2 pour les sections répétées d'un chapitre (rapport
+  // éclaté), afin que la table des matières Word s'indente sur deux niveaux.
+  let hlvl=1;
+  const heading=txt=>(hlvl===2)
+    ? dxP(dxRun(txt,{b:true,sz:26,color:"1F2937"}),{sb:280,sa:100,style:"Heading2"})
+    : dxP(dxRun(txt,{b:true,sz:30,color:"1F2937"}),{sb:360,sa:120,style:"Heading1"});
   const h3=txt=>dxP(dxRun(txt,{b:true,sz:24,color:"3B4A63"}),{sb:200,sa:60});
 
   // Page de garde
@@ -7458,7 +7621,33 @@ async function buildDocx(){
       return out;
     }
   };
-  for(const s of enabled){const fn=RD[s.id];if(fn){const r=await fn(s);if(r)body+=r;}}
+  const renderSecs=async list=>{let o="";for(const s of list){const fn=RD[s.id];if(fn){const r=await fn(s);if(r)o+=r;}}return o;};
+  if(cfg.iteration.by==="none"){
+    body+=await renderSecs(enabled);
+  }else{
+    // ---- Rapport éclaté : intro (une fois) → chapitres filtrés (saut de page) → annexe (une fois) ----
+    const secCfgById={};cfg.sections.forEach(s=>secCfgById[s.id]=s);
+    const headerSecs=enabled.filter(s=>s.zone==="header");
+    const apxSecs=enabled.filter(s=>s.zone==="appendix");
+    let repeatedSecs=enabled.filter(s=>s.zone==="repeated");
+    if(cfg.iteration.by==="per_risk")repeatedSecs=["risks_detail","matrix_traj","measures_table"].map(id=>secCfgById[id]).filter(Boolean);
+    const groups=iterationGroups(cfg.iteration.by,RISKS0,MEAS0,TRs0,cfg.iteration.sort);
+    hlvl=1; setScope(RISKS0,MEAS0,TRs0); body+=await renderSecs(headerSecs);
+    for(const gr of groups){
+      const sub=gr._subset; setScope(sub.risks,sub.measures,sub.treatments);
+      hlvl=1;   // titre du chapitre = niveau 1
+      body+=dxPageBreak()+heading(gr.label)+
+        dxP(dxRun(t("stat_risks")+" : "+nR+" · "+t("stat_measures")+" : "+nM,{color:"7A8699",sz:20}),{sa:120});
+      hlvl=2;   // sections répétées = niveau 2 (TdM indentée)
+      body+=await renderSecs(repeatedSecs);
+    }
+    hlvl=1;
+    if(apxSecs.length){
+      setScope(analyse.risks,analyse.measures,analyse.treatments);
+      body+=dxPageBreak()+heading(t("rp_it_appendix"));   // « Annexe » = niveau 1
+      hlvl=2; body+=await renderSecs(apxSecs); hlvl=1;
+    }
+  }
 
   // ---- Assemblage du paquet ----
   const secRefs=(needHeader?'<w:headerReference w:type="default" r:id="rHdr1"/>':'')+(needFooter?'<w:footerReference w:type="default" r:id="rFtr1"/>':'');
@@ -7472,7 +7661,10 @@ async function buildDocx(){
     '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>'+
     '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/>'+
     '<w:pPr><w:keepNext/><w:spacing w:before="360" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr>'+
-    '<w:rPr><w:b/><w:color w:val="1F2937"/><w:sz w:val="30"/></w:rPr></w:style></w:styles>';
+    '<w:rPr><w:b/><w:color w:val="1F2937"/><w:sz w:val="30"/></w:rPr></w:style>'+
+    '<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/>'+
+    '<w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr>'+
+    '<w:rPr><w:b/><w:color w:val="1F2937"/><w:sz w:val="26"/></w:rPr></w:style></w:styles>';
   const settings=XMLD+'<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:updateFields w:val="true"/></w:settings>';
   const docRelsXml=XMLD+'<Relationships '+RELS_XMLNS+'>'+docRels.join("")+
     '<Relationship Id="rSty" Type="'+OD_REL+'/styles" Target="styles.xml"/>'+
@@ -7638,8 +7830,11 @@ function rcTableColRows(tbl,saved){
   avail.forEach(c=>{if(!seen[c.key])rows.push({id:c.key,on:false,label:c.label,cf:c.key.indexOf("cf:")===0});});
   return rows;
 }
-function rcSecItemHTML(s){
+function rcSecItemHTML(s,iterating){
   const title=reportSectionTitle(s.id);let ctrl="",sub="";
+  const zoneSel=iterating?('<select class="rc-rowctrl rc-zone" data-role="zone">'+
+    [["header","rc_zone_header"],["repeated","rc_zone_repeated"],["appendix","rc_zone_appendix"]].map(a=>
+      '<option value="'+a[0]+'"'+(s.zone===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>'):"";
   if(s.id==="metadata"){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-metadata">'+esc(t("rc_lines"))+' ▾</button>';
     sub=rcSubrowsHTML("rcsub-metadata",s.rows.map(r=>({id:r.id,on:r.on,label:reportMetaRowTitle(r.id)})));}
   else if(s.id==="presentation"){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-presentation">'+esc(t("rc_items"))+' ▾</button>';
@@ -7653,7 +7848,7 @@ function rcSecItemHTML(s){
       '<option value="'+a[0]+'"'+(s.view===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';}
   return '<div class="rc-secitem'+(s.on?"":" rc-off")+'" data-sec="'+s.id+'" draggable="true">'+
     '<div class="rc-secrow"><span class="rc-grip">⠿</span><input type="checkbox"'+(s.on?" checked":"")+'>'+
-    '<span class="rc-name">'+esc(title)+'</span>'+ctrl+'</div>'+sub+'</div>';
+    '<span class="rc-name">'+esc(title)+'</span>'+zoneSel+ctrl+'</div>'+sub+'</div>';
 }
 function renderReportSettings(){
   const p=document.getElementById("reportCfgPanel");if(!p)return;
@@ -7663,11 +7858,38 @@ function renderReportSettings(){
     '<span class="rc-badge">'+esc(t("rc_pinned"))+'</span></div>';
   const zone=(id,lab,v)=>'<label class="rc-field"><span class="rc-lab">'+esc(lab)+'</span><input type="text" id="'+id+'" value="'+esc(v||"")+'"></label>';
   let h="";
-  // 1. Sections
+  const isSplit=cfg.iteration.by!=="none";
+  const mode=isSplit?"split":(cfg.scope==="filtered"?"filtered":"all");
+  // 1. Structure du rapport : mode (complète / filtré / éclaté) ; l'éclaté révèle « éclater par » + tri.
+  {
+    const cfOpts=[];
+    ["risk","measure"].forEach(tg=>customFieldsFor(tg).forEach(f=>{
+      if(cfFilterOptionApplies(f.target,f.type))cfOpts.push(["cf:"+f.code,t("it_cf",cfLabel(f))]);}));
+    const byOpts=[["risk_category",t("it_risk_category")],["measure_type",t("it_measure_type")],
+      ["risk_owner",t("it_risk_owner")],["measure_responsible",t("it_measure_responsible")],["per_risk",t("it_per_risk")]].concat(cfOpts);
+    const curBy=isSplit?cfg.iteration.by:"risk_category";
+    const bySel='<select class="rc-rowctrl" id="rcIterBy" data-role="iterby">'+byOpts.map(a=>
+      '<option value="'+esc(a[0])+'"'+(curBy===a[0]?" selected":"")+'>'+esc(a[1])+'</option>').join("")+'</select>';
+    const sortSel='<select class="rc-rowctrl" id="rcIterSort" data-role="itersort">'+
+      [["criticality","it_sort_criticality"],["alpha","it_sort_alpha"],["count","it_sort_count"]].map(a=>
+        '<option value="'+a[0]+'"'+(cfg.iteration.sort===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
+    h+='<div class="card"><h2>'+esc(t("rc_structure_title"))+'</h2>'+
+      '<div class="rc-radio">'+
+        '<label><input type="radio" name="rcMode" value="all"'+(mode==="all"?" checked":"")+'> '+esc(t("rc_scope_all"))+'</label>'+
+        '<label><input type="radio" name="rcMode" value="filtered"'+(mode==="filtered"?" checked":"")+'> '+esc(t("rc_scope_filtered"))+'</label>'+
+        '<label><input type="radio" name="rcMode" value="split"'+(mode==="split"?" checked":"")+'> '+esc(t("rc_iterate_title"))+'</label>'+
+      '</div>'+
+      (mode==="split"?('<div class="rc-grid2" style="margin-top:12px">'+
+        '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_iterate_by"))+'</span>'+bySel+'</label>'+
+        '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_iterate_sort"))+'</span>'+sortSel+'</label>'+
+        '</div><div class="caption" style="margin-top:6px">'+esc(t("rc_iterate_cap"))+'</div>'):'')+
+    '</div>';
+  }
+  // 2. Sections
   h+='<div class="card"><h2>'+esc(t("rc_sections_title"))+'</h2><div class="caption">'+esc(t("rc_sections_cap"))+'</div>'+
     '<div class="rc-seclist" id="rcSeclist">'+pin("cover",t("rc_cover_row"),cfg.cover.on)+pin("toc",t("rp_toc"),cfg.toc.on)+
-    cfg.sections.map(rcSecItemHTML).join("")+'</div></div>';
-  // 2. Page de garde
+    cfg.sections.map(s=>rcSecItemHTML(s,isSplit)).join("")+'</div></div>';
+  // 3. Page de garde
   h+='<div class="card"><h2>'+esc(t("rc_cover_row"))+'</h2><div class="caption">'+esc(t("rc_cover_cap"))+'</div>'+
     '<input type="hidden" id="rcLogoData" value="'+esc(c.logo||"")+'">'+
     '<div class="rc-field"><span class="rc-lab">'+esc(t("rc_logo"))+'</span>'+
@@ -7690,22 +7912,17 @@ function renderReportSettings(){
     '</div>'+
     '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_free"))+'</span><textarea id="rcFree" placeholder="'+esc(t("rc_free_ph"))+'">'+esc(c.free_text||"")+'</textarea></label>'+
   '</div>';
-  // 3. En-tête / pied
-  h+='<div class="card"><h2>'+esc(t("rc_headfoot_title"))+'</h2><div class="caption">'+esc(t("rc_headfoot_cap"))+'</div>'+
+  // 4. Mise en page : orientation + en-tête / pied de page
+  h+='<div class="card"><h2>'+esc(t("rc_layout_title"))+'</h2>'+
+    '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_orient_title"))+'</span>'+
+      '<select class="rc-rowctrl" id="rcOrient" data-role="orientation">'+
+      '<option value="portrait"'+(cfg.orientation!=="landscape"?" selected":"")+'>'+esc(t("rc_orient_portrait"))+'</option>'+
+      '<option value="landscape"'+(cfg.orientation==="landscape"?" selected":"")+'>'+esc(t("rc_orient_landscape"))+'</option></select></label>'+
     '<h3>'+esc(t("rc_head"))+'</h3><div class="rc-zones">'+zone("rcHL",t("rc_zone_left"),cfg.header.left)+zone("rcHC",t("rc_zone_center"),cfg.header.center)+zone("rcHR",t("rc_zone_right"),cfg.header.right)+'</div>'+
     '<label class="rc-checks" style="margin-top:10px"><input type="checkbox" id="rcHeadLogo"'+(cfg.header.logo?" checked":"")+'> '+esc(t("rc_head_logo"))+'</label>'+
     '<h3>'+esc(t("rc_foot"))+'</h3><div class="rc-zones">'+zone("rcFL",t("rc_zone_left"),cfg.footer.left)+zone("rcFC",t("rc_zone_center"),cfg.footer.center)+zone("rcFR",t("rc_zone_right"),cfg.footer.right)+'</div>'+
     '<div class="rc-chips">'+["{title}","{organization}","{author}","{date}","{version}","{confidentiality}","{page}","{pages}"].map(v=>'<span class="rc-chip">'+v+'</span>').join("")+'</div>'+
     '<div class="rc-hint">ℹ '+esc(t("rc_head_hint"))+'</div></div>';
-  // 4. Orientation
-  h+='<div class="card"><h2>'+esc(t("rc_orient_title"))+'</h2>'+
-    '<select class="rc-rowctrl" id="rcOrient" data-role="orientation">'+
-    '<option value="portrait"'+(cfg.orientation!=="landscape"?" selected":"")+'>'+esc(t("rc_orient_portrait"))+'</option>'+
-    '<option value="landscape"'+(cfg.orientation==="landscape"?" selected":"")+'>'+esc(t("rc_orient_landscape"))+'</option></select></div>';
-  // 5. Périmètre
-  h+='<div class="card"><h2>'+esc(t("rc_scope_title"))+'</h2><div class="rc-radio">'+
-    '<label><input type="radio" name="rcScope" value="all"'+(cfg.scope!=="filtered"?" checked":"")+'> '+esc(t("rc_scope_all"))+'</label>'+
-    '<label><input type="radio" name="rcScope" value="filtered"'+(cfg.scope==="filtered"?" checked":"")+'> '+esc(t("rc_scope_filtered"))+'</label></div></div>';
   // 5. Pied : note + reset
   h+='<div class="card rc-foot"><span class="rc-note">💾 '+esc(t("rc_saved_note"))+'</span>'+
     '<button type="button" class="btn ghost sm" id="rcReset">↺ '+esc(t("rc_reset"))+'</button></div>';
@@ -7717,7 +7934,8 @@ function rcChk(sel){const e=document.querySelector(sel);return !!(e&&e.checked);
 function collectReportCfg(){
   const p=document.getElementById("reportCfgPanel");if(!p)return;
   const store={};
-  store.scope=((p.querySelector('input[name="rcScope"]:checked')||{}).value==="filtered")?"filtered":"all";
+  const _mode=(p.querySelector('input[name="rcMode"]:checked')||{}).value||"all";
+  store.scope=(_mode==="filtered")?"filtered":"all";
   store.orientation=(rcVal("#rcOrient")==="landscape")?"landscape":"portrait";
   store.cover={on:p.querySelector('[data-pin="cover"] input').checked,logo:rcVal("#rcLogoData"),
     title:rcVal("#rcCoverTitle"),subtitle:rcVal("#rcCoverSub"),
@@ -7729,6 +7947,7 @@ function collectReportCfg(){
   const secs=[];
   p.querySelectorAll("#rcSeclist .rc-secitem").forEach(it=>{
     const id=it.dataset.sec,o={id:id,on:it.querySelector(".rc-secrow input[type=checkbox]").checked};
+    const _zs=it.querySelector('[data-role="zone"]');if(_zs)o.zone=_zs.value;
     if(id==="metadata"||id==="presentation"||id==="field_glossary"){
       const arr=[];it.querySelectorAll(".rc-subrow").forEach(sr=>arr.push({id:sr.dataset.sub,on:sr.querySelector("input").checked}));
       if(id==="metadata")o.rows=arr;else o.items=arr;
@@ -7738,6 +7957,7 @@ function collectReportCfg(){
     secs.push(o);
   });
   store.sections=secs;
+  store.iteration={by:_mode==="split"?(rcVal("#rcIterBy")||"risk_category"):"none", sort:rcVal("#rcIterSort")||"criticality"};
   reportCfgStore();analyse.extensions.display.report=store;markDirty();
 }
 let rcLastZone=null;
@@ -7786,6 +8006,25 @@ function rcEnableDrag(container,selector){
   });
 }
 function rcDragClear(){document.querySelectorAll("#reportCfgPanel .rc-drop-above,#reportCfgPanel .rc-drop-below").forEach(x=>x.classList.remove("rc-drop-above","rc-drop-below"));}
+/* Rapport éclaté : en changeant la zone d'une section, on la regroupe avec les autres de sa
+   zone — en tête (après les en-têtes, sinon après la TdM), répété (après répétés, sinon en-têtes,
+   sinon TdM), annexe (après les annexes, sinon en fin). */
+function rcReorderByZone(item){
+  const list=document.getElementById("rcSeclist");if(!list||!item)return;
+  const zoneOf=x=>{const s=x&&x.querySelector('[data-role="zone"]');return s?s.value:"repeated";};
+  const z=zoneOf(item);
+  const others=[...list.querySelectorAll(".rc-secitem")].filter(x=>x!==item);
+  const lastOf=zn=>{const a=others.filter(x=>zoneOf(x)===zn);return a.length?a[a.length-1]:null;};
+  const toc=list.querySelector('[data-pin="toc"]');
+  if(z==="appendix"){
+    const ref=lastOf("appendix");
+    if(ref)list.insertBefore(item,ref.nextSibling); else list.appendChild(item);
+  }else{
+    const ref=(z==="header")?(lastOf("header")||toc):(lastOf("repeated")||lastOf("header")||toc);
+    list.insertBefore(item, ref?ref.nextSibling:(toc?toc.nextSibling:list.firstChild));
+  }
+  collectReportCfg();
+}
 function rcWire(p){
   // Écouteurs délégués : attachés une seule fois sur le panneau (innerHTML est
   // remplacé à chaque rendu mais l'élément #reportCfgPanel, lui, persiste).
@@ -7795,7 +8034,10 @@ function rcWire(p){
     p.addEventListener("change",e=>{const el=e.target;
       if(el.matches('input[type=checkbox],input[type=radio],select')){
         if(el.matches('.rc-secrow > input[type=checkbox]')){const it=el.closest(".rc-secitem");if(it)it.classList.toggle("rc-off",!el.checked);}
-        collectReportCfg();}});
+        if(el.matches('[data-role="zone"]')){rcReorderByZone(el.closest(".rc-secitem"));return;}   // regroupe la section dans sa zone
+        collectReportCfg();
+        if(el.id==="rcIterBy"||el.name==="rcMode")renderReportSettings();   // (dé)masque sous-options et zones
+      }});
     p.addEventListener("click",e=>{
       const exp=e.target.closest("[data-exp]");if(exp){const s=document.getElementById(exp.dataset.exp);if(s)s.classList.toggle("rc-open");return;}
       const chip=e.target.closest(".rc-chip");if(chip){rcInsertChip(chip.textContent);return;}

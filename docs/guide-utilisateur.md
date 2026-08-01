@@ -312,7 +312,8 @@ Le sous-onglet **Paramètres › Rapport** permet d'adapter finement le contenu 
 - **Matrices** — trois sections indépendantes : *initiale et résiduelle accolées* (cochée par défaut), *initiale seule*, *résiduelle seule*.
 - **Plan d'action** — présentation au choix : échéancier, par statut ou par responsable.
 - **Orientation** — portrait (par défaut) ou paysage.
-- **Périmètre** — *analyse complète* ou *sous-ensemble filtré* (selon les filtres actifs). En mode filtré, une section **« Périmètre filtré »** récapitule les filtres appliqués et le nombre d'éléments retenus **sur le total** (`n / N`), pour les risques et les mesures.
+- **Structure du rapport** — trois modes exclusifs : *Analyse complète* ; *Sous-ensemble filtré* (selon les filtres et la recherche actifs — une section **« Périmètre filtré »** récapitule alors les filtres appliqués et le nombre d'éléments retenus **sur le total** `n / N`) ; ou ***Rapport éclaté***.
+- **Rapport éclaté** — le rapport se **répète pour chaque valeur d'un critère**, chaque chapitre étant automatiquement filtré : par **catégorie de risque**, **type de mesure**, **propriétaire du risque**, **responsable de la mesure**, **champ personnalisé** (à valeurs fermées), ou **un chapitre par risque** (fiche détaillée + matrice de trajectoire + mesures liées). Le **tri des chapitres** se choisit (par criticité du plus critique, alphabétique, ou nombre de risques ; le groupe « valeur vide » — non catégorisé, sans propriétaire… — finit toujours en dernier). En mode éclaté, chaque **section** se place dans une **zone**, via le menu apparu sur chaque ligne : *en tête* (une fois), *répétée* (dans chaque chapitre, filtrée) ou *annexe* (une fois, non filtrée). L'éclaté part de l'**analyse complète** et s'applique à l'aperçu écran, à l'impression PDF **et** à l'export Word.
 
 Le bouton **↺ Réinitialiser le rapport par défaut** efface la personnalisation et rétablit le modèle par défaut.
 

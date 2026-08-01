@@ -149,6 +149,15 @@
               "properties": {
                 "scope": { "enum": ["all", "filtered"], "description": "Périmètre du rapport : analyse complète (« all ») ou sous-ensemble filtré selon les filtres et la recherche actifs (« filtered »). Défaut : « all »." },
                 "orientation": { "enum": ["portrait", "landscape"], "description": "Orientation de la page à l'impression PDF et à l'export Word. Défaut : « portrait »." },
+                "iteration": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Rapport éclaté : répète le rapport pour chaque valeur d'un critère (chaque chapitre filtré). L'éclaté part de l'analyse complète (modes « all » / « filtered » / éclaté exclusifs) ; les sections se répartissent selon leur « zone ». S'applique à l'écran, à l'impression PDF et à l'export Word.",
+                  "properties": {
+                    "by": { "type": "string", "description": "Critère d'éclatement : « none » (défaut, rapport unique), « risk_category », « measure_type », « risk_owner », « measure_responsible », « per_risk » (un chapitre par risque : fiche détaillée + trajectoire + mesures), ou « cf:<code> » (champ personnalisé à valeurs fermées, cible risque ou mesure ; valeurs multiples = plusieurs chapitres)." },
+                    "sort": { "enum": ["criticality", "alpha", "count"], "description": "Ordre des chapitres : par criticité du risque le plus critique du groupe (défaut), alphabétique, ou nombre de risques. Le groupe « valeur vide » (non catégorisé / sans propriétaire…) est toujours en dernier." }
+                  }
+                },
                 "cover": {
                   "type": "object",
                   "additionalProperties": true,
@@ -203,6 +212,7 @@
                     "properties": {
                       "id": { "type": "string" },
                       "on": { "type": "boolean", "description": "Section incluse. Défaut : true, sauf « matrix_initial » et « matrix_residual » (défaut : false)." },
+                      "zone": { "enum": ["header", "repeated", "appendix"], "description": "Rapport éclaté uniquement : emplacement de la section — « header » (en tête, une fois), « repeated » (répétée, filtrée par chapitre) ou « appendix » (annexe, une fois, non filtrée). Défaut : « header » pour les sections d'introduction (métadonnées, présentation, synthèse, grille, référentiels), « repeated » pour les autres." },
                       "view": { "enum": ["due_date", "status", "responsible"], "description": "« action_plan » uniquement : présentation par échéancier, par statut ou par responsable. Défaut : « due_date »." },
                       "rows": {
                         "type": "array",
