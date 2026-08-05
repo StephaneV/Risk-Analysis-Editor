@@ -11,15 +11,15 @@ en anglais et thème clair :
 Playwright ne capture pas le curseur de l'OS : un faux curseur (flèche) est injecté
 au point survolé.
 
-Utilisation :
-  1) servir le dépôt :        python -m http.server 8000
-  2) lancer le script :       SHOTS_ORIGIN=http://localhost:8000 python travaux/shots-readme.py
-     (Windows PS : $env:SHOTS_ORIGIN="http://localhost:8000"; python travaux/shots-readme.py)
+Utilisation (depuis la racine du dépôt) :
+  1) servir le dépôt :        python -m http.server 4599 --bind 127.0.0.1
+  2) lancer le script :       python tools/shots-readme.py
+     (autre origine au besoin : SHOTS_ORIGIN=http://localhost:PORT python tools/shots-readme.py)
 """
 import os
 from playwright.sync_api import sync_playwright
 
-ORIGIN = os.environ.get("SHOTS_ORIGIN", "http://localhost:8000")
+ORIGIN = os.environ.get("SHOTS_ORIGIN", "http://localhost:4599")
 BASE = ORIGIN + "/app/risk-analysis-editor.html"
 OUT = "docs/images/"
 
@@ -106,7 +106,9 @@ def plan(browser):
 
 def run():
     with sync_playwright() as p:
-        b = p.chromium.launch(channel="msedge")
+        # Mode HEADED (comme tools/shots.py) : en headless, Chromium ne rend aucune barre de
+        # défilement (cf. playwright#5778). Nécessite un environnement graphique.
+        b = p.chromium.launch(channel="msedge", headless=False)
         hero(b); statistiques(b); plan(b)
         b.close()
 
