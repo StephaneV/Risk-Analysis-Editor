@@ -120,11 +120,19 @@
       "comment": "Most sensitive asset of the IS (GDPR). Enhanced monitoring of privileged access and exfiltrated volumes.",
       "initial_assessment": {
         "probability": 4,
-        "severity": 4
+        "severity": 4,
+        "custom": {
+          "justification": "Assessed in workshop 4: feasible operating mode against a high-value target.",
+          "date_cotation": "2026-07-18"
+        }
       },
       "residual_assessment": {
         "probability": 2,
-        "severity": 4
+        "severity": 4,
+        "custom": {
+          "justification": "After the security baseline and SOC monitoring are in place.",
+          "date_cotation": "2026-07-18"
+        }
       },
       "custom": {
         "source_risque": [
@@ -1432,6 +1440,33 @@
           }
         }
       ]
+    },
+    {
+      "code": "justification",
+      "target": "cotation",
+      "type": "textarea",
+      "order": 1,
+      "label": {
+        "fr": "Justification",
+        "en": "Justification",
+        "it": "Motivazione"
+      },
+      "description": {
+        "fr": "Justification de la cotation : choix de la vraisemblance et de la gravité.",
+        "en": "Rationale for the assessment: choice of likelihood and severity.",
+        "it": "Motivazione della valutazione: scelta di verosimiglianza e gravità."
+      }
+    },
+    {
+      "code": "date_cotation",
+      "target": "cotation",
+      "type": "date",
+      "order": 2,
+      "label": {
+        "fr": "Date de cotation",
+        "en": "Assessment date",
+        "it": "Data di valutazione"
+      }
     }
   ],
   "custom": {

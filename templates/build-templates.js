@@ -232,7 +232,10 @@ emit("ebios-rm", {
     {code:"avancement",target:"measure",type:"progress",order:2,label:T("Avancement","Progress","Avanzamento"),palette:"red-orange-green",step:10},
     {code:"effet",target:"link",type:"tags",multiple:true,order:1,filterable:true,label:T("Effet attendu","Expected effect","Effetto atteso"),
      items:[tag("vraisemblance",T("Réduit la vraisemblance","Reduces likelihood","Riduce la verosimiglianza"),"#2471a3"),
-            tag("gravite",T("Réduit la gravité","Reduces severity","Riduce la gravità"),"#b9770e")]}
+            tag("gravite",T("Réduit la gravité","Reduces severity","Riduce la gravità"),"#b9770e")]},
+    {code:"justification",target:"cotation",type:"textarea",order:1,label:T("Justification","Justification","Motivazione"),
+     description:T("Justification de la cotation : choix de la vraisemblance et de la gravité.","Rationale for the assessment: choice of likelihood and severity.","Motivazione della valutazione: scelta di verosimiglianza e gravità.")},
+    {code:"date_cotation",target:"cotation",type:"date",order:2,label:T("Date de cotation","Assessment date","Data di valutazione")}
   ]
 });
 
@@ -399,7 +402,10 @@ emit("iso-27005", {
     {code:"avancement",target:"measure",type:"progress",order:2,label:T("Avancement","Progress","Avanzamento"),palette:"red-orange-green",step:10},
     {code:"effet",target:"link",type:"tags",multiple:true,order:1,filterable:true,label:T("Effet attendu","Expected effect","Effetto atteso"),
      items:[tag("vraisemblance",T("Réduit la vraisemblance","Reduces likelihood","Riduce la verosimiglianza"),"#2471a3"),
-            tag("gravite",T("Réduit l'impact","Reduces impact","Riduce l'impatto"),"#b9770e")]}
+            tag("gravite",T("Réduit l'impact","Reduces impact","Riduce l'impatto"),"#b9770e")]},
+    {code:"justification",target:"cotation",type:"textarea",order:1,label:T("Justification","Justification","Motivazione"),
+     description:T("Justification de la cotation : choix de la vraisemblance et de la gravité.","Rationale for the assessment: choice of likelihood and severity.","Motivazione della valutazione: scelta di verosimiglianza e gravità.")},
+    {code:"date_cotation",target:"cotation",type:"date",order:2,label:T("Date de cotation","Assessment date","Data di valutazione")}
   ]
 });
 
