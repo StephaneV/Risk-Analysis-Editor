@@ -101,7 +101,7 @@
         "label": "Trascurabile",
         "score_min": 1,
         "score_max": 1,
-        "color": "#8CC63E",
+        "color": "#2e9e5b",
         "acceptance": "acceptable",
         "order": 1,
         "description": "Livello di rischio trascurabile secondo il metodo PIA."
@@ -111,7 +111,7 @@
         "label": "Limitato",
         "score_min": 2,
         "score_max": 2,
-        "color": "#FFF166",
+        "color": "#e0b93a",
         "acceptance": "acceptable",
         "order": 2,
         "description": "Livello di rischio limitato secondo il metodo PIA."
@@ -121,7 +121,7 @@
         "label": "Importante",
         "score_min": 3,
         "score_max": 3,
-        "color": "#F2B33D",
+        "color": "#e6862e",
         "acceptance": "tolerable",
         "order": 3,
         "description": "Livello di rischio importante: sono attese misure di riduzione."
@@ -131,7 +131,7 @@
         "label": "Massimo",
         "score_min": 4,
         "score_max": 4,
-        "color": "#E8291C",
+        "color": "#d64545",
         "acceptance": "unacceptable",
         "order": 4,
         "description": "Livello di rischio massimo: il trattamento non può essere svolto così com'è."

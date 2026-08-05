@@ -101,7 +101,7 @@
         "label": "Négligeable",
         "score_min": 1,
         "score_max": 1,
-        "color": "#8CC63E",
+        "color": "#2e9e5b",
         "acceptance": "acceptable",
         "order": 1,
         "description": "Niveau de risque négligeable au sens de la méthode PIA."
@@ -111,7 +111,7 @@
         "label": "Limité",
         "score_min": 2,
         "score_max": 2,
-        "color": "#FFF166",
+        "color": "#e0b93a",
         "acceptance": "acceptable",
         "order": 2,
         "description": "Niveau de risque limité au sens de la méthode PIA."
@@ -121,7 +121,7 @@
         "label": "Important",
         "score_min": 3,
         "score_max": 3,
-        "color": "#F2B33D",
+        "color": "#e6862e",
         "acceptance": "tolerable",
         "order": 3,
         "description": "Niveau de risque important : des mesures de réduction sont attendues."
@@ -131,7 +131,7 @@
         "label": "Maximal",
         "score_min": 4,
         "score_max": 4,
-        "color": "#E8291C",
+        "color": "#d64545",
         "acceptance": "unacceptable",
         "order": 4,
         "description": "Niveau de risque maximal : le traitement ne peut être conduit en l'état."
