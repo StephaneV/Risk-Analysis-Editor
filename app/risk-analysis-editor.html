@@ -1617,7 +1617,7 @@ const I18N = {
     cf_filterable:"Utilisable comme filtre",
     cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées, et aux champs rattachés aux risques, aux mesures ou aux liens.",
     cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées, hors champs de l'analyse.",
-    "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
+    "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)",
     cf_pattern:"Motif (expression régulière)", cf_pattern_ph:"ex. [A-Z]{2}-\\d{4}", cf_err_pattern:"Expression régulière invalide.",
     cf_val_url:"« {0} » : URL invalide (elle doit commencer par http:// ou https://).",
@@ -1944,7 +1944,7 @@ const I18N = {
     cf_filterable:"Usable as a filter",
     cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types, on risk, measure or link fields.",
     cf_filterable_na:"Not applicable: restricted to closed-value types, excluding analysis fields.",
-    "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
+    "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)",
     cf_pattern:"Pattern (regular expression)", cf_pattern_ph:"e.g. [A-Z]{2}-\\d{4}", cf_err_pattern:"Invalid regular expression.",
     cf_val_url:"“{0}”: invalid URL (it must start with http:// or https://).",
@@ -2271,7 +2271,7 @@ const I18N = {
     cf_filterable:"Utilizzabile come filtro",
     cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi, sui campi di rischio, misura o collegamento.",
     cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi, esclusi i campi dell'analisi.",
-    "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
+    "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)",
     cf_pattern:"Modello (espressione regolare)", cf_pattern_ph:"es. [A-Z]{2}-\\d{4}", cf_err_pattern:"Espressione regolare non valida.",
     cf_val_url:"« {0} »: URL non valido (deve iniziare con http:// o https://).",
@@ -5134,10 +5134,10 @@ function renderReport(){
         const sub=[r.category,r.owner].filter(Boolean).map(esc).join(" · ");
         h+='<div class="rp-item"><div><b>'+esc(r.id)+' — '+esc(r.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
         if(r.description)h+='<div class="md">'+mdToHTML(r.description)+'</div>';
-        const ji=r.initial_assessment&&r.initial_assessment.justification, jr=r.residual_assessment&&r.residual_assessment.justification;
-        if(ji)h+='<div class="rp-note md"><b>'+esc(t("th_initial"))+' :</b> '+mdToHTML(ji)+'</div>';
-        if(jr)h+='<div class="rp-note md"><b>'+esc(t("th_residual"))+' :</b> '+mdToHTML(jr)+'</div>';
         if(r.comment)h+='<div class="rp-note md">'+mdToHTML(r.comment)+'</div>';
+        const ic=cfReportNotes("cotation",r.initial_assessment.custom), rc=cfReportNotes("cotation",r.residual_assessment.custom);
+        if(ic)h+='<div class="rp-note"><b>'+esc(t("th_initial"))+'</b></div>'+ic;
+        if(rc)h+='<div class="rp-note"><b>'+esc(t("th_residual"))+'</b></div>'+rc;
         h+=cfReportNotes("risk",r.custom)+'</div>';
       });
       return card("risks_detail",h);
@@ -5462,7 +5462,7 @@ function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
    - le type doit être à valeurs fermées, seul à pouvoir alimenter une liste de choix ;
    - la cible ne peut pas être l'analyse : il n'y en a qu'une, il n'y a rien à trier.
    Condition unique, partagée par la modale, le tableau des paramètres et le filtrage. */
-function cfFilterOptionApplies(target,type){return cfIsClosed(type)&&target!=="analysis";}
+function cfFilterOptionApplies(target,type){return cfIsClosed(type)&&target!=="analysis"&&target!=="cotation";}
 function cfFilterableFields(target){
   return customFieldsFor(target).filter(f=>f.filterable&&cfFilterOptionApplies(f.target,f.type));
 }
@@ -6467,15 +6467,13 @@ function openRiskModal(id,dup){
       '<div class="sub-card"><b>'+esc(t("eval_initial"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_ip">'+levelSelect(pAxis,r.initial_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_ig">'+levelSelect(gAxis,r.initial_assessment.severity)+'</select></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_justification"))+'</span><textarea id="f_ijust">'+esc(r.initial_assessment.justification||"")+'</textarea></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_assess_date"))+'</span><input type="date" id="f_idate" value="'+esc(r.initial_assessment.date||"")+'"></label>'+
+        '<div id="f_icustom">'+cfFieldsHTML("cotation",r.initial_assessment.custom)+'</div>'+
         '<div class="hint" id="prev_i"></div>'+
       '</div>'+
       '<div class="sub-card"><b>'+esc(t("eval_residual"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_rp">'+levelSelect(pAxis,r.residual_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_rg">'+levelSelect(gAxis,r.residual_assessment.severity)+'</select></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_justification"))+'</span><textarea id="f_rjust">'+esc(r.residual_assessment.justification||"")+'</textarea></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_assess_date"))+'</span><input type="date" id="f_rdate" value="'+esc(r.residual_assessment.date||"")+'"></label>'+
+        '<div id="f_rcustom">'+cfFieldsHTML("cotation",r.residual_assessment.custom)+'</div>'+
         '<div class="hint" id="prev_r"></div>'+
       '</div>'+
     '</div>'+
@@ -6493,11 +6491,15 @@ function openRiskModal(id,dup){
     if(newId!==r.id && analyse.risks.some(x=>x.id===newId)){modalMsg(t("err_id_exists"));return false;}
     const cc=cfCollect("risk",document.getElementById("modalBody"));
     if(cc.error){modalMsg(cc.error);return false;}
-    const mkAssess=(p,s,just,date)=>{const a={probability:+val(p),severity:+val(s)};const j=val(just).trim(),d=val(date);if(j)a.justification=j;if(d)a.date=d;return a;};
+    // Champs personnalisés de cotation : lus séparément dans chaque bloc d'évaluation.
+    const ci=cfCollect("cotation",document.getElementById("f_icustom")), cr=cfCollect("cotation",document.getElementById("f_rcustom"));
+    if(ci.error){modalMsg(ci.error);return false;}
+    if(cr.error){modalMsg(cr.error);return false;}
+    const mkAssess=(p,s,cv)=>{const a={probability:+val(p),severity:+val(s)};if(Object.keys(cv).length)a.custom=cv;return a;};
     const obj={id:newId,label:lib,category:val("f_cat").trim(),owner:val("f_prop").trim(),
       description:val("f_desc").trim(),comment:val("f_comment").trim(),
-      initial_assessment:mkAssess("f_ip","f_ig","f_ijust","f_idate"),
-      residual_assessment:mkAssess("f_rp","f_rg","f_rjust","f_rdate")};
+      initial_assessment:mkAssess("f_ip","f_ig",ci.custom),
+      residual_assessment:mkAssess("f_rp","f_rg",cr.custom)};
     if(!obj.category)delete obj.category;if(!obj.owner)delete obj.owner;if(!obj.description)delete obj.description;if(!obj.comment)delete obj.comment;
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.risks.push(obj);
@@ -7576,10 +7578,10 @@ async function buildDocx(){
         const s2=[r.category,r.owner].filter(Boolean).join(" · ");
         out+=dxP(dxRun(r.id+" — "+r.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
         if(r.description)out+=mdDocxBlocks(r.description);
-        const ji=r.initial_assessment&&r.initial_assessment.justification,jr=r.residual_assessment&&r.residual_assessment.justification;
-        if(ji)out+=dxP(dxRun(t("th_initial")+" : ",{b:true,sz:20})+dxRun(mdToText(ji),{sz:20,color:"555F6E"}),{sa:20});
-        if(jr)out+=dxP(dxRun(t("th_residual")+" : ",{b:true,sz:20})+dxRun(mdToText(jr),{sz:20,color:"555F6E"}),{sa:20});
         if(r.comment)out+=mdDocxBlocks(r.comment);
+        const ic=dxCfNotes("cotation",r.initial_assessment.custom), rc=dxCfNotes("cotation",r.residual_assessment.custom);
+        if(ic)out+=dxP(dxRun(t("th_initial")+" :",{b:true,sz:20}),{sa:20})+ic;
+        if(rc)out+=dxP(dxRun(t("th_residual")+" :",{b:true,sz:20}),{sa:20})+rc;
         out+=dxCfNotes("risk",r.custom);
       });
       return out;
@@ -8098,7 +8100,7 @@ function cfHref(f,v){const s=String(v||"").trim();
   if(f.type==="email")return CF_RE_EMAIL.test(s)?"mailto:"+s:"";
   if(f.type==="tel"){const d=s.replace(/[^\d+]/g,"");return d?"tel:"+d:"";}
   return "";}
-const CF_TARGETS=["analysis","risk","measure","link"];
+const CF_TARGETS=["analysis","risk","cotation","measure","link"];
 /* Affichage libellé/item : valeur de la LANGUE COURANTE, sinon le CODE (repli volontaire,
    sans essayer une autre langue). Les libellés se saisissent une langue à la fois. */
 function cfLabel(f){const L=f&&f.label||{};return L[lang]||(f&&f.code)||"";}
