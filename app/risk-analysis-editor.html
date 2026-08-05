@@ -7109,23 +7109,25 @@ function buildXlsx(){
   cats.forEach(c=>syn.push([s(c.label,badge(c.color)),n(ci[c.code]||0),n(cr[c.code]||0)]));
   const synXml=sheetXML(syn,{widths:[34,26,14],grid:false});
   // --- Risques ---
-  const cfR=customFieldsFor("risk"),axV=g.vertical_axis.label,axH=g.horizontal_axis.label;
+  const cfR=customFieldsFor("risk"),cfC=customFieldsFor("cotation"),axV=g.vertical_axis.label,axH=g.horizontal_axis.label;
   const lIni=t("th_initial"),lRes=t("th_residual");
+  const cotHead=[];cfC.forEach(f=>{cotHead.push(cfLabel(f)+" — "+lIni,cfLabel(f)+" — "+lRes);});
   const rkHead=[t("th_id"),t("th_risk"),t("th_category"),t("f_owner"),
     axV+" — "+lIni,axH+" — "+lIni,t("xl_score")+" — "+lIni,t("xl_crit")+" — "+lIni,
     axV+" — "+lRes,axH+" — "+lRes,t("xl_score")+" — "+lRes,t("xl_crit")+" — "+lRes,
-    t("th_evolution"),t("th_measures"),t("f_description"),t("f_notes")].concat(cfR.map(cfLabel));
+    t("th_evolution"),t("th_measures"),t("f_description"),t("f_notes")].concat(cfR.map(cfLabel)).concat(cotHead);
   const rk=[rkHead.map(h=>s(h,HDR))];
   analyse.risks.forEach(r=>{
     const evi=r.initial_assessment,evr=residual(r),cci=critOfEval(evi),ccr=critOfEval(evr);
     const si=scoreOf(evi.probability,evi.severity),sr=scoreOf(evr.probability,evr.severity);
+    const cot=[];cfC.forEach(f=>{cot.push(cfCell(f,(evi.custom||{})[f.code]),cfCell(f,(evr.custom||{})[f.code]));});
     rk.push([s(r.id,BOLD),s(r.label,TXT),s(r.category||"",PLAIN),s(r.owner||"",PLAIN),
       n(evi.probability),n(evi.severity),n(si),s(cci.label,badge(cci.color)),
       n(evr.probability),n(evr.severity),n(sr),s(ccr.label,badge(ccr.color)),
       n(sr-si),s(measuresOfRisk(r.id).join(", "),PLAIN),s(mdToText(r.description||""),TXT),s(mdToText(r.comment||""),TXT)]
-      .concat(cfR.map(f=>cfCell(f,(r.custom||{})[f.code]))));
+      .concat(cfR.map(f=>cfCell(f,(r.custom||{})[f.code]))).concat(cot));
   });
-  const rkXml=sheetXML(rk,{widths:[9,42,16,16,13,13,11,15,13,13,11,15,11,18,50,36].concat(cfR.map(()=>20)),freeze:true,filter:rkHead.length});
+  const rkXml=sheetXML(rk,{widths:[9,42,16,16,13,13,11,15,13,13,11,15,11,18,50,36].concat(cfR.map(()=>20)).concat(cotHead.map(()=>26)),freeze:true,filter:rkHead.length});
   // --- Mesures ---
   const cfM=customFieldsFor("measure");
   const msHead=[t("th_id"),t("th_measure"),t("th_type"),t("th_status"),t("th_responsible"),t("f_due_date"),t("f_cost"),t("th_covered_risks"),t("f_description"),t("f_notes")].concat(cfM.map(cfLabel));
@@ -8519,6 +8521,30 @@ function cfImportCols(target,H,claimed){
   });
   return map;
 }
+/* Champs de cotation en export/import : deux colonnes par champ (évaluation initiale et résiduelle).
+   En-tête « Libellé — Initial » / « Libellé — Résiduel », aligné sur le style des colonnes Excel. */
+function cfCotHeader(f,phase){return cfLabel(f)+" — "+t(phase==="initial"?"th_initial":"th_residual");}
+const CF_COT_PHASE={initial:["initial","initiale","iniziale"],residual:["residuel","residuelle","residual","residuo","residua"]};
+/* Associe chaque champ de cotation à ses colonnes initiale/résiduelle (par libellé FR/EN/IT ou code,
+   phase en préfixe ou suffixe), sans réutiliser une colonne déjà prise. */
+function cfCotImportCols(H,claimed){
+  const norm=s=>normH(s).replace(/[^a-z0-9]/g,"");
+  const map=[];
+  customFieldsFor("cotation").forEach(f=>{
+    const labs=[cfLabel(f),f.label&&f.label.fr,f.label&&f.label.en,f.label&&f.label.it,f.code].filter(Boolean).map(norm);
+    const find=phase=>{
+      for(let i=0;i<H.length;i++){if(claimed.has(i))continue;
+        const key=norm(H[i]);
+        for(const pt of CF_COT_PHASE[phase])for(const lab of labs)
+          if(lab&&(key===lab+pt||key===pt+lab)){claimed.add(i);return i;}
+      }
+      return -1;
+    };
+    const ci=find("initial"),cr=find("residual");
+    if(ci>=0||cr>=0)map.push({f,ci,cr});
+  });
+  return map;
+}
 /* Lignes de notes « Libellé : valeur » pour les champs renseignés d'une cible (détails du rapport). */
 function cfReportNotes(target,values){
   values=values||{};
@@ -8967,17 +8993,19 @@ function downloadCSV(rows,name){
 }
 function exportRisksCSV(){
   // En-têtes = noms de clés anglais (identiques quelle que soit la langue de l'UI).
-  const cf=customFieldsFor("risk");
+  const cf=customFieldsFor("risk"), cc=customFieldsFor("cotation");
+  const cotH=[];cc.forEach(f=>{cotH.push(cfCotHeader(f,"initial"),cfCotHeader(f,"residual"));});
   const H=["id","label","category","description","owner","initial_probability","initial_severity","residual_probability","residual_severity","initial_score","initial_criticality","residual_score","residual_criticality"]
-    .concat(cf.map(f=>cfLabel(f)));
+    .concat(cf.map(f=>cfLabel(f))).concat(cotH);
   const rows=[H];
   analyse.risks.forEach(r=>{
     const evi=r.initial_assessment, evr=residual(r);
     const si=scoreOf(evi.probability,evi.severity), sr=scoreOf(evr.probability,evr.severity);
+    const cot=[];cc.forEach(f=>{cot.push(cfDisplay(f,(evi.custom||{})[f.code]),cfDisplay(f,(evr.custom||{})[f.code]));});
     rows.push([r.id,r.label||"",r.category||"",r.description||"",r.owner||"",
       evi.probability,evi.severity,evr.probability,evr.severity,
       si,critFor(si).label,sr,critFor(sr).label]
-      .concat(cf.map(f=>cfDisplay(f,(r.custom||{})[f.code]))));
+      .concat(cf.map(f=>cfDisplay(f,(r.custom||{})[f.code]))).concat(cot));
   });
   const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
   downloadCSV(rows,base+"-risks.csv");
@@ -9032,7 +9060,9 @@ function analyzeRisksCSV(text){
     pi:colIndex(H,["initialprobability"]),gi:colIndex(H,["initialseverity"]),
     pr:colIndex(H,["residualprobability"]),gr:colIndex(H,["residualseverity"])};
   if(IDX.label<0&&IDX.id<0){res.errors.push(t("import_no_col"));return res;}
-  const cfMap=cfImportCols("risk",H,new Set(Object.values(IDX).filter(i=>i>=0)));
+  const claimed=new Set(Object.values(IDX).filter(i=>i>=0));
+  const cfMap=cfImportCols("risk",H,claimed);
+  const cotMap=cfCotImportCols(H,claimed);
   const axV=analyse.grid.vertical_axis,axH=analyse.grid.horizontal_axis;
   for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
     const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[]};
@@ -9043,6 +9073,10 @@ function analyzeRisksCSV(text){
     const rd=(idx,axe,lab,dst,key)=>{if(idx<0)return;const g=get(idx);if(!g)return;const pn=parseLevel(g,axe);if(pn.err)p.errors.push(lab+" : "+pn.err);else dst[key]=pn.v;};
     rd(IDX.pi,axV,t("import_pi"),ei,"probability");rd(IDX.gi,axH,t("import_gi"),ei,"severity");
     rd(IDX.pr,axV,t("import_pr"),er,"probability");rd(IDX.gr,axH,t("import_gr"),er,"severity");
+    cotMap.forEach(({f,ci,cr})=>{
+      if(ci>=0){const v=cfParseValue(f,get(ci));if(cfHasVal(v))(ei.custom=ei.custom||{})[f.code]=v;}
+      if(cr>=0){const v=cfParseValue(f,get(cr));if(cfHasVal(v))(er.custom=er.custom||{})[f.code]=v;}
+    });
     if(Object.keys(ei).length)p.initial_assessment=ei;if(Object.keys(er).length)p.residual_assessment=er;
     const custom={};cfMap.forEach(({f,col})=>{const v=cfParseValue(f,get(col));if(cfHasVal(v))custom[f.code]=v;});
     if(Object.keys(custom).length)p.custom=custom;
@@ -9081,6 +9115,14 @@ function analyzeMeasuresCSV(text){
     res.items.push(p);if(p.errors.length)res.errors.push(t("import_line",r+1,p.errors.join(" ; ")));}
   return res;
 }
+/* Fusionne une évaluation importée dans l'existante : probabilité/gravité écrasées,
+   valeurs de champs perso de cotation (custom) fusionnées clé à clé (les champs absents du CSV sont conservés). */
+function mergeAssess(dst,src){
+  Object.keys(src).forEach(k=>{
+    if(k==="custom")dst.custom=Object.assign(dst.custom||{},src.custom);
+    else dst[k]=src[k];
+  });
+}
 function commitImport(kind,items){
   const list=kind==="risks"?analyse.risks:analyse.measures,prefix=kind==="risks"?"R":"M";
   const defV=(analyse.grid.vertical_axis.levels[0]||{value:1}).value,defH=(analyse.grid.horizontal_axis.levels[0]||{value:1}).value;
@@ -9092,8 +9134,8 @@ function commitImport(kind,items){
       scal.forEach(k=>{if(p[k]!=null)target[k]=p[k];});
       if(p.custom){target.custom=Object.assign(target.custom||{},p.custom);}
       if(kind==="risks"){
-        if(p.initial_assessment){target.initial_assessment=target.initial_assessment||{probability:defV,severity:defH};Object.assign(target.initial_assessment,p.initial_assessment);}
-        if(p.residual_assessment){target.residual_assessment=target.residual_assessment||JSON.parse(JSON.stringify(target.initial_assessment||{probability:defV,severity:defH}));Object.assign(target.residual_assessment,p.residual_assessment);}
+        if(p.initial_assessment){target.initial_assessment=target.initial_assessment||{probability:defV,severity:defH};mergeAssess(target.initial_assessment,p.initial_assessment);}
+        if(p.residual_assessment){target.residual_assessment=target.residual_assessment||JSON.parse(JSON.stringify(target.initial_assessment||{probability:defV,severity:defH}));mergeAssess(target.residual_assessment,p.residual_assessment);}
       }
       updated++;
     }else{
@@ -9101,8 +9143,8 @@ function commitImport(kind,items){
       scal.forEach(k=>{if(k!=="label"&&p[k]!=null)obj[k]=p[k];});
       if(p.custom)obj.custom=p.custom;
       if(kind==="risks"){
-        obj.initial_assessment={probability:defV,severity:defH};if(p.initial_assessment)Object.assign(obj.initial_assessment,p.initial_assessment);
-        obj.residual_assessment=JSON.parse(JSON.stringify(obj.initial_assessment));if(p.residual_assessment)Object.assign(obj.residual_assessment,p.residual_assessment);
+        obj.initial_assessment={probability:defV,severity:defH};if(p.initial_assessment)mergeAssess(obj.initial_assessment,p.initial_assessment);
+        obj.residual_assessment=JSON.parse(JSON.stringify(obj.initial_assessment));if(p.residual_assessment)mergeAssess(obj.residual_assessment,p.residual_assessment);
       }
       list.push(obj);added++;
     }});
