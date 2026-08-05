@@ -1626,6 +1626,7 @@ const I18N = {
     cf_multiple:"Sélection multiple", cf_palette:"Palette de couleur", cf_palette_preview:"Aperçu", cf_item_color:"Couleur", cf_step:"Pas",
     cf_pal_colors:"Couleurs de la palette", cf_pal_add_color:"+ Ajouter une couleur", cf_err_colors:"Ajoutez au moins une couleur à la palette.",
     "pal.accent":"Couleur unique (accent)","pal.red-green":"Rouge → Vert","pal.red-orange-green":"Rouge → Orange → Vert","pal.red-orange-yellow-green":"Rouge → Orange → Jaune → Vert","pal.white-black":"Blanc → Noir","pal.custom":"Personnalisée",
+    "tagpal.vives":"Vives","tagpal.pastel":"Pastel","tagpal.office":"Office","tagpal.daltonien":"Daltonien-friendly","tagpal.chaudes":"Chaudes","tagpal.froides":"Froides","tagpal.gris":"Nuances de gris","tagpal.bleu_vert":"Bleu à Vert","tagpal.jaune_orange":"Jaune à Orange","tagpal.rouge_violet":"Rouge à Violet","tagpalgrp.qualitative":"Qualitatives","tagpalgrp.sequential":"Séquentielles","cf_tagpal_custom_hint":"Couleurs libres (aucune attribution automatique)",
     cf_label:"Libellé", cf_help:"Aide", cf_description:"Description", md_preview:"Aperçu", md_edit:"Éditer", md_supports:"Markdown pris en charge",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
     cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_label:"Libellé",
@@ -1952,6 +1953,7 @@ const I18N = {
     cf_multiple:"Multiple selection", cf_palette:"Color palette", cf_palette_preview:"Preview", cf_item_color:"Color", cf_step:"Step",
     cf_pal_colors:"Palette colors", cf_pal_add_color:"+ Add a color", cf_err_colors:"Add at least one color to the palette.",
     "pal.accent":"Single color (accent)","pal.red-green":"Red → Green","pal.red-orange-green":"Red → Orange → Green","pal.red-orange-yellow-green":"Red → Orange → Yellow → Green","pal.white-black":"White → Black","pal.custom":"Custom",
+    "tagpal.vives":"Vivid","tagpal.pastel":"Pastel","tagpal.office":"Office","tagpal.daltonien":"Colorblind-friendly","tagpal.chaudes":"Warm","tagpal.froides":"Cool","tagpal.gris":"Grayscale","tagpal.bleu_vert":"Blue to Green","tagpal.jaune_orange":"Yellow to Orange","tagpal.rouge_violet":"Red to Violet","tagpalgrp.qualitative":"Qualitative","tagpalgrp.sequential":"Sequential","cf_tagpal_custom_hint":"Free colours (no automatic assignment)",
     cf_label:"Label", cf_help:"Help", cf_description:"Description", md_preview:"Preview", md_edit:"Edit", md_supports:"Supports Markdown",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
     cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_label:"Label",
@@ -2278,6 +2280,7 @@ const I18N = {
     cf_multiple:"Selezione multipla", cf_palette:"Tavolozza colori", cf_palette_preview:"Anteprima", cf_item_color:"Colore", cf_step:"Passo",
     cf_pal_colors:"Colori della tavolozza", cf_pal_add_color:"+ Aggiungi un colore", cf_err_colors:"Aggiungi almeno un colore alla tavolozza.",
     "pal.accent":"Colore unico (accento)","pal.red-green":"Rosso → Verde","pal.red-orange-green":"Rosso → Arancione → Verde","pal.red-orange-yellow-green":"Rosso → Arancione → Giallo → Verde","pal.white-black":"Bianco → Nero","pal.custom":"Personalizzata",
+    "tagpal.vives":"Vivaci","tagpal.pastel":"Pastello","tagpal.office":"Office","tagpal.daltonien":"Adatta ai daltonici","tagpal.chaudes":"Calde","tagpal.froides":"Fredde","tagpal.gris":"Scala di grigi","tagpal.bleu_vert":"Blu a Verde","tagpal.jaune_orange":"Giallo ad Arancione","tagpal.rouge_violet":"Rosso a Viola","tagpalgrp.qualitative":"Qualitative","tagpalgrp.sequential":"Sequenziali","cf_tagpal_custom_hint":"Colori liberi (nessuna assegnazione automatica)",
     cf_label:"Etichetta", cf_help:"Aiuto", cf_description:"Descrizione", md_preview:"Anteprima", md_edit:"Modifica", md_supports:"Markdown supportato",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
     cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_label:"Etichetta",
@@ -8179,7 +8182,10 @@ function cfItemsRowsHTML(items,withColor){
 function cfTypeOptsHTML(f){
   if(f.type==="regexp")return '<label class="field full"><span class="lab">'+esc(t("cf_pattern"))+'</span>'+
     '<input id="cfPattern" placeholder="'+esc(t("cf_pattern_ph"))+'" value="'+esc(f.pattern||"")+'"></label>';
-  if(f.type==="tags")return '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfMultiple" style="width:16px;height:16px;flex:none"'+(f.multiple?" checked":"")+'> '+esc(t("cf_multiple"))+'</label></label>';
+  if(f.type==="tags"){const tpid=tagPaletteId(f);
+    return '<label class="field"><span class="lab">'+esc(t("cf_palette"))+'</span><select id="cfTagPalette">'+tagPaletteOptions(tpid)+'</select></label>'+
+      '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfMultiple" style="width:16px;height:16px;flex:none"'+(f.multiple?" checked":"")+'> '+esc(t("cf_multiple"))+'</label></label>'+
+      '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfTagPalettePreview" style="display:flex;gap:6px;flex-wrap:wrap;min-height:22px">'+tagPalettePreviewHTML(tpid)+'</div></div>';}
   if(f.type==="progress"){const pal=progressPaletteId(f);
     return '<label class="field"><span class="lab">'+esc(t("cf_palette"))+'</span><select id="cfPalette">'+PROGRESS_PALETTE_IDS.map(id=>'<option value="'+id+'"'+(id===pal?" selected":"")+'>'+esc(t("pal."+id))+'</option>').join("")+'</select></label>'+
       '<label class="field"><span class="lab">'+esc(t("cf_step"))+'</span><input type="number" id="cfStep" min="1" max="100" step="1" value="'+(f.step!=null?f.step:10)+'"></label>'+
@@ -8252,7 +8258,8 @@ function openCustomFieldModal(idx){
     }
     if(type==="regexp"){const pat=val("cfPattern").trim();
       if(pat){try{new RegExp(pat);}catch(e){modalMsg(t("cf_err_pattern"));return false;}obj.pattern=pat;}}
-    if(type==="tags")obj.multiple=document.getElementById("cfMultiple").checked;
+    if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;
+      const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
     if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";
       if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){modalMsg(t("cf_err_colors"));return false;}obj.colors=cols;}
       const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
@@ -8291,6 +8298,7 @@ function openCustomFieldModal(idx){
   // câblage post-ouverture
   const typeSel=document.getElementById("cfType");
   const refreshType=()=>{syncItems();f.type=typeSel.value;
+    if(f.type==="tags"&&f.palette!=="custom"&&!TAG_PALETTES.hasOwnProperty(f.palette)){f.palette="vives";applyTagPalette(f);}
     document.getElementById("cfBounds").innerHTML=cfBoundsHTML(f);
     document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
     const w=document.getElementById("cfItemsWrap");w.style.display=cfNeedsItems(f.type)?"block":"none";
@@ -8312,7 +8320,9 @@ function openCustomFieldModal(idx){
   typeSel.addEventListener("change",refreshType);
   // proposition auto du code depuis le libellé (langue courante), à la sortie du champ (si le code est encore vide)
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
-  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();f.items.push({code:"",label:{}});document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
+  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};
+    if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}
+    f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
   document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
 }
 
@@ -8414,6 +8424,43 @@ function progressColors(f){
   if(id==="custom")return (f.colors&&f.colors.length)?f.colors:null;
   return PROGRESS_PALETTES[id]||null;}
 function cfProgressColor(f,pv){const cols=progressColors(f);return cols&&cols.length?paletteColor(cols,pv):"var(--accent)";}
+/* Palettes des champs « tags » (catégorielles + séquentielles). Les items adoptent les couleurs
+   dans l'ordre ; au-delà de la palette, rebouclage avec un décalage de luminosité (±12 % par cycle,
+   borné) pour garder des teintes distinctes. La couleur du texte des badges est déjà gérée (badgeFg). */
+const TAG_PALETTES={
+  vives:["#4c7dff","#2bb3a3","#e6862e","#7a5cff","#d64545","#2e9e5b","#e0b93a","#c05aa8","#5aa8c0","#b0788a"],
+  pastel:["#8ea9f2","#7fcfc4","#f0b57e","#b4a0e0","#ed9a9a","#9cc8a3","#ecd489","#dba7cf","#a7c8db","#cdaeb8"],
+  office:["#4472c4","#ed7d31","#a5a5a5","#ffc000","#5b9bd5","#70ad47"],
+  daltonien:["#0072b2","#e69f00","#009e73","#cc79a7","#56b4e9","#d55e00","#f0e442","#000000"],
+  chaudes:["#e53935","#f4511e","#fb8c00","#fdd835","#d81b60","#8e24aa"],
+  froides:["#1e88e5","#00acc1","#3949ab","#00897b","#5e35b1","#43a047"],
+  gris:["#3a3a3a","#565656","#727272","#8e8e8e","#ababab","#c8c8c8"],
+  bleu_vert:["#1e88e5","#16a3b3","#0fbf9f","#2bb673","#43a047","#7cb342"],
+  jaune_orange:["#fdd835","#fbc02d","#f9a825","#fb8c00","#f57c00","#ef6c00"],
+  rouge_violet:["#e53935","#d81b60","#c2185b","#ad1457","#8e24aa","#6a1b9a"]
+};
+const TAG_PALETTE_GROUPS=[
+  {label:"tagpalgrp.qualitative",ids:["vives","pastel","office","daltonien","chaudes","froides"]},
+  {label:"tagpalgrp.sequential",ids:["gris","bleu_vert","jaune_orange","rouge_violet"]}
+];
+function hslToHex(h,s,l){h=((h%360)+360)%360/360;const k=(p,q,x)=>{if(x<0)x+=1;if(x>1)x-=1;
+  if(x<1/6)return p+(q-p)*6*x;if(x<1/2)return q;if(x<2/3)return p+(q-p)*(2/3-x)*6;return p;};
+  let r,g,b;if(s===0){r=g=b=l;}else{const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;r=k(p,q,h+1/3);g=k(p,q,h);b=k(p,q,h-1/3);}
+  const f=x=>{const v=Math.round(x*255).toString(16);return v.length<2?"0"+v:v;};return "#"+f(r)+f(g)+f(b);}
+function tagCycleDelta(c){const mag=12*Math.ceil(c/2);return c%2===1?mag:-mag;}
+function tagShiftL(hex,d){const a=rgbToHsl.apply(null,hexToRgb(hex));const l=Math.min(0.86,Math.max(0.22,a[2]+d/100));return hslToHex(a[0],a[1],l);}
+function tagPaletteColor(palId,i){const arr=TAG_PALETTES[palId];if(!arr||!arr.length)return "#4c7dff";
+  const n=arr.length,base=arr[i%n],c=Math.floor(i/n);return c===0?base:tagShiftL(base,tagCycleDelta(c));}
+function tagPaletteId(f){return (f&&f.palette&&TAG_PALETTES.hasOwnProperty(f.palette))?f.palette:"custom";}
+function applyTagPalette(f){const pid=tagPaletteId(f);if(pid==="custom")return;(f.items||[]).forEach((it,i)=>{it.color=tagPaletteColor(pid,i);});}
+function tagPaletteOptions(cur){let h="";
+  TAG_PALETTE_GROUPS.forEach(g=>{h+='<optgroup label="'+esc(t(g.label))+'">'+g.ids.map(id=>'<option value="'+id+'"'+(id===cur?" selected":"")+'>'+esc(t("tagpal."+id))+'</option>').join("")+'</optgroup>';});
+  return h+'<option value="custom"'+(cur==="custom"?" selected":"")+'>'+esc(t("pal.custom"))+'</option>';}
+function tagPalettePreviewHTML(pid){const arr=TAG_PALETTES[pid];
+  return arr?arr.map(c=>'<span style="width:22px;height:22px;border-radius:6px;background:'+c+';border:0.5px solid var(--border)"></span>').join(""):'<span class="hint">'+esc(t("cf_tagpal_custom_hint"))+'</span>';}
+function tagRecolorItemsDOM(palId){if(palId==="custom")return;
+  [...document.querySelectorAll('#cfItems [data-cfi]')].forEach((r,i)=>{const c=r.querySelector('[data-if=color]');if(c)c.value=tagPaletteColor(palId,i);});}
+function updateTagPalettePreview(palId){const prev=document.getElementById("cfTagPalettePreview");if(prev)prev.innerHTML=tagPalettePreviewHTML(palId);}
 // Fond CSS d'aperçu depuis un tableau de couleurs (aplat si 1 couleur, accent si vide).
 function palettePreviewBg(colors){
   if(!colors||!colors.length)return "var(--accent)";if(colors.length===1)return colors[0];
@@ -8663,6 +8710,7 @@ document.addEventListener("input",e=>{const r=e.target;
 // Modale de définition : palette (affiche/masque l'éditeur de couleurs perso) + aperçu du dégradé.
 document.addEventListener("change",e=>{const el=e.target;if(!el)return;
   if(el.id==="cfPalette"){const cc=document.getElementById("cfCustomColors");if(cc)cc.style.display=el.value==="custom"?"block":"none";updatePalettePreview();}
+  else if(el.id==="cfTagPalette"){tagRecolorItemsDOM(el.value);updateTagPalettePreview(el.value);}
   else if(el.matches&&el.matches('#cfColors [data-cfcv]'))updatePalettePreview();});
 document.addEventListener("click",e=>{
   const add=e.target.closest&&e.target.closest("#cfColorAdd");
