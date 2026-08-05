@@ -335,6 +335,8 @@ Chaque champ possède :
 
 ![Éditeur d'un champ personnalisé](images/guide-06-champ-editeur.png)
 
+Pour un champ **tags colorés**, une **palette de couleur** prédéfinie colore automatiquement les valeurs, dans l'ordre : palettes *qualitatives* (Vives, Pastel, Office, adaptée aux daltoniens, Chaudes, Froides) ou *séquentielles* (Nuances de gris, Bleu → Vert, Jaune → Orange, Rouge → Violet). Au-delà du nombre de couleurs de la palette, celle-ci se répète avec une légère **nuance de luminosité** pour garder des teintes distinctes. Chaque couleur reste **modifiable** individuellement, et l'option **Personnalisée** laisse fixer chaque valeur à la main.
+
 Les **valeurs** des champs se saisissent ensuite dans les fiches (risque, mesure, lien) et, pour les champs d'analyse, dans l'onglet *Présentation*. Elles sont reprises dans le **rapport**, l'**import/export CSV** et les **exports Word/Excel**, et peuvent devenir des **colonnes** dans les registres.
 
 Pour les listes (**liste déroulante**, **liste à cocher**, **tags**), chaque **valeur** peut recevoir une **description** (saisie sous la valeur dans l'éditeur). Ces descriptions s'affichent en **infobulle** au survol des **tags** (dans les fiches comme dans les registres) et alimentent une section **« Référentiels et légendes des champs »** du rapport : un tableau *valeur → description* pour chaque champ concerné, utile pour documenter le vocabulaire de la méthode (sources de risque, événements redoutés, types de menace…). Dans *Paramètres › Rapport*, la sous-liste **« Éléments »** de cette section permet de **choisir et d'ordonner** les champs à y inclure. Les modèles et les démonstrations fournis en sont déjà pourvus.
@@ -468,4 +470,4 @@ C'est attendu : le score et la criticité sont **recalculés** à partir de la g
 
 ---
 
-*Ce guide correspond à Risk Analysis Editor version 1.15.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
+*Ce guide correspond à Risk Analysis Editor version 1.16.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
