@@ -101,7 +101,7 @@
         "label": "Negligible",
         "score_min": 1,
         "score_max": 1,
-        "color": "#8CC63E",
+        "color": "#2e9e5b",
         "acceptance": "acceptable",
         "order": 1,
         "description": "Negligible risk level per the PIA method."
@@ -111,7 +111,7 @@
         "label": "Limited",
         "score_min": 2,
         "score_max": 2,
-        "color": "#FFF166",
+        "color": "#e0b93a",
         "acceptance": "acceptable",
         "order": 2,
         "description": "Limited risk level per the PIA method."
@@ -121,7 +121,7 @@
         "label": "Significant",
         "score_min": 3,
         "score_max": 3,
-        "color": "#F2B33D",
+        "color": "#e6862e",
         "acceptance": "tolerable",
         "order": 3,
         "description": "Significant risk level: reduction measures are expected."
@@ -131,7 +131,7 @@
         "label": "Maximum",
         "score_min": 4,
         "score_max": 4,
-        "color": "#E8291C",
+        "color": "#d64545",
         "acceptance": "unacceptable",
         "order": 4,
         "description": "Maximum risk level: the processing cannot be carried out as is."

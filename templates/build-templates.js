@@ -232,7 +232,10 @@ emit("ebios-rm", {
     {code:"avancement",target:"measure",type:"progress",order:2,label:T("Avancement","Progress","Avanzamento"),palette:"red-orange-green",step:10},
     {code:"effet",target:"link",type:"tags",multiple:true,order:1,filterable:true,label:T("Effet attendu","Expected effect","Effetto atteso"),
      items:[tag("vraisemblance",T("Réduit la vraisemblance","Reduces likelihood","Riduce la verosimiglianza"),"#2471a3"),
-            tag("gravite",T("Réduit la gravité","Reduces severity","Riduce la gravità"),"#b9770e")]}
+            tag("gravite",T("Réduit la gravité","Reduces severity","Riduce la gravità"),"#b9770e")]},
+    {code:"justification",target:"cotation",type:"textarea",order:1,label:T("Justification","Justification","Motivazione"),
+     description:T("Justification de la cotation : choix de la vraisemblance et de la gravité.","Rationale for the assessment: choice of likelihood and severity.","Motivazione della valutazione: scelta di verosimiglianza e gravità.")},
+    {code:"date_cotation",target:"cotation",type:"date",order:2,label:T("Date de cotation","Assessment date","Data di valutazione")}
   ]
 });
 
@@ -263,13 +266,13 @@ const VRAIS4_PIA = [
 ];
 const MATRIX_PIA = [[1,1,2,3],[1,2,2,3],[2,2,3,4],[3,3,4,4]];
 const critPia = [
-  {code:"negligeable",label:T("Négligeable","Negligible","Trascurabile"),score_min:1,score_max:1,color:"#8CC63E",acceptance:"acceptable",order:1,
+  {code:"negligeable",label:T("Négligeable","Negligible","Trascurabile"),score_min:1,score_max:1,color:CRIT.green,acceptance:"acceptable",order:1,
    description:T("Niveau de risque négligeable au sens de la méthode PIA.","Negligible risk level per the PIA method.","Livello di rischio trascurabile secondo il metodo PIA.")},
-  {code:"limite",label:T("Limité","Limited","Limitato"),score_min:2,score_max:2,color:"#FFF166",acceptance:"acceptable",order:2,
+  {code:"limite",label:T("Limité","Limited","Limitato"),score_min:2,score_max:2,color:CRIT.yellow,acceptance:"acceptable",order:2,
    description:T("Niveau de risque limité au sens de la méthode PIA.","Limited risk level per the PIA method.","Livello di rischio limitato secondo il metodo PIA.")},
-  {code:"important",label:T("Important","Significant","Importante"),score_min:3,score_max:3,color:"#F2B33D",acceptance:"tolerable",order:3,
+  {code:"important",label:T("Important","Significant","Importante"),score_min:3,score_max:3,color:CRIT.orange,acceptance:"tolerable",order:3,
    description:T("Niveau de risque important : des mesures de réduction sont attendues.","Significant risk level: reduction measures are expected.","Livello di rischio importante: sono attese misure di riduzione.")},
-  {code:"maximal",label:T("Maximal","Maximum","Massimo"),score_min:4,score_max:4,color:"#E8291C",acceptance:"unacceptable",order:4,
+  {code:"maximal",label:T("Maximal","Maximum","Massimo"),score_min:4,score_max:4,color:CRIT.red,acceptance:"unacceptable",order:4,
    description:T("Niveau de risque maximal : le traitement ne peut être conduit en l'état.","Maximum risk level: the processing cannot be carried out as is.","Livello di rischio massimo: il trattamento non può essere svolto così com'è.")}
 ];
 emit("cnil-pia", {
@@ -399,7 +402,10 @@ emit("iso-27005", {
     {code:"avancement",target:"measure",type:"progress",order:2,label:T("Avancement","Progress","Avanzamento"),palette:"red-orange-green",step:10},
     {code:"effet",target:"link",type:"tags",multiple:true,order:1,filterable:true,label:T("Effet attendu","Expected effect","Effetto atteso"),
      items:[tag("vraisemblance",T("Réduit la vraisemblance","Reduces likelihood","Riduce la verosimiglianza"),"#2471a3"),
-            tag("gravite",T("Réduit l'impact","Reduces impact","Riduce l'impatto"),"#b9770e")]}
+            tag("gravite",T("Réduit l'impact","Reduces impact","Riduce l'impatto"),"#b9770e")]},
+    {code:"justification",target:"cotation",type:"textarea",order:1,label:T("Justification","Justification","Motivazione"),
+     description:T("Justification de la cotation : choix de la vraisemblance et de la gravité.","Rationale for the assessment: choice of likelihood and severity.","Motivazione della valutazione: scelta di verosimiglianza e gravità.")},
+    {code:"date_cotation",target:"cotation",type:"date",order:2,label:T("Date de cotation","Assessment date","Data di valutazione")}
   ]
 });
 

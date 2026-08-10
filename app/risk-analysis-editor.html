@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 1.16.0
+  Version  : 1.17.0
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -1617,7 +1617,7 @@ const I18N = {
     cf_filterable:"Utilisable comme filtre",
     cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées, et aux champs rattachés aux risques, aux mesures ou aux liens.",
     cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées, hors champs de l'analyse.",
-    "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
+    "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)",
     cf_pattern:"Motif (expression régulière)", cf_pattern_ph:"ex. [A-Z]{2}-\\d{4}", cf_err_pattern:"Expression régulière invalide.",
     cf_val_url:"« {0} » : URL invalide (elle doit commencer par http:// ou https://).",
@@ -1944,7 +1944,7 @@ const I18N = {
     cf_filterable:"Usable as a filter",
     cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types, on risk, measure or link fields.",
     cf_filterable_na:"Not applicable: restricted to closed-value types, excluding analysis fields.",
-    "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.measure":"Measure","cf_t.link":"Link",
+    "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)",
     cf_pattern:"Pattern (regular expression)", cf_pattern_ph:"e.g. [A-Z]{2}-\\d{4}", cf_err_pattern:"Invalid regular expression.",
     cf_val_url:"“{0}”: invalid URL (it must start with http:// or https://).",
@@ -2271,7 +2271,7 @@ const I18N = {
     cf_filterable:"Utilizzabile come filtro",
     cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi, sui campi di rischio, misura o collegamento.",
     cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi, esclusi i campi dell'analisi.",
-    "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
+    "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)",
     cf_pattern:"Modello (espressione regolare)", cf_pattern_ph:"es. [A-Z]{2}-\\d{4}", cf_err_pattern:"Espressione regolare non valida.",
     cf_val_url:"« {0} »: URL non valido (deve iniziare con http:// o https://).",
@@ -5134,10 +5134,10 @@ function renderReport(){
         const sub=[r.category,r.owner].filter(Boolean).map(esc).join(" · ");
         h+='<div class="rp-item"><div><b>'+esc(r.id)+' — '+esc(r.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
         if(r.description)h+='<div class="md">'+mdToHTML(r.description)+'</div>';
-        const ji=r.initial_assessment&&r.initial_assessment.justification, jr=r.residual_assessment&&r.residual_assessment.justification;
-        if(ji)h+='<div class="rp-note md"><b>'+esc(t("th_initial"))+' :</b> '+mdToHTML(ji)+'</div>';
-        if(jr)h+='<div class="rp-note md"><b>'+esc(t("th_residual"))+' :</b> '+mdToHTML(jr)+'</div>';
         if(r.comment)h+='<div class="rp-note md">'+mdToHTML(r.comment)+'</div>';
+        const ic=cfReportNotes("cotation",r.initial_assessment.custom), rc=cfReportNotes("cotation",r.residual_assessment.custom);
+        if(ic)h+='<div class="rp-note"><b>'+esc(t("th_initial"))+'</b></div>'+ic;
+        if(rc)h+='<div class="rp-note"><b>'+esc(t("th_residual"))+'</b></div>'+rc;
         h+=cfReportNotes("risk",r.custom)+'</div>';
       });
       return card("risks_detail",h);
@@ -5462,7 +5462,7 @@ function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
    - le type doit être à valeurs fermées, seul à pouvoir alimenter une liste de choix ;
    - la cible ne peut pas être l'analyse : il n'y en a qu'une, il n'y a rien à trier.
    Condition unique, partagée par la modale, le tableau des paramètres et le filtrage. */
-function cfFilterOptionApplies(target,type){return cfIsClosed(type)&&target!=="analysis";}
+function cfFilterOptionApplies(target,type){return cfIsClosed(type)&&target!=="analysis"&&target!=="cotation";}
 function cfFilterableFields(target){
   return customFieldsFor(target).filter(f=>f.filterable&&cfFilterOptionApplies(f.target,f.type));
 }
@@ -6467,15 +6467,13 @@ function openRiskModal(id,dup){
       '<div class="sub-card"><b>'+esc(t("eval_initial"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_ip">'+levelSelect(pAxis,r.initial_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_ig">'+levelSelect(gAxis,r.initial_assessment.severity)+'</select></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_justification"))+'</span><textarea id="f_ijust">'+esc(r.initial_assessment.justification||"")+'</textarea></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_assess_date"))+'</span><input type="date" id="f_idate" value="'+esc(r.initial_assessment.date||"")+'"></label>'+
+        '<div id="f_icustom">'+cfFieldsHTML("cotation",r.initial_assessment.custom)+'</div>'+
         '<div class="hint" id="prev_i"></div>'+
       '</div>'+
       '<div class="sub-card"><b>'+esc(t("eval_residual"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_rp">'+levelSelect(pAxis,r.residual_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_rg">'+levelSelect(gAxis,r.residual_assessment.severity)+'</select></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_justification"))+'</span><textarea id="f_rjust">'+esc(r.residual_assessment.justification||"")+'</textarea></label>'+
-        '<label class="field"><span class="lab">'+esc(t("f_assess_date"))+'</span><input type="date" id="f_rdate" value="'+esc(r.residual_assessment.date||"")+'"></label>'+
+        '<div id="f_rcustom">'+cfFieldsHTML("cotation",r.residual_assessment.custom)+'</div>'+
         '<div class="hint" id="prev_r"></div>'+
       '</div>'+
     '</div>'+
@@ -6493,11 +6491,15 @@ function openRiskModal(id,dup){
     if(newId!==r.id && analyse.risks.some(x=>x.id===newId)){modalMsg(t("err_id_exists"));return false;}
     const cc=cfCollect("risk",document.getElementById("modalBody"));
     if(cc.error){modalMsg(cc.error);return false;}
-    const mkAssess=(p,s,just,date)=>{const a={probability:+val(p),severity:+val(s)};const j=val(just).trim(),d=val(date);if(j)a.justification=j;if(d)a.date=d;return a;};
+    // Champs personnalisés de cotation : lus séparément dans chaque bloc d'évaluation.
+    const ci=cfCollect("cotation",document.getElementById("f_icustom")), cr=cfCollect("cotation",document.getElementById("f_rcustom"));
+    if(ci.error){modalMsg(ci.error);return false;}
+    if(cr.error){modalMsg(cr.error);return false;}
+    const mkAssess=(p,s,cv)=>{const a={probability:+val(p),severity:+val(s)};if(Object.keys(cv).length)a.custom=cv;return a;};
     const obj={id:newId,label:lib,category:val("f_cat").trim(),owner:val("f_prop").trim(),
       description:val("f_desc").trim(),comment:val("f_comment").trim(),
-      initial_assessment:mkAssess("f_ip","f_ig","f_ijust","f_idate"),
-      residual_assessment:mkAssess("f_rp","f_rg","f_rjust","f_rdate")};
+      initial_assessment:mkAssess("f_ip","f_ig",ci.custom),
+      residual_assessment:mkAssess("f_rp","f_rg",cr.custom)};
     if(!obj.category)delete obj.category;if(!obj.owner)delete obj.owner;if(!obj.description)delete obj.description;if(!obj.comment)delete obj.comment;
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.risks.push(obj);
@@ -7107,23 +7109,25 @@ function buildXlsx(){
   cats.forEach(c=>syn.push([s(c.label,badge(c.color)),n(ci[c.code]||0),n(cr[c.code]||0)]));
   const synXml=sheetXML(syn,{widths:[34,26,14],grid:false});
   // --- Risques ---
-  const cfR=customFieldsFor("risk"),axV=g.vertical_axis.label,axH=g.horizontal_axis.label;
+  const cfR=customFieldsFor("risk"),cfC=customFieldsFor("cotation"),axV=g.vertical_axis.label,axH=g.horizontal_axis.label;
   const lIni=t("th_initial"),lRes=t("th_residual");
+  const cotHead=[];cfC.forEach(f=>{cotHead.push(cfLabel(f)+" — "+lIni,cfLabel(f)+" — "+lRes);});
   const rkHead=[t("th_id"),t("th_risk"),t("th_category"),t("f_owner"),
     axV+" — "+lIni,axH+" — "+lIni,t("xl_score")+" — "+lIni,t("xl_crit")+" — "+lIni,
     axV+" — "+lRes,axH+" — "+lRes,t("xl_score")+" — "+lRes,t("xl_crit")+" — "+lRes,
-    t("th_evolution"),t("th_measures"),t("f_description"),t("f_notes")].concat(cfR.map(cfLabel));
+    t("th_evolution"),t("th_measures"),t("f_description"),t("f_notes")].concat(cfR.map(cfLabel)).concat(cotHead);
   const rk=[rkHead.map(h=>s(h,HDR))];
   analyse.risks.forEach(r=>{
     const evi=r.initial_assessment,evr=residual(r),cci=critOfEval(evi),ccr=critOfEval(evr);
     const si=scoreOf(evi.probability,evi.severity),sr=scoreOf(evr.probability,evr.severity);
+    const cot=[];cfC.forEach(f=>{cot.push(cfCell(f,(evi.custom||{})[f.code]),cfCell(f,(evr.custom||{})[f.code]));});
     rk.push([s(r.id,BOLD),s(r.label,TXT),s(r.category||"",PLAIN),s(r.owner||"",PLAIN),
       n(evi.probability),n(evi.severity),n(si),s(cci.label,badge(cci.color)),
       n(evr.probability),n(evr.severity),n(sr),s(ccr.label,badge(ccr.color)),
       n(sr-si),s(measuresOfRisk(r.id).join(", "),PLAIN),s(mdToText(r.description||""),TXT),s(mdToText(r.comment||""),TXT)]
-      .concat(cfR.map(f=>cfCell(f,(r.custom||{})[f.code]))));
+      .concat(cfR.map(f=>cfCell(f,(r.custom||{})[f.code]))).concat(cot));
   });
-  const rkXml=sheetXML(rk,{widths:[9,42,16,16,13,13,11,15,13,13,11,15,11,18,50,36].concat(cfR.map(()=>20)),freeze:true,filter:rkHead.length});
+  const rkXml=sheetXML(rk,{widths:[9,42,16,16,13,13,11,15,13,13,11,15,11,18,50,36].concat(cfR.map(()=>20)).concat(cotHead.map(()=>26)),freeze:true,filter:rkHead.length});
   // --- Mesures ---
   const cfM=customFieldsFor("measure");
   const msHead=[t("th_id"),t("th_measure"),t("th_type"),t("th_status"),t("th_responsible"),t("f_due_date"),t("f_cost"),t("th_covered_risks"),t("f_description"),t("f_notes")].concat(cfM.map(cfLabel));
@@ -7576,10 +7580,10 @@ async function buildDocx(){
         const s2=[r.category,r.owner].filter(Boolean).join(" · ");
         out+=dxP(dxRun(r.id+" — "+r.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
         if(r.description)out+=mdDocxBlocks(r.description);
-        const ji=r.initial_assessment&&r.initial_assessment.justification,jr=r.residual_assessment&&r.residual_assessment.justification;
-        if(ji)out+=dxP(dxRun(t("th_initial")+" : ",{b:true,sz:20})+dxRun(mdToText(ji),{sz:20,color:"555F6E"}),{sa:20});
-        if(jr)out+=dxP(dxRun(t("th_residual")+" : ",{b:true,sz:20})+dxRun(mdToText(jr),{sz:20,color:"555F6E"}),{sa:20});
         if(r.comment)out+=mdDocxBlocks(r.comment);
+        const ic=dxCfNotes("cotation",r.initial_assessment.custom), rc=dxCfNotes("cotation",r.residual_assessment.custom);
+        if(ic)out+=dxP(dxRun(t("th_initial")+" :",{b:true,sz:20}),{sa:20})+ic;
+        if(rc)out+=dxP(dxRun(t("th_residual")+" :",{b:true,sz:20}),{sa:20})+rc;
         out+=dxCfNotes("risk",r.custom);
       });
       return out;
@@ -8098,7 +8102,7 @@ function cfHref(f,v){const s=String(v||"").trim();
   if(f.type==="email")return CF_RE_EMAIL.test(s)?"mailto:"+s:"";
   if(f.type==="tel"){const d=s.replace(/[^\d+]/g,"");return d?"tel:"+d:"";}
   return "";}
-const CF_TARGETS=["analysis","risk","measure","link"];
+const CF_TARGETS=["analysis","risk","cotation","measure","link"];
 /* Affichage libellé/item : valeur de la LANGUE COURANTE, sinon le CODE (repli volontaire,
    sans essayer une autre langue). Les libellés se saisissent une langue à la fois. */
 function cfLabel(f){const L=f&&f.label||{};return L[lang]||(f&&f.code)||"";}
@@ -8514,6 +8518,30 @@ function cfImportCols(target,H,claimed){
     const cands=[cfLabel(f),(f.label&&f.label.fr),(f.label&&f.label.en),f.code].filter(Boolean).map(normH);
     let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
     if(col>=0){claimed.add(col);map.push({f,col});}
+  });
+  return map;
+}
+/* Champs de cotation en export/import : deux colonnes par champ (évaluation initiale et résiduelle).
+   En-tête « Libellé — Initial » / « Libellé — Résiduel », aligné sur le style des colonnes Excel. */
+function cfCotHeader(f,phase){return cfLabel(f)+" — "+t(phase==="initial"?"th_initial":"th_residual");}
+const CF_COT_PHASE={initial:["initial","initiale","iniziale"],residual:["residuel","residuelle","residual","residuo","residua"]};
+/* Associe chaque champ de cotation à ses colonnes initiale/résiduelle (par libellé FR/EN/IT ou code,
+   phase en préfixe ou suffixe), sans réutiliser une colonne déjà prise. */
+function cfCotImportCols(H,claimed){
+  const norm=s=>normH(s).replace(/[^a-z0-9]/g,"");
+  const map=[];
+  customFieldsFor("cotation").forEach(f=>{
+    const labs=[cfLabel(f),f.label&&f.label.fr,f.label&&f.label.en,f.label&&f.label.it,f.code].filter(Boolean).map(norm);
+    const find=phase=>{
+      for(let i=0;i<H.length;i++){if(claimed.has(i))continue;
+        const key=norm(H[i]);
+        for(const pt of CF_COT_PHASE[phase])for(const lab of labs)
+          if(lab&&(key===lab+pt||key===pt+lab)){claimed.add(i);return i;}
+      }
+      return -1;
+    };
+    const ci=find("initial"),cr=find("residual");
+    if(ci>=0||cr>=0)map.push({f,ci,cr});
   });
   return map;
 }
@@ -8965,17 +8993,19 @@ function downloadCSV(rows,name){
 }
 function exportRisksCSV(){
   // En-têtes = noms de clés anglais (identiques quelle que soit la langue de l'UI).
-  const cf=customFieldsFor("risk");
+  const cf=customFieldsFor("risk"), cc=customFieldsFor("cotation");
+  const cotH=[];cc.forEach(f=>{cotH.push(cfCotHeader(f,"initial"),cfCotHeader(f,"residual"));});
   const H=["id","label","category","description","owner","initial_probability","initial_severity","residual_probability","residual_severity","initial_score","initial_criticality","residual_score","residual_criticality"]
-    .concat(cf.map(f=>cfLabel(f)));
+    .concat(cf.map(f=>cfLabel(f))).concat(cotH);
   const rows=[H];
   analyse.risks.forEach(r=>{
     const evi=r.initial_assessment, evr=residual(r);
     const si=scoreOf(evi.probability,evi.severity), sr=scoreOf(evr.probability,evr.severity);
+    const cot=[];cc.forEach(f=>{cot.push(cfDisplay(f,(evi.custom||{})[f.code]),cfDisplay(f,(evr.custom||{})[f.code]));});
     rows.push([r.id,r.label||"",r.category||"",r.description||"",r.owner||"",
       evi.probability,evi.severity,evr.probability,evr.severity,
       si,critFor(si).label,sr,critFor(sr).label]
-      .concat(cf.map(f=>cfDisplay(f,(r.custom||{})[f.code]))));
+      .concat(cf.map(f=>cfDisplay(f,(r.custom||{})[f.code]))).concat(cot));
   });
   const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
   downloadCSV(rows,base+"-risks.csv");
@@ -9030,7 +9060,9 @@ function analyzeRisksCSV(text){
     pi:colIndex(H,["initialprobability"]),gi:colIndex(H,["initialseverity"]),
     pr:colIndex(H,["residualprobability"]),gr:colIndex(H,["residualseverity"])};
   if(IDX.label<0&&IDX.id<0){res.errors.push(t("import_no_col"));return res;}
-  const cfMap=cfImportCols("risk",H,new Set(Object.values(IDX).filter(i=>i>=0)));
+  const claimed=new Set(Object.values(IDX).filter(i=>i>=0));
+  const cfMap=cfImportCols("risk",H,claimed);
+  const cotMap=cfCotImportCols(H,claimed);
   const axV=analyse.grid.vertical_axis,axH=analyse.grid.horizontal_axis;
   for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
     const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[]};
@@ -9041,6 +9073,10 @@ function analyzeRisksCSV(text){
     const rd=(idx,axe,lab,dst,key)=>{if(idx<0)return;const g=get(idx);if(!g)return;const pn=parseLevel(g,axe);if(pn.err)p.errors.push(lab+" : "+pn.err);else dst[key]=pn.v;};
     rd(IDX.pi,axV,t("import_pi"),ei,"probability");rd(IDX.gi,axH,t("import_gi"),ei,"severity");
     rd(IDX.pr,axV,t("import_pr"),er,"probability");rd(IDX.gr,axH,t("import_gr"),er,"severity");
+    cotMap.forEach(({f,ci,cr})=>{
+      if(ci>=0){const v=cfParseValue(f,get(ci));if(cfHasVal(v))(ei.custom=ei.custom||{})[f.code]=v;}
+      if(cr>=0){const v=cfParseValue(f,get(cr));if(cfHasVal(v))(er.custom=er.custom||{})[f.code]=v;}
+    });
     if(Object.keys(ei).length)p.initial_assessment=ei;if(Object.keys(er).length)p.residual_assessment=er;
     const custom={};cfMap.forEach(({f,col})=>{const v=cfParseValue(f,get(col));if(cfHasVal(v))custom[f.code]=v;});
     if(Object.keys(custom).length)p.custom=custom;
@@ -9079,6 +9115,14 @@ function analyzeMeasuresCSV(text){
     res.items.push(p);if(p.errors.length)res.errors.push(t("import_line",r+1,p.errors.join(" ; ")));}
   return res;
 }
+/* Fusionne une évaluation importée dans l'existante : probabilité/gravité écrasées,
+   valeurs de champs perso de cotation (custom) fusionnées clé à clé (les champs absents du CSV sont conservés). */
+function mergeAssess(dst,src){
+  Object.keys(src).forEach(k=>{
+    if(k==="custom")dst.custom=Object.assign(dst.custom||{},src.custom);
+    else dst[k]=src[k];
+  });
+}
 function commitImport(kind,items){
   const list=kind==="risks"?analyse.risks:analyse.measures,prefix=kind==="risks"?"R":"M";
   const defV=(analyse.grid.vertical_axis.levels[0]||{value:1}).value,defH=(analyse.grid.horizontal_axis.levels[0]||{value:1}).value;
@@ -9090,8 +9134,8 @@ function commitImport(kind,items){
       scal.forEach(k=>{if(p[k]!=null)target[k]=p[k];});
       if(p.custom){target.custom=Object.assign(target.custom||{},p.custom);}
       if(kind==="risks"){
-        if(p.initial_assessment){target.initial_assessment=target.initial_assessment||{probability:defV,severity:defH};Object.assign(target.initial_assessment,p.initial_assessment);}
-        if(p.residual_assessment){target.residual_assessment=target.residual_assessment||JSON.parse(JSON.stringify(target.initial_assessment||{probability:defV,severity:defH}));Object.assign(target.residual_assessment,p.residual_assessment);}
+        if(p.initial_assessment){target.initial_assessment=target.initial_assessment||{probability:defV,severity:defH};mergeAssess(target.initial_assessment,p.initial_assessment);}
+        if(p.residual_assessment){target.residual_assessment=target.residual_assessment||JSON.parse(JSON.stringify(target.initial_assessment||{probability:defV,severity:defH}));mergeAssess(target.residual_assessment,p.residual_assessment);}
       }
       updated++;
     }else{
@@ -9099,8 +9143,8 @@ function commitImport(kind,items){
       scal.forEach(k=>{if(k!=="label"&&p[k]!=null)obj[k]=p[k];});
       if(p.custom)obj.custom=p.custom;
       if(kind==="risks"){
-        obj.initial_assessment={probability:defV,severity:defH};if(p.initial_assessment)Object.assign(obj.initial_assessment,p.initial_assessment);
-        obj.residual_assessment=JSON.parse(JSON.stringify(obj.initial_assessment));if(p.residual_assessment)Object.assign(obj.residual_assessment,p.residual_assessment);
+        obj.initial_assessment={probability:defV,severity:defH};if(p.initial_assessment)mergeAssess(obj.initial_assessment,p.initial_assessment);
+        obj.residual_assessment=JSON.parse(JSON.stringify(obj.initial_assessment));if(p.residual_assessment)mergeAssess(obj.residual_assessment,p.residual_assessment);
       }
       list.push(obj);added++;
     }});
@@ -9340,7 +9384,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="1.16.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="1.17.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 const SITE_URL="https://www.risk-analysis-editor.com/";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */

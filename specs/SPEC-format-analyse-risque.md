@@ -45,7 +45,7 @@ Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIO
 - Les **identifiants** (`id`) sont des chaînes non vides, uniques dans leur collection, stables dans le temps (voir §7).
 - Dans les tableaux de champs ci-dessous : **O** = obligatoire, **F** = facultatif.
 - Les clés inconnues d'un lecteur doivent être **ignorées silencieusement** (tolérance ascendante), jamais rejetées.
-- Les **champs de texte libre multi-lignes** (`description` et `comment` des risques, mesures et liens, `metadata.description`, `justification` des cotations, valeurs des champs personnalisés de type `textarea`) peuvent contenir du **Markdown** (sous-ensemble étendu : titres, gras/italique/barré, code, liens, listes, cases à cocher, citations, tableaux). Le stockage reste du **texte brut** : la mise en forme est appliquée à l'affichage. Un lecteur qui ne gère pas le Markdown peut afficher le texte tel quel sans perte de sens. Le **HTML brut n'est pas interprété** (il doit être échappé à l'affichage).
+- Les **champs de texte libre multi-lignes** (`description` et `comment` des risques, mesures et liens, `metadata.description`, valeurs des champs personnalisés de type `textarea`) peuvent contenir du **Markdown** (sous-ensemble étendu : titres, gras/italique/barré, code, liens, listes, cases à cocher, citations, tableaux). Le stockage reste du **texte brut** : la mise en forme est appliquée à l'affichage. Un lecteur qui ne gère pas le Markdown peut afficher le texte tel quel sans perte de sens. Le **HTML brut n'est pas interprété** (il doit être échappé à l'affichage).
 
 ---
 
@@ -178,8 +178,7 @@ Chaque niveau de criticité définit une **plage de score** et son rendu visuel.
 |---|---|---|---|
 | `probability` | entier | O | Valeur sur l'axe vertical ; doit correspondre à une `value` de `vertical_axis.levels`. |
 | `severity` | entier | O | Valeur sur l'axe horizontal ; doit correspondre à une `value` de `horizontal_axis.levels`. |
-| `justification` | chaîne | F | Justification de la cotation. |
-| `date` | date | F | Date de la cotation. |
+| `custom` | objet | F | Valeurs des champs personnalisés de cible `"cotation"` (§4.6) — propres à cette cotation (initiale ou résiduelle). |
 
 > **Le score et le niveau de criticité ne sont pas stockés dans la cotation** : ce sont des **valeurs dérivées**, recalculées par l'outil à partir de (`probability`, `severity`) et de `grid`. Cela évite toute incohérence entre valeurs saisies et valeurs affichées. (Un outil peut néanmoins les mettre en cache dans `extensions`.)
 
@@ -221,7 +220,7 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | Champ | Type | O/F | Description |
 |---|---|---|---|
 | `code` | chaîne | O | Identifiant du champ, **unique**, stable. Sert de clé dans les objets `custom` et d'en-tête de colonne à l'export CSV. |
-| `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
+| `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"cotation"` (évaluation initiale/résiduelle d'un risque), `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
 | `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
@@ -299,7 +298,7 @@ Un champ portant `"filterable": true` alimente une **liste de filtrage** dans le
 L'option n'a de sens que si deux conditions sont réunies, et elle est ignorée sinon :
 
 - le **type** est à valeurs énumérables — `select`, `checklist`, `tags`, `boolean` — seul cas où une liste de choix peut être construite ;
-- la **cible** est `risk`, `measure` ou `link`. Un champ rattaché à l'**analyse** (`"target": "analysis"`) ne peut pas être filtrable : il n'y a qu'une analyse, il n'y a rien à trier.
+- la **cible** est `risk`, `measure` ou `link`. Un champ rattaché à l'**analyse** (`"target": "analysis"`) ou à une **cotation** (`"target": "cotation"`) ne peut pas être filtrable.
 
 Un fichier portant `"filterable": true` hors de ces conditions reste valide : la propriété est simplement sans effet.
 
@@ -336,7 +335,7 @@ Un fichier est **valide** s'il respecte le schéma JSON (§8) **et** les règles
 | C5 | Les plages `[score_min, score_max]` des `criticality_levels` couvrent tous les scores atteignables et ne se chevauchent pas. |
 | C6 | Dans chaque `traitement`, `risk` et `measure` référencent des `id` existants (intégrité référentielle). |
 | C7 | Si `method = "matrix"`, les dimensions de `matrix` égalent (nb niveaux probabilité) × (nb niveaux gravité). |
-| C8 | Une cotation résiduelle ne devrait pas être **plus grave** que l'initiale sans justification (avertissement). |
+| C8 | Une cotation résiduelle ne devrait pas être **plus grave** que l'initiale (avertissement). |
 
 **Niveaux de sévérité :** C1–C7 sont **bloquants** (fichier invalide). C8 est un **avertissement** (fichier valide mais douteux).
 

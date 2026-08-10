@@ -522,6 +522,33 @@
           "color": "#b9770e"
         }
       ]
+    },
+    {
+      "code": "justification",
+      "target": "cotation",
+      "type": "textarea",
+      "order": 1,
+      "label": {
+        "fr": "Justification",
+        "en": "Justification",
+        "it": "Motivazione"
+      },
+      "description": {
+        "fr": "Justification de la cotation : choix de la vraisemblance et de la gravité.",
+        "en": "Rationale for the assessment: choice of likelihood and severity.",
+        "it": "Motivazione della valutazione: scelta di verosimiglianza e gravità."
+      }
+    },
+    {
+      "code": "date_cotation",
+      "target": "cotation",
+      "type": "date",
+      "order": 2,
+      "label": {
+        "fr": "Date de cotation",
+        "en": "Assessment date",
+        "it": "Data di valutazione"
+      }
     }
   ],
   "custom": {},

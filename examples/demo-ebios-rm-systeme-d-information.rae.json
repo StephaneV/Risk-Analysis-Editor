@@ -120,11 +120,19 @@
       "comment": "Actif le plus sensible du SI (RGPD). Surveillance renforcée des accès à privilèges et des volumes exfiltrés.",
       "initial_assessment": {
         "probability": 4,
-        "severity": 4
+        "severity": 4,
+        "custom": {
+          "justification": "Coté en atelier 4 : mode opératoire réalisable sur une cible à forte valeur.",
+          "date_cotation": "2026-07-18"
+        }
       },
       "residual_assessment": {
         "probability": 2,
-        "severity": 4
+        "severity": 4,
+        "custom": {
+          "justification": "Après mise en place du socle de sécurité et de la supervision (SOC).",
+          "date_cotation": "2026-07-18"
+        }
       },
       "custom": {
         "source_risque": [
@@ -1432,6 +1440,33 @@
           }
         }
       ]
+    },
+    {
+      "code": "justification",
+      "target": "cotation",
+      "type": "textarea",
+      "order": 1,
+      "label": {
+        "fr": "Justification",
+        "en": "Justification",
+        "it": "Motivazione"
+      },
+      "description": {
+        "fr": "Justification de la cotation : choix de la vraisemblance et de la gravité.",
+        "en": "Rationale for the assessment: choice of likelihood and severity.",
+        "it": "Motivazione della valutazione: scelta di verosimiglianza e gravità."
+      }
+    },
+    {
+      "code": "date_cotation",
+      "target": "cotation",
+      "type": "date",
+      "order": 2,
+      "label": {
+        "fr": "Date de cotation",
+        "en": "Assessment date",
+        "it": "Data di valutazione"
+      }
     }
   ],
   "custom": {
