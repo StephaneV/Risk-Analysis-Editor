@@ -171,7 +171,7 @@ La fiche regroupe :
 
 - **Identifiant**, **catégorie**, **libellé** (obligatoire), **propriétaire** ;
 - **Description** et **Notes**, tous deux en **Markdown** (un aperçu est disponible via l'icône œil) ;
-- l'**évaluation initiale (brute)** et l'**évaluation résiduelle (nette)** : vraisemblance, gravité, **justification** et date. Le score et la criticité sont **calculés et affichés automatiquement** sous chaque bloc ;
+- l'**évaluation initiale (brute)** et l'**évaluation résiduelle (nette)** : vraisemblance et gravité. Le score et la criticité sont **calculés et affichés automatiquement** sous chaque bloc. Si des **champs personnalisés de cotation** ont été définis (cible *évaluation du risque*, voir [§13](#13-les-champs-personnalisés)), ils se saisissent **sous chaque bloc**, avec une valeur **distincte** pour l'évaluation initiale et pour la résiduelle (dans les modèles EBIOS RM et ISO 27005 : *Justification* et *Date de cotation*) ;
 - la section **Mesures de maîtrise liées** (à cocher) ;
 - les **champs personnalisés** de risque, le cas échéant.
 
@@ -327,7 +327,7 @@ Les **champs personnalisés** étendent le modèle de données pour l'adapter à
 
 Chaque champ possède :
 
-- une **cible** — à quel objet il se rattache : *analyse*, *risque*, *mesure* ou *lien* ;
+- une **cible** — à quel objet il se rattache : *analyse*, *risque*, *évaluation du risque* (cotation), *mesure* ou *lien*. Un champ rattaché à l'**évaluation du risque** est proposé sous les deux blocs d'évaluation d'un risque (initial et résiduel), avec une valeur distincte pour chacun ;
 - un **code** (identifiant technique) et un **libellé** (multilingue) ;
 - un **type** parmi dix : oui/non, entier, décimal, date, texte, texte long, liste déroulante, liste à cocher, **tags colorés** (choix unique ou multiple) et **barre de progression** (0–100 %) ;
 - des attributs optionnels : **obligatoire**, bornes (min/max, longueur, nombre d'items), une **aide** et une **description** ;
@@ -337,7 +337,7 @@ Chaque champ possède :
 
 Pour un champ **tags colorés**, une **palette de couleur** prédéfinie colore automatiquement les valeurs, dans l'ordre : palettes *qualitatives* (Vives, Pastel, Office, adaptée aux daltoniens, Chaudes, Froides) ou *séquentielles* (Nuances de gris, Bleu → Vert, Jaune → Orange, Rouge → Violet). Au-delà du nombre de couleurs de la palette, celle-ci se répète avec une légère **nuance de luminosité** pour garder des teintes distinctes. Chaque couleur reste **modifiable** individuellement, et l'option **Personnalisée** laisse fixer chaque valeur à la main.
 
-Les **valeurs** des champs se saisissent ensuite dans les fiches (risque, mesure, lien) et, pour les champs d'analyse, dans l'onglet *Présentation*. Elles sont reprises dans le **rapport**, l'**import/export CSV** et les **exports Word/Excel**, et peuvent devenir des **colonnes** dans les registres.
+Les **valeurs** des champs se saisissent ensuite dans les fiches (risque, mesure, lien), **sous chaque bloc d'évaluation** pour les champs de cotation, et, pour les champs d'analyse, dans l'onglet *Présentation*. Elles sont reprises dans le **rapport**, l'**import/export CSV** et les **exports Word/Excel** — les champs de cotation y disposent de **colonnes distinctes** pour l'évaluation *initiale* et *résiduelle* — et peuvent devenir des **colonnes** dans les registres.
 
 Pour les listes (**liste déroulante**, **liste à cocher**, **tags**), chaque **valeur** peut recevoir une **description** (saisie sous la valeur dans l'éditeur). Ces descriptions s'affichent en **infobulle** au survol des **tags** (dans les fiches comme dans les registres) et alimentent une section **« Référentiels et légendes des champs »** du rapport : un tableau *valeur → description* pour chaque champ concerné, utile pour documenter le vocabulaire de la méthode (sources de risque, événements redoutés, types de menace…). Dans *Paramètres › Rapport*, la sous-liste **« Éléments »** de cette section permet de **choisir et d'ordonner** les champs à y inclure. Les modèles et les démonstrations fournis en sont déjà pourvus.
 
@@ -470,4 +470,4 @@ C'est attendu : le score et la criticité sont **recalculés** à partir de la g
 
 ---
 
-*Ce guide correspond à Risk Analysis Editor version 1.16.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
+*Ce guide correspond à Risk Analysis Editor version 1.17.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
