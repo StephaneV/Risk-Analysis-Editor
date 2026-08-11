@@ -3634,7 +3634,7 @@ function statBlockHTML(block){
    Échelle et bandes de fond dérivées de la grille de cotation.
    ============================================================ */
 const RADAR_C1="#3a63d6", RADAR_C2="#8a3ffc"; // couleurs initial / résiduel
-let radarState={eval:"both-over",dim:"cat",metric:"avg"}, radarWired=false;
+let radarState={eval:"both-over",dim:"cat",metric:"avg"}, radarWired=false, RADAR_HOVER=[], RADAR_AXIS_TIP=[], RADAR_CRIT_TIP=[];
 
 function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
 function critBands(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>a.score_max-b.score_max);}
@@ -3672,35 +3672,74 @@ function radarValues(risks,dim,axes,metric,phase){
   return axes.map(k=>{const a=g[k];if(metric==="count")return a.length;if(!a.length)return 0;
     if(metric==="max")return Math.max.apply(null,a);let s=0;a.forEach(x=>s+=x);return s/a.length;});
 }
+/* Risques regroupés par axe (pour l'infobulle au survol des points). */
+function radarAxisRisks(risks,dim,axes){
+  const g={};axes.forEach(k=>g[k]=[]);
+  risks.forEach(r=>radarKeysOf(r,dim).forEach(k=>{if(g[k])g[k].push(r);}));
+  return axes.map(k=>g[k]);
+}
+/* Description d'un axe : pour un champ perso, description de l'item ; sinon aucune. */
+function radarAxisDesc(dim,key){
+  if(dim==="cat"||key==="__unset__")return "";
+  const f=radarFieldOf(dim);if(!f)return "";
+  const it=(f.items||[]).find(i=>i.code===key);
+  return it?cfItemDesc(it):"";
+}
+function radarDescTipHTML(label,desc){return '<b>'+esc(label)+'</b><div style="white-space:normal;max-width:260px;margin-top:2px">'+esc(desc)+'</div>';}
+function radarTipShow(html,e){
+  tip.classList.remove("tt-link");tip.classList.add("tt-stat");tip.innerHTML=html;tip.style.opacity=1;
+  const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-pad)x=e.clientX-14-w;if(x<pad)x=pad;
+  if(y+h>innerHeight-pad)y=innerHeight-pad-h;if(y<pad)y=pad;
+  tip.style.left=x+"px";tip.style.top=y+"px";
+}
+function radarTipHide(){tip.style.opacity=0;tip.classList.remove("tt-stat");}
 function radarNiceMax(vals){let m=0;vals.forEach(v=>{if(v>m)m=v;});return Math.max(1,Math.ceil(m));}
-function radarLighten(hex,amt){const h=String(hex).replace("#","");const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
-  const mix=x=>Math.round(x+(255-x)*amt);return "rgb("+mix(r)+","+mix(g)+","+mix(b)+")";}
+/* Teinte de fond d'une bande : éclaircissement en HSL (luminosité fixée, saturation renforcée)
+   pour rester colorée sans être délavée — contrairement à un mélange vers le blanc en RGB. */
+function radarHslFill(hex,targetL,satF){
+  const h=String(hex).replace("#","");
+  let r=parseInt(h.substr(0,2),16)/255,g=parseInt(h.substr(2,2),16)/255,b=parseInt(h.substr(4,2),16)/255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let hh,s,l=(mx+mn)/2;
+  if(mx===mn){hh=s=0;}else{const d=mx-mn;s=l>0.5?d/(2-mx-mn):d/(mx+mn);
+    hh=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;hh/=6;}
+  s=Math.max(0,Math.min(1,s*satF));l=targetL;
+  const hue=(p,q,tt)=>{if(tt<0)tt+=1;if(tt>1)tt-=1;if(tt<1/6)return p+(q-p)*6*tt;if(tt<1/2)return q;if(tt<2/3)return p+(q-p)*(2/3-tt)*6;return p;};
+  let R2,G2,B2;
+  if(s===0){R2=G2=B2=l;}else{const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;R2=hue(p,q,hh+1/3);G2=hue(p,q,hh);B2=hue(p,q,hh-1/3);}
+  return "rgb("+Math.round(R2*255)+","+Math.round(G2*255)+","+Math.round(B2*255)+")";
+}
+function radarBandFill(hex){return radarHslFill(hex,0.85,1.30);}
 function radarNgon(cx,cy,R,n,frac){let p=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;p.push((cx+R*frac*Math.cos(a)).toFixed(1)+","+(cy+R*frac*Math.sin(a)).toFixed(1));}return p.join(" ");}
 function radarPoly(n,values,vmax,cx,cy,R){const pts=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n,r=R*(values[i]/vmax);pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}return pts;}
 function radarSVG(labels,series,vmax,opts){
   opts=opts||{};const size=opts.size||380,padX=78,W=size+2*padX,cx=W/2,cy=size/2+8,R=size/2-50,n=labels.length;let g="";
   if(opts.bands){const bs=critBands();for(let i=bs.length-1;i>=0;i--){const frac=Math.max(0,Math.min(1,bs[i].score_max/vmax));
-      g+='<polygon points="'+radarNgon(cx,cy,R,n,frac)+'" fill="'+radarLighten(bs[i].color,0.80)+'" stroke="none"/>';}}
-  else{for(let s=1;s<=vmax;s++)g+='<polygon points="'+radarNgon(cx,cy,R,n,s/vmax)+'" fill="none" stroke="#e6ebf1" stroke-width="1"/>';}
-  g+='<polygon points="'+radarNgon(cx,cy,R,n,1)+'" fill="none" stroke="#cfd8e3" stroke-width="1.2"/>';
+      g+='<polygon points="'+radarNgon(cx,cy,R,n,frac)+'" fill="'+radarBandFill(bs[i].color)+'" stroke="'+bs[i].color+'" stroke-width="1.5" stroke-linejoin="round"/>';}}
+  else{for(let s=1;s<=vmax;s++)g+='<polygon points="'+radarNgon(cx,cy,R,n,s/vmax)+'" fill="none" stroke="#e6ebf1" stroke-width="1"/>';
+    g+='<polygon points="'+radarNgon(cx,cy,R,n,1)+'" fill="none" stroke="#cfd8e3" stroke-width="1.2"/>';}
   for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R*Math.cos(a)).toFixed(1)+'" y2="'+(cy+R*Math.sin(a)).toFixed(1)+'" stroke="#dbe2ea" stroke-width="1"/>';}
   let ticks=opts.bands?critBands().map(c=>Math.min(c.score_max,vmax)):(vmax<=6?Array.from({length:vmax},(_,k)=>k+1):[Math.round(vmax/2),vmax]);
   ticks.forEach(tv=>{const ry=cy-R*(tv/vmax);g+='<text x="'+(cx+4)+'" y="'+(ry+3).toFixed(1)+'" font-size="10" fill="currentColor" fill-opacity="0.6">'+tv+'</text>';});
   series.forEach(s=>{const pts=radarPoly(n,s.values,vmax,cx,cy,R);const ps=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
     g+='<polygon points="'+ps+'" fill="'+s.color+'" fill-opacity="0.18" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round"/>';
-    pts.forEach((p,idx)=>{const dc=opts.colorByCrit?critFor(s.values[idx]).color:s.color;g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.2" fill="'+dc+'" stroke="#fff" stroke-width="1"/>';});});
+    pts.forEach((p,idx)=>{const dc=opts.colorByCrit?critFor(s.values[idx]).color:s.color;
+      g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.2" fill="'+dc+'" stroke="#fff" stroke-width="1"/>';
+      g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="9" fill="#000" fill-opacity="0" pointer-events="all" data-rk="'+idx+'"/>';});});
   for(let j=0;j<n;j++){const a=-Math.PI/2+j*2*Math.PI/n,lx=cx+(R+16)*Math.cos(a),ly=cy+(R+16)*Math.sin(a);
     const anchor=Math.abs(Math.cos(a))<0.3?"middle":(Math.cos(a)>0?"start":"end");const lab=labels[j],words=lab.split(" ");let l1=lab,l2="";
     if(lab.length>12&&words.length>1){const mid=Math.ceil(words.length/2);l1=words.slice(0,mid).join(" ");l2=words.slice(mid).join(" ");}
     const dy=l2?(ly<cy?-4:6):4;
-    g+='<text x="'+lx.toFixed(1)+'" y="'+(ly+dy).toFixed(1)+'" text-anchor="'+anchor+'" font-size="12" fill="currentColor">'+esc(l1)+(l2?'<tspan x="'+lx.toFixed(1)+'" dy="13">'+esc(l2)+'</tspan>':'')+'</text>';}
+    const tipAttr=(opts.axisTips&&opts.axisTips[j])?' data-axtip="'+j+'" style="cursor:help"':"";
+    g+='<text x="'+lx.toFixed(1)+'" y="'+(ly+dy).toFixed(1)+'" text-anchor="'+anchor+'" font-size="12" fill="currentColor"'+tipAttr+'>'+esc(l1)+(l2?'<tspan x="'+lx.toFixed(1)+'" dy="13">'+esc(l2)+'</tspan>':'')+'</text>';}
   return '<svg viewBox="0 0 '+W+' '+size+'" width="'+W+'" height="'+size+'" style="max-width:100%;height:auto" role="img">'+g+'</svg>';
 }
 function radarSwatch(bg,border){return '<span style="width:20px;height:10px;border-radius:3px;display:inline-block;background:'+bg+(border?';border:1px solid '+border:'')+'"></span>';}
 function radarLegendHTML(series,bands){
   const it=(inner)=>'<span style="display:inline-flex;align-items:center;gap:6px;margin:0 12px 4px 0;font-size:13px">'+inner+'</span>';
   let h=series.map(s=>it(radarSwatch(s.color,null)+esc(s.name))).join("");
-  if(bands)h+=critBands().map(c=>it(radarSwatch(radarLighten(c.color,0.80),c.color)+esc(c.label))).join("");
+  if(bands)h+=critBands().map((c,i)=>{const dsc=c.description||"",cur=dsc?";cursor:help":"",att=dsc?' data-crittip="'+i+'"':"";
+    return '<span'+att+' style="display:inline-flex;align-items:center;gap:6px;margin:0 12px 4px 0;font-size:13px'+cur+'">'+radarSwatch(radarBandFill(c.color),c.color)+esc(c.label)+'</span>';}).join("");
   return h;
 }
 function radarTableHTML(labels,series,metric){
@@ -3741,7 +3780,7 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
 /* ---------- Export du radar (SVG autonome → PNG → presse-papiers / fichier) ---------- */
 function radarLegendItems(series,bands){
   const arr=series.map(s=>({label:s.name,fill:s.color,border:null}));
-  if(bands)critBands().forEach(c=>arr.push({label:c.label,fill:radarLighten(c.color,0.80),border:c.color}));
+  if(bands)critBands().forEach(c=>arr.push({label:c.label,fill:radarBandFill(c.color),border:c.color}));
   return arr;
 }
 function radarNestSVG(svgStr,x,y){return svgStr.replace(/^<svg /,'<svg x="'+x+'" y="'+y+'" ');}
@@ -3814,6 +3853,22 @@ function renderRadars(){
     ev.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||ev.style.pointerEvents==="none")return;radarState.eval=b.dataset.v;renderRadars();});
     document.getElementById("radarMetricSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;radarState.metric=b.dataset.v;renderRadars();});
     document.getElementById("radarDim").addEventListener("change",function(){radarState.dim=this.value;renderRadars();});
+    // Infobulles : liste des risques au survol d'un point ; description au survol d'un libellé
+    // d'axe ou d'un niveau de criticité de la légende (comme les secteurs des Statistiques).
+    const rarea=document.getElementById("radarArea"),rleg=document.getElementById("radarLegend");
+    rarea.addEventListener("mousemove",e=>{
+      const el=e.target.closest&&e.target.closest("[data-rk],[data-axtip]");
+      if(!el){radarTipHide();return;}
+      if(el.hasAttribute("data-rk")){const rec=RADAR_HOVER[+el.dataset.rk];
+        if(!rec||!rec.items.length){radarTipHide();return;}radarTipShow(statTipHTML(rec),e);}
+      else{const d=RADAR_AXIS_TIP[+el.dataset.axtip];if(!d){radarTipHide();return;}radarTipShow(radarDescTipHTML(d.label,d.desc),e);}});
+    rarea.addEventListener("mouseleave",radarTipHide);
+    rleg.addEventListener("mousemove",e=>{
+      const el=e.target.closest&&e.target.closest("[data-crittip]");
+      if(!el){radarTipHide();return;}
+      const d=RADAR_CRIT_TIP[+el.dataset.crittip];if(!d||!d.desc){radarTipHide();return;}
+      radarTipShow(radarDescTipHTML(d.label,d.desc),e);});
+    rleg.addEventListener("mouseleave",radarTipHide);
     radarWired=true;
   }
   const fields=radarDimFields();
@@ -3828,18 +3883,22 @@ function renderRadars(){
   setRadarExport();
   const area=document.getElementById("radarArea"),leg=document.getElementById("radarLegend"),tbl=document.getElementById("radarTable");
   const m=radarComputeModel();
-  if(m.tooFew){area.innerHTML='<div style="padding:44px;text-align:center;color:#61707f">'+esc(t("radar_need_axes",m.axes.length))+'</div>';leg.innerHTML="";tbl.innerHTML="";return;}
+  if(m.tooFew){area.innerHTML='<div style="padding:44px;text-align:center;color:#61707f">'+esc(t("radar_need_axes",m.axes.length))+'</div>';leg.innerHTML="";tbl.innerHTML="";RADAR_HOVER=[];return;}
   const labels=m.labels,series=m.series,vmax=m.vmax;
+  const axisRisks=radarAxisRisks(visibleRisks(),radarState.dim,m.axes);
+  RADAR_HOVER=labels.map((lab,i)=>({label:lab,kind:"risk",items:axisRisks[i].map(r=>({id:r.id,label:r.label}))}));
+  RADAR_AXIS_TIP=m.axes.map((k,i)=>{const d=radarAxisDesc(radarState.dim,k);return d?{label:labels[i],desc:d}:null;});
+  RADAR_CRIT_TIP=critBands().map(c=>({label:c.label,desc:c.description||""}));
   const wrap=inner=>'<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:26px">'+inner+'</div>';
   if(m.countMode){
-    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:false,colorByCrit:false}));
+    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:false,colorByCrit:false,axisTips:RADAR_AXIS_TIP}));
     leg.innerHTML=radarLegendHTML(series,false)+'<span style="color:#61707f;font-size:12.5px;margin-left:8px">'+esc(t("radar_count_note"))+'</span>';
   } else if(radarState.eval==="both-side"){
-    const box=(sub,s)=>'<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-size:13px;color:#61707f;font-weight:600">'+esc(sub)+'</div>'+radarSVG(labels,[s],vmax,{bands:true,colorByCrit:true,size:320})+'</div>';
+    const box=(sub,s)=>'<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-size:13px;color:#61707f;font-weight:600">'+esc(sub)+'</div>'+radarSVG(labels,[s],vmax,{bands:true,colorByCrit:true,size:320,axisTips:RADAR_AXIS_TIP})+'</div>';
     area.innerHTML=wrap(box(t("th_initial"),series[0])+box(t("th_residual"),series[1]));
     leg.innerHTML=radarLegendHTML(series,true);
   } else {
-    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:true,colorByCrit:series.length===1}));
+    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:true,colorByCrit:series.length===1,axisTips:RADAR_AXIS_TIP}));
     leg.innerHTML=radarLegendHTML(series,true);
   }
   tbl.innerHTML=radarTableHTML(labels,series,m.metric);
