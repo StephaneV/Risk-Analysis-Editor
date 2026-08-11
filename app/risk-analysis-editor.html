@@ -5932,6 +5932,7 @@ const FILTER_BARS=[
     natBool("fltPlanOverdue",()=>t("flt_overdue_field"),
       ()=>listState.plan.overdue||"", v=>listState.plan.overdue=v)]},
   {cle:"matrices", vue:"view-matrices", panneau:null, cible:"risk", search:null, natives:()=>[natCatDesc()]},
+  {cle:"radars", vue:"view-radars", panneau:null, cible:"risk", search:null, natives:()=>[natCatDesc()]},
   {cle:"stats", vue:"view-stats", panneau:null, cible:["risk","measure"], search:null, natives:()=>[natCatDesc(),natTypeDesc(),natStatusDesc()]},
   {cle:"cross", vue:"view-links", panneau:'[data-lmode="grid"]', cible:"link", search:null, natives:()=>[]},
   {cle:"details", vue:"view-links", panneau:'[data-lmode="details"]', cible:"link", search:"fltLinkQ", natives:()=>[]}
