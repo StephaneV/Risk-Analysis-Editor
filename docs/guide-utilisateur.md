@@ -70,6 +70,8 @@ Le parcours conseillé se lit dans l'ordre des onglets :
 3. **Associez** mesures et risques dans l'onglet *Liens*.
 4. **Lisez les matrices**, suivez le *Plan d'action*, imprimez le *Rapport*.
 
+En bas de l'écran d'accueil, une liste **Fichiers récents** rassemble les dernières analyses **ouvertes ou enregistrées**, avec le **nom du fichier** et le **nom de l'analyse**. Le **bouton d'ouverture** (ou un clic sur la ligne) rouvre le fichier — le navigateur demande alors l'**autorisation** d'y accéder ; le **×** retire une entrée et **Effacer la liste** vide l'ensemble. Cette liste nécessite un navigateur compatible (Chrome, Edge) et **n'apparaît pas** ailleurs.
+
 Chaque étape est détaillée dans les sections suivantes.
 
 ---
@@ -287,7 +289,7 @@ Un sous-onglet dédié dans *Paramètres* règle deux choses, enregistrées **av
 ![Paramètres : radars](images/guide-25-parametres-radars.png)
 
 - **Poids par niveau de criticité** — utilisés par la métrique *Criticité pondérée* : chaque risque compte pour le poids de son niveau (par défaut **1 / 2 / 4 / 8**, du plus faible au plus grave).
-- **Rendu des radars** — **luminosité** et **saturation** (HSL) des bandes de fond, **épaisseur du contour**, **pas des graduations** (`0` = automatique) et **couleur des rayons**, avec un **aperçu** en direct. Ces réglages s'appliquent à l'écran, à l'export et au rapport.
+- **Rendu des radars** — **luminosité** et **saturation** (HSL) des bandes de fond, **épaisseur du contour**, **pas des graduations** (`0` = automatique), **couleur des rayons** et **couleurs des évaluations initiale et résiduelle** (contour et pastilles), avec un **aperçu** en direct. Ces réglages s'appliquent à l'écran, à l'export et au rapport.
 
 ---
 
@@ -506,4 +508,4 @@ C'est attendu : le score et la criticité sont **recalculés** à partir de la g
 
 ---
 
-*Ce guide correspond à Risk Analysis Editor version 1.18.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
+*Ce guide correspond à Risk Analysis Editor version 1.19.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*

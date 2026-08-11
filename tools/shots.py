@@ -30,7 +30,11 @@ def fondu_bas(im):
 
 # (nom, suffixe URL, prep JS après chargement, pleine page ?, hauteur viewport)
 SHOTS = [
-    ("guide-01-accueil",            "?lang=fr",                 None, True,  940),
+    ("guide-01-accueil",            "?lang=fr",
+        "(async()=>{try{await rcTx('readwrite',s=>s.clear());"
+        "await rcTx('readwrite',s=>s.put({id:'a',name:'demo-aipd-sst.rae.json',title:'Analyse de risques — volet AIPD (sante au travail)',at:Date.now(),handle:{name:'x'}}));"
+        "await rcTx('readwrite',s=>s.put({id:'b',name:'audit-si-2026.rae.json',title:'Audit SI 2026 — Cartographie EBIOS RM',at:Date.now()-2000,handle:{name:'y'}}));"
+        "await renderStartRecents();}catch(e){}})()", True,  940),
     ("guide-02-presentation",       DEMO+"&tab=presentation",   None, True,  940),
     ("guide-03-parametres-grille",  DEMO+"&tab=settings.grid",  None, True,  940),
     ("guide-04-parametres-affichage",DEMO+"&tab=settings.display",None,True, 940),
