@@ -933,6 +933,7 @@
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-measures" data-view="measures"><span data-i18n="tab_measures">Mesures</span> <span class="badge" id="badgeMeasures">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-links" data-view="links"><span data-i18n="tab_links">Liens</span> <span class="badge" id="badgeLinks">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-matrices" data-view="matrices" data-i18n="tab_matrices">Matrices</button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-radars" data-view="radars" data-i18n="tab_radars">Radars</button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-stats" data-view="stats" data-i18n="tab_stats">Statistiques</button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-plan" data-view="plan"><span data-i18n="tab_plan">Plan d'action</span> <span class="badge" id="badgePlan" style="display:none">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-report" data-view="report" data-i18n="tab_report">Rapport</button>
@@ -954,6 +955,35 @@
       </div>
       <div id="matrixArea"></div>
       <div class="legend" id="matrixLegend"></div>
+    </div>
+  </section>
+
+  <!-- ============ RADARS ============ -->
+  <section class="view" id="view-radars">
+    <div class="card">
+      <div class="matrix-toolbar">
+        <div class="seg" id="radarEvalSeg">
+          <button type="button" data-v="initial" data-i18n="th_initial">Initial</button>
+          <button type="button" data-v="residual" data-i18n="th_residual">Résiduel</button>
+          <button type="button" data-v="both-side" data-i18n="radar_eval_side">Accolés</button>
+          <button type="button" data-v="both-over" class="active" data-i18n="radar_eval_over">Superposés</button>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+          <span data-i18n="radar_dim">Dimension</span>
+          <select id="radarDim"></select>
+        </label>
+        <div class="seg" id="radarMetricSeg">
+          <button type="button" data-v="avg" class="active" data-i18n="radar_metric_avg">Criticité moyenne</button>
+          <button type="button" data-v="max" data-i18n="radar_metric_max">Criticité max</button>
+          <button type="button" data-v="count" data-i18n="radar_metric_count">Nombre de risques</button>
+        </div>
+        <span style="flex:1"></span>
+        <span id="radarExportBar" style="display:flex;gap:6px"></span>
+      </div>
+      <div id="radarTitle" style="text-align:center;font-weight:600;font-size:15px;margin:8px 0 2px"></div>
+      <div id="radarArea"></div>
+      <div id="radarLegend" style="text-align:center;margin-top:10px"></div>
+      <div id="radarTable" style="text-align:center"></div>
     </div>
   </section>
 
@@ -1555,6 +1585,11 @@ const I18N = {
     stat_size_full:"Pleine", stat_size_half:"Demi",
     stat_disp_table:"Tableau", stat_disp_chart:"Graphique", stat_disp_both:"Les deux",
     stat_shape_donut:"Anneau", stat_shape_pie:"Camembert", stat_tiles:"Tuiles", stat_values:"valeurs",
+    tab_radars:"Radars",
+    radar_eval_side:"Accolés", radar_eval_over:"Superposés", radar_dim:"Dimension", radar_axis:"Axe", radar_unset:"Non renseigné",
+    radar_metric_avg:"Criticité moyenne", radar_metric_max:"Criticité max", radar_metric_count:"Nombre de risques",
+    radar_need_axes:"Au moins 3 axes sont nécessaires pour afficher un radar (dimension actuelle : {0}).",
+    radar_count_note:"Le nombre de risques ne dépend pas de l'évaluation.",
     stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
     stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
     dist_initial:"← initial", dist_residual:"résiduel →",
@@ -1882,6 +1917,11 @@ const I18N = {
     stat_size_full:"Full", stat_size_half:"Half",
     stat_disp_table:"Table", stat_disp_chart:"Chart", stat_disp_both:"Both",
     stat_shape_donut:"Donut", stat_shape_pie:"Pie", stat_tiles:"Tiles", stat_values:"values",
+    tab_radars:"Radars",
+    radar_eval_side:"Side by side", radar_eval_over:"Overlaid", radar_dim:"Dimension", radar_axis:"Axis", radar_unset:"Not set",
+    radar_metric_avg:"Average criticality", radar_metric_max:"Max criticality", radar_metric_count:"Number of risks",
+    radar_need_axes:"At least 3 axes are required to draw a radar (current dimension: {0}).",
+    radar_count_note:"The number of risks does not depend on the assessment.",
     stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
     stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
     dist_initial:"← initial", dist_residual:"residual →",
@@ -2209,6 +2249,11 @@ const I18N = {
     stat_size_full:"Piena", stat_size_half:"Metà",
     stat_disp_table:"Tabella", stat_disp_chart:"Grafico", stat_disp_both:"Entrambi",
     stat_shape_donut:"Anello", stat_shape_pie:"Torta", stat_tiles:"Riquadri", stat_values:"valori",
+    tab_radars:"Radar",
+    radar_eval_side:"Affiancati", radar_eval_over:"Sovrapposti", radar_dim:"Dimensione", radar_axis:"Asse", radar_unset:"Non specificato",
+    radar_metric_avg:"Criticità media", radar_metric_max:"Criticità massima", radar_metric_count:"Numero di rischi",
+    radar_need_axes:"Sono necessari almeno 3 assi per visualizzare un radar (dimensione attuale: {0}).",
+    radar_count_note:"Il numero di rischi non dipende dalla valutazione.",
     stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
     stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
     dist_initial:"← iniziale", dist_residual:"residuo →",
@@ -2817,6 +2862,7 @@ function activateView(view){
   document.getElementById("view-"+view).classList.add("active");
   if(view==="presentation") renderPresentation();
   if(view==="matrices") requestAnimationFrame(renderMatrices);
+  if(view==="radars") requestAnimationFrame(renderRadars);
   if(view==="stats") renderStats();
   if(view==="links") renderLinks();
   if(view==="settings") renderSettings();
@@ -2851,7 +2897,7 @@ document.querySelectorAll(".view").forEach(v=>{
 
 /* Ouverture sur un onglet/sous-onglet via ?tab=<onglet>[.<sous-onglet>]
    (ex. ?tab=matrices.traj, ?tab=settings.grid, ?tab=plan). Token inconnu -> ignoré. */
-const VIEW_TOKENS=["presentation","risks","measures","links","matrices","stats","plan","report","settings"];
+const VIEW_TOKENS=["presentation","risks","measures","links","matrices","radars","stats","plan","report","settings"];
 /* Sous-onglets : boutons à deux états. `aria-pressed` reflète la classe .active
    (le motif « tab » complet imposerait de câbler des tabpanels pour chaque sous-vue). */
 function syncSegAria(){document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.classList.contains("active")?"true":"false"));}
@@ -3292,6 +3338,7 @@ function renderAll(){
   updateBadges();
   renderStats();
   requestAnimationFrame(renderMatrices);
+  requestAnimationFrame(renderRadars);
   // le rapport est lourd (SVG) : on ne le régénère que s'il est affiché
   if(document.getElementById("view-report").classList.contains("active"))renderReport();
   applyTableA11y();
@@ -3578,6 +3625,143 @@ function statBlockHTML(block){
     '<h3><span class="st-mv" aria-hidden="true">⠿</span>'+esc(statTitle(block))+'</h3>'+
     statBlockBody(block)+
     '</section>';
+}
+/* ============================================================
+   VUE RADARS — profil de risque en toile d'araignée
+   Échelle et bandes de fond dérivées de la grille de cotation.
+   ============================================================ */
+const RADAR_C1="#3a63d6", RADAR_C2="#8a3ffc"; // couleurs initial / résiduel
+let radarState={eval:"both-over",dim:"cat",metric:"avg"}, radarWired=false;
+
+function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
+function critBands(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>a.score_max-b.score_max);}
+function radarDimFields(){return customFieldsFor("risk").filter(f=>["select","checklist","tags"].indexOf(f.type)>=0);}
+function radarFieldOf(dim){return radarDimFields().find(f=>f.code===dim);}
+/* Clés d'axe portées par un risque pour la dimension choisie (tableau : multi pour tags/checklist). */
+function radarKeysOf(r,dim){
+  if(dim==="cat"){const c=(r.category||"").trim();return [c||"__unset__"];}
+  const f=radarFieldOf(dim);if(!f)return ["__unset__"];
+  const v=(r.custom||{})[f.code];
+  if(f.type==="select")return [(v!=null&&v!=="")?String(v):"__unset__"];
+  const arr=Array.isArray(v)?v.filter(x=>x!=null&&x!==""):[];
+  return arr.length?arr.map(String):["__unset__"];
+}
+function radarAxisLabel(dim,key){
+  if(key==="__unset__")return t("radar_unset");
+  if(dim==="cat")return key;
+  const f=radarFieldOf(dim);if(!f)return key;
+  const it=(f.items||[]).find(i=>i.code===key);return it?cfItemLabel(it):key;
+}
+/* Axes = valeurs utilisées (ordre des items pour un champ, ordre d'apparition pour la catégorie),
+   « Non renseigné » en dernier lorsqu'au moins un risque n'a pas de valeur. */
+function radarAxes(risks,dim){
+  const used={};risks.forEach(r=>radarKeysOf(r,dim).forEach(k=>{used[k]=(used[k]||0)+1;}));
+  let keys=[];
+  if(dim==="cat"){risks.forEach(r=>radarKeysOf(r,dim).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);}));}
+  else{const f=radarFieldOf(dim);keys=f?(f.items||[]).map(i=>i.code).filter(c=>used[c]):[];}
+  if(used["__unset__"])keys.push("__unset__");
+  return keys;
+}
+function radarValues(risks,dim,axes,metric,phase){
+  const g={};axes.forEach(k=>g[k]=[]);
+  risks.forEach(r=>{const ev=phase==="residual"?residual(r):r.initial_assessment;const sc=scoreOf(ev.probability,ev.severity);
+    radarKeysOf(r,dim).forEach(k=>{if(g[k])g[k].push(sc);});});
+  return axes.map(k=>{const a=g[k];if(metric==="count")return a.length;if(!a.length)return 0;
+    if(metric==="max")return Math.max.apply(null,a);let s=0;a.forEach(x=>s+=x);return s/a.length;});
+}
+function radarNiceMax(vals){let m=0;vals.forEach(v=>{if(v>m)m=v;});return Math.max(1,Math.ceil(m));}
+function radarLighten(hex,amt){const h=String(hex).replace("#","");const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+  const mix=x=>Math.round(x+(255-x)*amt);return "rgb("+mix(r)+","+mix(g)+","+mix(b)+")";}
+function radarNgon(cx,cy,R,n,frac){let p=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;p.push((cx+R*frac*Math.cos(a)).toFixed(1)+","+(cy+R*frac*Math.sin(a)).toFixed(1));}return p.join(" ");}
+function radarPoly(n,values,vmax,cx,cy,R){const pts=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n,r=R*(values[i]/vmax);pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}return pts;}
+function radarSVG(labels,series,vmax,opts){
+  opts=opts||{};const size=opts.size||380,padX=78,W=size+2*padX,cx=W/2,cy=size/2+8,R=size/2-50,n=labels.length;let g="";
+  if(opts.bands){const bs=critBands();for(let i=bs.length-1;i>=0;i--){const frac=Math.max(0,Math.min(1,bs[i].score_max/vmax));
+      g+='<polygon points="'+radarNgon(cx,cy,R,n,frac)+'" fill="'+radarLighten(bs[i].color,0.80)+'" stroke="none"/>';}}
+  else{for(let s=1;s<=vmax;s++)g+='<polygon points="'+radarNgon(cx,cy,R,n,s/vmax)+'" fill="none" stroke="#e6ebf1" stroke-width="1"/>';}
+  g+='<polygon points="'+radarNgon(cx,cy,R,n,1)+'" fill="none" stroke="#cfd8e3" stroke-width="1.2"/>';
+  for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R*Math.cos(a)).toFixed(1)+'" y2="'+(cy+R*Math.sin(a)).toFixed(1)+'" stroke="#dbe2ea" stroke-width="1"/>';}
+  let ticks=opts.bands?critBands().map(c=>Math.min(c.score_max,vmax)):(vmax<=6?Array.from({length:vmax},(_,k)=>k+1):[Math.round(vmax/2),vmax]);
+  ticks.forEach(tv=>{const ry=cy-R*(tv/vmax);g+='<text x="'+(cx+4)+'" y="'+(ry+3).toFixed(1)+'" font-size="10" fill="#61707f">'+tv+'</text>';});
+  series.forEach(s=>{const pts=radarPoly(n,s.values,vmax,cx,cy,R);const ps=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+    g+='<polygon points="'+ps+'" fill="'+s.color+'" fill-opacity="0.18" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round"/>';
+    pts.forEach((p,idx)=>{const dc=opts.colorByCrit?critFor(s.values[idx]).color:s.color;g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.2" fill="'+dc+'" stroke="#fff" stroke-width="1"/>';});});
+  for(let j=0;j<n;j++){const a=-Math.PI/2+j*2*Math.PI/n,lx=cx+(R+16)*Math.cos(a),ly=cy+(R+16)*Math.sin(a);
+    const anchor=Math.abs(Math.cos(a))<0.3?"middle":(Math.cos(a)>0?"start":"end");const lab=labels[j],words=lab.split(" ");let l1=lab,l2="";
+    if(lab.length>12&&words.length>1){const mid=Math.ceil(words.length/2);l1=words.slice(0,mid).join(" ");l2=words.slice(mid).join(" ");}
+    const dy=l2?(ly<cy?-4:6):4;
+    g+='<text x="'+lx.toFixed(1)+'" y="'+(ly+dy).toFixed(1)+'" text-anchor="'+anchor+'" font-size="12" fill="#1c2733">'+esc(l1)+(l2?'<tspan x="'+lx.toFixed(1)+'" dy="13">'+esc(l2)+'</tspan>':'')+'</text>';}
+  return '<svg viewBox="0 0 '+W+' '+size+'" width="'+W+'" height="'+size+'" style="max-width:100%;height:auto" role="img">'+g+'</svg>';
+}
+function radarSwatch(bg,border){return '<span style="width:20px;height:10px;border-radius:3px;display:inline-block;background:'+bg+(border?';border:1px solid '+border:'')+'"></span>';}
+function radarLegendHTML(series,bands){
+  const it=(inner)=>'<span style="display:inline-flex;align-items:center;gap:6px;margin:0 12px 4px 0;font-size:13px">'+inner+'</span>';
+  let h=series.map(s=>it(radarSwatch(s.color,null)+esc(s.name))).join("");
+  if(bands)h+=critBands().map(c=>it(radarSwatch(radarLighten(c.color,0.80),c.color)+esc(c.label))).join("");
+  return h;
+}
+function radarTableHTML(labels,series,metric){
+  const fmt=v=>metric==="count"?String(v):(Math.round(v*10)/10).toFixed(1);
+  const thc='border:1px solid #dbe2ea;padding:4px 10px;background:#f0f3f8;color:#61707f;font-weight:600';
+  const tdc='border:1px solid #dbe2ea;padding:4px 10px';
+  let h='<table style="border-collapse:collapse;margin:14px auto 0;font-size:12.5px"><thead><tr><th style="'+thc+';text-align:left">'+esc(t("radar_axis"))+'</th>'+
+    series.map(s=>'<th style="'+thc+';text-align:right">'+esc(s.name)+'</th>').join("")+'</tr></thead><tbody>';
+  labels.forEach((ax,i)=>{h+='<tr><td style="'+tdc+';text-align:left">'+esc(ax)+'</td>'+series.map(s=>'<td style="'+tdc+';text-align:right">'+fmt(s.values[i],metric)+'</td>').join("")+'</tr>';});
+  return h+'</tbody></table>';
+}
+function radarTitleText(){
+  const metricLabel=t(radarState.metric==="max"?"radar_metric_max":radarState.metric==="count"?"radar_metric_count":"radar_metric_avg");
+  const f=radarFieldOf(radarState.dim),dimLabel=radarState.dim==="cat"?t("th_category"):(f?cfLabel(f):radarState.dim);
+  if(radarState.metric==="count")return metricLabel+" — "+dimLabel;
+  const evL=radarState.eval==="initial"?t("th_initial"):radarState.eval==="residual"?t("th_residual"):radarState.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
+  return metricLabel+" — "+dimLabel+" · "+evL;
+}
+function radarSyncSeg(){
+  document.querySelectorAll("#radarEvalSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.eval));
+  document.querySelectorAll("#radarMetricSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.metric));
+  syncSegAria();
+}
+function renderRadars(){
+  if(!radarWired){
+    const ev=document.getElementById("radarEvalSeg");
+    ev.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||ev.style.pointerEvents==="none")return;radarState.eval=b.dataset.v;renderRadars();});
+    document.getElementById("radarMetricSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;radarState.metric=b.dataset.v;renderRadars();});
+    document.getElementById("radarDim").addEventListener("change",function(){radarState.dim=this.value;renderRadars();});
+    radarWired=true;
+  }
+  const fields=radarDimFields();
+  if(radarState.dim!=="cat"&&fields.every(f=>f.code!==radarState.dim))radarState.dim="cat";
+  const sel=document.getElementById("radarDim");
+  sel.innerHTML='<option value="cat">'+esc(t("th_category"))+'</option>'+fields.map(f=>'<option value="'+esc(f.code)+'">'+esc(cfLabel(f))+'</option>').join("");
+  sel.value=radarState.dim;
+  radarSyncSeg();
+  const countMode=radarState.metric==="count",evSeg=document.getElementById("radarEvalSeg");
+  evSeg.style.opacity=countMode?"0.45":"";evSeg.style.pointerEvents=countMode?"none":"";
+  document.getElementById("radarTitle").textContent=radarTitleText();
+  const area=document.getElementById("radarArea"),leg=document.getElementById("radarLegend"),tbl=document.getElementById("radarTable");
+  const R=visibleRisks(),dim=radarState.dim,metric=radarState.metric,axes=radarAxes(R,dim);
+  if(axes.length<3){area.innerHTML='<div style="padding:44px;text-align:center;color:#61707f">'+esc(t("radar_need_axes",axes.length))+'</div>';leg.innerHTML="";tbl.innerHTML="";return;}
+  const labels=axes.map(k=>radarAxisLabel(dim,k));
+  const wrap=inner=>'<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:26px">'+inner+'</div>';
+  let series;
+  if(countMode){
+    const s={name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(R,dim,axes,"count","initial")};
+    series=[s];const vmax=radarNiceMax(s.values);
+    area.innerHTML=wrap(radarSVG(labels,[s],vmax,{bands:false,colorByCrit:false}));
+    leg.innerHTML=radarLegendHTML([s],false)+'<span style="color:#61707f;font-size:12.5px;margin-left:8px">'+esc(t("radar_count_note"))+'</span>';
+  } else {
+    const vmax=gridMaxScore();
+    const sI={name:t("th_initial"),color:RADAR_C1,values:radarValues(R,dim,axes,metric,"initial")};
+    const sR={name:t("th_residual"),color:RADAR_C2,values:radarValues(R,dim,axes,metric,"residual")};
+    if(radarState.eval==="initial"){series=[sI];area.innerHTML=wrap(radarSVG(labels,[sI],vmax,{bands:true,colorByCrit:true}));}
+    else if(radarState.eval==="residual"){series=[sR];area.innerHTML=wrap(radarSVG(labels,[sR],vmax,{bands:true,colorByCrit:true}));}
+    else if(radarState.eval==="both-side"){series=[sI,sR];
+      const box=(sub,s)=>'<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-size:13px;color:#61707f;font-weight:600">'+esc(sub)+'</div>'+radarSVG(labels,[s],vmax,{bands:true,colorByCrit:true,size:320})+'</div>';
+      area.innerHTML=wrap(box(t("th_initial"),sI)+box(t("th_residual"),sR));}
+    else{series=[sI,sR];area.innerHTML=wrap(radarSVG(labels,[sI,sR],vmax,{bands:true,colorByCrit:false}));}
+    leg.innerHTML=radarLegendHTML(series,true);
+  }
+  tbl.innerHTML=radarTableHTML(labels,series,metric);
 }
 function renderStats(){
   const host=document.getElementById("stats");if(!host)return;
@@ -9575,7 +9759,8 @@ lang=resolveLang(null,true);
 
 window.addEventListener("beforeunload",e=>{if(dirty||presPending){e.preventDefault();e.returnValue="";}});
 let rzt;window.addEventListener("resize",()=>{clearTimeout(rzt);rzt=setTimeout(()=>{
-  if(document.getElementById("view-matrices").classList.contains("active"))requestAnimationFrame(renderMatrices);},150);});
+  if(document.getElementById("view-matrices").classList.contains("active"))requestAnimationFrame(renderMatrices);
+  if(document.getElementById("view-radars").classList.contains("active"))requestAnimationFrame(renderRadars);},150);});
 
 applyStaticI18n();
 analyse=emptyAnalysis(lang);isFresh=true;
