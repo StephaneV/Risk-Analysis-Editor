@@ -3721,6 +3721,89 @@ function radarSyncSeg(){
   document.querySelectorAll("#radarMetricSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.metric));
   syncSegAria();
 }
+/* Modèle courant du radar (partagé écran ↔ export) : axes, séries, échelle. */
+function radarComputeModel(){
+  const R=visibleRisks(),dim=radarState.dim,metric=radarState.metric,axes=radarAxes(R,dim);
+  if(axes.length<3)return {axes,tooFew:true};
+  const labels=axes.map(k=>radarAxisLabel(dim,k));
+  const countMode=metric==="count";
+  let series,vmax,bands;
+  if(countMode){series=[{name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(R,dim,axes,"count","initial")}];vmax=radarNiceMax(series[0].values);bands=false;}
+  else{vmax=gridMaxScore();bands=true;
+    const sI={name:t("th_initial"),color:RADAR_C1,values:radarValues(R,dim,axes,metric,"initial")};
+    const sR={name:t("th_residual"),color:RADAR_C2,values:radarValues(R,dim,axes,metric,"residual")};
+    series=radarState.eval==="initial"?[sI]:radarState.eval==="residual"?[sR]:[sI,sR];}
+  return {axes,labels,series,vmax,bands,countMode,metric,tooFew:false};
+}
+/* ---------- Export du radar (SVG autonome → PNG → presse-papiers / fichier) ---------- */
+function radarLegendItems(series,bands){
+  const arr=series.map(s=>({label:s.name,fill:s.color,border:null}));
+  if(bands)critBands().forEach(c=>arr.push({label:c.label,fill:radarLighten(c.color,0.80),border:c.color}));
+  return arr;
+}
+function radarNestSVG(svgStr,x,y){return svgStr.replace(/^<svg /,'<svg x="'+x+'" y="'+y+'" ');}
+function radarLegendSVG(items,W,startY,font){
+  const ctx=exportCtx();ctx.font="12px "+font;
+  const sw=18,sh=10,gapIn=6,gapBetween=18,rowH=22;
+  const measured=items.map(it=>Object.assign({},it,{w:sw+gapIn+ctx.measureText(it.label).width}));
+  const rows=[];let cur=[],curW=0;
+  measured.forEach(a=>{const add=a.w+(cur.length?gapBetween:0);if(cur.length&&curW+add>W){rows.push({items:cur,w:curW});cur=[];curW=0;}cur.push(a);curW+=(cur.length>1?gapBetween:0)+a.w;});
+  if(cur.length)rows.push({items:cur,w:curW});
+  const out=[];let y=startY;
+  rows.forEach(row=>{let x=(W-row.w)/2;row.items.forEach((a,i)=>{if(i)x+=gapBetween;const cy=y+rowH/2;
+    out.push('<rect x="'+x.toFixed(1)+'" y="'+(cy-sh/2).toFixed(1)+'" width="'+sw+'" height="'+sh+'" rx="3" fill="'+a.fill+'"'+(a.border?' stroke="'+a.border+'"':'')+'/>');
+    out.push('<text x="'+(x+sw+gapIn).toFixed(1)+'" y="'+cy.toFixed(1)+'" dominant-baseline="central" font-family="'+svgEsc(font)+'" font-size="12" fill="#1c2733">'+svgEsc(a.label)+'</text>');
+    x+=a.w;});y+=rowH;});
+  return {svg:out.join(""),height:(y-startY)+2};
+}
+function buildRadarExportSVG(){
+  const m=radarComputeModel();
+  const font=getComputedStyle(document.body).fontFamily,PAD=18,title=radarTitleText(),RPAD=78;
+  let radarsSVG,radarsW,radarsH;
+  if(!m.countMode&&radarState.eval==="both-side"){
+    const size=320,rw=size+2*RPAD,rh=size,subH=20,gap=24;
+    const one=s=>radarSVG(m.labels,[s],m.vmax,{bands:true,colorByCrit:true,size:size});
+    radarsW=rw*2+gap;radarsH=rh+subH;
+    radarsSVG='<text x="'+(rw/2)+'" y="14" text-anchor="middle" font-family="'+svgEsc(font)+'" font-size="13" font-weight="600" fill="#61707f">'+svgEsc(t("th_initial"))+'</text>'+
+      radarNestSVG(one(m.series[0]),0,subH)+
+      '<text x="'+(rw+gap+rw/2)+'" y="14" text-anchor="middle" font-family="'+svgEsc(font)+'" font-size="13" font-weight="600" fill="#61707f">'+svgEsc(t("th_residual"))+'</text>'+
+      radarNestSVG(one(m.series[1]),rw+gap,subH);
+  } else {
+    const opts=m.countMode?{bands:false,colorByCrit:false}:(m.series.length===1?{bands:true,colorByCrit:true}:{bands:true,colorByCrit:false});
+    const size=380,rw=size+2*RPAD;
+    radarsW=rw;radarsH=size;
+    radarsSVG=radarNestSVG(radarSVG(m.labels,m.series,m.vmax,opts),0,0);
+  }
+  const items=radarLegendItems(m.series,m.bands),legW=Math.max(radarsW,360),leg=radarLegendSVG(items,legW,0,font);
+  const ctx=exportCtx();ctx.font="600 15px "+font;
+  const OW=Math.ceil(Math.max(radarsW,legW,ctx.measureText(title).width)+2*PAD);
+  const titleY=PAD+14,radarsY=titleY+12,legendY=radarsY+radarsH+6,OH=Math.ceil(legendY+leg.height+PAD);
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+OW+'" height="'+OH+'" viewBox="0 0 '+OW+' '+OH+'" font-family="'+svgEsc(font)+'">'+
+    '<rect x="0" y="0" width="'+OW+'" height="'+OH+'" fill="#ffffff"/>'+
+    '<text x="'+(OW/2)+'" y="'+titleY+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2733">'+svgEsc(title)+'</text>'+
+    '<g transform="translate('+((OW-radarsW)/2).toFixed(1)+','+radarsY+')">'+radarsSVG+'</g>'+
+    '<g transform="translate('+((OW-legW)/2).toFixed(1)+','+legendY+')">'+leg.svg+'</g></svg>';
+  return {svg,W:OW,H:OH};
+}
+function setRadarExport(){
+  const host=document.getElementById("radarExportBar");if(!host)return;host.innerHTML="";
+  const bar=document.createElement("div");bar.className="export-bar";
+  const mk=(txt,mode)=>{const b=document.createElement("button");b.className="btn ghost sm";b.textContent=txt;b.onclick=()=>exportRadar(mode);bar.appendChild(b);};
+  mk(t("exp_copy"),"copy");mk(t("exp_png"),"png");mk(t("exp_svg"),"svg");host.appendChild(bar);
+}
+async function exportRadar(mode){
+  try{
+    const m=radarComputeModel();
+    if(m.tooFew){toast(t("radar_need_axes",m.axes.length));return;}
+    const {svg,W,H}=buildRadarExportSVG();
+    const base=(slug(analyse.metadata&&analyse.metadata.title)||"analyse")+"-radar";
+    if(mode==="svg"){downloadBlob(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}),base+".svg");toast(t("toast_img_saved",base+".svg"));return;}
+    const blob=await rasterizePNG(svg,W,H,getPngScale());
+    if(!blob){toast(t("toast_img_fail"));return;}
+    if(mode==="copy"){try{await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);toast(t("toast_img_copied"));}catch(e){toast(t("toast_copy_refused"));}}
+    else{downloadBlob(blob,base+".png");toast(t("toast_img_saved",base+".png"));}
+  }catch(e){toast(t("toast_export_err",e.message));}
+}
 function renderRadars(){
   if(!radarWired){
     const ev=document.getElementById("radarEvalSeg");
@@ -3738,30 +3821,24 @@ function renderRadars(){
   const countMode=radarState.metric==="count",evSeg=document.getElementById("radarEvalSeg");
   evSeg.style.opacity=countMode?"0.45":"";evSeg.style.pointerEvents=countMode?"none":"";
   document.getElementById("radarTitle").textContent=radarTitleText();
+  setRadarExport();
   const area=document.getElementById("radarArea"),leg=document.getElementById("radarLegend"),tbl=document.getElementById("radarTable");
-  const R=visibleRisks(),dim=radarState.dim,metric=radarState.metric,axes=radarAxes(R,dim);
-  if(axes.length<3){area.innerHTML='<div style="padding:44px;text-align:center;color:#61707f">'+esc(t("radar_need_axes",axes.length))+'</div>';leg.innerHTML="";tbl.innerHTML="";return;}
-  const labels=axes.map(k=>radarAxisLabel(dim,k));
+  const m=radarComputeModel();
+  if(m.tooFew){area.innerHTML='<div style="padding:44px;text-align:center;color:#61707f">'+esc(t("radar_need_axes",m.axes.length))+'</div>';leg.innerHTML="";tbl.innerHTML="";return;}
+  const labels=m.labels,series=m.series,vmax=m.vmax;
   const wrap=inner=>'<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:26px">'+inner+'</div>';
-  let series;
-  if(countMode){
-    const s={name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(R,dim,axes,"count","initial")};
-    series=[s];const vmax=radarNiceMax(s.values);
-    area.innerHTML=wrap(radarSVG(labels,[s],vmax,{bands:false,colorByCrit:false}));
-    leg.innerHTML=radarLegendHTML([s],false)+'<span style="color:#61707f;font-size:12.5px;margin-left:8px">'+esc(t("radar_count_note"))+'</span>';
+  if(m.countMode){
+    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:false,colorByCrit:false}));
+    leg.innerHTML=radarLegendHTML(series,false)+'<span style="color:#61707f;font-size:12.5px;margin-left:8px">'+esc(t("radar_count_note"))+'</span>';
+  } else if(radarState.eval==="both-side"){
+    const box=(sub,s)=>'<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-size:13px;color:#61707f;font-weight:600">'+esc(sub)+'</div>'+radarSVG(labels,[s],vmax,{bands:true,colorByCrit:true,size:320})+'</div>';
+    area.innerHTML=wrap(box(t("th_initial"),series[0])+box(t("th_residual"),series[1]));
+    leg.innerHTML=radarLegendHTML(series,true);
   } else {
-    const vmax=gridMaxScore();
-    const sI={name:t("th_initial"),color:RADAR_C1,values:radarValues(R,dim,axes,metric,"initial")};
-    const sR={name:t("th_residual"),color:RADAR_C2,values:radarValues(R,dim,axes,metric,"residual")};
-    if(radarState.eval==="initial"){series=[sI];area.innerHTML=wrap(radarSVG(labels,[sI],vmax,{bands:true,colorByCrit:true}));}
-    else if(radarState.eval==="residual"){series=[sR];area.innerHTML=wrap(radarSVG(labels,[sR],vmax,{bands:true,colorByCrit:true}));}
-    else if(radarState.eval==="both-side"){series=[sI,sR];
-      const box=(sub,s)=>'<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-size:13px;color:#61707f;font-weight:600">'+esc(sub)+'</div>'+radarSVG(labels,[s],vmax,{bands:true,colorByCrit:true,size:320})+'</div>';
-      area.innerHTML=wrap(box(t("th_initial"),sI)+box(t("th_residual"),sR));}
-    else{series=[sI,sR];area.innerHTML=wrap(radarSVG(labels,[sI,sR],vmax,{bands:true,colorByCrit:false}));}
+    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:true,colorByCrit:series.length===1}));
     leg.innerHTML=radarLegendHTML(series,true);
   }
-  tbl.innerHTML=radarTableHTML(labels,series,metric);
+  tbl.innerHTML=radarTableHTML(labels,series,m.metric);
 }
 function renderStats(){
   const host=document.getElementById("stats");if(!host)return;
