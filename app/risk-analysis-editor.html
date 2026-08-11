@@ -1590,6 +1590,7 @@ const I18N = {
     radar_metric_avg:"Criticité moyenne", radar_metric_max:"Criticité max", radar_metric_count:"Nombre de risques",
     radar_need_axes:"Au moins 3 axes sont nécessaires pour afficher un radar (dimension actuelle : {0}).",
     radar_count_note:"Le nombre de risques ne dépend pas de l'évaluation.",
+    rp_radar:"Radar", radar_metric:"Métrique", radar_eval:"Évaluation",
     stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
     stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
     dist_initial:"← initial", dist_residual:"résiduel →",
@@ -1922,6 +1923,7 @@ const I18N = {
     radar_metric_avg:"Average criticality", radar_metric_max:"Max criticality", radar_metric_count:"Number of risks",
     radar_need_axes:"At least 3 axes are required to draw a radar (current dimension: {0}).",
     radar_count_note:"The number of risks does not depend on the assessment.",
+    rp_radar:"Radar", radar_metric:"Metric", radar_eval:"Assessment",
     stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
     stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
     dist_initial:"← initial", dist_residual:"residual →",
@@ -2254,6 +2256,7 @@ const I18N = {
     radar_metric_avg:"Criticità media", radar_metric_max:"Criticità massima", radar_metric_count:"Numero di rischi",
     radar_need_axes:"Sono necessari almeno 3 assi per visualizzare un radar (dimensione attuale: {0}).",
     radar_count_note:"Il numero di rischi non dipende dalla valutazione.",
+    rp_radar:"Radar", radar_metric:"Metrica", radar_eval:"Valutazione",
     stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
     stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
     dist_initial:"← iniziale", dist_residual:"residuo →",
@@ -3682,7 +3685,7 @@ function radarSVG(labels,series,vmax,opts){
   g+='<polygon points="'+radarNgon(cx,cy,R,n,1)+'" fill="none" stroke="#cfd8e3" stroke-width="1.2"/>';
   for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R*Math.cos(a)).toFixed(1)+'" y2="'+(cy+R*Math.sin(a)).toFixed(1)+'" stroke="#dbe2ea" stroke-width="1"/>';}
   let ticks=opts.bands?critBands().map(c=>Math.min(c.score_max,vmax)):(vmax<=6?Array.from({length:vmax},(_,k)=>k+1):[Math.round(vmax/2),vmax]);
-  ticks.forEach(tv=>{const ry=cy-R*(tv/vmax);g+='<text x="'+(cx+4)+'" y="'+(ry+3).toFixed(1)+'" font-size="10" fill="#61707f">'+tv+'</text>';});
+  ticks.forEach(tv=>{const ry=cy-R*(tv/vmax);g+='<text x="'+(cx+4)+'" y="'+(ry+3).toFixed(1)+'" font-size="10" fill="currentColor" fill-opacity="0.6">'+tv+'</text>';});
   series.forEach(s=>{const pts=radarPoly(n,s.values,vmax,cx,cy,R);const ps=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
     g+='<polygon points="'+ps+'" fill="'+s.color+'" fill-opacity="0.18" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round"/>';
     pts.forEach((p,idx)=>{const dc=opts.colorByCrit?critFor(s.values[idx]).color:s.color;g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.2" fill="'+dc+'" stroke="#fff" stroke-width="1"/>';});});
@@ -3690,7 +3693,7 @@ function radarSVG(labels,series,vmax,opts){
     const anchor=Math.abs(Math.cos(a))<0.3?"middle":(Math.cos(a)>0?"start":"end");const lab=labels[j],words=lab.split(" ");let l1=lab,l2="";
     if(lab.length>12&&words.length>1){const mid=Math.ceil(words.length/2);l1=words.slice(0,mid).join(" ");l2=words.slice(mid).join(" ");}
     const dy=l2?(ly<cy?-4:6):4;
-    g+='<text x="'+lx.toFixed(1)+'" y="'+(ly+dy).toFixed(1)+'" text-anchor="'+anchor+'" font-size="12" fill="#1c2733">'+esc(l1)+(l2?'<tspan x="'+lx.toFixed(1)+'" dy="13">'+esc(l2)+'</tspan>':'')+'</text>';}
+    g+='<text x="'+lx.toFixed(1)+'" y="'+(ly+dy).toFixed(1)+'" text-anchor="'+anchor+'" font-size="12" fill="currentColor">'+esc(l1)+(l2?'<tspan x="'+lx.toFixed(1)+'" dy="13">'+esc(l2)+'</tspan>':'')+'</text>';}
   return '<svg viewBox="0 0 '+W+' '+size+'" width="'+W+'" height="'+size+'" style="max-width:100%;height:auto" role="img">'+g+'</svg>';
 }
 function radarSwatch(bg,border){return '<span style="width:20px;height:10px;border-radius:3px;display:inline-block;background:'+bg+(border?';border:1px solid '+border:'')+'"></span>';}
@@ -3702,18 +3705,18 @@ function radarLegendHTML(series,bands){
 }
 function radarTableHTML(labels,series,metric){
   const fmt=v=>metric==="count"?String(v):(Math.round(v*10)/10).toFixed(1);
-  const thc='border:1px solid #dbe2ea;padding:4px 10px;background:#f0f3f8;color:#61707f;font-weight:600';
-  const tdc='border:1px solid #dbe2ea;padding:4px 10px';
+  const thc='border:1px solid var(--border);padding:4px 10px;background:var(--panel-2);color:var(--muted);font-weight:600';
+  const tdc='border:1px solid var(--border);padding:4px 10px';
   let h='<table style="border-collapse:collapse;margin:14px auto 0;font-size:12.5px"><thead><tr><th style="'+thc+';text-align:left">'+esc(t("radar_axis"))+'</th>'+
     series.map(s=>'<th style="'+thc+';text-align:right">'+esc(s.name)+'</th>').join("")+'</tr></thead><tbody>';
   labels.forEach((ax,i)=>{h+='<tr><td style="'+tdc+';text-align:left">'+esc(ax)+'</td>'+series.map(s=>'<td style="'+tdc+';text-align:right">'+fmt(s.values[i],metric)+'</td>').join("")+'</tr>';});
   return h+'</tbody></table>';
 }
-function radarTitleText(){
-  const metricLabel=t(radarState.metric==="max"?"radar_metric_max":radarState.metric==="count"?"radar_metric_count":"radar_metric_avg");
-  const f=radarFieldOf(radarState.dim),dimLabel=radarState.dim==="cat"?t("th_category"):(f?cfLabel(f):radarState.dim);
-  if(radarState.metric==="count")return metricLabel+" — "+dimLabel;
-  const evL=radarState.eval==="initial"?t("th_initial"):radarState.eval==="residual"?t("th_residual"):radarState.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
+function radarTitleText(cfg){cfg=cfg||radarState;
+  const metricLabel=t(cfg.metric==="max"?"radar_metric_max":cfg.metric==="count"?"radar_metric_count":"radar_metric_avg");
+  const f=radarFieldOf(cfg.dim),dimLabel=cfg.dim==="cat"?t("th_category"):(f?cfLabel(f):cfg.dim);
+  if(cfg.metric==="count")return metricLabel+" — "+dimLabel;
+  const evL=cfg.eval==="initial"?t("th_initial"):cfg.eval==="residual"?t("th_residual"):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
   return metricLabel+" — "+dimLabel+" · "+evL;
 }
 function radarSyncSeg(){
@@ -3722,17 +3725,17 @@ function radarSyncSeg(){
   syncSegAria();
 }
 /* Modèle courant du radar (partagé écran ↔ export) : axes, séries, échelle. */
-function radarComputeModel(){
-  const R=visibleRisks(),dim=radarState.dim,metric=radarState.metric,axes=radarAxes(R,dim);
+function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRisks();
+  const dim=cfg.dim,metric=cfg.metric,axes=radarAxes(risks,dim);
   if(axes.length<3)return {axes,tooFew:true};
   const labels=axes.map(k=>radarAxisLabel(dim,k));
   const countMode=metric==="count";
   let series,vmax,bands;
-  if(countMode){series=[{name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(R,dim,axes,"count","initial")}];vmax=radarNiceMax(series[0].values);bands=false;}
+  if(countMode){series=[{name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(risks,dim,axes,"count","initial")}];vmax=radarNiceMax(series[0].values);bands=false;}
   else{vmax=gridMaxScore();bands=true;
-    const sI={name:t("th_initial"),color:RADAR_C1,values:radarValues(R,dim,axes,metric,"initial")};
-    const sR={name:t("th_residual"),color:RADAR_C2,values:radarValues(R,dim,axes,metric,"residual")};
-    series=radarState.eval==="initial"?[sI]:radarState.eval==="residual"?[sR]:[sI,sR];}
+    const sI={name:t("th_initial"),color:RADAR_C1,values:radarValues(risks,dim,axes,metric,"initial")};
+    const sR={name:t("th_residual"),color:RADAR_C2,values:radarValues(risks,dim,axes,metric,"residual")};
+    series=cfg.eval==="initial"?[sI]:cfg.eval==="residual"?[sR]:[sI,sR];}
   return {axes,labels,series,vmax,bands,countMode,metric,tooFew:false};
 }
 /* ---------- Export du radar (SVG autonome → PNG → presse-papiers / fichier) ---------- */
@@ -3756,11 +3759,12 @@ function radarLegendSVG(items,W,startY,font){
     x+=a.w;});y+=rowH;});
   return {svg:out.join(""),height:(y-startY)+2};
 }
-function buildRadarExportSVG(){
-  const m=radarComputeModel();
-  const font=getComputedStyle(document.body).fontFamily,PAD=18,title=radarTitleText(),RPAD=78;
+function buildRadarExportSVG(cfg,risks,opts){cfg=cfg||radarState;risks=risks||visibleRisks();opts=opts||{};
+  const m=radarComputeModel(cfg,risks);
+  const font=getComputedStyle(document.body).fontFamily,PAD=18,RPAD=78;
+  const title=opts.noTitle?"":((cfg.title&&cfg.title.trim())?cfg.title.trim():radarTitleText(cfg));
   let radarsSVG,radarsW,radarsH;
-  if(!m.countMode&&radarState.eval==="both-side"){
+  if(!m.countMode&&cfg.eval==="both-side"){
     const size=320,rw=size+2*RPAD,rh=size,subH=20,gap=24;
     const one=s=>radarSVG(m.labels,[s],m.vmax,{bands:true,colorByCrit:true,size:size});
     radarsW=rw*2+gap;radarsH=rh+subH;
@@ -3769,18 +3773,18 @@ function buildRadarExportSVG(){
       '<text x="'+(rw+gap+rw/2)+'" y="14" text-anchor="middle" font-family="'+svgEsc(font)+'" font-size="13" font-weight="600" fill="#61707f">'+svgEsc(t("th_residual"))+'</text>'+
       radarNestSVG(one(m.series[1]),rw+gap,subH);
   } else {
-    const opts=m.countMode?{bands:false,colorByCrit:false}:(m.series.length===1?{bands:true,colorByCrit:true}:{bands:true,colorByCrit:false});
+    const opt2=m.countMode?{bands:false,colorByCrit:false}:(m.series.length===1?{bands:true,colorByCrit:true}:{bands:true,colorByCrit:false});
     const size=380,rw=size+2*RPAD;
     radarsW=rw;radarsH=size;
-    radarsSVG=radarNestSVG(radarSVG(m.labels,m.series,m.vmax,opts),0,0);
+    radarsSVG=radarNestSVG(radarSVG(m.labels,m.series,m.vmax,opt2),0,0);
   }
   const items=radarLegendItems(m.series,m.bands),legW=Math.max(radarsW,360),leg=radarLegendSVG(items,legW,0,font);
   const ctx=exportCtx();ctx.font="600 15px "+font;
-  const OW=Math.ceil(Math.max(radarsW,legW,ctx.measureText(title).width)+2*PAD);
-  const titleY=PAD+14,radarsY=titleY+12,legendY=radarsY+radarsH+6,OH=Math.ceil(legendY+leg.height+PAD);
-  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+OW+'" height="'+OH+'" viewBox="0 0 '+OW+' '+OH+'" font-family="'+svgEsc(font)+'">'+
+  const OW=Math.ceil(Math.max(radarsW,legW,title?ctx.measureText(title).width:0)+2*PAD);
+  const titleY=PAD+14,radarsY=title?titleY+12:PAD,legendY=radarsY+radarsH+6,OH=Math.ceil(legendY+leg.height+PAD);
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+OW+'" height="'+OH+'" viewBox="0 0 '+OW+' '+OH+'" font-family="'+svgEsc(font)+'" style="color:#1c2733">'+
     '<rect x="0" y="0" width="'+OW+'" height="'+OH+'" fill="#ffffff"/>'+
-    '<text x="'+(OW/2)+'" y="'+titleY+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2733">'+svgEsc(title)+'</text>'+
+    (title?'<text x="'+(OW/2)+'" y="'+titleY+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2733">'+svgEsc(title)+'</text>':'')+
     '<g transform="translate('+((OW-radarsW)/2).toFixed(1)+','+radarsY+')">'+radarsSVG+'</g>'+
     '<g transform="translate('+((OW-legW)/2).toFixed(1)+','+legendY+')">'+leg.svg+'</g></svg>';
   return {svg,W:OW,H:OH};
@@ -5100,7 +5104,7 @@ function reportMatrixSVG(mode,risks){
    (page de garde, table des matières, toutes les sections activées, ordre par défaut).
    ============================================================ */
 const REPORT_SECTION_IDS=["metadata","presentation","summary_counts","summary_distribution",
-  "grid_axes","grid_criticality","field_glossary","matrix_ir","matrix_initial","matrix_residual","matrix_traj","risks_table","risks_detail",
+  "grid_axes","grid_criticality","field_glossary","matrix_ir","matrix_initial","matrix_residual","matrix_traj","radar","risks_table","risks_detail",
   "measures_table","measures_detail","links_table","links_detail","action_plan"];
 const REPORT_META_ROW_IDS=["author","organization","scope","methodology","created","updated","revision","status"];
 /* Par défaut (sans configuration), toutes les sections sont activées SAUF les matrices
@@ -5110,7 +5114,7 @@ function cfHasItemDesc(f){return cfNeedsItems(f.type)&&(f.items||[]).some(it=>it
 function glossaryFieldList(){const out=[];["analysis","risk","measure","link"].forEach(tg=>customFieldsFor(tg).forEach(f=>{if(cfHasItemDesc(f))out.push({target:tg,field:f});}));return out;}
 function reportGlossaryItemTitle(id){const i=id.indexOf(":"),tg=id.slice(0,i),code=id.slice(i+1);const f=customFieldsFor(tg).find(x=>x.code===code);return (f?cfLabel(f):code)+" ("+cfTargetLabel(tg)+")";}
 function reportSectionDefaultOn(id){
-  if(id==="matrix_initial"||id==="matrix_residual")return false;
+  if(id==="matrix_initial"||id==="matrix_residual"||id==="radar")return false;
   // Section « Référentiels » : activée par défaut seulement si au moins un item porte une description.
   if(id==="field_glossary")return glossaryFieldList().length>0;
   return true;
@@ -5141,7 +5145,7 @@ function reportSectionTitle(id){return ({
   metadata:t("rp_metadata"), presentation:t("rp_presentation"), summary_counts:t("rp_summary"),
   summary_distribution:t("stat_distribution"), grid_axes:t("settings_grid"), grid_criticality:t("crit_title"), field_glossary:t("rp_field_glossary"),
   matrix_ir:t("mtx_both_side"), matrix_initial:t("mtx_initial_only"), matrix_residual:t("mtx_residual_only"),
-  matrix_traj:t("mtx_traj"), risks_table:t("risks_title"), risks_detail:t("rp_risk_details"),
+  matrix_traj:t("mtx_traj"), radar:t("rp_radar"), risks_table:t("risks_title"), risks_detail:t("rp_risk_details"),
   measures_table:t("measures_title"), measures_detail:t("rp_measure_details"), links_table:t("links_title"),
   links_detail:t("rp_link_details"), action_plan:t("tab_plan")})[id]||id;}
 function reportCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.report;return (d&&typeof d==="object")?d:null;}
@@ -5198,6 +5202,12 @@ function reportCfg(){
     else if(s.id==="field_glossary")o.items=ordered(s.items,glossaryFieldList().map(x=>x.target+":"+x.field.code),true);
     else if(reportTableId(s.id))o.columns=columns(s.columns,reportTableId(s.id),reportDefaultCols(s.id));
     else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
+    else if(s.id==="radar"){
+      o.dim=(s.dim==="cat"||radarDimFields().some(f=>f.code===s.dim))?s.dim:"cat";
+      o.metric=["avg","max","count"].indexOf(s.metric)>=0?s.metric:"avg";
+      o.eval=["initial","residual","both-side","both-over"].indexOf(s.eval)>=0?s.eval:"both-over";
+      o.title=typeof s.title==="string"?s.title:"";
+    }
     return o;
   }
 }
@@ -5384,6 +5394,15 @@ function renderReport(){
       let inner='<h2>'+esc(t("mtx_traj"))+'</h2>';
       inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("traj",RISKS);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_traj">'+inner+'</div>';
+    },
+    radar:s=>{
+      const rc={eval:s.eval,dim:s.dim,metric:s.metric};
+      const head=(s.title&&s.title.trim())?s.title.trim():radarTitleText(rc);
+      let inner='<h2>'+esc(head)+'</h2>';
+      const m=radarComputeModel(rc,RISKS);
+      inner+= m.tooFew?('<div class="rp-sub">'+esc(nR===0?t("matrix_empty"):t("radar_need_axes",m.axes.length))+'</div>')
+             :buildRadarExportSVG(rc,RISKS,{noTitle:true}).svg;
+      return '<div class="rp-card rp-matrices" id="rsec-radar">'+inner+'</div>';
     },
     risks_table:s=>card("risks_table",'<h2>'+esc(t("risks_title"))+'</h2>'+reportTable("risks",s.columns,RISKS)),
     measures_table:s=>card("measures_table",'<h2>'+esc(t("measures_title"))+'</h2>'+reportTable("measures",s.columns,MEAS)),
@@ -7831,6 +7850,15 @@ async function buildDocx(){
       out+=nR?await addSvgImage(reportMatrixSVG("traj",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
+    radar:async(s)=>{
+      const rc={eval:s.eval,dim:s.dim,metric:s.metric};
+      const head=(s.title&&s.title.trim())?s.title.trim():radarTitleText(rc);
+      let out=heading(head);
+      const m=radarComputeModel(rc,RISKS);
+      out+= m.tooFew?dxP(dxRun(nR===0?t("matrix_empty"):t("radar_need_axes",m.axes.length),{color:"7A8699"}),{sa:120})
+           :await addSvgImage(buildRadarExportSVG(rc,RISKS,{noTitle:true}).svg);
+      return out;
+    },
     risks_table:s=>heading(t("risks_title"))+(nR?dxReportTable("risks",s.columns,RISKS,CW):dxP(dxRun(t("risks_empty"),{color:"7A8699"}),{sa:120})),
     measures_table:s=>heading(t("measures_title"))+(nM?dxReportTable("measures",s.columns,MEAS,CW):dxP(dxRun(t("measures_empty"),{color:"7A8699"}),{sa:120})),
     links_table:s=>heading(t("links_title"))+(TRs.length?dxReportTable("links",s.columns,TRs,CW):dxP(dxRun("—",{color:"7A8699"}),{sa:120})),
@@ -8114,6 +8142,22 @@ function rcSecItemHTML(s,iterating){
   else if(s.id==="action_plan"){ctrl='<select class="rc-rowctrl" data-role="view">'+
     [["due_date","rc_view_due"],["status","rc_view_status"],["responsible","rc_view_resp"]].map(a=>
       '<option value="'+a[0]+'"'+(s.view===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';}
+  else if(s.id==="radar"){
+    ctrl='<button type="button" class="rc-expand" data-exp="rcsub-radar">'+esc(t("radar_dim"))+' ▾</button>';
+    const dimSel='<select class="rc-rowctrl" data-role="radar-dim">'+
+      (['<option value="cat"'+(s.dim==="cat"?" selected":"")+'>'+esc(t("th_category"))+'</option>']
+        .concat(radarDimFields().map(f=>'<option value="'+esc(f.code)+'"'+(s.dim===f.code?" selected":"")+'>'+esc(cfLabel(f))+'</option>'))).join("")+'</select>';
+    const metSel='<select class="rc-rowctrl" data-role="radar-metric">'+
+      [["avg","radar_metric_avg"],["max","radar_metric_max"],["count","radar_metric_count"]].map(a=>'<option value="'+a[0]+'"'+(s.metric===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
+    const evSel='<select class="rc-rowctrl" data-role="radar-eval">'+
+      [["both-over","radar_eval_over"],["both-side","radar_eval_side"],["initial","th_initial"],["residual","th_residual"]].map(a=>'<option value="'+a[0]+'"'+(s.eval===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
+    const titleInp='<input type="text" class="rc-rowctrl" data-role="radar-title" value="'+esc(s.title||"")+'" placeholder="'+esc(radarTitleText({eval:s.eval,dim:s.dim,metric:s.metric}))+'">';
+    sub='<div class="rc-subrows" id="rcsub-radar">'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_dim"))+'</span>'+dimSel+'</label>'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_metric"))+'</span>'+metSel+'</label>'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_eval"))+'</span>'+evSel+'</label>'+
+      '<label class="rc-field"><span class="rc-lab">'+esc(t("f_title"))+'</span>'+titleInp+'</label>'+
+      '</div>';}
   return '<div class="rc-secitem'+(s.on?"":" rc-off")+'" data-sec="'+s.id+'" draggable="true">'+
     '<div class="rc-secrow"><span class="rc-grip">⠿</span><input type="checkbox"'+(s.on?" checked":"")+'>'+
     '<span class="rc-name">'+esc(title)+'</span>'+zoneSel+ctrl+'</div>'+sub+'</div>';
@@ -8222,6 +8266,12 @@ function collectReportCfg(){
     }else if(reportTableId(id)){
       const cols=[];it.querySelectorAll(".rc-subrow").forEach(sr=>{if(sr.querySelector("input").checked)cols.push(sr.dataset.sub);});o.columns=cols;
     }else if(id==="action_plan")o.view=(it.querySelector('[data-role="view"]')||{}).value||"due_date";
+    else if(id==="radar"){
+      o.dim=(it.querySelector('[data-role="radar-dim"]')||{}).value||"cat";
+      o.metric=(it.querySelector('[data-role="radar-metric"]')||{}).value||"avg";
+      o.eval=(it.querySelector('[data-role="radar-eval"]')||{}).value||"both-over";
+      o.title=(it.querySelector('[data-role="radar-title"]')||{}).value||"";
+    }
     secs.push(o);
   });
   store.sections=secs;
