@@ -61,6 +61,10 @@ SHOTS = [
         "document.getElementById('btnFile').click()", False, 620),
     ("guide-21-aide-raccourcis",    DEMO+"&tab=risks",
         "openHelpModal()", False, 1040),
+    ("guide-24-radars",             DEMO+"&tab=radars",
+        "radarState.dim=radarBestDim();renderRadars();", True,  980),
+    ("guide-25-parametres-radars",  DEMO+"&tab=settings.radars",
+        "setParamMode('radars')", True,  1180),
 ]
 
 def run():

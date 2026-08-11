@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 1.17.0
+  Version  : 1.18.0
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -3676,6 +3676,12 @@ function radarMetricLabel(metric){return t({avg:"radar_metric_avg",max:"radar_me
 function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
 function critBands(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>a.score_max-b.score_max);}
 function radarDimFields(){return customFieldsFor("risk").filter(f=>["select","checklist","tags"].indexOf(f.type)>=0);}
+/* Dimension produisant le plus d'axes (pour l'aperçu des paramètres) : catégorie ou champ perso. */
+function radarBestDim(){
+  const R=visibleRisks();let best="cat",n=radarAxes(R,"cat").length;
+  radarDimFields().forEach(f=>{const c=radarAxes(R,f.code).length;if(c>n){n=c;best=f.code;}});
+  return best;
+}
 function radarFieldOf(dim){return radarDimFields().find(f=>f.code===dim);}
 /* Clés d'axe portées par un risque pour la dimension choisie (tableau : multi pour tags/checklist). */
 function radarKeysOf(r,dim){
@@ -8269,7 +8275,7 @@ function collectRadarCfg(){
 function radarCfgReset(){const d=analyse.extensions&&analyse.extensions.display;if(d&&d.radar)delete d.radar;markDirty();renderRadarSettings();}
 function radarCfgPreview(){
   const box=document.getElementById("radarCfgPrev");if(!box)return;
-  const m=radarComputeModel({eval:"initial",dim:"cat",metric:"avg"},visibleRisks());
+  const m=radarComputeModel({eval:"initial",dim:radarBestDim(),metric:"avg"},visibleRisks());
   if(m.tooFew){box.innerHTML='<div class="caption">'+esc(t("radar_need_axes",m.axes.length))+'</div>';return;}
   box.innerHTML=radarSVG(m.labels,m.series,m.vmax,{bands:true,colorByCrit:true,size:240});
 }
@@ -9870,7 +9876,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="1.17.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="1.18.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 const SITE_URL="https://www.risk-analysis-editor.com/";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */

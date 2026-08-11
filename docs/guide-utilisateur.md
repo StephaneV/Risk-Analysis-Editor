@@ -17,18 +17,19 @@ Ce guide décrit l'utilisation complète de **Risk Analysis Editor**, l'éditeur
 7. [Les mesures de maîtrise](#7-les-mesures-de-maîtrise)
 8. [Les liens risques ↔ mesures](#8-les-liens-risques--mesures)
 9. [Les matrices](#9-les-matrices)
-10. [Les statistiques](#10-les-statistiques)
-11. [Le plan d'action](#11-le-plan-daction)
-12. [Le rapport](#12-le-rapport)
-13. [Les champs personnalisés](#13-les-champs-personnalisés)
-14. [Rechercher, trier, filtrer, personnaliser les colonnes](#14-rechercher-trier-filtrer-personnaliser-les-colonnes)
-15. [Import et export CSV](#15-import-et-export-csv)
-16. [Exports Word et Excel](#16-exports-word-et-excel)
-17. [Gérer les fichiers et les modèles](#17-gérer-les-fichiers-et-les-modèles)
-18. [Raccourcis clavier et accessibilité](#18-raccourcis-clavier-et-accessibilité)
-19. [Compatibilité navigateurs](#19-compatibilité-navigateurs)
-20. [Format de fichier et interopérabilité](#20-format-de-fichier-et-interopérabilité)
-21. [Questions fréquentes et astuces](#21-questions-fréquentes-et-astuces)
+10. [Les radars](#10-les-radars)
+11. [Les statistiques](#11-les-statistiques)
+12. [Le plan d'action](#12-le-plan-daction)
+13. [Le rapport](#13-le-rapport)
+14. [Les champs personnalisés](#14-les-champs-personnalisés)
+15. [Rechercher, trier, filtrer, personnaliser les colonnes](#15-rechercher-trier-filtrer-personnaliser-les-colonnes)
+16. [Import et export CSV](#16-import-et-export-csv)
+17. [Exports Word et Excel](#17-exports-word-et-excel)
+18. [Gérer les fichiers et les modèles](#18-gérer-les-fichiers-et-les-modèles)
+19. [Raccourcis clavier et accessibilité](#19-raccourcis-clavier-et-accessibilité)
+20. [Compatibilité navigateurs](#20-compatibilité-navigateurs)
+21. [Format de fichier et interopérabilité](#21-format-de-fichier-et-interopérabilité)
+22. [Questions fréquentes et astuces](#22-questions-fréquentes-et-astuces)
 
 ---
 
@@ -83,7 +84,7 @@ En haut de la fenêtre :
 - l'**état du document** au centre : le nom du fichier lié (par ex. `demo-aipd-sst.rae.json`) et une pastille **« modifié »** dès qu'une modification n'est pas enregistrée ;
 - le sélecteur de **langue** de l'interface (Français / English / Italiano) ;
 - le sélecteur de **thème** (Clair / Sombre) ;
-- le menu **Fichier** (voir §17) ;
+- le menu **Fichier** (voir §18) ;
 - le bouton **Enregistrer**, qui écrit les modifications dans le fichier `.rae.json`.
 
 ### Les onglets
@@ -92,7 +93,7 @@ La navigation se fait par onglets : **Présentation**, **Risques**, **Mesures**,
 
 ### Enregistrement et sécurité des données
 
-- **Enregistrement.** Le bouton *Enregistrer* (ou `Ctrl+S`) écrit dans le fichier. Selon le navigateur, il écrit directement dans le fichier ouvert, ou propose un téléchargement (voir §19).
+- **Enregistrement.** Le bouton *Enregistrer* (ou `Ctrl+S`) écrit dans le fichier. Selon le navigateur, il écrit directement dans le fichier ouvert, ou propose un téléchargement (voir §20).
 - **Sauvegarde automatique.** L'outil conserve en arrière-plan une copie de travail : si vous fermez l'onglet par accident, il vous **propose de restaurer** l'analyse non enregistrée à la réouverture.
 - **Garde anti-perte de saisie.** Si vous fermez une fiche en cours d'édition par un clic à côté, la touche `Échap` ou la croix ✕ alors que vous avez commencé à saisir, l'outil demande **confirmation** avant d'abandonner vos modifications. Le bouton *Annuler* de la fiche, lui, ferme directement.
 - **Avertissement de fermeture.** Si des modifications ne sont pas enregistrées, le navigateur vous avertit avant de quitter la page.
@@ -101,7 +102,7 @@ La navigation se fait par onglets : **Présentation**, **Risques**, **Mesures**,
 
 ## 4. Paramétrer la grille de cotation
 
-L'onglet **Paramètres** comporte cinq sous-onglets : *Affichage*, *Grille de cotation*, *Champs personnalisés*, *Rapport* (voir [§12](#12-le-rapport)) et *Statistiques* (voir [§10](#10-les-statistiques)).
+L'onglet **Paramètres** comporte six sous-onglets : *Affichage*, *Grille de cotation*, *Champs personnalisés*, *Rapport* (voir [§13](#13-le-rapport)), *Statistiques* (voir [§11](#11-les-statistiques)) et *Radars* (voir [§10](#10-les-radars)).
 
 ### Grille de cotation
 
@@ -132,7 +133,7 @@ Ce sous-onglet règle le rendu visuel :
 - **Lisibilité des étiquettes colorées** : mode *Classique* (luminosité perçue) ou *Contraste renforcé (WCAG AA)*, qui calcule une couleur de texte garantissant un contraste suffisant sur n'importe quel fond ;
 - **Format des dates** : format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports — *ISO* (AAAA-MM-JJ, défaut), *JJ/MM/AAAA*, *MM/JJ/AAAA* ou *Long* (localisé selon la langue). Les dates restent enregistrées au format ISO dans le fichier ; seul l'affichage change.
 
-Les champs personnalisés sont traités en [section 13](#13-les-champs-personnalisés).
+Les champs personnalisés sont traités en [section 13](#14-les-champs-personnalisés).
 
 ---
 
@@ -171,7 +172,7 @@ La fiche regroupe :
 
 - **Identifiant**, **catégorie**, **libellé** (obligatoire), **propriétaire** ;
 - **Description** et **Notes**, tous deux en **Markdown** (un aperçu est disponible via l'icône œil) ;
-- l'**évaluation initiale (brute)** et l'**évaluation résiduelle (nette)** : vraisemblance et gravité. Le score et la criticité sont **calculés et affichés automatiquement** sous chaque bloc. Si des **champs personnalisés de cotation** ont été définis (cible *évaluation du risque*, voir [§13](#13-les-champs-personnalisés)), ils se saisissent **sous chaque bloc**, avec une valeur **distincte** pour l'évaluation initiale et pour la résiduelle (dans les modèles EBIOS RM et ISO 27005 : *Justification* et *Date de cotation*) ;
+- l'**évaluation initiale (brute)** et l'**évaluation résiduelle (nette)** : vraisemblance et gravité. Le score et la criticité sont **calculés et affichés automatiquement** sous chaque bloc. Si des **champs personnalisés de cotation** ont été définis (cible *évaluation du risque*, voir [§14](#14-les-champs-personnalisés)), ils se saisissent **sous chaque bloc**, avec une valeur **distincte** pour l'évaluation initiale et pour la résiduelle (dans les modèles EBIOS RM et ISO 27005 : *Justification* et *Date de cotation*) ;
 - la section **Mesures de maîtrise liées** (à cocher) ;
 - les **champs personnalisés** de risque, le cas échéant.
 
@@ -185,7 +186,7 @@ Chaque ligne offre trois actions :
 - **⧉ Dupliquer** — ouvre une **fiche de création pré-remplie** (identifiant suivant, libellé suffixé « (copie) », mesures associées reprises). La copie n'est créée **qu'à la validation** ;
 - **🗑 Supprimer** — après confirmation. Un message **« Annuler »** apparaît alors quelques secondes pour **restaurer** la fiche supprimée (liens compris) en cas d'erreur.
 
-**Réordonner les lignes.** Lorsqu'aucun tri de colonne n'est actif, une **poignée ⠿** apparaît au survol dans la colonne ID : glissez-la pour changer l'ordre des risques dans le fichier (au clavier : `Ctrl+↑`/`Ctrl+↓`). Cet ordre gouverne l'affichage par défaut, le rapport et les exports. Voir [§14](#14-rechercher-trier-filtrer-personnaliser-les-colonnes).
+**Réordonner les lignes.** Lorsqu'aucun tri de colonne n'est actif, une **poignée ⠿** apparaît au survol dans la colonne ID : glissez-la pour changer l'ordre des risques dans le fichier (au clavier : `Ctrl+↑`/`Ctrl+↓`). Cet ordre gouverne l'affichage par défaut, le rapport et les exports. Voir [§15](#15-rechercher-trier-filtrer-personnaliser-les-colonnes).
 
 ---
 
@@ -233,7 +234,7 @@ Cliquez sur une ligne pour ouvrir la **fiche du lien** :
 
 ![Matrices Initial / Résiduel](images/guide-14-matrices-ir.png)
 
-L'onglet **Matrices** est le point fort visuel de l'outil : il montre le positionnement des risques avant et après mesures. La synthèse chiffrée (compteurs, répartition par criticité) est regroupée dans l'onglet [**Statistiques**](#10-les-statistiques).
+L'onglet **Matrices** est le point fort visuel de l'outil : il montre le positionnement des risques avant et après mesures. La synthèse chiffrée (compteurs, répartition par criticité) est regroupée dans l'onglet [**Statistiques**](#11-les-statistiques).
 
 Deux vues, sélectionnables par la bascule en haut à gauche :
 
@@ -255,7 +256,42 @@ Autres commandes :
 
 ---
 
-## 10. Les statistiques
+## 10. Les radars
+
+L'onglet **Radars** propose une lecture synthétique du **profil de risque** sous forme de **graphique en radar** (toile d'araignée) : chaque **axe** est une valeur d'analyse et un **polygone** relie les valeurs mesurées sur ces axes. Il faut **au moins trois axes** pour tracer un radar.
+
+![Onglet Radars](images/guide-24-radars.png)
+
+Une **barre d'outils** pilote l'affichage :
+
+- **Évaluation** — *Initial*, *Résiduel*, *Accolés* (deux radars côte à côte) ou *Superposés* (deux polygones sur le même radar, pour visualiser la réduction du risque).
+- **Dimension** — ce que représentent les axes : la **catégorie** de risque, ou un **champ personnalisé à valeurs fermées** rattaché au risque (liste déroulante, tags, liste à cocher).
+- **Métrique** — la valeur mesurée sur chaque axe :
+  - **Criticité moyenne** / **Criticité maximale** — sur l'échelle **par risque** de la grille ; le fond est teinté en **bandes de criticité** (mêmes couleurs que la grille).
+  - **Criticité cumulée** — la **somme** des scores de l'axe : tient compte à la fois de la gravité **et** du nombre de risques.
+  - **Criticité pondérée** — la somme des **poids** de niveau (voir *Paramètres › Radars* ci-dessous) : permet de faire dominer les risques les plus graves.
+  - **Nombre de risques** — l'effectif de l'axe (indépendant de l'évaluation).
+
+> Les métriques **cumulée**, **pondérée** et **nombre** sont *extensives* : leur valeur croît avec le nombre de risques. Le fond est alors **neutre** et l'**échelle automatique**, sans bandes de criticité.
+
+**Infobulles au survol** (comme sur les secteurs des Statistiques) : un **point** affiche la **liste des risques** de l'axe ; un **libellé d'axe** affiche la **description** de la valeur (pour un champ personnalisé dont l'item porte une description) ; un **niveau** dans la légende affiche la **description du niveau de criticité**.
+
+Sous le graphique, un **tableau** récapitule les valeurs par axe. Comme les autres onglets, le radar **respecte les filtres actifs** (§15).
+
+**Exporter.** Les boutons **⧉ Copier**, **⭳ PNG** et **⭳ SVG** exportent le radar (titre, graphique et légende), comme les matrices. Le radar peut aussi être ajouté au **rapport** via une section *Radar* configurable (voir *Paramètres › Rapport*, §13).
+
+### Paramètres › Radars
+
+Un sous-onglet dédié dans *Paramètres* règle deux choses, enregistrées **avec l'analyse** (donc portables avec le fichier) :
+
+![Paramètres : radars](images/guide-25-parametres-radars.png)
+
+- **Poids par niveau de criticité** — utilisés par la métrique *Criticité pondérée* : chaque risque compte pour le poids de son niveau (par défaut **1 / 2 / 4 / 8**, du plus faible au plus grave).
+- **Rendu des radars** — **luminosité** et **saturation** (HSL) des bandes de fond, **épaisseur du contour**, **pas des graduations** (`0` = automatique) et **couleur des rayons**, avec un **aperçu** en direct. Ces réglages s'appliquent à l'écran, à l'export et au rapport.
+
+---
+
+## 11. Les statistiques
 
 ![Onglet Statistiques](images/guide-23-statistiques.png)
 
@@ -274,7 +310,7 @@ Les données sont présentées en **blocs**, chacun sous forme de **tableau**, d
 
 ---
 
-## 11. Le plan d'action
+## 12. Le plan d'action
 
 ![Plan d'action : échéancier](images/guide-16-plan-echeancier.png)
 
@@ -290,13 +326,13 @@ Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par stat
 
 ---
 
-## 12. Le rapport
+## 13. Le rapport
 
 ![Rapport imprimable](images/guide-18-rapport.png)
 
 L'onglet **Rapport** génère un rapport configurable, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **référentiels et légendes des champs** (valeurs des listes/tags accompagnées de leur description), les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
 
-Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §16).
+Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §17).
 
 ### Personnaliser le rapport (Paramètres › Rapport)
 
@@ -319,7 +355,7 @@ Le bouton **↺ Réinitialiser le rapport par défaut** efface la personnalisati
 
 ---
 
-## 13. Les champs personnalisés
+## 14. Les champs personnalisés
 
 Les **champs personnalisés** étendent le modèle de données pour l'adapter à votre méthode. Ils se définissent dans *Paramètres › Champs personnalisés*.
 
@@ -331,7 +367,7 @@ Chaque champ possède :
 - un **code** (identifiant technique) et un **libellé** (multilingue) ;
 - un **type** parmi dix : oui/non, entier, décimal, date, texte, texte long, liste déroulante, liste à cocher, **tags colorés** (choix unique ou multiple) et **barre de progression** (0–100 %) ;
 - des attributs optionnels : **obligatoire**, bornes (min/max, longueur, nombre d'items), une **aide** et une **description** ;
-- l'option **Utilisable comme filtre** (pour les types à valeurs fermées rattachés à un risque, une mesure ou un lien — voir §14).
+- l'option **Utilisable comme filtre** (pour les types à valeurs fermées rattachés à un risque, une mesure ou un lien — voir §15).
 
 ![Éditeur d'un champ personnalisé](images/guide-06-champ-editeur.png)
 
@@ -347,13 +383,13 @@ Pour les listes (**liste déroulante**, **liste à cocher**, **tags**), chaque *
 
 ---
 
-## 14. Rechercher, trier, filtrer, personnaliser les colonnes
+## 15. Rechercher, trier, filtrer, personnaliser les colonnes
 
 Ces fonctions transversales s'appliquent aux registres Risques, Mesures et au détail des Liens.
 
 - **Rechercher.** Le champ *Rechercher…* filtre les lignes par texte libre.
 - **Trier.** Un clic sur un en-tête de colonne trie ; l'en-tête cycle sur **trois états** : croissant → décroissant → **retour à l'ordre d'origine** (l'ordre du fichier). Les colonnes de champ personnalisé scalaires sont également triables.
-- **Filtrer.** Des filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement », et tout champ personnalisé déclaré *filtrable*) restreignent l'affichage. Les filtres se **combinent (ET)**. **Chaque onglet propose par défaut les filtres de sa famille** — ceux du **risque** (registre Risques, **Matrices**), de la **mesure** (Mesures, Plan d'action), du **risque et de la mesure** (**Statistiques**, qui affiche les deux) ou du **lien** (Liens) ; les filtres d'une autre famille n'apparaissent **que lorsqu'ils sont actifs**. Ceux de **catégorie** (risque), **type** et **statut** (mesure) ainsi que les **champs personnalisés** se **propagent le long des liens** — et donc à **tous les onglets, aux matrices et au rapport** : filtrer sur un risque restreint aussi les mesures et les liens correspondants, et réciproquement. La **recherche texte** et les filtres propres au *Plan d'action* (**responsable**, **« en retard »**) restent **locaux** à leur vue (le filtre *statut* du Plan est le même que celui des mesures). Quand un filtre propagé est actif, sa **valeur** reste **visible et modifiable** dans la barre de **chaque onglet** où il agit — par exemple, un filtre de catégorie posé sur les risques apparaît aussi, avec sa valeur, dans la barre des mesures. Un compteur « n sur N » et un bouton *Réinitialiser* apparaissent dès qu'un filtre ou une recherche restreint la vue (la réinitialisation efface aussi les filtres propagés). Le **filtrage propagé** (catégorie, type, statut et champs personnalisés) est **enregistré dans le fichier** et retrouvé à la réouverture ; le modifier marque le fichier comme *à enregistrer*. Un paramètre d'adresse `?filter=code:valeur;…` permet aussi de l'appliquer au démarrage (voir [§17](#17-gérer-les-fichiers-et-les-modèles)).
+- **Filtrer.** Des filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement », et tout champ personnalisé déclaré *filtrable*) restreignent l'affichage. Les filtres se **combinent (ET)**. **Chaque onglet propose par défaut les filtres de sa famille** — ceux du **risque** (registre Risques, **Matrices**), de la **mesure** (Mesures, Plan d'action), du **risque et de la mesure** (**Statistiques**, qui affiche les deux) ou du **lien** (Liens) ; les filtres d'une autre famille n'apparaissent **que lorsqu'ils sont actifs**. Ceux de **catégorie** (risque), **type** et **statut** (mesure) ainsi que les **champs personnalisés** se **propagent le long des liens** — et donc à **tous les onglets, aux matrices et au rapport** : filtrer sur un risque restreint aussi les mesures et les liens correspondants, et réciproquement. La **recherche texte** et les filtres propres au *Plan d'action* (**responsable**, **« en retard »**) restent **locaux** à leur vue (le filtre *statut* du Plan est le même que celui des mesures). Quand un filtre propagé est actif, sa **valeur** reste **visible et modifiable** dans la barre de **chaque onglet** où il agit — par exemple, un filtre de catégorie posé sur les risques apparaît aussi, avec sa valeur, dans la barre des mesures. Un compteur « n sur N » et un bouton *Réinitialiser* apparaissent dès qu'un filtre ou une recherche restreint la vue (la réinitialisation efface aussi les filtres propagés). Le **filtrage propagé** (catégorie, type, statut et champs personnalisés) est **enregistré dans le fichier** et retrouvé à la réouverture ; le modifier marque le fichier comme *à enregistrer*. Un paramètre d'adresse `?filter=code:valeur;…` permet aussi de l'appliquer au démarrage (voir [§18](#18-gérer-les-fichiers-et-les-modèles)).
 - **Personnaliser les colonnes.** Le bouton **⚙** à droite de l'en-tête ouvre le menu des colonnes.
 
 ![Menu de personnalisation des colonnes](images/guide-19-menu-colonnes.png)
@@ -362,7 +398,7 @@ Vous pouvez y **afficher/masquer** chaque colonne (y compris les champs personna
 
 ---
 
-## 15. Import et export CSV
+## 16. Import et export CSV
 
 Chaque registre (Risques, Mesures, Liens) propose **Importer (CSV)** et **Exporter (CSV)**.
 
@@ -373,16 +409,16 @@ Le CSV est idéal pour préparer ou retravailler les données dans un tableur, p
 
 ---
 
-## 16. Exports Word et Excel
+## 17. Exports Word et Excel
 
 Le menu **Fichier** propose deux exports bureautiques, générés **localement et hors-ligne** (le contenu de l'analyse n'est pas transmis à un service distant) :
 
-- **Exporter en Word (.docx)** — suit la **même configuration** que le rapport (voir [§12](#12-le-rapport) : sections, ordre, colonnes, périmètre, orientation) et y ajoute une **page de garde**, une **table des matières** et un **en-tête / pied de page natifs** (avec numéros de page). Cartouche, présentation, synthèse, grille, **matrices en images**, registres et fiches détaillées. Prêt à fondre dans un gabarit d'entreprise. Également accessible via le bouton *⭳ Word* de l'onglet Rapport.
+- **Exporter en Word (.docx)** — suit la **même configuration** que le rapport (voir [§13](#13-le-rapport) : sections, ordre, colonnes, périmètre, orientation) et y ajoute une **page de garde**, une **table des matières** et un **en-tête / pied de page natifs** (avec numéros de page). Cartouche, présentation, synthèse, grille, **matrices en images**, registres et fiches détaillées. Prêt à fondre dans un gabarit d'entreprise. Également accessible via le bouton *⭳ Word* de l'onglet Rapport.
 - **Exporter en Excel (.xlsx)** — un classeur à quatre feuilles (**Synthèse / Risques / Mesures / Liens**), avec cellules typées (vraies dates et nombres), couleurs de criticité et de statut, en-têtes figés et filtres automatiques.
 
 ---
 
-## 17. Gérer les fichiers et les modèles
+## 18. Gérer les fichiers et les modèles
 
 ![Menu Fichier](images/guide-20-menu-fichier.png)
 
@@ -393,7 +429,7 @@ Le menu **Fichier** rassemble :
 - **Charger…** (`Ctrl+O`) — ouvre un fichier `.rae.json`. Vous pouvez aussi **glisser-déposer** un fichier `.rae.json` sur la fenêtre ;
 - **Enregistrer** (`Ctrl+S`) et **Enregistrer sous…** (`Ctrl+Maj+S`) ;
 - **Enregistrer comme modèle…** — exporte un squelette (grille + champs personnalisés, sans risques ni mesures) réutilisable comme point de départ ;
-- **Exporter en Word / Excel** (voir §16) ;
+- **Exporter en Word / Excel** (voir §17) ;
 - **À propos** (version de l'application) et **Aide & raccourcis**.
 
 **Modèles méthodologiques.** L'écran d'accueil propose de démarrer d'un modèle (EBIOS RM, AIPD — CNIL PIA, ISO 27005, générique). Ouvrir un modèle démarre une **nouvelle analyse non reliée** : votre travail ne remplace jamais le modèle.
@@ -402,7 +438,7 @@ Le menu **Fichier** rassemble :
 
 ---
 
-## 18. Raccourcis clavier et accessibilité
+## 19. Raccourcis clavier et accessibilité
 
 Un panneau récapitule les gestes et raccourcis : menu **Fichier › Aide & raccourcis**, ou la touche **`?`**.
 
@@ -426,7 +462,7 @@ Principaux raccourcis :
 
 ---
 
-## 19. Compatibilité navigateurs
+## 20. Compatibilité navigateurs
 
 L'application fonctionne dans un navigateur de bureau récent, sans installation ni serveur. Les tests sont réalisés principalement avec **Microsoft Edge (Chromium)** ; tout navigateur basé sur Chromium offre l'expérience complète.
 
@@ -437,7 +473,7 @@ Le détail figure dans le [README](../README.fr.md#compatibilité-navigateurs).
 
 ---
 
-## 20. Format de fichier et interopérabilité
+## 21. Format de fichier et interopérabilité
 
 Une analyse est un unique fichier **`.rae.json`** (JSON lisible) contenant la grille, les risques, les mesures, les liens, les cotations et les champs personnalisés. Les **noms de propriétés sont en anglais** ; les **valeurs** (libellés, descriptions) restent dans la langue de l'analyse. Le format est **ouvert et spécifié**, ce qui permet de le produire ou de le consommer avec d'autres outils.
 
@@ -448,7 +484,7 @@ La spécification complète et le schéma JSON de validation se trouvent dans le
 
 ---
 
-## 21. Questions fréquentes et astuces
+## 22. Questions fréquentes et astuces
 
 **Où sont enregistrées mes données ?**
 Uniquement dans le fichier `.rae.json` que vous enregistrez, sur votre poste. L'outil fonctionne hors-ligne et ne transmet pas le contenu de vos analyses à un service distant, exports Word/Excel compris.
@@ -463,11 +499,11 @@ Cliquez sur **« Annuler »** dans le message qui apparaît juste après la supp
 Le réordonnancement par poignée n'est possible que **sans tri de colonne actif**. Ramenez le tri à l'ordre d'origine (voir ci-dessus).
 
 **Comment adapter l'outil à ma méthode (EBIOS RM, ISO 27005…) ?**
-Configurez la **grille de cotation** (§4) et créez des **champs personnalisés** (§13) pour les notions propres à votre méthode (source de risque, biens supports, événement redouté…). Vous pouvez partir d'un **modèle** fourni.
+Configurez la **grille de cotation** (§4) et créez des **champs personnalisés** (§14) pour les notions propres à votre méthode (source de risque, biens supports, événement redouté…). Vous pouvez partir d'un **modèle** fourni.
 
 **La modification de ma grille a changé les cotations affichées.**
 C'est attendu : le score et la criticité sont **recalculés** à partir de la grille. Fixez la grille avant de coter, ou tenez compte du bandeau d'avertissement.
 
 ---
 
-*Ce guide correspond à Risk Analysis Editor version 1.17.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
+*Ce guide correspond à Risk Analysis Editor version 1.18.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
