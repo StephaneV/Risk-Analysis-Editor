@@ -210,6 +210,19 @@
   .start-templates{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
   .start-templates .st-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
   .start-templates .st-list{display:flex;flex-wrap:wrap;gap:10px}
+  .start-recents{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
+  .start-recents .st-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
+  .start-recents .st-list{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .start-recents .rec-item{display:flex;align-items:stretch;border-top:1px solid var(--border)}
+  .start-recents .rec-item:first-child{border-top:none}
+  .start-recents .rec-info{flex:1;display:flex;align-items:center;gap:16px;padding:9px 13px;min-width:0;cursor:pointer}
+  .start-recents .rec-info:hover{background:var(--panel-2)}
+  .start-recents .rec-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;max-width:48%}
+  .start-recents .rec-title{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+  .start-recents .rec-act{display:inline-flex;align-items:center;border:none;border-left:1px solid var(--border);background:none;color:var(--accent);cursor:pointer;padding:0 13px}
+  .start-recents .rec-act:hover{background:var(--panel-2)}
+  .start-recents .rec-x{border:none;border-left:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;padding:0 14px;font-size:16px;line-height:1}
+  .start-recents .rec-x:hover{background:var(--panel-2);color:var(--danger)}
   .tpl-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;
     background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;
     cursor:pointer;font-family:inherit;min-width:210px;max-width:260px}
@@ -851,8 +864,8 @@
   #reportCfgPanel .rc-radio{display:flex;flex-direction:column;gap:8px}
   #reportCfgPanel .rc-radio label{display:flex;align-items:center;justify-content:flex-start;gap:9px;font-size:13.5px;text-align:left}
   #reportCfgPanel .rc-radio input[type=radio]{width:16px;height:16px;accent-color:var(--accent);margin:0;flex:none}
-  #reportCfgPanel .rc-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-  #reportCfgPanel .rc-note{color:var(--muted);font-size:12px}
+  #reportCfgPanel .rc-foot,#radarCfgPanel .rc-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  #reportCfgPanel .rc-note,#radarCfgPanel .rc-note{color:var(--muted);font-size:12px}
   #reportCfgPanel h3{font-size:13px;margin:16px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
   #reportCfgPanel .rc-drop-above{box-shadow:inset 0 2px 0 0 var(--accent)}
   #reportCfgPanel .rc-drop-below{box-shadow:inset 0 -2px 0 0 var(--accent)}
@@ -1109,6 +1122,11 @@
         <li data-i18n="start_step4">Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.</li>
       </ol>
       <div class="caption" id="startNote" style="margin-top:10px"></div>
+      <!-- Fichiers récents : peuplé par renderStartRecents() depuis IndexedDB (handles). -->
+      <div class="start-recents" id="startRecents" hidden>
+        <div class="st-title" data-i18n="start_recent_title">Fichiers récents</div>
+        <div class="st-list" id="startRecentsList"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -1554,6 +1572,8 @@ const I18N = {
     start_step4:"Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.",
     start_demo_failed:"Démonstration non accessible depuis ce mode d'ouverture. Utilisez « Charger un fichier .rae.json » et choisissez {0} dans le dossier examples/.",
     start_templates_title:"Démarrer d'un modèle", toast_template_new:"Nouvelle analyse créée à partir d'un modèle.",
+    start_recent_title:"Fichiers récents", recent_open:"Ouvrir", recent_remove:"Retirer", recent_denied:"Accès au fichier refusé.",
+    recent_missing:"« {0} » est introuvable (déplacé ou supprimé). Le retirer des récents ?",
     menu_home:"Écran d'accueil", menu_save_template:"Enregistrer comme modèle…", toast_template_saved:"Modèle enregistré : {0}",
     start_template_failed:"Modèle non accessible depuis ce mode d'ouverture. Servez l'application via un serveur (http://) pour charger « {0} ».",
     start_locked:"Choisissez d'abord comment commencer ci-dessus.",
@@ -1599,7 +1619,7 @@ const I18N = {
     rp_radar:"Radar", radar_metric:"Métrique", radar_eval:"Évaluation",
     radar_metric_sum:"Criticité cumulée", radar_metric_weighted:"Criticité pondérée",
     radar_cfg_weights:"Poids par niveau de criticité", radar_cfg_weights_cap:"Utilisés par la métrique « Criticité pondérée » : chaque risque compte pour le poids de son niveau.",
-    radar_cfg_render:"Rendu des radars", radar_cfg_lum:"Luminosité (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Épaisseur du contour", radar_cfg_step:"Pas des graduations (0 = auto)", radar_cfg_spoke:"Couleur des rayons",
+    radar_cfg_render:"Rendu des radars", radar_cfg_lum:"Luminosité (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Épaisseur du contour", radar_cfg_step:"Pas des graduations (0 = auto)", radar_cfg_spoke:"Couleur des rayons", radar_cfg_color_init:"Couleur (initial)", radar_cfg_color_res:"Couleur (résiduel)",
     radar_cfg_saved:"Préférences enregistrées avec l'analyse (rubrique extensions.display.radar).", radar_cfg_reset:"Réinitialiser les valeurs par défaut",
     stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
     stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
@@ -1893,6 +1913,8 @@ const I18N = {
     start_step4:"Read the matrices, follow the Action plan, print the Report.",
     start_demo_failed:"The demonstration cannot be reached in this opening mode. Use “Load a .rae.json file” and pick {0} from the examples/ folder.",
     start_templates_title:"Start from a template", toast_template_new:"New analysis created from a template.",
+    start_recent_title:"Recent files", recent_open:"Open", recent_remove:"Remove", recent_denied:"File access denied.",
+    recent_missing:"“{0}” could not be found (moved or deleted). Remove it from recent files?",
     menu_home:"Home screen", menu_save_template:"Save as template…", toast_template_saved:"Template saved: {0}",
     start_template_failed:"Template not reachable in this opening mode. Serve the app over http:// to load \"{0}\".",
     start_locked:"First choose how to start above.",
@@ -1936,7 +1958,7 @@ const I18N = {
     rp_radar:"Radar", radar_metric:"Metric", radar_eval:"Assessment",
     radar_metric_sum:"Cumulative criticality", radar_metric_weighted:"Weighted criticality",
     radar_cfg_weights:"Weights by criticality level", radar_cfg_weights_cap:"Used by the “Weighted criticality” metric: each risk counts for the weight of its level.",
-    radar_cfg_render:"Radar rendering", radar_cfg_lum:"Lightness (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Outline width", radar_cfg_step:"Grid step (0 = auto)", radar_cfg_spoke:"Spokes colour",
+    radar_cfg_render:"Radar rendering", radar_cfg_lum:"Lightness (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Outline width", radar_cfg_step:"Grid step (0 = auto)", radar_cfg_spoke:"Spokes colour", radar_cfg_color_init:"Colour (initial)", radar_cfg_color_res:"Colour (residual)",
     radar_cfg_saved:"Preferences saved with the analysis (extensions.display.radar).", radar_cfg_reset:"Reset to defaults",
     stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
     stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
@@ -2230,6 +2252,8 @@ const I18N = {
     start_step4:"Leggi le matrici, segui il Piano d'azione, stampa il Rapporto.",
     start_demo_failed:"Dimostrazione non raggiungibile in questa modalità di apertura. Usa «Carica un file .rae.json» e scegli {0} nella cartella examples/.",
     start_templates_title:"Inizia da un modello", toast_template_new:"Nuova analisi creata da un modello.",
+    start_recent_title:"File recenti", recent_open:"Apri", recent_remove:"Rimuovi", recent_denied:"Accesso al file negato.",
+    recent_missing:"« {0} » non è stato trovato (spostato o eliminato). Rimuoverlo dai recenti?",
     menu_home:"Schermata iniziale", menu_save_template:"Salva come modello…", toast_template_saved:"Modello salvato: {0}",
     start_template_failed:"Modello non raggiungibile in questa modalità. Servi l'app tramite http:// per caricare «{0}».",
     start_locked:"Scegli prima come iniziare qui sopra.",
@@ -2273,7 +2297,7 @@ const I18N = {
     rp_radar:"Radar", radar_metric:"Metrica", radar_eval:"Valutazione",
     radar_metric_sum:"Criticità cumulata", radar_metric_weighted:"Criticità ponderata",
     radar_cfg_weights:"Pesi per livello di criticità", radar_cfg_weights_cap:"Usati dalla metrica « Criticità ponderata »: ogni rischio conta per il peso del suo livello.",
-    radar_cfg_render:"Resa dei radar", radar_cfg_lum:"Luminosità (HSL)", radar_cfg_sat:"Saturazione", radar_cfg_outline:"Spessore del contorno", radar_cfg_step:"Passo delle griglie (0 = auto)", radar_cfg_spoke:"Colore dei raggi",
+    radar_cfg_render:"Resa dei radar", radar_cfg_lum:"Luminosità (HSL)", radar_cfg_sat:"Saturazione", radar_cfg_outline:"Spessore del contorno", radar_cfg_step:"Passo delle griglie (0 = auto)", radar_cfg_spoke:"Colore dei raggi", radar_cfg_color_init:"Colore (iniziale)", radar_cfg_color_res:"Colore (residuo)",
     radar_cfg_saved:"Preferenze salvate con l'analisi (sezione extensions.display.radar).", radar_cfg_reset:"Ripristina i valori predefiniti",
     stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
     stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
@@ -3022,7 +3046,7 @@ async function openFilePicker(){
   try{
     const f=await h.getFile();
     if(applyLoadedData(JSON.parse(await f.text()),f.name,false)){
-      if(!lastLoadWasTemplate)fileHandle=h;   // un modèle démarre une nouvelle analyse non reliée
+      if(!lastLoadWasTemplate){fileHandle=h;recentAdd(h);}   // un modèle démarre une nouvelle analyse non reliée
       refreshFileState();toast(lastLoadWasTemplate?t("toast_template_new"):t("toast_loaded"));}
   }catch(ex){alertModal(t("err_read_file",ex.message));}
 }
@@ -3197,7 +3221,7 @@ async function saveToFile(){
     try{
       if(!await ensureWritable(fileHandle)){alertModal(t("err_write_denied"));return;}
       await writeTo(fileHandle,analysisBlob());
-      dirty=false;autosaveClear();refreshFileState();toast(t("toast_saved",currentFileName||fileHandle.name));
+      dirty=false;autosaveClear();refreshFileState();recentAdd(fileHandle);toast(t("toast_saved",currentFileName||fileHandle.name));
     }catch(ex){alertModal(t("err_write",ex.message));}
     return;
   }
@@ -3213,7 +3237,7 @@ async function saveFileAs(){
   try{
     await writeTo(h,analysisBlob());
     fileHandle=h;currentFileName=h.name;dirty=false;autosaveClear();
-    refreshFileState();toast(t("toast_saved",currentFileName));
+    refreshFileState();recentAdd(h);toast(t("toast_saved",currentFileName));
   }catch(ex){alertModal(t("err_write",ex.message));}
 }
 /* Repli (Firefox, Safari) : téléchargement, comme avant. */
@@ -3263,6 +3287,75 @@ async function autosaveRead(){try{return await asTx("readonly",st=>st.get(AS_KEY
 setInterval(autosaveWrite,AS_EVERY);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")autosaveWrite();});
 window.addEventListener("pagehide",autosaveWrite);
+
+/* ============================================================
+   FICHIERS RÉCENTS (écran d'accueil)
+   Mémorise les FileSystemFileHandle des fichiers ouverts/enregistrés dans IndexedDB,
+   pour les reproposer et les rouvrir depuis l'accueil (à la manière de Word).
+   Nécessite l'API File System Access ; sinon aucun récent (pas de handle réutilisable).
+   La réouverture redemande une permission par fichier (modèle de sécurité du navigateur).
+   ============================================================ */
+const RC_DB="rae-recents", RC_STORE="files", RC_MAX=8;
+const RECENT_OPEN_ICON='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+function rcDB(){return new Promise((res,rej)=>{let q;try{q=indexedDB.open(RC_DB,1);}catch(e){return rej(e);}
+  q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains(RC_STORE))d.createObjectStore(RC_STORE,{keyPath:"id"});};
+  q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+function rcTx(mode,fn){return rcDB().then(db=>new Promise((res,rej)=>{
+  const tx=db.transaction(RC_STORE,mode),st=tx.objectStore(RC_STORE);let out;
+  Promise.resolve(fn(st)).then(v=>out=v);
+  tx.oncomplete=()=>{db.close();res(out);};tx.onerror=()=>{db.close();rej(tx.error);};}));}
+const rcGetAll=()=>rcTx("readonly",st=>new Promise(r=>{const q=st.getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>r([]);}));
+/* Ajoute (ou remonte en tête) le fichier relié courant. Dédoublonnage par isSameEntry. */
+async function recentAdd(handle){
+  if(!handle||!FS_OK||typeof indexedDB==="undefined")return;
+  try{
+    const all=await rcGetAll();let id=null;
+    for(const r of all){if(r.handle&&r.handle.isSameEntry){try{if(await r.handle.isSameEntry(handle)){id=r.id;break;}}catch(_){}}}
+    if(!id)id="f"+Date.now()+Math.random().toString(36).slice(2,7);
+    await rcTx("readwrite",st=>st.put({id,name:handle.name,
+      title:(analyse&&analyse.metadata&&analyse.metadata.title)||"",at:Date.now(),handle}));
+    const rest=(await rcGetAll()).sort((a,b)=>(b.at||0)-(a.at||0));   // ne garder que les RC_MAX plus récents
+    for(let i=RC_MAX;i<rest.length;i++)await rcTx("readwrite",st=>st.delete(rest[i].id));
+    renderStartRecents();
+  }catch(e){/* stockage indisponible (mode privé, quota, file://) : bonus non bloquant */}
+}
+async function recentDel(id){try{await rcTx("readwrite",st=>st.delete(id));renderStartRecents();}catch(e){}}
+async function renderStartRecents(){
+  const box=document.getElementById("startRecents"),list=document.getElementById("startRecentsList");
+  if(!box||!list)return;
+  let recs=[];
+  if(FS_OK&&typeof indexedDB!=="undefined"){try{recs=(await rcGetAll()).filter(r=>r&&r.handle).sort((a,b)=>(b.at||0)-(a.at||0));}catch(e){recs=[];}}
+  box.hidden=!recs.length;
+  list.innerHTML=recs.map(r=>'<div class="rec-item">'+
+      '<span class="rec-info" data-rec="'+esc(r.id)+'" title="'+esc(r.name)+'">'+
+        '<span class="rec-name">'+esc(r.name)+'</span>'+
+        '<span class="rec-title">'+esc(r.title||t("file_new"))+'</span></span>'+
+      '<button type="button" class="rec-act" data-rec="'+esc(r.id)+'" title="'+esc(t("recent_open"))+'" aria-label="'+esc(t("recent_open"))+'">'+RECENT_OPEN_ICON+'</button>'+
+      '<button type="button" class="rec-x" data-recdel="'+esc(r.id)+'" title="'+esc(t("recent_remove"))+'" aria-label="'+esc(t("recent_remove"))+'">×</button>'+
+    '</div>').join("");
+}
+async function recentReopen(id){
+  let recs=[];try{recs=await rcGetAll();}catch(e){return;}
+  const rec=recs.find(r=>r.id===id);if(!rec||!rec.handle)return;
+  const h=rec.handle;
+  try{
+    let p=await h.queryPermission({mode:"read"});
+    if(p!=="granted")p=await h.requestPermission({mode:"read"});   // seulement si nécessaire
+    if(p!=="granted"){toast(t("recent_denied"));return;}
+    const f=await h.getFile();
+    if(applyLoadedData(JSON.parse(await f.text()),f.name,false)){
+      if(!lastLoadWasTemplate)fileHandle=h;
+      refreshFileState();recentAdd(h);toast(t("toast_loaded"));
+    }
+  }catch(ex){   // fichier déplacé/supprimé : proposer de le retirer de la liste
+    confirmModal(t("recent_missing",rec.name),()=>recentDel(id));
+  }
+}
+document.getElementById("startRecentsList").addEventListener("click",e=>{
+  const del=e.target.closest("[data-recdel]");if(del){recentDel(del.dataset.recdel);return;}
+  const rec=e.target.closest("[data-rec]");if(rec){const id=rec.dataset.rec;dirtyGuard(()=>recentReopen(id));}
+});
+
 /* Au démarrage : proposer la restauration, seulement si rien n'a été chargé par ailleurs. */
 async function autosaveOffer(){
   if(!isFresh)return;                       // un fichier a été chargé (?file=, ?url=)
@@ -3656,7 +3749,8 @@ let radarState={eval:"both-over",dim:"cat",metric:"avg"}, radarWired=false, RADA
 /* Configuration des radars (poids de la métrique pondérée + paramètres de rendu),
    enregistrée avec l'analyse dans extensions.display.radar. Poids par défaut : exponentiels
    selon l'ordre de criticité (1, 2, 4, 8…). */
-const RADAR_RENDER_DEF={hslL:0.85,hslS:1.30,outline:1.5,spoke:"#dbe2ea",ringStep:0};
+const RADAR_RENDER_DEF={hslL:0.85,hslS:1.30,outline:1.5,spoke:"#dbe2ea",ringStep:0,colorInit:RADAR_C1,colorRes:RADAR_C2};
+function radarHex(v,def){return (typeof v==="string"&&/^#[0-9a-fA-F]{6}$/.test(v))?v:def;}
 function radarClamp(v,lo,hi,def){v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):def;}
 function radarCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.radar;return (d&&typeof d==="object")?d:null;}
 function radarCfgStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.radar=d.radar||{};}
@@ -3666,7 +3760,9 @@ function radarCfg(){
     hslS:radarClamp(r.hslS,0.20,1.60,RADAR_RENDER_DEF.hslS),
     outline:radarClamp(r.outline,0,4,RADAR_RENDER_DEF.outline),
     ringStep:radarClamp(r.ringStep,0,100000,RADAR_RENDER_DEF.ringStep),
-    spoke:(typeof r.spoke==="string"&&/^#[0-9a-fA-F]{6}$/.test(r.spoke))?r.spoke:RADAR_RENDER_DEF.spoke};
+    spoke:radarHex(r.spoke,RADAR_RENDER_DEF.spoke),
+    colorInit:radarHex(r.colorInit,RADAR_RENDER_DEF.colorInit),
+    colorRes:radarHex(r.colorRes,RADAR_RENDER_DEF.colorRes)};
   const rw=(raw.weights&&typeof raw.weights==="object")?raw.weights:{},weights={};
   critBands().forEach((c,i)=>{const v=+rw[c.code];weights[c.code]=(isFinite(v)&&v>=0)?v:Math.pow(2,i);});
   return {render,weights};
@@ -3833,13 +3929,14 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
   const labels=axes.map(k=>radarAxisLabel(dim,k));
   const perRisk=(metric==="avg"||metric==="max");   // échelle par-risque + bandes de criticité
   const evalIndep=(metric==="count");               // indépendant de l'évaluation initiale/résiduelle
+  const rc=radarCfg().render;
   let series,vmax,bands;
   if(evalIndep){
-    series=[{name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(risks,dim,axes,"count","initial")}];
+    series=[{name:t("radar_metric_count"),color:rc.colorInit,values:radarValues(risks,dim,axes,"count","initial")}];
     vmax=radarExtVmax(radarNiceMax(series[0].values));bands=false;
   } else {
-    const sI={name:t("th_initial"),color:RADAR_C1,values:radarValues(risks,dim,axes,metric,"initial")};
-    const sR={name:t("th_residual"),color:RADAR_C2,values:radarValues(risks,dim,axes,metric,"residual")};
+    const sI={name:t("th_initial"),color:rc.colorInit,values:radarValues(risks,dim,axes,metric,"initial")};
+    const sR={name:t("th_residual"),color:rc.colorRes,values:radarValues(risks,dim,axes,metric,"residual")};
     series=cfg.eval==="initial"?[sI]:cfg.eval==="residual"?[sR]:[sI,sR];
     if(perRisk){vmax=gridMaxScore();bands=true;}
     else{vmax=radarExtVmax(radarNiceMax(series.reduce((acc,s)=>acc.concat(s.values),[])));bands=false;}
@@ -5337,7 +5434,6 @@ function reportCfg(){
       o.dim=(s.dim==="cat"||radarDimFields().some(f=>f.code===s.dim))?s.dim:"cat";
       o.metric=["avg","max","sum","weighted","count"].indexOf(s.metric)>=0?s.metric:"avg";
       o.eval=["initial","residual","both-side","both-over"].indexOf(s.eval)>=0?s.eval:"both-over";
-      o.title=typeof s.title==="string"?s.title:"";
     }
     return o;
   }
@@ -5528,7 +5624,7 @@ function renderReport(){
     },
     radar:s=>{
       const rc={eval:s.eval,dim:s.dim,metric:s.metric};
-      const head=(s.title&&s.title.trim())?s.title.trim():radarTitleText(rc);
+      const head=radarTitleText(rc);
       let inner='<h2>'+esc(head)+'</h2>';
       const m=radarComputeModel(rc,RISKS);
       inner+= m.tooFew?('<div class="rp-sub">'+esc(nR===0?t("matrix_empty"):t("radar_need_axes",m.axes.length))+'</div>')
@@ -7984,7 +8080,7 @@ async function buildDocx(){
     },
     radar:async(s)=>{
       const rc={eval:s.eval,dim:s.dim,metric:s.metric};
-      const head=(s.title&&s.title.trim())?s.title.trim():radarTitleText(rc);
+      const head=radarTitleText(rc);
       let out=heading(head);
       const m=radarComputeModel(rc,RISKS);
       out+= m.tooFew?dxP(dxRun(nR===0?t("matrix_empty"):t("radar_need_axes",m.axes.length),{color:"7A8699"}),{sa:120})
@@ -8161,6 +8257,7 @@ function renderStartCard(){
   const c=document.getElementById("startCard"), v=document.getElementById("view-presentation");
   if(!c||!v)return;
   renderStartTemplates();
+  renderStartRecents();
   const montrer=!startDismissed && !analyse.risks.length && !analyse.measures.length;
   c.style.display=montrer?"":"none";
   v.classList.toggle("onboarding",montrer);
@@ -8251,6 +8348,8 @@ function renderRadarSettings(){
     slider("outline",t("radar_cfg_outline"),0,4,0.1,cfg.render.outline)+
     '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_step"))+'</span><input type="number" min="0" step="1" data-rd="ringStep" value="'+cfg.render.ringStep+'" style="max-width:110px"></label>'+
     '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_spoke"))+'</span><input type="color" data-rd="spoke" value="'+cfg.render.spoke+'"></label>'+
+    '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_color_init"))+'</span><input type="color" data-rd="colorInit" value="'+cfg.render.colorInit+'"></label>'+
+    '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_color_res"))+'</span><input type="color" data-rd="colorRes" value="'+cfg.render.colorRes+'"></label>'+
     '<div id="radarCfgPrev" style="text-align:center;margin-top:8px"></div></div>';
   h+='<div class="card rc-foot"><span class="rc-note">💾 '+esc(t("radar_cfg_saved"))+'</span>'+
     '<button type="button" class="btn ghost sm" id="radarCfgReset">↺ '+esc(t("radar_cfg_reset"))+'</button></div>';
@@ -8267,7 +8366,7 @@ function collectRadarCfg(){
   const p=document.getElementById("radarCfgPanel");if(!p)return;
   const weights={};p.querySelectorAll("[data-rw]").forEach(i=>{const v=+i.value;weights[i.dataset.rw]=(isFinite(v)&&v>=0)?v:0;});
   const g=r=>{const el=p.querySelector('[data-rd="'+r+'"]');return el?el.value:null;};
-  const store=radarCfgStore();store.weights=weights;store.render={hslL:+g("hslL"),hslS:+g("hslS"),outline:+g("outline"),ringStep:+g("ringStep"),spoke:g("spoke")};
+  const store=radarCfgStore();store.weights=weights;store.render={hslL:+g("hslL"),hslS:+g("hslS"),outline:+g("outline"),ringStep:+g("ringStep"),spoke:g("spoke"),colorInit:g("colorInit"),colorRes:g("colorRes")};
   analyse.extensions.display.radar=store;markDirty();
   ["hslL","hslS","outline"].forEach(r=>{const b=p.querySelector('[data-out="'+r+'"]'),el=p.querySelector('[data-rd="'+r+'"]');if(b&&el)b.textContent=el.value;});
   radarCfgPreview();
@@ -8275,9 +8374,9 @@ function collectRadarCfg(){
 function radarCfgReset(){const d=analyse.extensions&&analyse.extensions.display;if(d&&d.radar)delete d.radar;markDirty();renderRadarSettings();}
 function radarCfgPreview(){
   const box=document.getElementById("radarCfgPrev");if(!box)return;
-  const m=radarComputeModel({eval:"initial",dim:radarBestDim(),metric:"avg"},visibleRisks());
+  const m=radarComputeModel({eval:"both-over",dim:radarBestDim(),metric:"avg"},visibleRisks());
   if(m.tooFew){box.innerHTML='<div class="caption">'+esc(t("radar_need_axes",m.axes.length))+'</div>';return;}
-  box.innerHTML=radarSVG(m.labels,m.series,m.vmax,{bands:true,colorByCrit:true,size:240});
+  box.innerHTML=radarSVG(m.labels,m.series,m.vmax,{bands:true,colorByCrit:m.series.length===1,size:240});
 }
 
 /* ============================================================
@@ -8332,12 +8431,10 @@ function rcSecItemHTML(s,iterating){
       [["avg","radar_metric_avg"],["max","radar_metric_max"],["sum","radar_metric_sum"],["weighted","radar_metric_weighted"],["count","radar_metric_count"]].map(a=>'<option value="'+a[0]+'"'+(s.metric===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
     const evSel='<select class="rc-rowctrl" data-role="radar-eval">'+
       [["both-over","radar_eval_over"],["both-side","radar_eval_side"],["initial","th_initial"],["residual","th_residual"]].map(a=>'<option value="'+a[0]+'"'+(s.eval===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
-    const titleInp='<input type="text" class="rc-rowctrl" data-role="radar-title" value="'+esc(s.title||"")+'" placeholder="'+esc(radarTitleText({eval:s.eval,dim:s.dim,metric:s.metric}))+'">';
     sub='<div class="rc-subrows" id="rcsub-radar">'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_dim"))+'</span>'+dimSel+'</label>'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_metric"))+'</span>'+metSel+'</label>'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_eval"))+'</span>'+evSel+'</label>'+
-      '<label class="rc-field"><span class="rc-lab">'+esc(t("f_title"))+'</span>'+titleInp+'</label>'+
       '</div>';}
   return '<div class="rc-secitem'+(s.on?"":" rc-off")+'" data-sec="'+s.id+'" draggable="true">'+
     '<div class="rc-secrow"><span class="rc-grip">⠿</span><input type="checkbox"'+(s.on?" checked":"")+'>'+
@@ -8451,7 +8548,6 @@ function collectReportCfg(){
       o.dim=(it.querySelector('[data-role="radar-dim"]')||{}).value||"cat";
       o.metric=(it.querySelector('[data-role="radar-metric"]')||{}).value||"avg";
       o.eval=(it.querySelector('[data-role="radar-eval"]')||{}).value||"both-over";
-      o.title=(it.querySelector('[data-role="radar-title"]')||{}).value||"";
     }
     secs.push(o);
   });
