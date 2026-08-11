@@ -211,7 +211,10 @@
   .start-templates .st-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
   .start-templates .st-list{display:flex;flex-wrap:wrap;gap:10px}
   .start-recents{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
-  .start-recents .st-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
+  .start-recents .st-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .start-recents .st-title{font-size:13px;font-weight:600;color:var(--text);margin:0}
+  .start-recents .rec-clear{border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px}
+  .start-recents .rec-clear:hover{color:var(--danger);text-decoration:underline}
   .start-recents .st-list{border:1px solid var(--border);border-radius:10px;overflow:hidden}
   .start-recents .rec-item{display:flex;align-items:stretch;border-top:1px solid var(--border)}
   .start-recents .rec-item:first-child{border-top:none}
@@ -1124,7 +1127,10 @@
       <div class="caption" id="startNote" style="margin-top:10px"></div>
       <!-- Fichiers récents : peuplé par renderStartRecents() depuis IndexedDB (handles). -->
       <div class="start-recents" id="startRecents" hidden>
-        <div class="st-title" data-i18n="start_recent_title">Fichiers récents</div>
+        <div class="st-head">
+          <div class="st-title" data-i18n="start_recent_title">Fichiers récents</div>
+          <button type="button" class="rec-clear" id="startRecentsClear" data-i18n="recent_clear">Vider les récents</button>
+        </div>
         <div class="st-list" id="startRecentsList"></div>
       </div>
     </div>
@@ -1572,7 +1578,7 @@ const I18N = {
     start_step4:"Lisez les matrices, suivez le Plan d'action, imprimez le Rapport.",
     start_demo_failed:"Démonstration non accessible depuis ce mode d'ouverture. Utilisez « Charger un fichier .rae.json » et choisissez {0} dans le dossier examples/.",
     start_templates_title:"Démarrer d'un modèle", toast_template_new:"Nouvelle analyse créée à partir d'un modèle.",
-    start_recent_title:"Fichiers récents", recent_open:"Ouvrir", recent_remove:"Retirer", recent_denied:"Accès au fichier refusé.",
+    start_recent_title:"Fichiers récents", recent_open:"Ouvrir", recent_clear:"Effacer la liste", recent_clear_confirm:"Effacer la liste des fichiers récents ?", recent_remove:"Retirer", recent_denied:"Accès au fichier refusé.",
     recent_missing:"« {0} » est introuvable (déplacé ou supprimé). Le retirer des récents ?",
     menu_home:"Écran d'accueil", menu_save_template:"Enregistrer comme modèle…", toast_template_saved:"Modèle enregistré : {0}",
     start_template_failed:"Modèle non accessible depuis ce mode d'ouverture. Servez l'application via un serveur (http://) pour charger « {0} ».",
@@ -1913,7 +1919,7 @@ const I18N = {
     start_step4:"Read the matrices, follow the Action plan, print the Report.",
     start_demo_failed:"The demonstration cannot be reached in this opening mode. Use “Load a .rae.json file” and pick {0} from the examples/ folder.",
     start_templates_title:"Start from a template", toast_template_new:"New analysis created from a template.",
-    start_recent_title:"Recent files", recent_open:"Open", recent_remove:"Remove", recent_denied:"File access denied.",
+    start_recent_title:"Recent files", recent_open:"Open", recent_clear:"Clear the list", recent_clear_confirm:"Clear the list of recent files?", recent_remove:"Remove", recent_denied:"File access denied.",
     recent_missing:"“{0}” could not be found (moved or deleted). Remove it from recent files?",
     menu_home:"Home screen", menu_save_template:"Save as template…", toast_template_saved:"Template saved: {0}",
     start_template_failed:"Template not reachable in this opening mode. Serve the app over http:// to load \"{0}\".",
@@ -2252,7 +2258,7 @@ const I18N = {
     start_step4:"Leggi le matrici, segui il Piano d'azione, stampa il Rapporto.",
     start_demo_failed:"Dimostrazione non raggiungibile in questa modalità di apertura. Usa «Carica un file .rae.json» e scegli {0} nella cartella examples/.",
     start_templates_title:"Inizia da un modello", toast_template_new:"Nuova analisi creata da un modello.",
-    start_recent_title:"File recenti", recent_open:"Apri", recent_remove:"Rimuovi", recent_denied:"Accesso al file negato.",
+    start_recent_title:"File recenti", recent_open:"Apri", recent_clear:"Cancella l'elenco", recent_clear_confirm:"Cancellare l'elenco dei file recenti?", recent_remove:"Rimuovi", recent_denied:"Accesso al file negato.",
     recent_missing:"« {0} » non è stato trovato (spostato o eliminato). Rimuoverlo dai recenti?",
     menu_home:"Schermata iniziale", menu_save_template:"Salva come modello…", toast_template_saved:"Modello salvato: {0}",
     start_template_failed:"Modello non raggiungibile in questa modalità. Servi l'app tramite http:// per caricare «{0}».",
@@ -3295,7 +3301,7 @@ window.addEventListener("pagehide",autosaveWrite);
    Nécessite l'API File System Access ; sinon aucun récent (pas de handle réutilisable).
    La réouverture redemande une permission par fichier (modèle de sécurité du navigateur).
    ============================================================ */
-const RC_DB="rae-recents", RC_STORE="files", RC_MAX=8;
+const RC_DB="rae-recents", RC_STORE="files", RC_MAX=10;
 const RECENT_OPEN_ICON='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 function rcDB(){return new Promise((res,rej)=>{let q;try{q=indexedDB.open(RC_DB,1);}catch(e){return rej(e);}
   q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains(RC_STORE))d.createObjectStore(RC_STORE,{keyPath:"id"});};
@@ -3355,6 +3361,8 @@ document.getElementById("startRecentsList").addEventListener("click",e=>{
   const del=e.target.closest("[data-recdel]");if(del){recentDel(del.dataset.recdel);return;}
   const rec=e.target.closest("[data-rec]");if(rec){const id=rec.dataset.rec;dirtyGuard(()=>recentReopen(id));}
 });
+async function recentClear(){try{await rcTx("readwrite",st=>st.clear());renderStartRecents();}catch(e){}}
+document.getElementById("startRecentsClear").addEventListener("click",()=>confirmModal(t("recent_clear_confirm"),recentClear));
 
 /* Au démarrage : proposer la restauration, seulement si rien n'a été chargé par ailleurs. */
 async function autosaveOffer(){
