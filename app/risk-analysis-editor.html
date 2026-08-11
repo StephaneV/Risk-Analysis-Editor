@@ -821,6 +821,11 @@
   #reportCfgPanel .rc-subrow input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);flex:none;margin:0}
   #reportCfgPanel .rc-field{display:block;margin:0 0 12px}
   #reportCfgPanel .rc-field .rc-lab{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px}
+  #radarCfgPanel .rc-field{display:flex;align-items:center;gap:14px;margin:0 0 12px;flex-wrap:wrap}
+  #radarCfgPanel .rc-field .rc-lab{font-size:13px;color:var(--muted);min-width:180px}
+  #radarCfgPanel .rc-field input[type=range]{flex:1;min-width:220px;accent-color:var(--accent)}
+  #radarCfgPanel .rc-field input[type=number]{width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font:inherit;background:var(--panel);color:var(--text)}
+  #radarCfgPanel .rc-field input[type=color]{width:64px;height:30px;padding:0;border:1px solid var(--border);border-radius:8px;background:none;cursor:pointer}
   #reportCfgPanel .rc-field input[type=text],#reportCfgPanel .rc-field textarea{width:100%;padding:8px 10px;
     border:1px solid var(--border);border-radius:8px;font:inherit;background:var(--panel);color:var(--text)}
   #reportCfgPanel .rc-field textarea{min-height:64px;resize:vertical}
@@ -972,11 +977,10 @@
           <span data-i18n="radar_dim">Dimension</span>
           <select id="radarDim"></select>
         </label>
-        <div class="seg" id="radarMetricSeg">
-          <button type="button" data-v="avg" class="active" data-i18n="radar_metric_avg">Criticité moyenne</button>
-          <button type="button" data-v="max" data-i18n="radar_metric_max">Criticité max</button>
-          <button type="button" data-v="count" data-i18n="radar_metric_count">Nombre de risques</button>
-        </div>
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+          <span data-i18n="radar_metric">Métrique</span>
+          <select id="radarMetric"></select>
+        </label>
         <span style="flex:1"></span>
         <span id="radarExportBar" style="display:flex;gap:6px"></span>
       </div>
@@ -1145,6 +1149,7 @@
       <button data-pmode="fields" data-i18n="cf_section">Champs personnalisés</button>
       <button data-pmode="report" data-i18n="settings_report">Rapport</button>
       <button data-pmode="stats" data-i18n="settings_stats">Statistiques</button>
+      <button data-pmode="radars" data-i18n="tab_radars">Radars</button>
     </div>
 
     <!-- -------- Sous-onglet : Affichage des matrices -------- -->
@@ -1267,6 +1272,7 @@
     <!-- -------- Sous-onglet : Rapport (personnalisation) -------- -->
     <div class="ppanel" data-pmode="report" style="display:none" id="reportCfgPanel"></div>
     <div class="card ppanel" data-pmode="stats" style="display:none" id="statsCfgPanel"><p class="muted">Personnalisation des statistiques — à venir.</p></div>
+    <div class="ppanel" data-pmode="radars" style="display:none" id="radarCfgPanel"></div>
   </section>
 
   <!-- ============ RAPPORT ============ -->
@@ -1591,6 +1597,10 @@ const I18N = {
     radar_need_axes:"Au moins 3 axes sont nécessaires pour afficher un radar (dimension actuelle : {0}).",
     radar_count_note:"Le nombre de risques ne dépend pas de l'évaluation.",
     rp_radar:"Radar", radar_metric:"Métrique", radar_eval:"Évaluation",
+    radar_metric_sum:"Criticité cumulée", radar_metric_weighted:"Criticité pondérée",
+    radar_cfg_weights:"Poids par niveau de criticité", radar_cfg_weights_cap:"Utilisés par la métrique « Criticité pondérée » : chaque risque compte pour le poids de son niveau.",
+    radar_cfg_render:"Rendu des radars", radar_cfg_lum:"Luminosité (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Épaisseur du contour", radar_cfg_step:"Pas des graduations (0 = auto)", radar_cfg_spoke:"Couleur des rayons",
+    radar_cfg_saved:"Préférences enregistrées avec l'analyse (rubrique extensions.display.radar).", radar_cfg_reset:"Réinitialiser les valeurs par défaut",
     stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
     stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
     dist_initial:"← initial", dist_residual:"résiduel →",
@@ -1924,6 +1934,10 @@ const I18N = {
     radar_need_axes:"At least 3 axes are required to draw a radar (current dimension: {0}).",
     radar_count_note:"The number of risks does not depend on the assessment.",
     rp_radar:"Radar", radar_metric:"Metric", radar_eval:"Assessment",
+    radar_metric_sum:"Cumulative criticality", radar_metric_weighted:"Weighted criticality",
+    radar_cfg_weights:"Weights by criticality level", radar_cfg_weights_cap:"Used by the “Weighted criticality” metric: each risk counts for the weight of its level.",
+    radar_cfg_render:"Radar rendering", radar_cfg_lum:"Lightness (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Outline width", radar_cfg_step:"Grid step (0 = auto)", radar_cfg_spoke:"Spokes colour",
+    radar_cfg_saved:"Preferences saved with the analysis (extensions.display.radar).", radar_cfg_reset:"Reset to defaults",
     stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
     stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
     dist_initial:"← initial", dist_residual:"residual →",
@@ -2257,6 +2271,10 @@ const I18N = {
     radar_need_axes:"Sono necessari almeno 3 assi per visualizzare un radar (dimensione attuale: {0}).",
     radar_count_note:"Il numero di rischi non dipende dalla valutazione.",
     rp_radar:"Radar", radar_metric:"Metrica", radar_eval:"Valutazione",
+    radar_metric_sum:"Criticità cumulata", radar_metric_weighted:"Criticità ponderata",
+    radar_cfg_weights:"Pesi per livello di criticità", radar_cfg_weights_cap:"Usati dalla metrica « Criticità ponderata »: ogni rischio conta per il peso del suo livello.",
+    radar_cfg_render:"Resa dei radar", radar_cfg_lum:"Luminosità (HSL)", radar_cfg_sat:"Saturazione", radar_cfg_outline:"Spessore del contorno", radar_cfg_step:"Passo delle griglie (0 = auto)", radar_cfg_spoke:"Colore dei raggi",
+    radar_cfg_saved:"Preferenze salvate con l'analisi (sezione extensions.display.radar).", radar_cfg_reset:"Ripristina i valori predefiniti",
     stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
     stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
     dist_initial:"← iniziale", dist_residual:"residuo →",
@@ -3635,6 +3653,25 @@ function statBlockHTML(block){
    ============================================================ */
 const RADAR_C1="#3a63d6", RADAR_C2="#8a3ffc"; // couleurs initial / résiduel
 let radarState={eval:"both-over",dim:"cat",metric:"avg"}, radarWired=false, RADAR_HOVER=[], RADAR_AXIS_TIP=[], RADAR_CRIT_TIP=[];
+/* Configuration des radars (poids de la métrique pondérée + paramètres de rendu),
+   enregistrée avec l'analyse dans extensions.display.radar. Poids par défaut : exponentiels
+   selon l'ordre de criticité (1, 2, 4, 8…). */
+const RADAR_RENDER_DEF={hslL:0.85,hslS:1.30,outline:1.5,spoke:"#dbe2ea",ringStep:0};
+function radarClamp(v,lo,hi,def){v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):def;}
+function radarCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.radar;return (d&&typeof d==="object")?d:null;}
+function radarCfgStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.radar=d.radar||{};}
+function radarCfg(){
+  const raw=radarCfgRaw()||{},r=raw.render||{};
+  const render={hslL:radarClamp(r.hslL,0.60,0.98,RADAR_RENDER_DEF.hslL),
+    hslS:radarClamp(r.hslS,0.20,1.60,RADAR_RENDER_DEF.hslS),
+    outline:radarClamp(r.outline,0,4,RADAR_RENDER_DEF.outline),
+    ringStep:radarClamp(r.ringStep,0,100000,RADAR_RENDER_DEF.ringStep),
+    spoke:(typeof r.spoke==="string"&&/^#[0-9a-fA-F]{6}$/.test(r.spoke))?r.spoke:RADAR_RENDER_DEF.spoke};
+  const rw=(raw.weights&&typeof raw.weights==="object")?raw.weights:{},weights={};
+  critBands().forEach((c,i)=>{const v=+rw[c.code];weights[c.code]=(isFinite(v)&&v>=0)?v:Math.pow(2,i);});
+  return {render,weights};
+}
+function radarMetricLabel(metric){return t({avg:"radar_metric_avg",max:"radar_metric_max",sum:"radar_metric_sum",weighted:"radar_metric_weighted",count:"radar_metric_count"}[metric]||"radar_metric_avg");}
 
 function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
 function critBands(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>a.score_max-b.score_max);}
@@ -3669,8 +3706,12 @@ function radarValues(risks,dim,axes,metric,phase){
   const g={};axes.forEach(k=>g[k]=[]);
   risks.forEach(r=>{const ev=phase==="residual"?residual(r):r.initial_assessment;const sc=scoreOf(ev.probability,ev.severity);
     radarKeysOf(r,dim).forEach(k=>{if(g[k])g[k].push(sc);});});
+  const W=metric==="weighted"?radarCfg().weights:null;
   return axes.map(k=>{const a=g[k];if(metric==="count")return a.length;if(!a.length)return 0;
-    if(metric==="max")return Math.max.apply(null,a);let s=0;a.forEach(x=>s+=x);return s/a.length;});
+    if(metric==="max")return Math.max.apply(null,a);
+    if(metric==="sum")return a.reduce((x,y)=>x+y,0);
+    if(metric==="weighted")return a.reduce((x,sc)=>x+(W[critFor(sc).code]||0),0);
+    let s=0;a.forEach(x=>s+=x);return s/a.length;});
 }
 /* Risques regroupés par axe (pour l'infobulle au survol des points). */
 function radarAxisRisks(risks,dim,axes){
@@ -3695,6 +3736,19 @@ function radarTipShow(html,e){
 }
 function radarTipHide(){tip.style.opacity=0;tip.classList.remove("tt-stat");}
 function radarNiceMax(vals){let m=0;vals.forEach(v=>{if(v>m)m=v;});return Math.max(1,Math.ceil(m));}
+/* Pas « rond » des anneaux en mode extensif (comptage/somme/pondérée) : vise ~5 graduations
+   pour ne pas surcharger le radar. Un pas manuel (Paramètres › Radars) le remplace s'il est > 0. */
+function radarNiceStep(vmax){
+  if(vmax<=8)return 1;
+  const raw=vmax/5,mag=Math.pow(10,Math.floor(Math.log10(raw))),norm=raw/mag;
+  const nice=norm<1.5?1:norm<3?2:norm<7?5:10;
+  return nice*mag;
+}
+/* Échelle extensive : arrondit le max au multiple supérieur du pas (auto ou manuel). */
+function radarExtVmax(rawMax){
+  const rs=radarCfg().render.ringStep,step=rs>0?rs:radarNiceStep(rawMax);
+  return Math.max(step,Math.ceil(rawMax/step-1e-9)*step);
+}
 /* Teinte de fond d'une bande : éclaircissement en HSL (luminosité fixée, saturation renforcée)
    pour rester colorée sans être délavée — contrairement à un mélange vers le blanc en RGB. */
 function radarHslFill(hex,targetL,satF){
@@ -3709,18 +3763,22 @@ function radarHslFill(hex,targetL,satF){
   if(s===0){R2=G2=B2=l;}else{const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;R2=hue(p,q,hh+1/3);G2=hue(p,q,hh);B2=hue(p,q,hh-1/3);}
   return "rgb("+Math.round(R2*255)+","+Math.round(G2*255)+","+Math.round(B2*255)+")";
 }
-function radarBandFill(hex){return radarHslFill(hex,0.85,1.30);}
+function radarBandFill(hex){const r=radarCfg().render;return radarHslFill(hex,r.hslL,r.hslS);}
 function radarNgon(cx,cy,R,n,frac){let p=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;p.push((cx+R*frac*Math.cos(a)).toFixed(1)+","+(cy+R*frac*Math.sin(a)).toFixed(1));}return p.join(" ");}
 function radarPoly(n,values,vmax,cx,cy,R){const pts=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n,r=R*(values[i]/vmax);pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}return pts;}
 function radarSVG(labels,series,vmax,opts){
   opts=opts||{};const size=opts.size||380,padX=78,W=size+2*padX,cx=W/2,cy=size/2+8,R=size/2-50,n=labels.length;let g="";
+  const rc=radarCfg().render;
   if(opts.bands){const bs=critBands();for(let i=bs.length-1;i>=0;i--){const frac=Math.max(0,Math.min(1,bs[i].score_max/vmax));
-      g+='<polygon points="'+radarNgon(cx,cy,R,n,frac)+'" fill="'+radarBandFill(bs[i].color)+'" stroke="'+bs[i].color+'" stroke-width="1.5" stroke-linejoin="round"/>';}}
-  else{for(let s=1;s<=vmax;s++)g+='<polygon points="'+radarNgon(cx,cy,R,n,s/vmax)+'" fill="none" stroke="#e6ebf1" stroke-width="1"/>';
+      g+='<polygon points="'+radarNgon(cx,cy,R,n,frac)+'" fill="'+radarBandFill(bs[i].color)+'" stroke="'+bs[i].color+'" stroke-width="'+rc.outline+'" stroke-linejoin="round"/>';}}
+  else{const step=rc.ringStep>0?rc.ringStep:radarNiceStep(vmax);
+    for(let v=step;v<vmax-1e-6;v+=step)g+='<polygon points="'+radarNgon(cx,cy,R,n,v/vmax)+'" fill="none" stroke="#e6ebf1" stroke-width="1"/>';
     g+='<polygon points="'+radarNgon(cx,cy,R,n,1)+'" fill="none" stroke="#cfd8e3" stroke-width="1.2"/>';}
-  for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R*Math.cos(a)).toFixed(1)+'" y2="'+(cy+R*Math.sin(a)).toFixed(1)+'" stroke="#dbe2ea" stroke-width="1"/>';}
-  let ticks=opts.bands?critBands().map(c=>Math.min(c.score_max,vmax)):(vmax<=6?Array.from({length:vmax},(_,k)=>k+1):[Math.round(vmax/2),vmax]);
-  ticks.forEach(tv=>{const ry=cy-R*(tv/vmax);g+='<text x="'+(cx+4)+'" y="'+(ry+3).toFixed(1)+'" font-size="10" fill="currentColor" fill-opacity="0.6">'+tv+'</text>';});
+  for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R*Math.cos(a)).toFixed(1)+'" y2="'+(cy+R*Math.sin(a)).toFixed(1)+'" stroke="'+rc.spoke+'" stroke-width="1"/>';}
+  let ticks;
+  if(opts.bands)ticks=critBands().map(c=>Math.min(c.score_max,vmax));
+  else{ticks=[];const step=rc.ringStep>0?rc.ringStep:radarNiceStep(vmax);for(let v=step;v<vmax-1e-6;v+=step)ticks.push(v);ticks.push(vmax);}
+  ticks.forEach(tv=>{const ry=cy-R*(tv/vmax),lbl=Number.isInteger(tv)?tv:Math.round(tv*10)/10;g+='<text x="'+(cx+4)+'" y="'+(ry+3).toFixed(1)+'" font-size="10" fill="currentColor" fill-opacity="0.6">'+lbl+'</text>';});
   series.forEach(s=>{const pts=radarPoly(n,s.values,vmax,cx,cy,R);const ps=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
     g+='<polygon points="'+ps+'" fill="'+s.color+'" fill-opacity="0.18" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round"/>';
     pts.forEach((p,idx)=>{const dc=opts.colorByCrit?critFor(s.values[idx]).color:s.color;
@@ -3752,7 +3810,7 @@ function radarTableHTML(labels,series,metric){
   return h+'</tbody></table>';
 }
 function radarTitleText(cfg){cfg=cfg||radarState;
-  const metricLabel=t(cfg.metric==="max"?"radar_metric_max":cfg.metric==="count"?"radar_metric_count":"radar_metric_avg");
+  const metricLabel=radarMetricLabel(cfg.metric);
   const f=radarFieldOf(cfg.dim),dimLabel=cfg.dim==="cat"?t("th_category"):(f?cfLabel(f):cfg.dim);
   if(cfg.metric==="count")return metricLabel+" — "+dimLabel;
   const evL=cfg.eval==="initial"?t("th_initial"):cfg.eval==="residual"?t("th_residual"):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
@@ -3760,7 +3818,6 @@ function radarTitleText(cfg){cfg=cfg||radarState;
 }
 function radarSyncSeg(){
   document.querySelectorAll("#radarEvalSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.eval));
-  document.querySelectorAll("#radarMetricSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.metric));
   syncSegAria();
 }
 /* Modèle courant du radar (partagé écran ↔ export) : axes, séries, échelle. */
@@ -3768,14 +3825,20 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
   const dim=cfg.dim,metric=cfg.metric,axes=radarAxes(risks,dim);
   if(axes.length<3)return {axes,tooFew:true};
   const labels=axes.map(k=>radarAxisLabel(dim,k));
-  const countMode=metric==="count";
+  const perRisk=(metric==="avg"||metric==="max");   // échelle par-risque + bandes de criticité
+  const evalIndep=(metric==="count");               // indépendant de l'évaluation initiale/résiduelle
   let series,vmax,bands;
-  if(countMode){series=[{name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(risks,dim,axes,"count","initial")}];vmax=radarNiceMax(series[0].values);bands=false;}
-  else{vmax=gridMaxScore();bands=true;
+  if(evalIndep){
+    series=[{name:t("radar_metric_count"),color:RADAR_C1,values:radarValues(risks,dim,axes,"count","initial")}];
+    vmax=radarExtVmax(radarNiceMax(series[0].values));bands=false;
+  } else {
     const sI={name:t("th_initial"),color:RADAR_C1,values:radarValues(risks,dim,axes,metric,"initial")};
     const sR={name:t("th_residual"),color:RADAR_C2,values:radarValues(risks,dim,axes,metric,"residual")};
-    series=cfg.eval==="initial"?[sI]:cfg.eval==="residual"?[sR]:[sI,sR];}
-  return {axes,labels,series,vmax,bands,countMode,metric,tooFew:false};
+    series=cfg.eval==="initial"?[sI]:cfg.eval==="residual"?[sR]:[sI,sR];
+    if(perRisk){vmax=gridMaxScore();bands=true;}
+    else{vmax=radarExtVmax(radarNiceMax(series.reduce((acc,s)=>acc.concat(s.values),[])));bands=false;}
+  }
+  return {axes,labels,series,vmax,bands,evalIndep,metric,tooFew:false};
 }
 /* ---------- Export du radar (SVG autonome → PNG → presse-papiers / fichier) ---------- */
 function radarLegendItems(series,bands){
@@ -3803,16 +3866,16 @@ function buildRadarExportSVG(cfg,risks,opts){cfg=cfg||radarState;risks=risks||vi
   const font=getComputedStyle(document.body).fontFamily,PAD=18,RPAD=78;
   const title=opts.noTitle?"":((cfg.title&&cfg.title.trim())?cfg.title.trim():radarTitleText(cfg));
   let radarsSVG,radarsW,radarsH;
-  if(!m.countMode&&cfg.eval==="both-side"){
+  if(!m.evalIndep&&cfg.eval==="both-side"){
     const size=320,rw=size+2*RPAD,rh=size,subH=20,gap=24;
-    const one=s=>radarSVG(m.labels,[s],m.vmax,{bands:true,colorByCrit:true,size:size});
+    const one=s=>radarSVG(m.labels,[s],m.vmax,{bands:m.bands,colorByCrit:m.bands,size:size});
     radarsW=rw*2+gap;radarsH=rh+subH;
     radarsSVG='<text x="'+(rw/2)+'" y="14" text-anchor="middle" font-family="'+svgEsc(font)+'" font-size="13" font-weight="600" fill="#61707f">'+svgEsc(t("th_initial"))+'</text>'+
       radarNestSVG(one(m.series[0]),0,subH)+
       '<text x="'+(rw+gap+rw/2)+'" y="14" text-anchor="middle" font-family="'+svgEsc(font)+'" font-size="13" font-weight="600" fill="#61707f">'+svgEsc(t("th_residual"))+'</text>'+
       radarNestSVG(one(m.series[1]),rw+gap,subH);
   } else {
-    const opt2=m.countMode?{bands:false,colorByCrit:false}:(m.series.length===1?{bands:true,colorByCrit:true}:{bands:true,colorByCrit:false});
+    const opt2=m.evalIndep?{bands:false,colorByCrit:false}:(m.series.length===1?{bands:m.bands,colorByCrit:m.bands}:{bands:m.bands,colorByCrit:false});
     const size=380,rw=size+2*RPAD;
     radarsW=rw;radarsH=size;
     radarsSVG=radarNestSVG(radarSVG(m.labels,m.series,m.vmax,opt2),0,0);
@@ -3851,7 +3914,7 @@ function renderRadars(){
   if(!radarWired){
     const ev=document.getElementById("radarEvalSeg");
     ev.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||ev.style.pointerEvents==="none")return;radarState.eval=b.dataset.v;renderRadars();});
-    document.getElementById("radarMetricSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;radarState.metric=b.dataset.v;renderRadars();});
+    document.getElementById("radarMetric").addEventListener("change",function(){radarState.metric=this.value;renderRadars();});
     document.getElementById("radarDim").addEventListener("change",function(){radarState.dim=this.value;renderRadars();});
     // Infobulles : liste des risques au survol d'un point ; description au survol d'un libellé
     // d'axe ou d'un niveau de criticité de la légende (comme les secteurs des Statistiques).
@@ -3876,9 +3939,12 @@ function renderRadars(){
   const sel=document.getElementById("radarDim");
   sel.innerHTML='<option value="cat">'+esc(t("th_category"))+'</option>'+fields.map(f=>'<option value="'+esc(f.code)+'">'+esc(cfLabel(f))+'</option>').join("");
   sel.value=radarState.dim;
+  const msel=document.getElementById("radarMetric");
+  msel.innerHTML=["avg","max","sum","weighted","count"].map(mv=>'<option value="'+mv+'">'+esc(radarMetricLabel(mv))+'</option>').join("");
+  msel.value=radarState.metric;
   radarSyncSeg();
-  const countMode=radarState.metric==="count",evSeg=document.getElementById("radarEvalSeg");
-  evSeg.style.opacity=countMode?"0.45":"";evSeg.style.pointerEvents=countMode?"none":"";
+  const evalIndep=radarState.metric==="count",evSeg=document.getElementById("radarEvalSeg");
+  evSeg.style.opacity=evalIndep?"0.45":"";evSeg.style.pointerEvents=evalIndep?"none":"";
   document.getElementById("radarTitle").textContent=radarTitleText();
   setRadarExport();
   const area=document.getElementById("radarArea"),leg=document.getElementById("radarLegend"),tbl=document.getElementById("radarTable");
@@ -3890,16 +3956,16 @@ function renderRadars(){
   RADAR_AXIS_TIP=m.axes.map((k,i)=>{const d=radarAxisDesc(radarState.dim,k);return d?{label:labels[i],desc:d}:null;});
   RADAR_CRIT_TIP=critBands().map(c=>({label:c.label,desc:c.description||""}));
   const wrap=inner=>'<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:26px">'+inner+'</div>';
-  if(m.countMode){
+  if(m.evalIndep){
     area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:false,colorByCrit:false,axisTips:RADAR_AXIS_TIP}));
     leg.innerHTML=radarLegendHTML(series,false)+'<span style="color:#61707f;font-size:12.5px;margin-left:8px">'+esc(t("radar_count_note"))+'</span>';
   } else if(radarState.eval==="both-side"){
-    const box=(sub,s)=>'<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-size:13px;color:#61707f;font-weight:600">'+esc(sub)+'</div>'+radarSVG(labels,[s],vmax,{bands:true,colorByCrit:true,size:320,axisTips:RADAR_AXIS_TIP})+'</div>';
+    const box=(sub,s)=>'<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-size:13px;color:#61707f;font-weight:600">'+esc(sub)+'</div>'+radarSVG(labels,[s],vmax,{bands:m.bands,colorByCrit:m.bands,size:320,axisTips:RADAR_AXIS_TIP})+'</div>';
     area.innerHTML=wrap(box(t("th_initial"),series[0])+box(t("th_residual"),series[1]));
-    leg.innerHTML=radarLegendHTML(series,true);
+    leg.innerHTML=radarLegendHTML(series,m.bands);
   } else {
-    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:true,colorByCrit:series.length===1,axisTips:RADAR_AXIS_TIP}));
-    leg.innerHTML=radarLegendHTML(series,true);
+    area.innerHTML=wrap(radarSVG(labels,series,vmax,{bands:m.bands,colorByCrit:m.bands&&series.length===1,axisTips:RADAR_AXIS_TIP}));
+    leg.innerHTML=radarLegendHTML(series,m.bands);
   }
   tbl.innerHTML=radarTableHTML(labels,series,m.metric);
 }
@@ -5263,7 +5329,7 @@ function reportCfg(){
     else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
     else if(s.id==="radar"){
       o.dim=(s.dim==="cat"||radarDimFields().some(f=>f.code===s.dim))?s.dim:"cat";
-      o.metric=["avg","max","count"].indexOf(s.metric)>=0?s.metric:"avg";
+      o.metric=["avg","max","sum","weighted","count"].indexOf(s.metric)>=0?s.metric:"avg";
       o.eval=["initial","residual","both-side","both-over"].indexOf(s.eval)>=0?s.eval:"both-over";
       o.title=typeof s.title==="string"?s.title:"";
     }
@@ -8155,9 +8221,58 @@ function setParamMode(m){
   document.querySelectorAll("#view-settings .ppanel").forEach(p=>{p.style.display=(p.dataset.pmode===m)?"":"none";});
   if(m==="report")renderReportSettings();
   if(m==="stats")renderStatsSettings();
+  if(m==="radars")renderRadarSettings();
   syncSegAria();
 }
 document.getElementById("paramSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setParamMode(b.dataset.pmode);});
+
+/* ============================================================
+   SOUS-ONGLET PARAMÈTRES › RADARS — poids (métrique pondérée) et rendu.
+   Édite analyse.extensions.display.radar (voir radarCfg()).
+   ============================================================ */
+function renderRadarSettings(){
+  const p=document.getElementById("radarCfgPanel");if(!p)return;
+  const cfg=radarCfg(),levels=critBands();
+  const sw=c=>'<span style="width:14px;height:14px;border-radius:3px;display:inline-block;background:'+c+';vertical-align:middle;margin-right:6px"></span>';
+  const slider=(role,lab,lo,hi,step,val)=>'<label class="rc-field"><span class="rc-lab">'+esc(lab)+' : <b data-out="'+role+'">'+val+'</b></span>'+
+    '<input type="range" data-rd="'+role+'" min="'+lo+'" max="'+hi+'" step="'+step+'" value="'+val+'"></label>';
+  let h='<div class="card"><h2>'+esc(t("radar_cfg_weights"))+'</h2><div class="caption">'+esc(t("radar_cfg_weights_cap"))+'</div>'+
+    levels.map(c=>'<label class="rc-field"><span class="rc-lab">'+sw(c.color)+esc(c.label)+'</span><input type="number" min="0" step="0.5" data-rw="'+esc(c.code)+'" value="'+cfg.weights[c.code]+'" style="max-width:110px"></label>').join("")+
+    '</div>';
+  h+='<div class="card"><h2>'+esc(t("radar_cfg_render"))+'</h2>'+
+    slider("hslL",t("radar_cfg_lum"),0.60,0.98,0.01,cfg.render.hslL)+
+    slider("hslS",t("radar_cfg_sat"),0.20,1.60,0.01,cfg.render.hslS)+
+    slider("outline",t("radar_cfg_outline"),0,4,0.1,cfg.render.outline)+
+    '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_step"))+'</span><input type="number" min="0" step="1" data-rd="ringStep" value="'+cfg.render.ringStep+'" style="max-width:110px"></label>'+
+    '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_spoke"))+'</span><input type="color" data-rd="spoke" value="'+cfg.render.spoke+'"></label>'+
+    '<div id="radarCfgPrev" style="text-align:center;margin-top:8px"></div></div>';
+  h+='<div class="card rc-foot"><span class="rc-note">💾 '+esc(t("radar_cfg_saved"))+'</span>'+
+    '<button type="button" class="btn ghost sm" id="radarCfgReset">↺ '+esc(t("radar_cfg_reset"))+'</button></div>';
+  p.innerHTML=h;
+  radarCfgPreview();
+  if(!p.dataset.rcWired){
+    p.dataset.rcWired="1";
+    p.addEventListener("input",e=>{if(e.target.matches("[data-rw],[data-rd]"))collectRadarCfg();});
+    p.addEventListener("change",e=>{if(e.target.matches("[data-rw],[data-rd]"))collectRadarCfg();});
+    p.addEventListener("click",e=>{if(e.target.closest("#radarCfgReset"))radarCfgReset();});
+  }
+}
+function collectRadarCfg(){
+  const p=document.getElementById("radarCfgPanel");if(!p)return;
+  const weights={};p.querySelectorAll("[data-rw]").forEach(i=>{const v=+i.value;weights[i.dataset.rw]=(isFinite(v)&&v>=0)?v:0;});
+  const g=r=>{const el=p.querySelector('[data-rd="'+r+'"]');return el?el.value:null;};
+  const store=radarCfgStore();store.weights=weights;store.render={hslL:+g("hslL"),hslS:+g("hslS"),outline:+g("outline"),ringStep:+g("ringStep"),spoke:g("spoke")};
+  analyse.extensions.display.radar=store;markDirty();
+  ["hslL","hslS","outline"].forEach(r=>{const b=p.querySelector('[data-out="'+r+'"]'),el=p.querySelector('[data-rd="'+r+'"]');if(b&&el)b.textContent=el.value;});
+  radarCfgPreview();
+}
+function radarCfgReset(){const d=analyse.extensions&&analyse.extensions.display;if(d&&d.radar)delete d.radar;markDirty();renderRadarSettings();}
+function radarCfgPreview(){
+  const box=document.getElementById("radarCfgPrev");if(!box)return;
+  const m=radarComputeModel({eval:"initial",dim:"cat",metric:"avg"},visibleRisks());
+  if(m.tooFew){box.innerHTML='<div class="caption">'+esc(t("radar_need_axes",m.axes.length))+'</div>';return;}
+  box.innerHTML=radarSVG(m.labels,m.series,m.vmax,{bands:true,colorByCrit:true,size:240});
+}
 
 /* ============================================================
    SOUS-ONGLET PARAMÈTRES › RAPPORT — personnalisation du rapport
@@ -8208,7 +8323,7 @@ function rcSecItemHTML(s,iterating){
       (['<option value="cat"'+(s.dim==="cat"?" selected":"")+'>'+esc(t("th_category"))+'</option>']
         .concat(radarDimFields().map(f=>'<option value="'+esc(f.code)+'"'+(s.dim===f.code?" selected":"")+'>'+esc(cfLabel(f))+'</option>'))).join("")+'</select>';
     const metSel='<select class="rc-rowctrl" data-role="radar-metric">'+
-      [["avg","radar_metric_avg"],["max","radar_metric_max"],["count","radar_metric_count"]].map(a=>'<option value="'+a[0]+'"'+(s.metric===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
+      [["avg","radar_metric_avg"],["max","radar_metric_max"],["sum","radar_metric_sum"],["weighted","radar_metric_weighted"],["count","radar_metric_count"]].map(a=>'<option value="'+a[0]+'"'+(s.metric===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
     const evSel='<select class="rc-rowctrl" data-role="radar-eval">'+
       [["both-over","radar_eval_over"],["both-side","radar_eval_side"],["initial","th_initial"],["residual","th_residual"]].map(a=>'<option value="'+a[0]+'"'+(s.eval===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
     const titleInp='<input type="text" class="rc-rowctrl" data-role="radar-title" value="'+esc(s.title||"")+'" placeholder="'+esc(radarTitleText({eval:s.eval,dim:s.dim,metric:s.metric}))+'">';
