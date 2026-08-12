@@ -105,6 +105,7 @@ RAE offre ainsi un cadre **plus structuré et cohérent qu'un ensemble de feuill
 | [`specs/`](specs/) | **Spécifications** : spécification du format de fichier, schéma JSON et stratégies de disposition. |
 | [`examples/`](examples/) | Analyses d'exemple au format `.rae.json` (français et anglais), dont deux **démonstrations renseignées et représentatives des fonctions de RAE** : une analyse de risques **inspirée d'EBIOS RM** (`demo-ebios-rm-*.rae.json`) et un exemple du volet d'analyse des risques d'une AIPD, inspiré de la méthode PIA de la CNIL, pour un service de santé au travail (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — avec tags colorés, barres de progression, responsables et liens justifiés. |
 | [`templates/`](templates/) | **Modèles de démarrage** (`xxx.template.<lang>.rae.json`, un fichier par langue) pour des analyses inspirées de méthodes et référentiels courants : squelettes vierges — grille, niveaux de criticité et champs personnalisés préconfigurés, sans risque ni mesure. **EBIOS RM**, **AIPD/PIA CNIL**, **ISO/IEC 27005** et un modèle **générique** 5×5, chacun en **français, anglais et italien**. Listés sous *Démarrer d'un modèle* dans le bloc d'amorçage (le fichier correspondant à la langue de l'interface est chargé) ; l'ouverture (depuis là ou via *Charger…*) démarre une nouvelle analyse **non reliée**. On peut aussi transformer l'analyse courante en modèle via **Fichier › Enregistrer comme modèle…**, et revenir au bloc d'amorçage via **Fichier › Écran d'accueil**. |
+| [`tools/`](tools/) | **Outils de développement** : scripts de génération des captures d'écran (guide et README) et d'embarquement des modèles dans l'application. Voir [`tools/README.md`](tools/README.md). |
 
 ---
 
@@ -131,6 +132,12 @@ Le développement et les tests sont réalisés principalement avec **Microsoft E
 ## Code tiers
 
 RAE embarque exactement **une bibliothèque tierce** : [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (licence MIT, © Arjun Barrett), une implémentation ZIP/deflate minuscule et rapide. Elle fournit le conteneur ZIP requis par les exports Word (`.docx`) et Excel (`.xlsx`) — les fichiers OOXML étant des archives ZIP de parties XML. La bibliothèque est **incorporée** dans le fichier HTML, avec sa notice de licence, afin que l'application reste pleinement hors-ligne, sans ressource externe nécessaire à l'exécution. Tout le reste (moteur Markdown, export SVG/PNG, génération OOXML, composants d'interface) est écrit sur mesure pour ce projet.
+
+---
+
+## Développement
+
+Ce projet a été développé à l'aide de **[Claude Code](https://claude.com/claude-code)** (Anthropic), avec le modèle **Claude Opus 4.8**, sous la direction de son auteur.
 
 ---
 

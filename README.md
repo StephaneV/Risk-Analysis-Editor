@@ -105,6 +105,7 @@ RAE thus offers a framework that is **more structured and consistent than a set 
 | [`specs/`](specs/) | **Specifications** (in French): file-format specification, JSON schema and layout strategies. |
 | [`examples/`](examples/) | Sample analyses in `.rae.json` format (French and English), including two **populated demos representative of RAE's features**: an **EBIOS RM–inspired** risk analysis (`demo-ebios-rm-*.rae.json`) and an example of the risk-analysis part of a DPIA, inspired by the CNIL PIA method, for an occupational health service (`demo-aipd-sst.rae.json` / `demo-dpia-ohs.rae.json`) — with colored tags, progress bars, owners and justified links. |
 | [`templates/`](templates/) | **Starter templates** (`xxx.template.<lang>.rae.json`, one file per language) for analyses inspired by common methods and frameworks: blank skeletons — grid, criticality levels and custom fields preconfigured, no risks or measures. **EBIOS RM**, **CNIL PIA / DPIA**, **ISO/IEC 27005** and a **generic** 5×5, each in **French, English and Italian**. Listed under *Start from a template* in the onboarding block (the file matching the current interface language is loaded); opening one (from there, or via *Load…*) starts a new, **unlinked** analysis. You can also turn the current analysis into a template with **File › Save as template…**, and return to the onboarding block with **File › Home screen**. |
+| [`tools/`](tools/) | **Development tools**: scripts to generate the screenshots (guide and README) and to embed the templates into the application. See [`tools/README.md`](tools/README.md). |
 
 ---
 
@@ -131,6 +132,12 @@ Development and testing are done primarily with **Microsoft Edge (Chromium)**; r
 ## Third-party code
 
 RAE embeds exactly **one third-party library**: [**fflate** v0.8.2](https://github.com/101arrowz/fflate) (MIT license, © Arjun Barrett), a tiny, fast ZIP/deflate implementation. It provides the ZIP container required by the Word (`.docx`) and Excel (`.xlsx`) exports — OOXML files being ZIP archives of XML parts. The library is **vendored inline** in the HTML file, with its license notice, so the app keeps working fully offline, with no external resource needed at runtime. Everything else (Markdown engine, SVG/PNG export, OOXML generation, UI components) is written from scratch for this project.
+
+---
+
+## Development
+
+This project was developed with **[Claude Code](https://claude.com/claude-code)** (Anthropic), using the **Claude Opus 4.8** model, under its author's direction.
 
 ---
 
