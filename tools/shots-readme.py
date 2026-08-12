@@ -106,7 +106,7 @@ def plan(browser):
 
 def run():
     with sync_playwright() as p:
-        # Mode HEADED (comme tools/shots.py) : en headless, Chromium ne rend aucune barre de
+        # Mode HEADED (comme tools/shots-guide.py) : en headless, Chromium ne rend aucune barre de
         # défilement (cf. playwright#5778). Nécessite un environnement graphique.
         b = p.chromium.launch(channel="msedge", headless=False)
         hero(b); statistiques(b); plan(b)

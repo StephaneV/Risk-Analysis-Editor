@@ -1,7 +1,7 @@
 # Guide — `shots-readme.py`
 
 Script de génération des **captures d'écran du README** (fichiers `docs/images/`).
-Complément de `shots.py`, qui génère lui les captures du **guide utilisateur**.
+Complément de [`shots-guide.py`](shots-guide.md), qui génère lui les captures du **guide utilisateur**.
 
 ## Ce que le script produit
 
@@ -35,18 +35,18 @@ Depuis la **racine du dépôt** `Risk-Analysis-Editor` :
 2. Lancer le script en pointant vers ce serveur (dans un autre terminal) :
    ```bash
    # Linux / macOS / Git Bash
-   SHOTS_ORIGIN="http://localhost:8799" python travaux/shots-readme.py
+   SHOTS_ORIGIN="http://localhost:8799" python tools/shots-readme.py
    ```
    ```powershell
    # Windows PowerShell
-   $env:SHOTS_ORIGIN="http://localhost:8799"; python travaux/shots-readme.py
+   $env:SHOTS_ORIGIN="http://localhost:8799"; python tools/shots-readme.py
    ```
 
 Sans `SHOTS_ORIGIN`, le script vise `http://localhost:8000`. Les images écrasent celles de `docs/images/`.
 
 > Astuce (une commande, Git Bash) :
 > ```bash
-> python -m http.server 8799 & sleep 1 && SHOTS_ORIGIN="http://localhost:8799" python travaux/shots-readme.py ; kill %1
+> python -m http.server 8799 & sleep 1 && SHOTS_ORIGIN="http://localhost:8799" python tools/shots-readme.py ; kill %1
 > ```
 
 ## Personnalisation
@@ -64,7 +64,7 @@ Tout se règle en tête de `shots-readme.py` ou dans les trois fonctions `hero()
 
 - Vérifier visuellement les 3 images dans `docs/images/`.
 - Les README (`README.md`, `README.fr.md`) référencent déjà ces trois fichiers ; aucun changement de texte n'est nécessaire si seuls les visuels sont mis à jour.
-- Committer les images modifiées (le script, dans `travaux/`, est **gitignoré** : il ne part pas dans le dépôt).
+- Committer les images modifiées.
 
 ## Dépannage
 
