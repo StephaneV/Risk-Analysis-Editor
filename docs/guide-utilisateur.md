@@ -63,6 +63,8 @@ Vous avez quatre points de départ :
 - **Ouvrir une analyse de démonstration** — un exemple renseigné pour explorer ;
 - **Démarrer d'un modèle** — un squelette méthodologique préconfiguré (EBIOS RM, AIPD — CNIL PIA, ISO/IEC 27005, ou générique).
 
+> La **démonstration** nécessite d'utiliser l'application **en ligne** (ou servie via HTTP) ; en ouverture directe du fichier (double-clic, `file://`), ce bouton n'apparaît pas — démarrez alors d'un **modèle** ou chargez un fichier existant. Les **modèles**, eux, restent disponibles dans tous les cas, y compris hors-ligne.
+
 Le parcours conseillé se lit dans l'ordre des onglets :
 
 1. **Vérifiez la grille de cotation** dans *Paramètres* (axes, niveaux de criticité).
@@ -70,9 +72,9 @@ Le parcours conseillé se lit dans l'ordre des onglets :
 3. **Associez** mesures et risques dans l'onglet *Liens*.
 4. **Lisez les matrices**, suivez le *Plan d'action*, imprimez le *Rapport*.
 
-En bas de l'écran d'accueil, une liste **Fichiers récents** rassemble les dernières analyses **ouvertes ou enregistrées**, avec le **nom du fichier** et le **nom de l'analyse**. Le **bouton d'ouverture** (ou un clic sur la ligne) rouvre le fichier — le navigateur demande alors l'**autorisation** d'y accéder ; le **×** retire une entrée et **Effacer la liste** vide l'ensemble. Cette liste nécessite un navigateur compatible (Chrome, Edge) et **n'apparaît pas** ailleurs.
-
 Chaque étape est détaillée dans les sections suivantes.
+
+En bas de l'écran d'accueil, une liste **Fichiers récents** rassemble les dernières analyses **ouvertes ou enregistrées**, avec le **nom du fichier** et le **nom de l'analyse**. Le **bouton d'ouverture** (ou un clic sur la ligne) rouvre le fichier — le navigateur demande alors l'**autorisation** d'y accéder ; le **×** retire une entrée et **Effacer la liste** vide l'ensemble. Cette liste nécessite un navigateur compatible (Chrome, Edge) et **n'apparaît pas** ailleurs.
 
 ---
 
@@ -99,6 +101,8 @@ La navigation se fait par onglets : **Présentation**, **Risques**, **Mesures**,
 - **Sauvegarde automatique.** L'outil conserve en arrière-plan une copie de travail : si vous fermez l'onglet par accident, il vous **propose de restaurer** l'analyse non enregistrée à la réouverture.
 - **Garde anti-perte de saisie.** Si vous fermez une fiche en cours d'édition par un clic à côté, la touche `Échap` ou la croix ✕ alors que vous avez commencé à saisir, l'outil demande **confirmation** avant d'abandonner vos modifications. Le bouton *Annuler* de la fiche, lui, ferme directement.
 - **Avertissement de fermeture.** Si des modifications ne sont pas enregistrées, le navigateur vous avertit avant de quitter la page.
+
+> ℹ️ **Les demandes d'autorisation du navigateur.** Pour lire ou écrire un fichier **directement sur votre poste**, le navigateur vous demande d'abord votre **autorisation** — c'est une protection de sécurité normale. Une invite peut donc apparaître lorsque vous **ouvrez**, **enregistrez** ou **rouvrez** une analyse ; sur Chrome et Edge, une invite peut aussi proposer de **restaurer l'accès aux fichiers récents** de votre dernière visite. **Acceptez** pour laisser l'outil travailler dans votre fichier. Vos données **restent sur votre poste** : ces autorisations ne concernent que l'accès **local** aux fichiers, rien n'est envoyé sur Internet. Sur Firefox et Safari, l'outil utilise à la place un téléchargement ou une ouverture classiques, sans ces invites (voir [§20](#20-compatibilité-navigateurs)).
 
 ---
 
@@ -135,7 +139,7 @@ Ce sous-onglet règle le rendu visuel :
 - **Lisibilité des étiquettes colorées** : mode *Classique* (luminosité perçue) ou *Contraste renforcé (WCAG AA)*, qui calcule une couleur de texte garantissant un contraste suffisant sur n'importe quel fond ;
 - **Format des dates** : format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports — *ISO* (AAAA-MM-JJ, défaut), *JJ/MM/AAAA*, *MM/JJ/AAAA* ou *Long* (localisé selon la langue). Les dates restent enregistrées au format ISO dans le fichier ; seul l'affichage change.
 
-Les champs personnalisés sont traités en [section 13](#14-les-champs-personnalisés).
+Les champs personnalisés sont traités en [section 14](#14-les-champs-personnalisés).
 
 ---
 
@@ -146,6 +150,8 @@ Les champs personnalisés sont traités en [section 13](#14-les-champs-personnal
 L'onglet **Présentation** rassemble les **métadonnées documentaires** de l'analyse : titre, statut (*Brouillon / Validé / Archivé*), auteur, organisation, périmètre, référence méthodologique, révision et **description** (en Markdown). Ces informations alimentent le cartouche du rapport et des exports.
 
 Si des **champs personnalisés rattachés à l'analyse** ont été définis (dans la démo : *Référentiels*, *Périmètre*), leurs valeurs se saisissent également ici, dans un bloc dédié.
+
+> **Champs en Markdown.** La description (et les zones de **notes** des fiches de risque, de mesure et de lien) accepte une mise en forme **Markdown** simple : titres, **gras**, *italique*, listes, liens… Lorsqu'un champ contient déjà du texte, il s'affiche par défaut sous forme d'**aperçu** mis en forme ; **double-cliquez** dessus pour passer en **édition**, et double-cliquez de nouveau — ou utilisez l'icône **œil** — pour revenir à l'aperçu.
 
 > **Particularité de cet onglet :** les saisies ne sont appliquées qu'après un clic sur **Valider** (bouton local en bas de l'onglet), afin de ne pas marquer l'analyse comme « modifiée » à chaque frappe sur une métadonnée. Le bouton *Annuler* rétablit les valeurs précédentes.
 
@@ -173,7 +179,7 @@ Cliquez sur une ligne (ou sur l'icône ✎) pour ouvrir la **fiche du risque**.
 La fiche regroupe :
 
 - **Identifiant**, **catégorie**, **libellé** (obligatoire), **propriétaire** ;
-- **Description** et **Notes**, tous deux en **Markdown** (un aperçu est disponible via l'icône œil) ;
+- **Description** et **Notes**, tous deux en **Markdown** (aperçu mis en forme par défaut ; **double-clic** ou icône œil pour basculer entre aperçu et édition — voir [§5](#5-décrire-lanalyse-onglet-présentation)) ;
 - l'**évaluation initiale (brute)** et l'**évaluation résiduelle (nette)** : vraisemblance et gravité. Le score et la criticité sont **calculés et affichés automatiquement** sous chaque bloc. Si des **champs personnalisés de cotation** ont été définis (cible *évaluation du risque*, voir [§14](#14-les-champs-personnalisés)), ils se saisissent **sous chaque bloc**, avec une valeur **distincte** pour l'évaluation initiale et pour la résiduelle (dans les modèles EBIOS RM et ISO 27005 : *Justification* et *Date de cotation*) ;
 - la section **Mesures de maîtrise liées** (à cocher) ;
 - les **champs personnalisés** de risque, le cas échéant.
@@ -469,7 +475,7 @@ Principaux raccourcis :
 L'application fonctionne dans un navigateur de bureau récent, sans installation ni serveur. Les tests sont réalisés principalement avec **Microsoft Edge (Chromium)** ; tout navigateur basé sur Chromium offre l'expérience complète.
 
 - **Firefox / Safari** : l'enregistrement direct dans le fichier ouvert n'est pas disponible ; *Enregistrer* se replie sur un **téléchargement** du `.rae.json` (et *Charger* sur un sélecteur de fichier classique). Tout le reste est identique.
-- Le **chargement par URL** (`?file=…`) nécessite que l'outil soit servi en HTTP(S) ; en ouverture directe du fichier (`file://`), utilisez *Charger* ou le glisser-déposer.
+- Le **chargement par URL** (`?file=…`) et le bouton **Ouvrir une analyse de démonstration** nécessitent que l'outil soit servi en HTTP(S) ; en ouverture directe du fichier (`file://`), le bouton de démonstration n'apparaît pas — utilisez *Charger*, le glisser-déposer ou un **modèle** (les modèles restent disponibles hors-ligne).
 
 Le détail figure dans le [README](../README.fr.md#compatibilité-navigateurs).
 
