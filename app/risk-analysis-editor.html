@@ -940,6 +940,7 @@
       <button type="button" role="menuitem" id="miSaveTemplate"><span data-i18n="menu_save_template">Enregistrer comme modèle…</span></button>
       <hr>
       <button type="button" role="menuitem" id="miExportDocx"><span data-i18n="menu_export_docx">Exporter en Word (.docx)</span></button>
+      <button type="button" role="menuitem" id="miTemplateDocx"><span data-i18n="menu_template_docx">Exporter avec un modèle Word…</span></button>
       <button type="button" role="menuitem" id="miExportXlsx"><span data-i18n="menu_export_xlsx">Exporter en Excel (.xlsx)</span></button>
       <hr>
       <button type="button" role="menuitem" id="miHelp"><span data-i18n="menu_help">Aide & raccourcis</span><span class="kbd">?</span></button>
@@ -948,6 +949,7 @@
   </div>
   <button class="btn sm" id="btnSave" data-i18n="btn_save">Enregistrer</button>
   <input type="file" id="fileInput" accept=".json,.rae.json,application/json" style="display:none">
+  <input type="file" id="templateInput" accept=".docx,.dotx" style="display:none">
 </div>
 
 <nav class="tabs" id="tabs" role="tablist" data-i18n-label="nav_sections" aria-label="Sections de l'analyse">
@@ -1415,7 +1417,7 @@ const I18N = {
     cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
     cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
     cols_reorder_hint:"Ordre : glissez les en-têtes", cols_reset:"Réinitialiser", th_actions_col:"Actions",
-    menu_export_docx:"Exporter en Word (.docx)", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"Fichier exporté : {0}", toast_export_fail:"Export impossible : {0}", xl_score:"Score", xl_crit:"Criticité",
     link_confirm_off:"Ne plus demander (pour cette session)",
     btn_save_new:"Enregistrer et nouveau", copy_suffix:" (copie)", a11y_dup_risk:"Dupliquer le risque {0}", a11y_dup_measure:"Dupliquer la mesure {0}",
@@ -1759,7 +1761,7 @@ const I18N = {
     cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
     cols_up:"Move column left", cols_down:"Move column right",
     cols_reorder_hint:"Order: drag the headers", cols_reset:"Reset", th_actions_col:"Actions",
-    menu_export_docx:"Export to Word (.docx)", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File exported: {0}", toast_export_fail:"Export failed: {0}", xl_score:"Score", xl_crit:"Criticality",
     link_confirm_off:"Don't ask again (this session)",
     btn_save_new:"Save and new", copy_suffix:" (copy)", a11y_dup_risk:"Duplicate risk {0}", a11y_dup_measure:"Duplicate measure {0}",
@@ -2098,7 +2100,7 @@ const I18N = {
     cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
     cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
     cols_reorder_hint:"Ordine: trascina le intestazioni", cols_reset:"Reimposta", th_actions_col:"Azioni",
-    menu_export_docx:"Esporta in Word (.docx)", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File esportato: {0}", toast_export_fail:"Esportazione non riuscita: {0}", xl_score:"Punteggio", xl_crit:"Criticità",
     link_confirm_off:"Non chiedere più (per questa sessione)",
     btn_save_new:"Salva e nuovo", copy_suffix:" (copia)", a11y_dup_risk:"Duplica il rischio {0}", a11y_dup_measure:"Duplica la misura {0}",
@@ -8243,6 +8245,67 @@ async function exportDocx(){
 document.getElementById("miExportDocx").addEventListener("click",()=>{closeMenu();presGuard(exportDocx);});
 document.getElementById("miExportXlsx").addEventListener("click",()=>{closeMenu();presGuard(exportXlsx);});
 document.getElementById("btnWordReport").addEventListener("click",exportDocx);
+
+/* ============================================================
+   RAPPORT À PARTIR D'UN MODÈLE WORD  (voir travaux/spec-rapport-modele-word.md)
+   Lot 0 — socle : charge un .docx porteur de balises {{…}}, NORMALISE les runs (recolle les
+   balises que Word scinde en plusieurs runs), puis re-zippe et télécharge. Le remplissage des
+   balises (valeurs, boucles, blocs) est ajouté par les lots suivants.
+   ============================================================ */
+const DOCX_MIME="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const W_NS="http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+// Parties XML d'un .docx susceptibles de contenir des balises (corps + en-têtes/pieds).
+function tmplXmlParts(parts){return Object.keys(parts).filter(p=>/^word\/(document|header\d+|footer\d+)\.xml$/.test(p));}
+/* Fusionne, dans chaque paragraphe, les runs de texte ADJACENTS de mise en forme identique
+   (même w:rPr) : recolle les balises {{…}} scindées par Word, sans changer le rendu. N'agit que
+   sur les runs « texte simple » (rPr + w:t) — jamais sur un run portant image/saut/tabulation. */
+function tmplNormalizeXml(xml){
+  let doc;
+  try{doc=new DOMParser().parseFromString(xml,"application/xml");}catch(e){return xml;}
+  if(doc.getElementsByTagName("parsererror").length)return xml;   // XML illisible : on n'y touche pas
+  const child=(el,ln)=>{for(const c of Array.from(el.children))if(c.localName===ln)return c;return null;};
+  const simpleText=r=>{for(const c of Array.from(r.children)){const ln=c.localName;if(ln!=="rPr"&&ln!=="t")return false;}return true;};
+  const rprKey=r=>{const rp=child(r,"rPr");return rp?new XMLSerializer().serializeToString(rp):"";};
+  const paras=doc.getElementsByTagNameNS(W_NS,"p");
+  for(const p of Array.from(paras)){
+    let acc=null;                                    // run accumulateur courant
+    for(const r of Array.from(p.children)){
+      if(r.localName!=="r"||!simpleText(r)){acc=null;continue;}
+      if(acc&&rprKey(acc)===rprKey(r)){
+        let at=child(acc,"t");if(!at){at=doc.createElementNS(W_NS,"w:t");acc.appendChild(at);}
+        const rt=child(r,"t");
+        at.textContent=(at.textContent||"")+(rt?rt.textContent:"");
+        at.setAttribute("xml:space","preserve");     // préserve les espaces de début/fin de balise
+        p.removeChild(r);
+      }else acc=r;
+    }
+  }
+  let out=new XMLSerializer().serializeToString(doc);
+  if(!/^<\?xml/.test(out))out=XMLD+out;
+  return out;
+}
+async function tmplLoadDocx(file){
+  const buf=await file.arrayBuffer();
+  return fflate.unzipSync(new Uint8Array(buf));      // { chemin: Uint8Array }
+}
+/* Lot 0 : normalise les parties XML, puis re-zippe (aucune substitution de balise pour l'instant). */
+function tmplRender(parts){
+  for(const p of tmplXmlParts(parts)) parts[p]=fflate.strToU8(tmplNormalizeXml(fflate.strFromU8(parts[p])));
+  return ooxmlBlob(parts,DOCX_MIME);
+}
+async function tmplExport(file){
+  try{
+    const parts=await tmplLoadDocx(file);
+    if(!parts["word/document.xml"]){toast(t("tmpl_invalid"));return;}
+    const name=exportBaseName()+"-rapport.docx";
+    downloadBlob(tmplRender(parts),name);
+    toast(t("toast_export",name));
+  }catch(err){console.error(err);toast(t("toast_export_fail",err.message));}
+}
+document.getElementById("miTemplateDocx").addEventListener("click",()=>{closeMenu();document.getElementById("templateInput").click();});
+document.getElementById("templateInput").addEventListener("change",e=>{
+  const f=e.target.files[0];e.target.value="";if(f)presGuard(()=>tmplExport(f));
+});
 
 /* ============================================================
    VUE PRÉSENTATION — métadonnées documentaires + champs de l'analyse
