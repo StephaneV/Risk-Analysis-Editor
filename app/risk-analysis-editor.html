@@ -8828,10 +8828,28 @@ function tmplMatrixBlockXml(attrs,ctx){
   const title=attrs.title?dxP(dxRun(attrs.title,{b:true,sz:22,color:"1F2937"}),{center:true,sa:40,sb:80}):"";
   return title+dxImage(rid,1000+n,W,H,maxW);
 }
+// Bloc {{ radar … }} : SVG autonome (buildRadarExportSVG) -> requête d'image + drawing.
+const TMPL_RADAR_METRIC={average:"avg",avg:"avg",max:"max",maximum:"max",cumulative:"sum",sum:"sum",weighted:"weighted",count:"count",number:"count"};
+const TMPL_RADAR_EVAL={initial:"initial",residual:"residual",side:"both-side",accolees:"both-side","both-side":"both-side",overlay:"both-over",superposees:"both-over","both-over":"both-over",both:"both-over"};
+function tmplRadarBlockXml(attrs,ctx){
+  const dim=(!attrs.dimension||attrs.dimension==="category")?"cat":(attrs.dimension.indexOf("cf.")===0?attrs.dimension.slice(3):attrs.dimension);
+  const metric=TMPL_RADAR_METRIC[String(attrs.metric||"avg").toLowerCase()]||"avg";
+  const evl=TMPL_RADAR_EVAL[String(attrs.evaluation||"overlay").toLowerCase()]||"both-over";
+  const cfg={dim,metric,eval:evl,title:attrs.title||""};
+  const ast=tmplCombinedFilter(attrs,ctx);
+  const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
+  if(radarComputeModel(cfg,risks).tooFew){tmplWarnings.push("radar (<3 axes)");return null;}
+  const ex=buildRadarExportSVG(cfg,risks,{});
+  const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n;
+  tmplImgReqs.push({rid,svg:ex.svg,W:ex.W,H:ex.H,fn:"tmplimg"+n+".png"});
+  const maxW=attrs.width?Math.round(parseFloat(attrs.width)*37.795):Math.min(ex.W,640);
+  return dxImage(rid,1000+n,ex.W,ex.H,maxW);
+}
 function tmplRenderBlock(name,attrs,ctx,doc){
   if(name==="table"){const xml=tmplTableXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
   if(name==="matrix"){const xml=tmplMatrixBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
-  return null;   // radar : lot 6
+  if(name==="radar"){const xml=tmplRadarBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
+  return null;
 }
 // Un paragraphe est-il UNIQUEMENT une balise de bloc ({{ table … }}, {{ matrix … }}, {{ radar … }}) ?
 function tmplParagraphBlock(p){
