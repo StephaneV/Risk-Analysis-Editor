@@ -1417,7 +1417,7 @@ const I18N = {
     cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
     cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
     cols_reorder_hint:"Ordre : glissez les en-têtes", cols_reset:"Réinitialiser", th_actions_col:"Actions",
-    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", tmpl_warn:"Rapport généré — {0} balise(s) inconnue(s) laissée(s) telles quelles (voir la console).", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"Fichier exporté : {0}", toast_export_fail:"Export impossible : {0}", xl_score:"Score", xl_crit:"Criticité",
     link_confirm_off:"Ne plus demander (pour cette session)",
     btn_save_new:"Enregistrer et nouveau", copy_suffix:" (copie)", a11y_dup_risk:"Dupliquer le risque {0}", a11y_dup_measure:"Dupliquer la mesure {0}",
@@ -1761,7 +1761,7 @@ const I18N = {
     cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
     cols_up:"Move column left", cols_down:"Move column right",
     cols_reorder_hint:"Order: drag the headers", cols_reset:"Reset", th_actions_col:"Actions",
-    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", tmpl_warn:"Report generated — {0} unknown tag(s) left as-is (see the console).", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File exported: {0}", toast_export_fail:"Export failed: {0}", xl_score:"Score", xl_crit:"Criticality",
     link_confirm_off:"Don't ask again (this session)",
     btn_save_new:"Save and new", copy_suffix:" (copy)", a11y_dup_risk:"Duplicate risk {0}", a11y_dup_measure:"Duplicate measure {0}",
@@ -2100,7 +2100,7 @@ const I18N = {
     cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
     cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
     cols_reorder_hint:"Ordine: trascina le intestazioni", cols_reset:"Reimposta", th_actions_col:"Azioni",
-    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", tmpl_warn:"Rapporto generato — {0} tag sconosciuto/i lasciato/i invariato/i (vedi la console).", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File esportato: {0}", toast_export_fail:"Esportazione non riuscita: {0}", xl_score:"Punteggio", xl_crit:"Criticità",
     link_confirm_off:"Non chiedere più (per questa sessione)",
     btn_save_new:"Salva e nuovo", copy_suffix:" (copia)", a11y_dup_risk:"Duplica il rischio {0}", a11y_dup_measure:"Duplica la misura {0}",
@@ -8288,9 +8288,163 @@ async function tmplLoadDocx(file){
   const buf=await file.arrayBuffer();
   return fflate.unzipSync(new Uint8Array(buf));      // { chemin: Uint8Array }
 }
-/* Lot 0 : normalise les parties XML, puis re-zippe (aucune substitution de balise pour l'instant). */
+/* ---- Lot 1 : substitution des balises de VALEUR + directive {{ report }} + formats ----
+   Le tokenizer respecte l'échappement (\{{  \}}  \'  \"  \\). Les balises de bloc et de
+   section ({{ matrix }}, {{#each}}…) sont laissées intactes pour les lots suivants. */
+let tmplReport={date_format:null,filter:null}, tmplWarnings=[];
+
+// Découpe un texte en littéraux et balises {{…}}, en tenant compte des échappements.
+function tmplTokenize(text){
+  const out=[]; let i=0, buf="";
+  while(i<text.length){
+    if(text[i]==="\\" && (text.substr(i,3)==="\\{{"||text.substr(i,3)==="\\}}")){ buf+=text.substr(i+1,2); i+=3; continue; }
+    if(text[i]==="{" && text[i+1]==="{"){
+      let j=i+2, inner="", closed=false;
+      while(j<text.length){
+        if(text[j]==="\\" && j+1<text.length){ inner+=text.substr(j,2); j+=2; continue; }
+        if(text[j]==="}" && text[j+1]==="}"){ closed=true; break; }
+        inner+=text[j]; j++;
+      }
+      if(closed){ if(buf){out.push({t:"lit",v:buf});buf="";} out.push({t:"tag",v:inner}); i=j+2; continue; }
+    }
+    buf+=text[i]; i++;
+  }
+  if(buf)out.push({t:"lit",v:buf});
+  return out;
+}
+// Sépare « path | modificateurs » (au 1er | hors guillemets).
+function tmplSplitPipe(inner){
+  let q=null;
+  for(let i=0;i<inner.length;i++){ const c=inner[i];
+    if(c==="\\"){i++;continue;}
+    if(q){ if(c===q)q=null; } else if(c==='"'||c==="'")q=c; else if(c==="|")return {path:inner.slice(0,i),mods:inner.slice(i+1)};
+  }
+  return {path:inner,mods:""};
+}
+// Analyse `key="value"` / drapeaux, guillemets ' ou " interchangeables, échappement \.
+function tmplParseAttrs(s){
+  const out={}; s=s||""; let i=0; const ws=c=>c===" "||c==="\t";
+  while(i<s.length){
+    while(i<s.length&&ws(s[i]))i++; if(i>=s.length)break;
+    let key=""; while(i<s.length&&/[A-Za-z0-9_.]/.test(s[i])){key+=s[i];i++;}
+    if(!key){i++;continue;}
+    while(i<s.length&&ws(s[i]))i++;
+    if(s[i]==="="){ i++; while(i<s.length&&ws(s[i]))i++; let v="";
+      if(s[i]==='"'||s[i]==="'"){ const q=s[i]; i++; while(i<s.length){ if(s[i]==="\\"&&i+1<s.length){v+=s[i+1];i+=2;continue;} if(s[i]===q){i++;break;} v+=s[i];i++; } }
+      else { while(i<s.length&&!ws(s[i])){ if(s[i]==="\\"&&i+1<s.length){v+=s[i+1];i+=2;continue;} v+=s[i];i++; } }
+      out[key]=v;
+    } else out[key]=true;
+  }
+  return out;
+}
+const TMPL_BLOCKS=["matrix","radar","table","stat"];
+// Classe une balise (inner déjà « trim »).
+function tmplClassify(inner){
+  if(inner[0]==="!")return {kind:"comment"};
+  if(inner[0]==="#"||inner[0]==="/")return {kind:"section"};
+  const sp=tmplSplitPipe(inner), path=sp.path.trim(), name=path.split(/\s+/)[0];
+  if(name==="report")return {kind:"report"};
+  if(TMPL_BLOCKS.indexOf(name)>=0)return {kind:"block"};
+  return {kind:"value", path:path, mods:tmplParseAttrs(sp.mods)};
+}
+// « JJ/MM/AAAA » etc. -> code interne de fmtDate (iso/eu/us/long).
+function tmplDateCode(tok){ if(!tok||tok===true)return null; const s=String(tok).toLowerCase();
+  if(s==="iso")return "iso"; if(s==="long")return "long";
+  if(s.indexOf("jj/mm")>=0||s==="eu")return "eu"; if(s.indexOf("mm/jj")>=0||s==="us")return "us"; return null; }
+function tmplFormatDate(v,tok){
+  if(v==null||v==="")return ""; const m=String(v).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m)return String(v);
+  const code=tmplDateCode(tok)||tmplReport.date_format||dateFormatPref();
+  if(code==="eu")return m[3]+"/"+m[2]+"/"+m[1];
+  if(code==="us")return m[2]+"/"+m[3]+"/"+m[1];
+  if(code==="long"){const dt=new Date(+m[1],+m[2]-1,+m[3]); if(!isNaN(dt.getTime())){try{return dt.toLocaleDateString(DATE_LOCALE[lang]||"fr-FR",{year:"numeric",month:"long",day:"numeric"});}catch(e){}} }
+  return m[0];
+}
+function tmplCfField(target,code){return (analyse.custom_fields||[]).find(f=>f.target===target&&f.code===code)||null;}
+function tmplRenderCf(f,v,mods){
+  if(v==null||v===""||(Array.isArray(v)&&!v.length))return mods.default!=null?mods.default:"";
+  const sep=mods.join!=null?mods.join:", ";
+  if(mods.codes)return Array.isArray(v)?v.join(sep):String(v);
+  if(f&&(f.type==="checklist"||f.type==="tags")){const arr=Array.isArray(v)?v:[];
+    return arr.map(c=>{const it=(f.items||[]).find(x=>x.code===c);return it?cfItemLabel(it):c;}).join(sep);}
+  return f?cfDisplayTxt(f,v):(Array.isArray(v)?v.join(sep):String(v));
+}
+// Résout un chemin SCALAIRE (contexte racine). Les objets risk/measure/link : lot 2.
+function tmplResolveValue(path){
+  const md=analyse.metadata||{}, p=path.split(".");
+  if(p[0]==="analysis"){
+    if(p[1]==="cf"){const code=p.slice(2).join(".");return {kind:"cf",value:(analyse.custom||{})[code],field:tmplCfField("analysis",code)};}
+    switch(p[1]){
+      case "title":return {kind:"text",value:md.title};
+      case "description":return {kind:"md",value:md.description};
+      case "author":return {kind:"text",value:md.author};
+      case "organization":return {kind:"text",value:md.organization};
+      case "scope":return {kind:"text",value:md.scope};
+      case "reference":return {kind:"text",value:md.methodology_reference};
+      case "revision":return {kind:"text",value:md.revision};
+      case "status":return {kind:"text",value:metaStatusLabel(md.status)};
+      case "language":return {kind:"text",value:md.language};
+      case "created":return {kind:"date",value:md.created_at};
+      case "updated":return {kind:"date",value:md.updated_at};
+      default:return {unknown:true};
+    }
+  }
+  if(p[0]==="grid"){const g=analyse.grid||{};
+    if(p[1]==="vertical_axis")return {kind:"text",value:(g.vertical_axis||{}).label};
+    if(p[1]==="horizontal_axis")return {kind:"text",value:(g.horizontal_axis||{}).label};
+    if(p[1]==="method")return {kind:"text",value:(g.score||{}).method};
+    return {unknown:true};
+  }
+  return {unknown:true};
+}
+function tmplRenderValue(res,mods){
+  if(res.kind==="cf")return tmplRenderCf(res.field,res.value,mods);
+  let s;
+  if(res.kind==="date")s=tmplFormatDate(res.value,mods.date);
+  else if(res.kind==="md")s=mdToText(res.value||"");
+  else s=res.value==null?"":String(res.value);
+  if(s===""||s==null)return mods.default!=null?mods.default:"";
+  if(mods.percent)s=s+" %";
+  if(mods.upper)s=s.toUpperCase();
+  if(mods.lower)s=s.toLowerCase();
+  return s;
+}
+// Traite le texte d'un <w:t> : substitue valeurs, retire report/comment, laisse blocs/sections.
+function tmplProcessText(text){
+  const toks=tmplTokenize(text); let out="";
+  for(const tk of toks){
+    if(tk.t==="lit"){out+=tk.v;continue;}
+    const cls=tmplClassify(tk.v.trim());
+    if(cls.kind==="comment"||cls.kind==="report")continue;             // supprimé du rendu
+    if(cls.kind==="section"||cls.kind==="block"){out+="{{"+tk.v+"}}";continue;} // lots suivants
+    const res=tmplResolveValue(cls.path);
+    if(res.unknown){tmplWarnings.push(cls.path);out+="{{"+tk.v+"}}";continue;}
+    out+=tmplRenderValue(res,cls.mods);                                 // texte brut (le sérialiseur échappe)
+  }
+  return out;
+}
+function tmplScanReport(text){
+  for(const tk of tmplTokenize(text)){ if(tk.t!=="tag")continue; const inner=tk.v.trim();
+    if(/^report\b/.test(inner)){ const a=tmplParseAttrs(inner.slice(6));
+      if(a.date_format!=null)tmplReport.date_format=tmplDateCode(a.date_format)||tmplReport.date_format;
+      if(a.filter!=null)tmplReport.filter=a.filter; } }
+}
+function tmplWalkT(doc,fn){Array.from(doc.getElementsByTagNameNS(W_NS,"t")).forEach(fn);}
+// Lot 1 : normalise, applique {{ report }}, substitue les valeurs, re-zippe.
 function tmplRender(parts){
-  for(const p of tmplXmlParts(parts)) parts[p]=fflate.strToU8(tmplNormalizeXml(fflate.strFromU8(parts[p])));
+  tmplReport={date_format:null,filter:null}; tmplWarnings=[];
+  const items=tmplXmlParts(parts).map(p=>{
+    const xml=tmplNormalizeXml(fflate.strFromU8(parts[p]));
+    let doc=null; try{doc=new DOMParser().parseFromString(xml,"application/xml");}catch(e){}
+    if(doc&&doc.getElementsByTagName("parsererror").length)doc=null;
+    return {p,xml,doc};
+  });
+  items.forEach(it=>{ if(it.doc)tmplWalkT(it.doc,tn=>tmplScanReport(tn.textContent)); });   // pass 1 : report
+  items.forEach(it=>{                                                                        // pass 2 : substitution
+    if(!it.doc){parts[it.p]=fflate.strToU8(it.xml);return;}
+    tmplWalkT(it.doc,tn=>{tn.textContent=tmplProcessText(tn.textContent);tn.setAttribute("xml:space","preserve");});
+    let out=new XMLSerializer().serializeToString(it.doc); if(!/^<\?xml/.test(out))out=XMLD+out;
+    parts[it.p]=fflate.strToU8(out);
+  });
   return ooxmlBlob(parts,DOCX_MIME);
 }
 async function tmplExport(file){
@@ -8299,7 +8453,9 @@ async function tmplExport(file){
     if(!parts["word/document.xml"]){toast(t("tmpl_invalid"));return;}
     const name=exportBaseName()+"-rapport.docx";
     downloadBlob(tmplRender(parts),name);
-    toast(t("toast_export",name));
+    const warns=Array.from(new Set(tmplWarnings));
+    if(warns.length){console.warn("Modèle Word — balises inconnues :",warns);toast(t("tmpl_warn",warns.length));}
+    else toast(t("toast_export",name));
   }catch(err){console.error(err);toast(t("toast_export_fail",err.message));}
 }
 document.getElementById("miTemplateDocx").addEventListener("click",()=>{closeMenu();document.getElementById("templateInput").click();});
