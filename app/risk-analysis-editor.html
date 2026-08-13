@@ -5350,6 +5350,21 @@ function reportMatrixSVG(mode,risks){
   gridRiskOverride=_prevGR;
   return svg;
 }
+// Matrice UNIQUE (initial ou résiduel), pour la balise {{ matrix type="initial|residual" }} du modèle Word.
+function reportSingleMatrixSVG(which,risks){
+  const _prevGR=gridRiskOverride;if(risks)gridRiskOverride=risks;
+  const holder=document.createElement("div");
+  holder.style.cssText="position:absolute;left:-99999px;top:0;width:640px;background:#ffffff";
+  document.body.appendChild(holder);
+  const b=document.createElement("div");b.className="matrix-block";b.style.maxWidth="620px";b.style.margin="0 auto";
+  b.innerHTML=matrixHeader(which==="residual"?t("mtx_residual"):t("mtx_initial"));
+  const c=document.createElement("div");b.appendChild(c);holder.appendChild(b);
+  const mc=buildGrid(c,which);
+  if(getArrangement()==="manual"){ensureManualInit();renderManualSide(mc,which);}else layoutStacks(holder);
+  const legend=document.createElement("div");legend.className="legend";legend.innerHTML=critLegend();holder.appendChild(legend);
+  const svg=buildExportSVG([b],legend,holder,false).svg;
+  holder.remove();gridRiskOverride=_prevGR;return svg;
+}
 /* ============================================================
    PERSONNALISATION DU RAPPORT
    Config sous analyse.extensions.display.report. Absente => modèle par défaut
@@ -8291,7 +8306,7 @@ async function tmplLoadDocx(file){
 /* ---- Lot 1 : substitution des balises de VALEUR + directive {{ report }} + formats ----
    Le tokenizer respecte l'échappement (\{{  \}}  \'  \"  \\). Les balises de bloc et de
    section ({{ matrix }}, {{#each}}…) sont laissées intactes pour les lots suivants. */
-let tmplReport={date_format:null,filter:null}, tmplWarnings=[];
+let tmplReport={date_format:null,filter:null}, tmplWarnings=[], tmplImgReqs=[];
 
 // Découpe un texte en littéraux et balises {{…}}, en tenant compte des échappements.
 function tmplTokenize(text){
@@ -8787,15 +8802,36 @@ function tmplTableXml(attrs,ctx){
   const rows=tmplFilteredItems(src,attrs,ctx),keys=tmplTableCols(src,attrs.columns);
   return tmplApplyTableStyle(dxReportTable(src,keys,rows,cw),attrs.style);
 }
-// Parse un fragment OOXML et l'importe dans le document cible.
+// Parse un fragment OOXML (un ou plusieurs blocs) et l'importe dans le document cible (fragment).
 function tmplImportXml(fragXml,doc){
-  const d=new DOMParser().parseFromString('<w:document xmlns:w="'+W_NS+'" xmlns:r="'+OD_REL+'">'+fragXml+'</w:document>',"application/xml");
+  const wrap='<w:document xmlns:w="'+W_NS+'" xmlns:r="'+OD_REL+'" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'+fragXml+'</w:document>';
+  const d=new DOMParser().parseFromString(wrap,"application/xml");
   if(d.getElementsByTagName("parsererror").length)return null;
-  const node=d.documentElement.firstChild; return node?doc.importNode(node,true):null;
+  const frag=doc.createDocumentFragment();
+  Array.from(d.documentElement.childNodes).forEach(n=>frag.appendChild(doc.importNode(n,true)));
+  return frag.childNodes.length?frag:null;
+}
+// Bloc {{ matrix … }} : SVG (filtré) -> requête d'image (rasterisée après l'expansion) + drawing.
+function tmplMatrixBlockXml(attrs,ctx){
+  const type=(attrs.type||"initial").toLowerCase();
+  const ast=tmplCombinedFilter(attrs,ctx);
+  const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
+  let svg;
+  if(type==="trajectory"||type==="traj")svg=reportMatrixSVG("traj",risks);
+  else if(type==="side"||type==="ir"||type==="both")svg=reportMatrixSVG("side",risks);
+  else svg=reportSingleMatrixSVG((type==="residual"||type==="net")?"residual":"initial",risks);
+  const m=/width="(\d+(?:\.\d+)?)" height="(\d+(?:\.\d+)?)"/.exec(svg);
+  const W=m?Math.round(+m[1]):800,H=m?Math.round(+m[2]):600;
+  const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n;
+  tmplImgReqs.push({rid,svg,W,H,fn:"tmplimg"+n+".png"});
+  const maxW=attrs.width?Math.round(parseFloat(attrs.width)*37.795):Math.min(W,640);
+  const title=attrs.title?dxP(dxRun(attrs.title,{b:true,sz:22,color:"1F2937"}),{center:true,sa:40,sb:80}):"";
+  return title+dxImage(rid,1000+n,W,H,maxW);
 }
 function tmplRenderBlock(name,attrs,ctx,doc){
   if(name==="table"){const xml=tmplTableXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
-  return null;   // matrix / radar : lots 5 et 6
+  if(name==="matrix"){const xml=tmplMatrixBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
+  return null;   // radar : lot 6
 }
 // Un paragraphe est-il UNIQUEMENT une balise de bloc ({{ table … }}, {{ matrix … }}, {{ radar … }}) ?
 function tmplParagraphBlock(p){
@@ -8845,9 +8881,24 @@ function tmplRenderContainer(container,ctx){
     node=node.nextSibling;
   }
 }
-// Lot 2 : normalise, applique {{ report }}, développe boucles + substitue valeurs, re-zippe.
-function tmplRender(parts){
-  tmplReport={date_format:null,filter:null}; tmplWarnings=[];
+// Ajoute au modèle les images demandées (matrices/radars) : media PNG + relations + content-type.
+async function tmplInjectImages(parts){
+  const rels=[];
+  for(const req of tmplImgReqs){
+    const blob=await rasterizePNG(req.svg,req.W,req.H,2);
+    parts["word/media/"+req.fn]=new Uint8Array(await blob.arrayBuffer());
+    rels.push('<Relationship Id="'+req.rid+'" Type="'+OD_REL+'/image" Target="media/'+req.fn+'"/>');
+  }
+  const rp="word/_rels/document.xml.rels";
+  const rx=parts[rp]?fflate.strFromU8(parts[rp]):(XMLD+'<Relationships '+RELS_XMLNS+'></Relationships>');
+  parts[rp]=fflate.strToU8(rx.replace("</Relationships>",rels.join("")+"</Relationships>"));
+  const cp="[Content_Types].xml"; let cx=fflate.strFromU8(parts[cp]);
+  if(!/Extension="png"/i.test(cx))cx=cx.replace("</Types>",'<Default Extension="png" ContentType="image/png"/></Types>');
+  parts[cp]=fflate.strToU8(cx);
+}
+// Lot 2-5 : normalise, applique {{ report }}, développe boucles/blocs + substitue valeurs, injecte les images, re-zippe.
+async function tmplRender(parts){
+  tmplReport={date_format:null,filter:null}; tmplWarnings=[]; tmplImgReqs=[];
   const items=tmplXmlParts(parts).map(p=>{
     const xml=tmplNormalizeXml(fflate.strFromU8(parts[p]));
     let doc=null; try{doc=new DOMParser().parseFromString(xml,"application/xml");}catch(e){}
@@ -8855,13 +8906,14 @@ function tmplRender(parts){
     return {p,xml,doc};
   });
   items.forEach(it=>{ if(it.doc)tmplWalkT(it.doc,tn=>tmplScanReport(tn.textContent)); });   // pass 1 : report
-  items.forEach(it=>{                                                                        // pass 2 : boucles + valeurs
+  items.forEach(it=>{                                                                        // pass 2 : boucles/blocs + valeurs
     if(!it.doc){parts[it.p]=fflate.strToU8(it.xml);return;}
     const root=it.doc.getElementsByTagNameNS(W_NS,"body")[0]||it.doc.documentElement;
     tmplRenderContainer(root,[]);
     let out=new XMLSerializer().serializeToString(it.doc); if(!/^<\?xml/.test(out))out=XMLD+out;
     parts[it.p]=fflate.strToU8(out);
   });
+  if(tmplImgReqs.length)await tmplInjectImages(parts);                                       // pass 3 : images (async)
   return ooxmlBlob(parts,DOCX_MIME);
 }
 async function tmplExport(file){
@@ -8869,7 +8921,7 @@ async function tmplExport(file){
     const parts=await tmplLoadDocx(file);
     if(!parts["word/document.xml"]){toast(t("tmpl_invalid"));return;}
     const name=exportBaseName()+"-rapport.docx";
-    downloadBlob(tmplRender(parts),name);
+    downloadBlob(await tmplRender(parts),name);
     const warns=Array.from(new Set(tmplWarnings));
     if(warns.length){console.warn("Modèle Word — balises inconnues :",warns);toast(t("tmpl_warn",warns.length));}
     else toast(t("toast_export",name));
