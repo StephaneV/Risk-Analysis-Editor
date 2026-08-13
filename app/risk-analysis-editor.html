@@ -1417,7 +1417,7 @@ const I18N = {
     cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
     cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
     cols_reorder_hint:"Ordre : glissez les en-têtes", cols_reset:"Réinitialiser", th_actions_col:"Actions",
-    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", tmpl_warn:"Rapport généré — {0} balise(s) inconnue(s) laissée(s) telles quelles (voir la console).", tmpl_evo_reduced:"Réduit", tmpl_evo_unchanged:"Inchangé", tmpl_evo_worsened:"Aggravé", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", tmpl_warn:"Rapport généré — {0} balise(s) inconnue(s) laissée(s) telles quelles (voir la console).", tmpl_evo_reduced:"Réduit", tmpl_evo_unchanged:"Inchangé", tmpl_evo_worsened:"Aggravé", tmpl_group_empty:"(vide)", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"Fichier exporté : {0}", toast_export_fail:"Export impossible : {0}", xl_score:"Score", xl_crit:"Criticité",
     link_confirm_off:"Ne plus demander (pour cette session)",
     btn_save_new:"Enregistrer et nouveau", copy_suffix:" (copie)", a11y_dup_risk:"Dupliquer le risque {0}", a11y_dup_measure:"Dupliquer la mesure {0}",
@@ -1761,7 +1761,7 @@ const I18N = {
     cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
     cols_up:"Move column left", cols_down:"Move column right",
     cols_reorder_hint:"Order: drag the headers", cols_reset:"Reset", th_actions_col:"Actions",
-    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", tmpl_warn:"Report generated — {0} unknown tag(s) left as-is (see the console).", tmpl_evo_reduced:"Reduced", tmpl_evo_unchanged:"Unchanged", tmpl_evo_worsened:"Worsened", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", tmpl_warn:"Report generated — {0} unknown tag(s) left as-is (see the console).", tmpl_evo_reduced:"Reduced", tmpl_evo_unchanged:"Unchanged", tmpl_evo_worsened:"Worsened", tmpl_group_empty:"(empty)", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File exported: {0}", toast_export_fail:"Export failed: {0}", xl_score:"Score", xl_crit:"Criticality",
     link_confirm_off:"Don't ask again (this session)",
     btn_save_new:"Save and new", copy_suffix:" (copy)", a11y_dup_risk:"Duplicate risk {0}", a11y_dup_measure:"Duplicate measure {0}",
@@ -2100,7 +2100,7 @@ const I18N = {
     cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
     cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
     cols_reorder_hint:"Ordine: trascina le intestazioni", cols_reset:"Reimposta", th_actions_col:"Azioni",
-    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", tmpl_warn:"Rapporto generato — {0} tag sconosciuto/i lasciato/i invariato/i (vedi la console).", tmpl_evo_reduced:"Ridotto", tmpl_evo_unchanged:"Invariato", tmpl_evo_worsened:"Peggiorato", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", tmpl_warn:"Rapporto generato — {0} tag sconosciuto/i lasciato/i invariato/i (vedi la console).", tmpl_evo_reduced:"Ridotto", tmpl_evo_unchanged:"Invariato", tmpl_evo_worsened:"Peggiorato", tmpl_group_empty:"(vuoto)", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File esportato: {0}", toast_export_fail:"Esportazione non riuscita: {0}", xl_score:"Punteggio", xl_crit:"Criticità",
     link_confirm_off:"Non chiedere più (per questa sessione)",
     btn_save_new:"Salva e nuovo", copy_suffix:" (copia)", a11y_dup_risk:"Duplica il rischio {0}", a11y_dup_measure:"Duplica la misura {0}",
@@ -8431,6 +8431,11 @@ function tmplFieldOf(type,obj,rest){
   if(type==="measure")return tmplMeasureField(obj,rest);
   if(type==="link")return tmplLinkField(obj,rest);
   if(type==="level")return tmplLevelField(obj,rest);
+  if(type==="group"){const k=rest[0];
+    if(k==="label")return {kind:"text",value:obj.label};
+    if(k==="key")return {kind:"text",value:obj.key};
+    if(k==="count")return {kind:"num",value:obj.count};
+    return {unknown:true};}
   return {unknown:true};}
 function tmplResolveValue(path,ctx){
   const p=path.split("."),head=p[0],fr=tmplLookup(ctx||[],head);
@@ -8518,6 +8523,165 @@ function tmplSortLimit(list,type,attrs){
   if(attrs&&attrs.limit!=null){const n=parseInt(attrs.limit,10); if(n>=0)arr=arr.slice(0,n);}
   return arr;
 }
+/* ---- Lot 3 : filtres (analyse d'expression + évaluation avec propagation) + groupes ---- */
+function tmplNorm(s){return String(s==null?"":s).toLowerCase().replace(/[_\s]+/g," ").trim();}
+function tmplCritLevels(){return ((analyse.grid||{}).criticality_levels||[]).slice().sort((a,b)=>a.score_min-b.score_min);}
+function tmplCritOrderOf(c){return tmplCritLevels().findIndex(l=>l.code===c.code);}
+function tmplCritOrderByName(name){const ls=tmplCritLevels(),n=tmplNorm(name);return ls.findIndex(l=>tmplNorm(l.code)===n||tmplNorm(l.label)===n);}
+// -- Analyseur d'expression de filtre --
+function tmplFilterTokens(s){
+  const toks=[]; let i=0; s=s||"";
+  while(i<s.length){const ch=s[i];
+    if(ch===" "||ch==="\t"){i++;continue;}
+    if(ch==="("||ch===")"){toks.push({t:ch});i++;continue;}
+    if(ch==="'"||ch==='"'){const q=ch;i++;let v="";while(i<s.length){if(s[i]==="\\"&&i+1<s.length){v+=s[i+1];i+=2;continue;}if(s[i]===q){i++;break;}v+=s[i];i++;}toks.push({t:"str",v});continue;}
+    const two=s.substr(i,2);
+    if([">=","<=","!="].indexOf(two)>=0){toks.push({t:"op",v:two});i+=2;continue;}
+    if(ch==="="||ch===">"||ch==="<"){toks.push({t:"op",v:ch});i++;continue;}
+    let w="";while(i<s.length&&!/[\s()'"=<>]/.test(s[i])){w+=s[i];i++;}
+    const lw=w.toLowerCase();
+    if(lw==="and"||lw==="or")toks.push({t:lw});
+    else if(lw==="contains"||lw==="empty"||lw==="not_empty")toks.push({t:"op",v:lw});
+    else toks.push({t:"word",v:w});
+  }
+  return toks;
+}
+function tmplParseFilter(str){
+  const toks=tmplFilterTokens(str); let pos=0;
+  const peek=()=>toks[pos], next=()=>toks[pos++];
+  function parseOr(){let a=parseAnd(); while(peek()&&peek().t==="or"){next();a={op:"or",a,b:parseAnd()};} return a;}
+  function parseAnd(){let a=parseTerm(); while(peek()&&peek().t==="and"){next();a={op:"and",a,b:parseTerm()};} return a;}
+  function parseTerm(){const tk=peek();
+    if(tk&&tk.t==="("){next();const e=parseOr(); if(peek()&&peek().t===")")next(); return e;}
+    if(tk&&tk.t==="word"){next(); const field=tk.v, o=peek();
+      if(o&&o.t==="op"){next();
+        if(o.v==="empty"||o.v==="not_empty")return {op:"unary",field,cmp:o.v};
+        const vv=peek(); let value=""; if(vv&&(vv.t==="str"||vv.t==="word")){next();value=vv.v;}
+        return {op:"cmp",field,cmp:o.v,value};}
+      return {op:"unary",field,cmp:"not_empty"};}
+    return null;
+  }
+  try{return parseOr();}catch(e){return null;}
+}
+// -- Évaluation d'un filtre sur un contexte {risk, measure, link} --
+function tmplFieldDesc(field,c){
+  if(field.indexOf("cf.")===0){const code=field.slice(3); let f=null,obj=null;
+    [["risk",c.risk],["measure",c.measure],["link",c.link]].forEach(pr=>{if(!f){const ff=tmplCfField(pr[0],code);if(ff){f=ff;obj=pr[1];}}});
+    if(!f){f=tmplCfField("cotation",code);if(f)obj=c.risk;}
+    const v=obj?((obj.custom||{})[code]):undefined;
+    if(f&&(f.type==="tags"||f.type==="checklist")){const arr=Array.isArray(v)?v:[];
+      return {kind:"multi",items:arr.map(cd=>{const it=(f.items||[]).find(x=>x.code===cd);return {code:cd,label:it?cfItemLabel(it):cd};})};}
+    if(f&&f.type==="boolean")return {kind:"bool",bool:!!v};
+    if(f&&f.type==="select"){const it=(f.items||[]).find(x=>x.code===v);return {kind:"text",raw:v,label:it?cfItemLabel(it):v};}
+    return {kind:"text",raw:v==null?"":String(v),label:v==null?"":String(v)};
+  }
+  const R=c.risk,M=c.measure;
+  if(field==="category")return {kind:"text",raw:R?R.category:"",label:R?R.category:""};
+  if(field==="owner")return {kind:"text",raw:R?R.owner:"",label:R?R.owner:""};
+  if(field==="criticality_initial"||field==="criticality_residual"){
+    if(!R)return {kind:"crit",order:-1};
+    const ev=field==="criticality_residual"?residual(R):(R.initial_assessment||{probability:0,severity:0});
+    const cc=critFor(scoreOf(ev.probability,ev.severity)); return {kind:"crit",order:tmplCritOrderOf(cc)};}
+  if(field==="type")return {kind:"text",raw:M?M.type:"",label:M?typeLabel(M.type):""};
+  if(field==="status")return {kind:"text",raw:M?M.status:"",label:M?statusLabel(M.status):""};
+  if(field==="responsible")return {kind:"text",raw:M?M.responsible:"",label:M?M.responsible:""};
+  if(field==="overdue")return {kind:"bool",bool:M?isOverdue(M):false};
+  return {kind:"text",raw:"",label:""};
+}
+function tmplDescEmpty(d){
+  if(d.kind==="multi")return !d.items.length;
+  if(d.kind==="crit")return d.order<0;
+  if(d.kind==="bool")return false;
+  return tmplNorm(d.raw)===""&&tmplNorm(d.label)==="";
+}
+function tmplCmp(node,c){
+  const d=tmplFieldDesc(node.field,c),op=node.cmp;
+  if(op==="empty")return tmplDescEmpty(d);
+  if(op==="not_empty")return !tmplDescEmpty(d);
+  const val=node.value;
+  if(d.kind==="crit"){const oi=d.order,ov=tmplCritOrderByName(val); if(oi<0||ov<0)return false;
+    return op==="="?oi===ov:op==="!="?oi!==ov:op===">="?oi>=ov:op==="<="?oi<=ov:op===">"?oi>ov:op==="<"?oi<ov:false;}
+  if(d.kind==="bool"){const b=/^(true|1|yes|oui|s[iì]|vero)$/i.test(String(val))?true:/^(false|0|no|non)$/i.test(String(val))?false:null;
+    if(op==="="||op==="contains")return b===null?false:d.bool===b; if(op==="!=")return b===null?true:d.bool!==b; return false;}
+  if(d.kind==="multi"){const nv=tmplNorm(val),has=d.items.some(it=>tmplNorm(it.code)===nv||tmplNorm(it.label)===nv);
+    return (op==="contains"||op==="=")?has:op==="!="?!has:false;}
+  const acc=[tmplNorm(d.raw),tmplNorm(d.label)],nv=tmplNorm(val);
+  if(op==="=")return acc.indexOf(nv)>=0;
+  if(op==="!=")return acc.indexOf(nv)<0;
+  if(op==="contains")return acc.some(a=>a&&a.indexOf(nv)>=0);
+  return false;
+}
+function tmplEvalFilter(ast,c){
+  if(!ast)return true;
+  if(ast.op==="and")return tmplEvalFilter(ast.a,c)&&tmplEvalFilter(ast.b,c);
+  if(ast.op==="or")return tmplEvalFilter(ast.a,c)||tmplEvalFilter(ast.b,c);
+  return tmplCmp(ast,c);
+}
+// Propagation : un risque passe si UN contexte (lui + une de ses mesures liées, ou lui seul) satisfait le filtre.
+function tmplRiskPasses(R,ast){
+  const cs=(analyse.treatments||[]).filter(t=>t.risk===R.id).map(L=>({risk:R,measure:measureById(L.measure),link:L}));
+  cs.push({risk:R,measure:null,link:null}); return cs.some(c=>tmplEvalFilter(ast,c));}
+function tmplMeasurePasses(M,ast){
+  const cs=(analyse.treatments||[]).filter(t=>t.measure===M.id).map(L=>({risk:riskById(L.risk),measure:M,link:L}));
+  cs.push({risk:null,measure:M,link:null}); return cs.some(c=>tmplEvalFilter(ast,c));}
+function tmplFilterList(list,type,ast){
+  if(type==="risk")return list.filter(R=>tmplRiskPasses(R,ast));
+  if(type==="measure")return list.filter(M=>tmplMeasurePasses(M,ast));
+  if(type==="link")return list.filter(L=>tmplEvalFilter(ast,{risk:riskById(L.risk),measure:measureById(L.measure),link:L}));
+  return list;
+}
+function tmplCtxScopes(ctx){return (ctx||[]).filter(f=>f.type==="scope").map(f=>f.obj);}
+function tmplCombinedFilter(attrs,ctx){
+  const asts=[];
+  if(!(attrs&&attrs.report_filter==="none")&&tmplReport.filter){const a=tmplParseFilter(tmplReport.filter);if(a)asts.push(a);}
+  if(attrs&&attrs.filter){const a=tmplParseFilter(attrs.filter);if(a)asts.push(a);}
+  tmplCtxScopes(ctx).forEach(sc=>asts.push({op:"cmp",field:sc.field,cmp:sc.cmp,value:sc.value}));
+  return asts.reduce((acc,a)=>acc?{op:"and",a:acc,b:a}:a,null);
+}
+// -- Regroupement --
+function tmplGroupKeys(item,type,byField){
+  const EMPTY=t("tmpl_group_empty"), one=(k,l)=>[{key:(k==null||k==="")?"":String(k),label:(k==null||k==="")?EMPTY:String(l)}];
+  if(byField.indexOf("cf.")===0){const code=byField.slice(3),f=tmplCfField(type,code)||tmplCfField("cotation",code),v=(item.custom||{})[code];
+    if(v==null||v===""||(Array.isArray(v)&&!v.length))return [{key:"",label:EMPTY}];
+    return (Array.isArray(v)?v:[v]).map(cd=>{const it=f&&(f.items||[]).find(x=>x.code===cd);return {key:cd,label:it?cfItemLabel(it):cd};});}
+  if(type==="risk"){
+    if(byField==="category")return one(item.category,item.category);
+    if(byField==="owner")return one(item.owner,item.owner);
+    if(byField==="criticality_initial"||byField==="criticality_residual"){
+      const ev=byField==="criticality_residual"?residual(item):(item.initial_assessment||{probability:0,severity:0}),c=critFor(scoreOf(ev.probability,ev.severity));
+      return [{key:c.code,label:c.label}];}
+  }
+  if(type==="measure"){
+    if(byField==="type")return item.type?[{key:item.type,label:typeLabel(item.type)}]:[{key:"",label:EMPTY}];
+    if(byField==="status")return item.status?[{key:item.status,label:statusLabel(item.status)}]:[{key:"",label:EMPTY}];
+    if(byField==="responsible")return one(item.responsible,item.responsible);
+  }
+  return one(item[byField],item[byField]);
+}
+function tmplGroupScope(byField,key,type){
+  let cmp="=";
+  if(byField.indexOf("cf.")===0){const f=tmplCfField(type,byField.slice(3))||tmplCfField("cotation",byField.slice(3));
+    if(f&&(f.type==="tags"||f.type==="checklist"))cmp="contains";}
+  return {field:byField,cmp,value:key};
+}
+function tmplBuildGroups(list,type,byField){
+  const map=new Map();
+  list.forEach(item=>tmplGroupKeys(item,type,byField).forEach(k=>{let g=map.get(k.key);if(!g){g={key:k.key,label:k.label,items:[]};map.set(k.key,g);}g.items.push(item);}));
+  const groups=Array.from(map.values()).map(g=>({key:g.key,label:g.label,items:g.items,count:g.items.length,singular:type,itype:type,scope:tmplGroupScope(byField,g.key,type)}));
+  groups.sort((a,b)=>((a.key===""?1:0)-(b.key===""?1:0))||String(a.label).localeCompare(String(b.label)));
+  return groups;
+}
+// Construit les itérations d'une boucle : filtre (report + local + portée de groupe), regroupe, trie, limite.
+function tmplLoopIterations(name,attrs,ctx){
+  const col=tmplCollection(name,ctx); let list=col.list;
+  if(col.type==="risk"||col.type==="measure"||col.type==="link"){const ast=tmplCombinedFilter(attrs,ctx); if(ast)list=tmplFilterList(list,col.type,ast);}
+  if(attrs&&attrs.group_by){
+    let groups=tmplBuildGroups(list,col.type,attrs.group_by);
+    if(attrs.limit!=null){const n=parseInt(attrs.limit,10);if(n>=0)groups=groups.slice(0,n);}
+    return groups.map(g=>({frames:[{name:"group",type:"group",obj:g},{name:"__scope",type:"scope",obj:g.scope}]}));
+  }
+  return tmplSortLimit(list,col.type,attrs).map((item,ix)=>({frames:[{name:col.singular,type:col.type,obj:item,index:ix}]}));
+}
 // Traite le texte d'un <w:t> : substitue valeurs (contexte ctx), retire report/comment ; les
 // balises de section sont retirées si `strip` (corps d'une boucle de ligne), sinon laissées.
 function tmplProcessText(text,ctx,strip){
@@ -8570,9 +8734,8 @@ function tmplRenderTable(tbl,ctx){
   Array.from(tbl.children).filter(n=>n.localName==="tr").forEach(row=>{
     const info=tmplRowLoop(row);
     if(info){
-      const col=tmplCollection(info.collection,ctx),items=tmplSortLimit(col.list,col.type,info.attrs);
-      items.forEach((item,ix)=>{
-        const childCtx=ctx.concat([{name:col.singular,type:col.type,obj:item,index:ix}]);
+      tmplLoopIterations(info.collection,info.attrs,ctx).forEach(itr=>{
+        const childCtx=ctx.concat(itr.frames);
         const clone=row.cloneNode(true);
         tmplWalkT(clone,tn=>{tn.textContent=tmplProcessText(tn.textContent,childCtx,true);tn.setAttribute("xml:space","preserve");});
         tbl.insertBefore(clone,row);
@@ -8597,9 +8760,8 @@ function tmplRenderContainer(container,ctx){
         }
         if(closer){
           const after=closer.nextSibling;
-          const col=tmplCollection(sec.collection,ctx),items=tmplSortLimit(col.list,col.type,sec.attrs);
-          items.forEach((item,ix)=>{
-            const childCtx=ctx.concat([{name:col.singular,type:col.type,obj:item,index:ix}]);
+          tmplLoopIterations(sec.collection,sec.attrs,ctx).forEach(itr=>{
+            const childCtx=ctx.concat(itr.frames);
             const frag=doc.createDocumentFragment();
             body.forEach(b=>frag.appendChild(b.cloneNode(true)));
             tmplRenderContainer(frag,childCtx);
