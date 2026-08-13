@@ -8744,6 +8744,70 @@ function tmplRenderTable(tbl,ctx){
     } else Array.from(row.children).filter(c=>c.localName==="tc").forEach(tc=>tmplRenderContainer(tc,ctx));
   });
 }
+/* ---- Lot 4 : bloc {{ table … }} -> <w:tbl> généré (réutilise dxReportTable / dxTbl) ---- */
+// Correspondance noms de colonnes du modèle (anglais) -> clés internes des registres.
+const TMPL_COLMAP={
+  risks:{id:"id",label:"risk",risk:"risk",category:"cat",cat:"cat",owner:"owner",
+    criticality_initial:"initial",initial:"initial",criticality_residual:"residual",residual:"residual",
+    evolution:"evolution",measures:"measures"},
+  measures:{id:"id",label:"measure",measure:"measure",type:"type",status:"status",responsible:"resp",resp:"resp",
+    due_date:"due",due:"due",cost:"cost",risks:"covered",covered:"covered"},
+  links:{risk_id:"rid",rid:"rid",risk:"risk",measure_id:"mid",mid:"mid",measure:"measure",comment:"notes",notes:"notes"}
+};
+function tmplTableCols(tbl,columnsAttr){
+  if(columnsAttr){const map=TMPL_COLMAP[tbl]||{};
+    return String(columnsAttr).split(",").map(s=>s.trim()).filter(Boolean)
+      .map(tok=>tok.indexOf("cf.")===0?("cf:"+tok.slice(3)):(map[tok]||map[tok.toLowerCase()]||tok));}
+  return colOrder(tbl);                              // colonnes par défaut de l'application (config sauvegardée ou défaut)
+}
+// Liste filtrée + triée (report + local + portée de groupe), sans regroupement.
+function tmplFilteredItems(name,attrs,ctx){
+  const col=tmplCollection(name,ctx); let list=col.list;
+  if(col.type==="risk"||col.type==="measure"||col.type==="link"){const ast=tmplCombinedFilter(attrs,ctx); if(ast)list=tmplFilterList(list,col.type,ast);}
+  return tmplSortLimit(list,col.type,attrs);
+}
+function tmplLevelsTableXml(cw){
+  const T=(k,fb)=>{const v=t(k);return v===k?fb:v;};
+  const levels=((analyse.grid||{}).criticality_levels||[]);
+  const widths=[Math.round(cw*0.28),Math.round(cw*0.14),Math.round(cw*0.58)];
+  const header=[{txt:T("crit_title","Criticité"),b:true,fill:"EEF2F8"},{txt:T("th_score","Score"),b:true,fill:"EEF2F8",center:true},{txt:t("cf_description"),b:true,fill:"EEF2F8"}];
+  const rows=levels.length?levels.map(l=>[dxBadgeCell(l.label,l.color),{txt:l.score_min+"–"+l.score_max,center:true},{txt:l.description||"—"}]):[[{txt:"—"},{txt:""},{txt:""}]];
+  return dxTbl([header].concat(rows),widths);
+}
+// Applique un style de tableau NOMMÉ du modèle : référence + retrait des bordures explicites.
+function tmplApplyTableStyle(xml,style){
+  if(!style)return xml;
+  xml=xml.replace("<w:tblPr>",'<w:tblPr><w:tblStyle w:val="'+escX(style)+'"/>');
+  return xml.replace(/<w:tblBorders>[\s\S]*?<\/w:tblBorders>/,"");
+}
+function tmplTableXml(attrs,ctx){
+  const cw=DX_CW,src=attrs.source;
+  if(src==="levels")return tmplLevelsTableXml(cw);
+  if(["risks","measures","links"].indexOf(src)<0)return null;
+  const rows=tmplFilteredItems(src,attrs,ctx),keys=tmplTableCols(src,attrs.columns);
+  return tmplApplyTableStyle(dxReportTable(src,keys,rows,cw),attrs.style);
+}
+// Parse un fragment OOXML et l'importe dans le document cible.
+function tmplImportXml(fragXml,doc){
+  const d=new DOMParser().parseFromString('<w:document xmlns:w="'+W_NS+'" xmlns:r="'+OD_REL+'">'+fragXml+'</w:document>',"application/xml");
+  if(d.getElementsByTagName("parsererror").length)return null;
+  const node=d.documentElement.firstChild; return node?doc.importNode(node,true):null;
+}
+function tmplRenderBlock(name,attrs,ctx,doc){
+  if(name==="table"){const xml=tmplTableXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
+  return null;   // matrix / radar : lots 5 et 6
+}
+// Un paragraphe est-il UNIQUEMENT une balise de bloc ({{ table … }}, {{ matrix … }}, {{ radar … }}) ?
+function tmplParagraphBlock(p){
+  if(p.localName!=="p")return null;
+  const text=Array.from(p.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent).join("");
+  let tag=null,extra=false;
+  for(const tk of tmplTokenize(text)){if(tk.t==="lit"){if(tk.v.trim()!=="")extra=true;}else{if(tag)extra=true;else tag=tk.v.trim();}}
+  if(!tag||extra)return null;
+  if(tmplClassify(tag).kind!=="block")return null;
+  const name=tag.split(/\s+/)[0];
+  return {name,attrs:tmplParseAttrs(tag.slice(name.length))};
+}
 // Parcourt les blocs (w:p / w:tbl) d'un conteneur : développe les boucles, substitue les valeurs.
 function tmplRenderContainer(container,ctx){
   const doc=container.ownerDocument;
@@ -8771,6 +8835,9 @@ function tmplRenderContainer(container,ctx){
           node=after; continue;
         }
       }
+      const blk=tmplParagraphBlock(node);
+      if(blk){const repl=tmplRenderBlock(blk.name,blk.attrs,ctx,doc);
+        if(repl){const nx=node.nextSibling;container.insertBefore(repl,node);container.removeChild(node);node=nx;continue;}}
       tmplSubstituteInNode(node,ctx);
     } else if(node.nodeType===1 && node.localName==="tbl"){
       tmplRenderTable(node,ctx);
