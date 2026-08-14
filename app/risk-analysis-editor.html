@@ -1417,7 +1417,17 @@ const I18N = {
     cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
     cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
     cols_reorder_hint:"Ordre : glissez les en-têtes", cols_reset:"Réinitialiser", th_actions_col:"Actions",
-    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", tmpl_warn:"Rapport généré — {0} balise(s) inconnue(s) laissée(s) telles quelles (voir la console).", tmpl_evo_reduced:"Réduit", tmpl_evo_unchanged:"Inchangé", tmpl_evo_worsened:"Aggravé", tmpl_group_empty:"(vide)", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", tmpl_warn:"Rapport généré — {0} balise(s) inconnue(s) laissée(s) telles quelles (voir la console).", tmpl_evo_reduced:"Réduit", tmpl_evo_unchanged:"Inchangé", tmpl_evo_worsened:"Aggravé", tmpl_group_empty:"(vide)",
+    tmpl_warn_title:"Rapport généré — avertissements", tmpl_warn_intro:"{0} type(s) d'anomalie. Le rapport a été produit ; ces éléments ont été laissés tels quels ou ignorés :",
+    tw_unknown_tag:"Balise inconnue : {0}", tw_unknown_namespace:"Espace de noms inconnu : {0}", tw_outside_loop:"Utilisé hors d'une boucle : {0}",
+    tw_unknown_field:"Champ inconnu : {0}", tw_unknown_cf:"Champ personnalisé inconnu : {0}", tw_empty_tag:"Balise vide", tw_unknown_format:"Format inconnu ignoré : {0}",
+    tw_loop_unclosed:"Boucle non fermée : each {0}", tw_loop_orphan:"Fermeture de boucle sans ouverture", tw_loop_unknown_coll:"Collection inconnue : {0}",
+    tw_loop_row_unclosed:"Boucle de ligne de tableau non fermée : each {0}", tw_unknown_groupby:"Champ de regroupement inconnu : {0}",
+    tw_filter_invalid:"Expression de filtre invalide : {0}", tw_filter_op:"Opérateur de filtre inconnu : {0}", tw_filter_field:"Champ de filtre inconnu : {0}",
+    tw_table_source:"Source de tableau inconnue : {0}", tw_table_nosource:"Bloc « table » sans attribut « source »", tw_table_column:"Colonne inconnue ignorée : {0}",
+    tw_matrix_type:"Type de matrice inconnu : {0} (repli sur « initial »)", tw_radar_metric:"Métrique de radar inconnue : {0} (repli sur « moyenne »)", tw_radar_eval:"Évaluation de radar inconnue : {0}",
+    tw_radar_fewaxes:"Radar impossible : moins de 3 axes ({0})", tw_unknown_block:"Bloc inconnu : {0}", tw_xml_unreadable:"Contenu Word illisible : une partie du document a été laissée telle quelle",
+    tw_unresolved:"Accolades non résolues (balise incomplète ou scindée) : {0}", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"Fichier exporté : {0}", toast_export_fail:"Export impossible : {0}", xl_score:"Score", xl_crit:"Criticité",
     link_confirm_off:"Ne plus demander (pour cette session)",
     btn_save_new:"Enregistrer et nouveau", copy_suffix:" (copie)", a11y_dup_risk:"Dupliquer le risque {0}", a11y_dup_measure:"Dupliquer la mesure {0}",
@@ -1761,7 +1771,17 @@ const I18N = {
     cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
     cols_up:"Move column left", cols_down:"Move column right",
     cols_reorder_hint:"Order: drag the headers", cols_reset:"Reset", th_actions_col:"Actions",
-    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", tmpl_warn:"Report generated — {0} unknown tag(s) left as-is (see the console).", tmpl_evo_reduced:"Reduced", tmpl_evo_unchanged:"Unchanged", tmpl_evo_worsened:"Worsened", tmpl_group_empty:"(empty)", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", tmpl_warn:"Report generated — {0} unknown tag(s) left as-is (see the console).", tmpl_evo_reduced:"Reduced", tmpl_evo_unchanged:"Unchanged", tmpl_evo_worsened:"Worsened", tmpl_group_empty:"(empty)",
+    tmpl_warn_title:"Report generated — warnings", tmpl_warn_intro:"{0} kind(s) of issue. The report was produced; these items were left as-is or ignored:",
+    tw_unknown_tag:"Unknown tag: {0}", tw_unknown_namespace:"Unknown namespace: {0}", tw_outside_loop:"Used outside a loop: {0}",
+    tw_unknown_field:"Unknown field: {0}", tw_unknown_cf:"Unknown custom field: {0}", tw_empty_tag:"Empty tag", tw_unknown_format:"Unknown format ignored: {0}",
+    tw_loop_unclosed:"Unclosed loop: each {0}", tw_loop_orphan:"Loop close without a matching open", tw_loop_unknown_coll:"Unknown collection: {0}",
+    tw_loop_row_unclosed:"Unclosed table-row loop: each {0}", tw_unknown_groupby:"Unknown group-by field: {0}",
+    tw_filter_invalid:"Invalid filter expression: {0}", tw_filter_op:"Unknown filter operator: {0}", tw_filter_field:"Unknown filter field: {0}",
+    tw_table_source:"Unknown table source: {0}", tw_table_nosource:"“table” block without a “source” attribute", tw_table_column:"Unknown column ignored: {0}",
+    tw_matrix_type:"Unknown matrix type: {0} (falling back to “initial”)", tw_radar_metric:"Unknown radar metric: {0} (falling back to “average”)", tw_radar_eval:"Unknown radar evaluation: {0}",
+    tw_radar_fewaxes:"Radar not possible: fewer than 3 axes ({0})", tw_unknown_block:"Unknown block: {0}", tw_xml_unreadable:"Unreadable Word content: part of the document was left as-is",
+    tw_unresolved:"Unresolved braces (incomplete or split tag): {0}", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File exported: {0}", toast_export_fail:"Export failed: {0}", xl_score:"Score", xl_crit:"Criticality",
     link_confirm_off:"Don't ask again (this session)",
     btn_save_new:"Save and new", copy_suffix:" (copy)", a11y_dup_risk:"Duplicate risk {0}", a11y_dup_measure:"Duplicate measure {0}",
@@ -2100,7 +2120,17 @@ const I18N = {
     cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
     cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
     cols_reorder_hint:"Ordine: trascina le intestazioni", cols_reset:"Reimposta", th_actions_col:"Azioni",
-    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", tmpl_warn:"Rapporto generato — {0} tag sconosciuto/i lasciato/i invariato/i (vedi la console).", tmpl_evo_reduced:"Ridotto", tmpl_evo_unchanged:"Invariato", tmpl_evo_worsened:"Peggiorato", tmpl_group_empty:"(vuoto)", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", tmpl_warn:"Rapporto generato — {0} tag sconosciuto/i lasciato/i invariato/i (vedi la console).", tmpl_evo_reduced:"Ridotto", tmpl_evo_unchanged:"Invariato", tmpl_evo_worsened:"Peggiorato", tmpl_group_empty:"(vuoto)",
+    tmpl_warn_title:"Rapporto generato — avvisi", tmpl_warn_intro:"{0} tipo/i di anomalia. Il rapporto è stato prodotto; questi elementi sono stati lasciati invariati o ignorati:",
+    tw_unknown_tag:"Tag sconosciuto: {0}", tw_unknown_namespace:"Spazio dei nomi sconosciuto: {0}", tw_outside_loop:"Usato fuori da un ciclo: {0}",
+    tw_unknown_field:"Campo sconosciuto: {0}", tw_unknown_cf:"Campo personalizzato sconosciuto: {0}", tw_empty_tag:"Tag vuoto", tw_unknown_format:"Formato sconosciuto ignorato: {0}",
+    tw_loop_unclosed:"Ciclo non chiuso: each {0}", tw_loop_orphan:"Chiusura di ciclo senza apertura", tw_loop_unknown_coll:"Collezione sconosciuta: {0}",
+    tw_loop_row_unclosed:"Ciclo di riga di tabella non chiuso: each {0}", tw_unknown_groupby:"Campo di raggruppamento sconosciuto: {0}",
+    tw_filter_invalid:"Espressione di filtro non valida: {0}", tw_filter_op:"Operatore di filtro sconosciuto: {0}", tw_filter_field:"Campo di filtro sconosciuto: {0}",
+    tw_table_source:"Sorgente di tabella sconosciuta: {0}", tw_table_nosource:"Blocco « table » senza attributo « source »", tw_table_column:"Colonna sconosciuta ignorata: {0}",
+    tw_matrix_type:"Tipo di matrice sconosciuto: {0} (ripiego su « iniziale »)", tw_radar_metric:"Metrica radar sconosciuta: {0} (ripiego su « media »)", tw_radar_eval:"Valutazione radar sconosciuta: {0}",
+    tw_radar_fewaxes:"Radar impossibile: meno di 3 assi ({0})", tw_unknown_block:"Blocco sconosciuto: {0}", tw_xml_unreadable:"Contenuto Word illeggibile: una parte del documento è stata lasciata invariata",
+    tw_unresolved:"Parentesi graffe non risolte (tag incompleto o spezzato): {0}", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File esportato: {0}", toast_export_fail:"Esportazione non riuscita: {0}", xl_score:"Punteggio", xl_crit:"Criticità",
     link_confirm_off:"Non chiedere più (per questa sessione)",
     btn_save_new:"Salva e nuovo", copy_suffix:" (copia)", a11y_dup_risk:"Duplica il rischio {0}", a11y_dup_measure:"Duplica la misura {0}",
@@ -8307,6 +8337,24 @@ async function tmplLoadDocx(file){
    Le tokenizer respecte l'échappement (\{{  \}}  \'  \"  \\). Les balises de bloc et de
    section ({{ matrix }}, {{#each}}…) sont laissées intactes pour les lots suivants. */
 let tmplReport={date_format:null,filter:null}, tmplWarnings=[], tmplImgReqs=[];
+function tmplWarn(k,a){tmplWarnings.push(a!=null?t(k,a):t(k));}
+const TMPL_KNOWN_FMT={date:1,codes:1,labels:1,join:1,percent:1,upper:1,lower:1,default:1};
+const TMPL_FILTER_FIELDS={category:1,owner:1,type:1,status:1,responsible:1,overdue:1,criticality_initial:1,criticality_residual:1};
+function tmplFilterFieldKnown(f){return f.indexOf("cf.")===0||!!TMPL_FILTER_FIELDS[f];}
+function tmplGroupFieldKnown(type,f){
+  if(f.indexOf("cf.")===0)return !!(tmplCfField(type,f.slice(3))||tmplCfField("cotation",f.slice(3)));
+  if(type==="risk")return ["category","owner","criticality_initial","criticality_residual"].indexOf(f)>=0;
+  if(type==="measure")return ["type","status","responsible"].indexOf(f)>=0;
+  return false;
+}
+function tmplCheckFormats(mods){for(const k in (mods||{}))if(!TMPL_KNOWN_FMT[k])tmplWarn("tw_unknown_format",k);}
+function tmplWarnValue(res,path){switch(res&&res.reason){
+  case "empty":tmplWarn("tw_empty_tag");break;
+  case "namespace":tmplWarn("tw_unknown_namespace",res.detail||path);break;
+  case "outside_loop":tmplWarn("tw_outside_loop",res.detail||path);break;
+  case "cf":tmplWarn("tw_unknown_cf",res.detail||path);break;
+  case "field":tmplWarn("tw_unknown_field",res.detail||path);break;
+  default:tmplWarn("tw_unknown_tag",path);}}
 
 // Découpe un texte en littéraux et balises {{…}}, en tenant compte des échappements.
 function tmplTokenize(text){
@@ -8321,6 +8369,8 @@ function tmplTokenize(text){
         inner+=text[j]; j++;
       }
       if(closed){ if(buf){out.push({t:"lit",v:buf});buf="";} out.push({t:"tag",v:inner}); i=j+2; continue; }
+      // `{{` sans `}}` de fermeture (balise scindée par une mise en forme, ou incomplète)
+      if(buf){out.push({t:"lit",v:buf});buf="";} out.push({t:"open",v:inner}); out.push({t:"lit",v:"{{"+inner}); i=j; continue;
     }
     buf+=text[i]; i++;
   }
@@ -8360,6 +8410,7 @@ function tmplClassify(inner){
   const sp=tmplSplitPipe(inner), path=sp.path.trim(), name=path.split(/\s+/)[0];
   if(name==="report")return {kind:"report"};
   if(TMPL_BLOCKS.indexOf(name)>=0)return {kind:"block"};
+  if(!sp.mods && /\s\S+=/.test(path))return {kind:"unknown_block", name};   // « nom attr="…" » mais nom inconnu
   return {kind:"value", path:path, mods:tmplParseAttrs(sp.mods)};
 }
 // « JJ/MM/AAAA » etc. -> code interne de fmtDate (iso/eu/us/long).
@@ -8413,7 +8464,7 @@ function tmplRiskField(risk,rest){switch(rest[0]){
   case "initial": case "gross":return tmplAssess(risk,"initial",rest[1]);
   case "residual": case "net":return tmplAssess(risk,"residual",rest[1]);
   case "evolution":return {kind:"text",value:tmplEvolution(risk)};
-  case "cf":return {kind:"cf",value:(risk.custom||{})[rest[1]],field:tmplCfField("risk",rest[1])||tmplCfField("cotation",rest[1])};
+  case "cf":{const f=tmplCfField("risk",rest[1])||tmplCfField("cotation",rest[1]);return f?{kind:"cf",value:(risk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   default:return {unknown:true};}}
 function tmplMeasureField(m,rest){switch(rest[0]){
   case "id":return {kind:"text",value:m.id};
@@ -8426,13 +8477,13 @@ function tmplMeasureField(m,rest){switch(rest[0]){
   case "description":return {kind:"md",value:m.description};
   case "comment":return {kind:"md",value:m.comment};
   case "overdue":return {kind:"bool",value:isOverdue(m)};
-  case "cf":return {kind:"cf",value:(m.custom||{})[rest[1]],field:tmplCfField("measure",rest[1])};
+  case "cf":{const f=tmplCfField("measure",rest[1]);return f?{kind:"cf",value:(m.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   default:return {unknown:true};}}
 function tmplLinkField(lk,rest){switch(rest[0]){
   case "comment":return {kind:"md",value:lk.comment};
   case "risk_id":return {kind:"text",value:lk.risk};
   case "measure_id":return {kind:"text",value:lk.measure};
-  case "cf":return {kind:"cf",value:(lk.custom||{})[rest[1]],field:tmplCfField("link",rest[1])};
+  case "cf":{const f=tmplCfField("link",rest[1]);return f?{kind:"cf",value:(lk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   case "risk":return tmplRiskField(riskById(lk.risk)||{},rest.slice(1));
   case "measure":return tmplMeasureField(measureById(lk.measure)||{},rest.slice(1));
   default:return {unknown:true};}}
@@ -8442,22 +8493,28 @@ function tmplLevelField(lv,rest){const k=rest[0];
   return {unknown:true};}
 function tmplFieldOf(type,obj,rest){
   if(!rest.length)return {kind:"text",value:(obj&&(obj.label||obj.id))||""};
-  if(type==="risk")return tmplRiskField(obj,rest);
-  if(type==="measure")return tmplMeasureField(obj,rest);
-  if(type==="link")return tmplLinkField(obj,rest);
-  if(type==="level")return tmplLevelField(obj,rest);
-  if(type==="group"){const k=rest[0];
-    if(k==="label")return {kind:"text",value:obj.label};
-    if(k==="key")return {kind:"text",value:obj.key};
-    if(k==="count")return {kind:"num",value:obj.count};
-    return {unknown:true};}
-  return {unknown:true};}
+  let r;
+  if(type==="risk")r=tmplRiskField(obj,rest);
+  else if(type==="measure")r=tmplMeasureField(obj,rest);
+  else if(type==="link")r=tmplLinkField(obj,rest);
+  else if(type==="level")r=tmplLevelField(obj,rest);
+  else if(type==="group"){const k=rest[0];
+    if(k==="label")r={kind:"text",value:obj.label};
+    else if(k==="key")r={kind:"text",value:obj.key};
+    else if(k==="count")r={kind:"num",value:obj.count};
+    else r={unknown:true};}
+  else r={unknown:true};
+  if(r&&r.unknown&&!r.reason){r.reason="field";r.detail=rest.join(".");}
+  return r;}
 function tmplResolveValue(path,ctx){
-  const p=path.split("."),head=p[0],fr=tmplLookup(ctx||[],head);
+  const p=path.split("."),head=p[0];
+  if(!path.trim()||!head)return {unknown:true,reason:"empty"};
+  const fr=tmplLookup(ctx||[],head);
   if(fr)return tmplFieldOf(fr.type,fr.obj,p.slice(1));
+  if(["risk","measure","link","group","level","item","this"].indexOf(head)>=0)return {unknown:true,reason:"outside_loop",detail:path};
   const md=analyse.metadata||{};
   if(head==="analysis"){
-    if(p[1]==="cf"){const code=p.slice(2).join(".");return {kind:"cf",value:(analyse.custom||{})[code],field:tmplCfField("analysis",code)};}
+    if(p[1]==="cf"){const code=p.slice(2).join("."),f=tmplCfField("analysis",code);return f?{kind:"cf",value:(analyse.custom||{})[code],field:f}:{unknown:true,reason:"cf",detail:"analysis.cf."+code};}
     switch(p[1]){
       case "title":return {kind:"text",value:md.title};
       case "description":return {kind:"md",value:md.description};
@@ -8470,16 +8527,16 @@ function tmplResolveValue(path,ctx){
       case "language":return {kind:"text",value:md.language};
       case "created":return {kind:"date",value:md.created_at};
       case "updated":return {kind:"date",value:md.updated_at};
-      default:return {unknown:true};
+      default:return {unknown:true,reason:"field",detail:path};
     }
   }
   if(head==="grid"){const g=analyse.grid||{};
     if(p[1]==="vertical_axis")return {kind:"text",value:(g.vertical_axis||{}).label};
     if(p[1]==="horizontal_axis")return {kind:"text",value:(g.horizontal_axis||{}).label};
     if(p[1]==="method")return {kind:"text",value:(g.score||{}).method};
-    return {unknown:true};
+    return {unknown:true,reason:"field",detail:path};
   }
-  return {unknown:true};
+  return {unknown:true,reason:"namespace",detail:head};
 }
 function tmplRenderValue(res,mods){
   if(res.kind==="cf")return tmplRenderCf(res.field,res.value,mods);
@@ -8562,21 +8619,26 @@ function tmplFilterTokens(s){
   return toks;
 }
 function tmplParseFilter(str){
-  const toks=tmplFilterTokens(str); let pos=0;
+  const toks=tmplFilterTokens(str); let pos=0, bad=false;
   const peek=()=>toks[pos], next=()=>toks[pos++];
-  function parseOr(){let a=parseAnd(); while(peek()&&peek().t==="or"){next();a={op:"or",a,b:parseAnd()};} return a;}
-  function parseAnd(){let a=parseTerm(); while(peek()&&peek().t==="and"){next();a={op:"and",a,b:parseTerm()};} return a;}
+  function parseOr(){let a=parseAnd(); while(peek()&&peek().t==="or"){next();const b=parseAnd(); if(!b){tmplWarn("tw_filter_invalid",str);bad=true;} a={op:"or",a,b:b||{op:"const",v:false}};} return a;}
+  function parseAnd(){let a=parseTerm(); while(peek()&&peek().t==="and"){next();const b=parseTerm(); if(!b){tmplWarn("tw_filter_invalid",str);bad=true;} a={op:"and",a,b:b||{op:"const",v:true}};} return a;}
   function parseTerm(){const tk=peek();
-    if(tk&&tk.t==="("){next();const e=parseOr(); if(peek()&&peek().t===")")next(); return e;}
+    if(tk&&tk.t==="("){next();const e=parseOr(); if(peek()&&peek().t===")")next(); else {tmplWarn("tw_filter_invalid",str);bad=true;} return e;}
     if(tk&&tk.t==="word"){next(); const field=tk.v, o=peek();
+      if(!tmplFilterFieldKnown(field)){tmplWarn("tw_filter_field",field);bad=true;}
       if(o&&o.t==="op"){next();
         if(o.v==="empty"||o.v==="not_empty")return {op:"unary",field,cmp:o.v};
-        const vv=peek(); let value=""; if(vv&&(vv.t==="str"||vv.t==="word")){next();value=vv.v;}
-        return {op:"cmp",field,cmp:o.v,value};}
+        const vv=peek();
+        if(!vv||(vv.t!=="str"&&vv.t!=="word")){tmplWarn("tw_filter_invalid",str);bad=true;return {op:"const",v:false};}
+        next();return {op:"cmp",field,cmp:o.v,value:vv.v};}
+      if(o&&o.t==="word"){tmplWarn("tw_filter_op",o.v);bad=true;next();}   // opérateur inconnu (lu comme un mot)
       return {op:"unary",field,cmp:"not_empty"};}
     return null;
   }
-  try{return parseOr();}catch(e){return null;}
+  let ast; try{ast=parseOr();}catch(e){ast=null;bad=true;tmplWarn("tw_filter_invalid",str);}
+  if(pos<toks.length&&!bad){tmplWarn("tw_filter_invalid",str);}   // jetons résiduels
+  return ast;
 }
 // -- Évaluation d'un filtre sur un contexte {risk, measure, link} --
 function tmplFieldDesc(field,c){
@@ -8628,6 +8690,7 @@ function tmplCmp(node,c){
 }
 function tmplEvalFilter(ast,c){
   if(!ast)return true;
+  if(ast.op==="const")return !!ast.v;
   if(ast.op==="and")return tmplEvalFilter(ast.a,c)&&tmplEvalFilter(ast.b,c);
   if(ast.op==="or")return tmplEvalFilter(ast.a,c)||tmplEvalFilter(ast.b,c);
   return tmplCmp(ast,c);
@@ -8689,8 +8752,10 @@ function tmplBuildGroups(list,type,byField){
 // Construit les itérations d'une boucle : filtre (report + local + portée de groupe), regroupe, trie, limite.
 function tmplLoopIterations(name,attrs,ctx){
   const col=tmplCollection(name,ctx); let list=col.list;
+  if(col.type===null){tmplWarn("tw_loop_unknown_coll",name);return [];}
   if(col.type==="risk"||col.type==="measure"||col.type==="link"){const ast=tmplCombinedFilter(attrs,ctx); if(ast)list=tmplFilterList(list,col.type,ast);}
   if(attrs&&attrs.group_by){
+    if(!tmplGroupFieldKnown(col.type,attrs.group_by))tmplWarn("tw_unknown_groupby",attrs.group_by);
     let groups=tmplBuildGroups(list,col.type,attrs.group_by);
     if(attrs.limit!=null){const n=parseInt(attrs.limit,10);if(n>=0)groups=groups.slice(0,n);}
     return groups.map(g=>({frames:[{name:"group",type:"group",obj:g},{name:"__scope",type:"scope",obj:g.scope}]}));
@@ -8703,12 +8768,15 @@ function tmplProcessText(text,ctx,strip){
   const toks=tmplTokenize(text); let out="";
   for(const tk of toks){
     if(tk.t==="lit"){out+=tk.v;continue;}
+    if(tk.t==="open"){tmplWarn("tw_unresolved",("{{"+tk.v).slice(0,40));continue;}
     const cls=tmplClassify(tk.v.trim());
     if(cls.kind==="comment"||cls.kind==="report")continue;
     if(cls.kind==="section"){if(strip)continue; out+="{{"+tk.v+"}}"; continue;}
     if(cls.kind==="block"){out+="{{"+tk.v+"}}";continue;}
+    if(cls.kind==="unknown_block"){tmplWarn("tw_unknown_block",cls.name);out+="{{"+tk.v+"}}";continue;}
     const res=tmplResolveValue(cls.path,ctx);
-    if(res.unknown){tmplWarnings.push(cls.path);out+="{{"+tk.v+"}}";continue;}
+    if(res&&res.unknown){tmplWarnValue(res,cls.path);out+="{{"+tk.v+"}}";continue;}
+    tmplCheckFormats(cls.mods);
     out+=tmplRenderValue(res,cls.mods);
   }
   return out;
@@ -8743,6 +8811,7 @@ function tmplRowLoop(row){
     const m=inner.match(/^#\s*each\b\s*([A-Za-z0-9_.]+)\s*([\s\S]*)$/);
     if(m&&!open)open={collection:m[1],attrs:tmplParseAttrs(m[2]||"")};
     else if(/^\/\s*each\b/.test(inner))close=true; }
+  if(open&&!close)tmplWarn("tw_loop_row_unclosed",open.collection);
   return (open&&close)?open:null;
 }
 function tmplRenderTable(tbl,ctx){
@@ -8770,9 +8839,11 @@ const TMPL_COLMAP={
   links:{risk_id:"rid",rid:"rid",risk:"risk",measure_id:"mid",mid:"mid",measure:"measure",comment:"notes",notes:"notes"}
 };
 function tmplTableCols(tbl,columnsAttr){
-  if(columnsAttr){const map=TMPL_COLMAP[tbl]||{};
-    return String(columnsAttr).split(",").map(s=>s.trim()).filter(Boolean)
-      .map(tok=>tok.indexOf("cf.")===0?("cf:"+tok.slice(3)):(map[tok]||map[tok.toLowerCase()]||tok));}
+  if(columnsAttr){const map=TMPL_COLMAP[tbl]||{},cm=colMap(tbl);
+    return String(columnsAttr).split(",").map(s=>s.trim()).filter(Boolean).map(tok=>{
+      const key=tok.indexOf("cf.")===0?("cf:"+tok.slice(3)):(map[tok]||map[tok.toLowerCase()]||tok);
+      if(!cm[key])tmplWarn("tw_table_column",tok);
+      return key;});}
   return colOrder(tbl);                              // colonnes par défaut de l'application (config sauvegardée ou défaut)
 }
 // Liste filtrée + triée (report + local + portée de groupe), sans regroupement.
@@ -8797,8 +8868,9 @@ function tmplApplyTableStyle(xml,style){
 }
 function tmplTableXml(attrs,ctx){
   const cw=DX_CW,src=attrs.source;
+  if(!src){tmplWarn("tw_table_nosource");return null;}
   if(src==="levels")return tmplLevelsTableXml(cw);
-  if(["risks","measures","links"].indexOf(src)<0)return null;
+  if(["risks","measures","links"].indexOf(src)<0){tmplWarn("tw_table_source",src);return null;}
   const rows=tmplFilteredItems(src,attrs,ctx),keys=tmplTableCols(src,attrs.columns);
   return tmplApplyTableStyle(dxReportTable(src,keys,rows,cw),attrs.style);
 }
@@ -8814,6 +8886,7 @@ function tmplImportXml(fragXml,doc){
 // Bloc {{ matrix … }} : SVG (filtré) -> requête d'image (rasterisée après l'expansion) + drawing.
 function tmplMatrixBlockXml(attrs,ctx){
   const type=(attrs.type||"initial").toLowerCase();
+  if(attrs.type&&["initial","residual","trajectory","traj","side","ir","both","gross","net"].indexOf(type)<0)tmplWarn("tw_matrix_type",attrs.type);
   const ast=tmplCombinedFilter(attrs,ctx);
   const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
   let svg;
@@ -8833,12 +8906,14 @@ const TMPL_RADAR_METRIC={average:"avg",avg:"avg",max:"max",maximum:"max",cumulat
 const TMPL_RADAR_EVAL={initial:"initial",residual:"residual",side:"both-side",accolees:"both-side","both-side":"both-side",overlay:"both-over",superposees:"both-over","both-over":"both-over",both:"both-over"};
 function tmplRadarBlockXml(attrs,ctx){
   const dim=(!attrs.dimension||attrs.dimension==="category")?"cat":(attrs.dimension.indexOf("cf.")===0?attrs.dimension.slice(3):attrs.dimension);
+  if(attrs.metric&&!TMPL_RADAR_METRIC[String(attrs.metric).toLowerCase()])tmplWarn("tw_radar_metric",attrs.metric);
+  if(attrs.evaluation&&!TMPL_RADAR_EVAL[String(attrs.evaluation).toLowerCase()])tmplWarn("tw_radar_eval",attrs.evaluation);
   const metric=TMPL_RADAR_METRIC[String(attrs.metric||"avg").toLowerCase()]||"avg";
   const evl=TMPL_RADAR_EVAL[String(attrs.evaluation||"overlay").toLowerCase()]||"both-over";
   const cfg={dim,metric,eval:evl,title:attrs.title||""};
   const ast=tmplCombinedFilter(attrs,ctx);
   const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
-  if(radarComputeModel(cfg,risks).tooFew){tmplWarnings.push("radar (<3 axes)");return null;}
+  if(radarComputeModel(cfg,risks).tooFew){tmplWarn("tw_radar_fewaxes",attrs.dimension||"category");return null;}
   const ex=buildRadarExportSVG(cfg,risks,{});
   const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n;
   tmplImgReqs.push({rid,svg:ex.svg,W:ex.W,H:ex.H,fn:"tmplimg"+n+".png"});
@@ -8888,7 +8963,8 @@ function tmplRenderContainer(container,ctx){
           body.forEach(b=>container.removeChild(b)); container.removeChild(closer); container.removeChild(node);
           node=after; continue;
         }
-      }
+        tmplWarn("tw_loop_unclosed",sec.collection);          // ouverture sans fermeture
+      } else if(sec&&sec.close){ tmplWarn("tw_loop_orphan"); } // fermeture sans ouverture correspondante
       const blk=tmplParagraphBlock(node);
       if(blk){const repl=tmplRenderBlock(blk.name,blk.attrs,ctx,doc);
         if(repl){const nx=node.nextSibling;container.insertBefore(repl,node);container.removeChild(node);node=nx;continue;}}
@@ -8925,7 +9001,7 @@ async function tmplRender(parts){
   });
   items.forEach(it=>{ if(it.doc)tmplWalkT(it.doc,tn=>tmplScanReport(tn.textContent)); });   // pass 1 : report
   items.forEach(it=>{                                                                        // pass 2 : boucles/blocs + valeurs
-    if(!it.doc){parts[it.p]=fflate.strToU8(it.xml);return;}
+    if(!it.doc){tmplWarn("tw_xml_unreadable");parts[it.p]=fflate.strToU8(it.xml);return;}
     const root=it.doc.getElementsByTagNameNS(W_NS,"body")[0]||it.doc.documentElement;
     tmplRenderContainer(root,[]);
     let out=new XMLSerializer().serializeToString(it.doc); if(!/^<\?xml/.test(out))out=XMLD+out;
@@ -8940,10 +9016,17 @@ async function tmplExport(file){
     if(!parts["word/document.xml"]){toast(t("tmpl_invalid"));return;}
     const name=exportBaseName()+"-rapport.docx";
     downloadBlob(await tmplRender(parts),name);
-    const warns=Array.from(new Set(tmplWarnings));
-    if(warns.length){console.warn("Modèle Word — balises inconnues :",warns);toast(t("tmpl_warn",warns.length));}
+    if(tmplWarnings.length){console.warn("Modèle Word — avertissements :",tmplWarnings);tmplWarnReport();}
     else toast(t("toast_export",name));
   }catch(err){console.error(err);toast(t("toast_export_fail",err.message));}
+}
+// Rapport d'avertissements : liste dédoublonnée (avec compte) dans une modale.
+function tmplWarnReport(){
+  const counts=new Map(); tmplWarnings.forEach(m=>counts.set(m,(counts.get(m)||0)+1));
+  const items=[...counts.entries()].map(([m,n])=>'<li>'+esc(m)+(n>1?' <span style="color:#8a94a6">(×'+n+')</span>':'')+'</li>').join("");
+  const html='<div style="font-size:13px"><p style="margin:0 0 8px">'+esc(t("tmpl_warn_intro",counts.size))+'</p>'+
+    '<ul style="margin:0;padding-left:18px;max-height:340px;overflow:auto;line-height:1.55">'+items+'</ul></div>';
+  pushModal(t("tmpl_warn_title"),html,[{label:t("btn_ok"),onClick:api=>api.close()}],{role:"alertdialog"});
 }
 document.getElementById("miTemplateDocx").addEventListener("click",()=>{closeMenu();document.getElementById("templateInput").click();});
 document.getElementById("templateInput").addEventListener("change",e=>{
