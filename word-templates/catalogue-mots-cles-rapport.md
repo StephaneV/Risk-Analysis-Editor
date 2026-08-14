@@ -50,12 +50,19 @@ Rendu **texte** par défaut. Voir les **formats** au §5.
 | `{{ analysis.status }}` | statut (Brouillon / Validé / Archivé) |
 | `{{ analysis.language }}` | langue |
 | `{{ analysis.created }}` · `{{ analysis.updated }}` | dates de création / mise à jour |
+| `{{ analysis.risks_count }}` · `{{ analysis.measures_count }}` · `{{ analysis.links_count }}` | nombres de risques · mesures · liens |
+| `{{ analysis.reduced_count }}` | nombre de risques réduits (cotation modifiée entre initial et résiduel) |
 | `{{ analysis.cf.<code> }}` | champ personnalisé d'analyse |
 
 ### 3.2 Grille — `grid.*`
-`{{ grid.vertical_axis }}`, `{{ grid.horizontal_axis }}`, `{{ grid.method }}` (product/sum/matrix).
-Collection `grid.levels` (niveaux de criticité) : `code`, `label`, `score_min`, `score_max`, `color`,
-`acceptance`, `description`.
+`{{ grid.vertical_axis }}`, `{{ grid.horizontal_axis }}`, `{{ grid.method }}` (libellé localisé de la
+méthode, ex. « Produit (P × G) »).
+Collection `grid.levels` (niveaux de criticité, triée par ordre) : `code`, `label` (**étiquette colorée** —
+`{{ level.label | badge }}`), `score_min`, `score_max`, `color`, `acceptance`, `description`, plus les
+**comptes de risques** `count_initial` et `count_residual` (par ce niveau, en initial / résiduel).
+**Échelles d'axes** — collections `grid.vertical_axis.levels` (vraisemblance) et
+`grid.horizontal_axis.levels` (gravité), frame `step` : `{{ step.value }}`, `{{ step.label }}`,
+`{{ step.description }}`.
 
 ### 3.3 Risque — `risk.*` (dans `{{#each risks}}`)
 | Balise | Contenu |
@@ -84,6 +91,37 @@ Collection `grid.levels` (niveaux de criticité) : `code`, `label`, `score_min`,
 `{{ link.measure.* }}` (tous les champs du risque et de la mesure reliés) ; `link.risk_id`,
 `link.measure_id` pour les seuls identifiants.
 
+### 3.6 Champs personnalisés — référentiel (`custom_fields`)
+
+Pour **décrire** les champs personnalisés (et non lire leurs valeurs) : collection `custom_fields`,
+frame `field`. Attribut optionnel `target` (`analysis` · `risk` · `measure` · `link` · `cotation`)
+pour se limiter à une cible ; `glossary="true"` pour ne garder que les champs à **valeurs décrites**
+(comme le glossaire du rapport) ; `sort`, `limit` acceptés.
+
+```
+{{#each custom_fields target="risk"}}
+  {{ field.label }} ({{ field.code }}) — {{ field.type }}
+  {{#each field.items}}
+    {{ option.code }} = {{ option.label }} [{{ option.color }}]
+  {{/each}}
+{{/each}}
+```
+
+| Balise | Contenu |
+|---|---|
+| `{{ field.code }}` · `{{ field.label }}` | code · libellé |
+| `{{ field.target }}` · `{{ field.type }}` | cible · type (libellés localisés) |
+| `{{ field.required }}` · `{{ field.filterable }}` | obligatoire · utilisable comme filtre (Oui/Non) |
+| `{{ field.help }}` · `{{ field.description }}` | aide · description |
+| `field.items` | sous-collection des valeurs possibles (types à valeurs fermées), frame `option` |
+| `{{ option.code }}` · `{{ option.label }}` · `{{ option.color }}` · `{{ option.description }}` | code · libellé · couleur · description d'une valeur |
+
+Tableau clé en main : `{{ table source="custom_fields" }}` (colonnes : code, libellé, cible, type,
+obligatoire, filtrable), avec `target="…"` optionnel.
+
+**Tableau des valeurs** (dans une boucle `custom_fields`) : `{{ field_values }}` — tableau
+**Valeur / Description** du champ courant, **badge coloré pour les tags** (§4.4).
+
 ---
 
 ## 4. Blocs — matrice, radar, tableau
@@ -105,13 +143,32 @@ Tous acceptent `filter="…"` (§7) et `report_filter="none"`.
 ### 4.3 `{{ table … }}`
 | Attribut | Valeurs (défaut) |
 |---|---|
-| `source` | `risks`, `measures`, `links`, `levels` (**requis**) |
+| `source` | `risks`, `measures`, `links`, `levels`, `custom_fields` (**requis**) |
 | `columns` | liste de champs (défaut : **colonnes par défaut de l'application**) |
-| `sort` | `field[:asc\|desc]` |
+| `sort` | `field[:asc\|desc]` (multi-clés : `field1,field2:desc`) |
 | `style` | nom d'un **style de tableau du modèle** (`<w:tblStyle>`) |
 | `filter` | filtre (§7) |
 
 Ex. : `{{ table source="risks" columns="id,label,category,criticality_initial,criticality_residual" }}`
+
+### 4.4 `{{ field_values }}`
+Dans une boucle `custom_fields` (§3.6) : tableau **Valeur / Description** des valeurs du champ courant,
+avec un **badge coloré** pour les champs de type `tags` (texte simple pour `select` / `checklist`).
+Reproduit la section « Référentiels et légendes des champs » du rapport intégré. Ne produit rien
+(paragraphe retiré) pour les champs sans valeurs fermées, ou dont aucune valeur n'a de description.
+
+### 4.5 `{{ stat type="…" }}`
+Tableaux statistiques du rapport intégré :
+- `type="summary"` → **synthèse** (Risques / Mesures / Risques réduits) ;
+- `type="distribution"` → **répartition par criticité** (Libellé en cellule colorée · Initial · Résiduel).
+
+### 4.6 `{{ cf_notes }}`
+Dans une boucle `risks` / `measures` / `links` : **notes des champs personnalisés** de l'entité courante
+(un « Libellé : valeur » par champ renseigné). Reproduit les notes des sections « Détail » du rapport.
+
+### 4.7 `{{ logo }}`
+Insère le **logo de couverture configuré** de l'analyse (`extensions…report.cover.logo`). Attribut
+`width="cm"` optionnel. Ne produit rien si aucun logo n'est configuré.
 
 ---
 
@@ -125,8 +182,17 @@ Ex. : `{{ table source="risks" columns="id,label,category,criticality_initial,cr
 | `percent` | ajoute « % » |
 | `upper` / `lower` | casse |
 | `default="—"` | valeur de repli si vide |
+| `swatch` | **couleur** (`*.color`) → **pastille carrée** ; **tags** / **étiquettes colorées** (statut, criticité) → pastille + libellé |
+| `badge` | **tags** / **étiquettes colorées** (statut, criticité) → libellé sur **fond coloré** |
 
-Ex. : `{{ measure.due_date | date="JJ/MM/AAAA" }}` · `{{ risk.owner | default="—" }}`
+Ex. : `{{ risk.initial.color | swatch }}` · `{{ risk.cf.source | badge }}` · `{{ option.color | swatch }}` ·
+`{{ measure.status | badge }}` · `{{ risk.initial.criticality | badge }}`
+
+> `swatch` / `badge` produisent des **runs colorés** dans le document. `badge` = libellé sur fond coloré
+> (texte contrasté) ; `swatch` = pastille carrée colorée (seule pour une **valeur couleur**, suivie du
+> libellé pour un **tags** ou une **étiquette colorée**). S'appliquent aux champs **tags**, au **statut**
+> de mesure et à la **criticité** (initiale/résiduelle). Une valeur multi-étiquettes produit une pastille
+> par valeur. Sur une valeur non pertinente, repli en texte simple.
 
 ---
 
@@ -138,11 +204,16 @@ Ex. : `{{ measure.due_date | date="JJ/MM/AAAA" }}` · `{{ risk.owner | default="
 {{/each}}
 ```
 
-- **Collections** : `risks`, `measures`, `links`, `grid.levels`, et les **sous-collections**
-  (`risk.measures`, `measure.risks`, …). Imbrication libre.
-- **Attributs** : `filter`, `sort` (`field[:asc|desc]`), `limit`, `group_by`, `report_filter`.
+- **Collections** : `risks`, `measures`, `links`, `grid.levels`, `custom_fields`,
+  `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, et les **sous-collections**
+  (`risk.measures`, `measure.risks`, `field.items`, …). Imbrication libre.
+- **Attributs** : `filter`, `sort`, `limit`, `group_by`, `report_filter`.
+- **Tri multi-clés** : `sort="champ1[:asc|desc], champ2[:asc|desc], …"` — les clés sont appliquées
+  successivement (départage). Ex. `sort="target,code"` (cible puis code), `sort="criticality_initial:desc,label"`.
 - **Regroupement** `group_by="field"` → boucle de **groupes** : `{{ group.label }}`, `{{ group.count }}`,
-  et `{{#each group.items}} … {{/each}}`.
+  `{{ group.measures_count }}` (groupes de risques), et `{{#each group.items}} … {{/each}}`.
+  Champs de regroupement des risques : `category`, `owner`, `criticality_initial/residual`, `cf.<code>`,
+  et **`id`** (un chapitre par risque). Mesures : `type`, `status`, `responsible`, `cf.<code>`.
 - **Portée implicite du groupe** : dans un `group_by`, les matrices/tableaux/boucles imbriqués sont
   **auto-filtrés** sur la valeur du groupe → base du **rapport éclaté** par catégorie.
 - **Boucle de ligne de tableau** : placez `{{#each …}}` au début de la 1re cellule d'une ligne et
@@ -188,3 +259,7 @@ notes explicatives — à ne pas utiliser telle quelle, les notes apparaîtraien
   de ligne**, détail par risque avec sous-boucle, radar).
 - [`modele-rapport-eclate-par-categorie.docx`](modele-rapport-eclate-par-categorie.docx) —
   synthèse générale puis **un chapitre par catégorie** (portée implicite du groupe).
+- [`modele-referentiels.docx`](modele-referentiels.docx) —
+  **référentiels** : grille de cotation (méthode, échelles d'axes en boucle de ligne, niveaux de
+  criticité) et **champs personnalisés** (tableau récapitulatif + détail des caractéristiques et des
+  valeurs possibles).

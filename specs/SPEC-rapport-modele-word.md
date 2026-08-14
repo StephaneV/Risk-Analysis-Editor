@@ -100,15 +100,22 @@ Chemins en notation pointée, **noms anglais**, correspondant aux clés du forma
 | `analysis.created` | `metadata.created_at` | date (format §5) |
 | `analysis.updated` | `metadata.updated_at` | date |
 | `analysis.cf.<code>` | `custom.<code>` (cible *analysis*) | libellé(s) du champ perso |
+| `analysis.risks_count` · `analysis.measures_count` · `analysis.links_count` | *(dérivé)* | nombres |
+| `analysis.reduced_count` | *(dérivé)* | nombre de risques dont la cotation a changé (initial → résiduel) |
 
-> Les **compteurs** (`analysis.risk_count`, `analysis.measure_count`, `treated_percent`…) relèvent de la
-> **partie statistique → v2** (§13).
+> Compteurs et tableaux statistiques : voir aussi le bloc **`{{ stat … }}`** (§4.5) et les comptes par
+> niveau `level.count_initial` / `level.count_residual` (§3.2).
 
 ### 3.2 Grille — `grid`
 
-`grid.vertical_axis`, `grid.horizontal_axis`, `grid.method` (product / sum / matrix).
-Collection `grid.levels` (pour une boucle ou `table source="levels"`), chaque niveau exposant :
-`code`, `label`, `score_min`, `score_max`, `color`, `acceptance`, `description`.
+`grid.vertical_axis`, `grid.horizontal_axis`, `grid.method` (**libellé localisé** de la méthode).
+Collection `grid.levels` (pour une boucle ou `table source="levels"`, triée par ordre), chaque niveau
+exposant : `code`, `label` (**étiquette colorée**, cf. `| badge`), `score_min`, `score_max`, `color`,
+`acceptance`, `description`, et les comptes de risques `count_initial` / `count_residual`.
+
+**Échelles d'axes** — collections `grid.vertical_axis.levels` (vraisemblance) et
+`grid.horizontal_axis.levels` (gravité), item `step` : `step.value` (nombre), `step.label`,
+`step.description`.
 
 ### 3.3 Objet **risk** (boucle `risks`, item `risk`)
 
@@ -147,6 +154,31 @@ Collection `grid.levels` (pour une boucle ou `table source="levels"`), chaque ni
 tous les champs du risque et de la mesure reliés), et `link.risk_id` / `link.measure_id` pour les seuls
 identifiants.
 
+### 3.6 Champs personnalisés — référentiel (boucle `custom_fields`, item `field`)
+
+Décrit la **définition** des champs personnalisés (par opposition à `*.cf.<code>` qui lit une *valeur*).
+Attribut optionnel `target` (`analysis` / `risk` / `measure` / `link` / `cotation`) pour restreindre à
+une cible ; `glossary="true"` pour ne conserver que les champs à **valeurs décrites** (usage glossaire) ;
+`sort`, `limit` acceptés. Une `target` inconnue est signalée et n'itère sur rien.
+
+| Balise | Clé | Rendu |
+|---|---|---|
+| `field.code` | `code` | texte |
+| `field.label` | `label` | libellé localisé |
+| `field.target` | `target` | libellé de cible localisé |
+| `field.type` | `type` | libellé de type localisé |
+| `field.required` | `required` | booléen (Oui/Non) |
+| `field.filterable` | `filterable` | booléen (Oui/Non) |
+| `field.help` | `help` | texte enrichi |
+| `field.description` | `description` | texte enrichi |
+| `field.items` | `items` | sous-collection des valeurs possibles (types à valeurs fermées), item `option` |
+
+Item `option` : `option.code`, `option.label`, `option.color`, `option.description`.
+
+Tableau clé en main : `{{ table source="custom_fields" }}` (colonnes code, libellé, cible, type,
+obligatoire, filtrable), avec `target="…"` optionnel. Tableau des valeurs d'un champ (Valeur /
+Description, badge coloré pour les tags) : `{{ field_values }}` (§4.4).
+
 ---
 
 ## 4. Blocs générateurs (tableaux, matrices, radars)
@@ -171,17 +203,44 @@ Attributs : `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`,
 ### 4.3 Tableau — `{{ table … }}`
 | Attribut | Valeurs | Défaut |
 |---|---|---|
-| `source` | `risks`, `measures`, `links`, `levels` | requis |
+| `source` | `risks`, `measures`, `links`, `levels`, `custom_fields` | requis |
 | `columns` | liste de champs (ex. `id,label,category,criticality_initial,cf.source`) | **colonnes par défaut de l'application** pour ce registre |
 | `filter` | expression (§8) | — |
-| `sort` | `field[:asc\|desc]` | ordre du fichier |
+| `sort` | `field[:asc\|desc]`, multi-clés séparées par des virgules (`field1,field2:desc`) | ordre du fichier |
 
 > Colonnes : mêmes noms que les champs des objets (§3), plus les colonnes dérivées
 > (`score_initial`, `criticality_initial`, `criticality_residual`, `evolution`, `measures`…) et
 > `cf.<code>`. Si `columns` est omis, on reprend la **liste de colonnes par défaut de l'application**
 > pour ce registre.
 
-> **Statistiques** (`{{ stat … }}` : anneau, secteur, tableau de valeurs) → **v2** (§13).
+### 4.4 Valeurs d'un champ — `{{ field_values }}`
+
+Dans une boucle `custom_fields` (§3.6) : produit un tableau **Valeur / Description** des valeurs du champ
+courant, avec **badge coloré** pour le type `tags` (texte simple pour `select` / `checklist`) — aligné sur
+la section « Référentiels et légendes des champs » du rapport intégré (`dxBadgeCell`, `cfItemDesc`). Rend
+`null` (paragraphe retiré) hors d'une boucle `custom_fields`, pour un type sans valeurs fermées, ou si
+aucune valeur n'a de description. Réservé au corps (comme les autres blocs).
+
+### 4.5 Statistiques — `{{ stat type="…" }}`
+
+Reproduit les deux sections statistiques du rapport intégré :
+- `type="summary"` → tableau **synthèse** (Risques / Mesures / Risques réduits) ;
+- `type="distribution"` → tableau **répartition par criticité** (Libellé en cellule colorée · Initial ·
+  Résiduel, via `dxBadgeCell` et `critOfEval`).
+
+Un `type` inconnu est signalé. (Les graphiques statistiques — anneau, secteur — restent en v2, §13.)
+
+### 4.6 Notes des champs perso — `{{ cf_notes }}`
+
+Dans une boucle `risks` / `measures` / `links` : reproduit `dxCfNotes` pour l'entité courante — un
+paragraphe « **Libellé** : valeur » par champ personnalisé renseigné (cible correspondante). Utilisé dans
+les sections « Détail ». Rend `null` hors d'une entité, ou si aucun champ n'est renseigné.
+
+### 4.7 Logo de couverture — `{{ logo }}`
+
+Insère le **logo configuré** de l'analyse (`extensions.display.report.cover.logo`), préchargé en PNG
+(`dxLogoPng`). Attribut `width="cm"` optionnel (défaut : largeur intrinsèque, max 200 px). Rend `null` si
+aucun logo n'est configuré ou si le chargement échoue. Réservé au corps.
 
 ---
 
@@ -198,6 +257,15 @@ Attributs : `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`,
 | `percent` | ajoute « % » (barres de progression) |
 | `upper` / `lower` | casse |
 | `default="—"` | valeur de repli si vide |
+| `swatch` | **couleur** (`*.color`, hex) → **pastille carrée** (`■`) ; **tags** / **étiquette colorée** (statut, criticité) → pastille + libellé |
+| `badge` | **tags** / **étiquette colorée** (statut de mesure, criticité initiale/résiduelle) → libellé sur **fond coloré** (`w:shd`, texte contrasté via `badgeFg`) |
+
+`swatch` / `badge` sont des **rendus enrichis** : la substitution reconstruit le run en une séquence de
+runs colorés (couleur de texte `w:color` pour la pastille, fond `w:shd` pour le badge), en héritant du
+`rPr` de base. Ils s'appliquent aux champs **tags**, au **statut** de mesure (`STATUS_COLORS`) et à la
+**criticité** (`kind:"clabel"` — étiquette colorée). Le format par défaut d'un `*.color` reste le **code
+hex**, celui d'un `tags`/statut/criticité, le **texte**. Une valeur multi-étiquettes produit une pastille
+par valeur. Sur une valeur non pertinente, repli en texte simple.
 
 Le rendu **image** (matrice, radar) passe par les **blocs** du §4, pas par un format de valeur.
 
@@ -211,13 +279,18 @@ Le rendu **image** (matrice, radar) passe par les **blocs** du §4, pas par un f
 {{/each}}
 ```
 
-Attributs de `{{#each <collection> …}}` : `filter` (§8), `sort` (`field[:asc|desc]`),
-`limit` (N premiers), `group_by` (regroupement, ci-dessous), `report_filter="none"`.
+Attributs de `{{#each <collection> …}}` : `filter` (§8), `sort` (`field[:asc|desc]`, **multi-clés**
+séparées par des virgules : `sort="target,code"` — départage successif), `limit` (N premiers),
+`group_by` (regroupement, ci-dessous), `report_filter="none"`.
 
-- **Collections** : `risks`, `measures`, `links`, `grid.levels`, et les **sous-collections**
-  (`risk.measures`, `measure.risks`, `link.*`…). Imbrication libre.
+- **Collections** : `risks`, `measures`, `links`, `grid.levels`, `custom_fields`,
+  `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, et les **sous-collections**
+  (`risk.measures`, `measure.risks`, `field.items`, `link.*`…). Imbrication libre.
 - **Regroupement** `group_by="field"` → itère des **groupes** ; chaque groupe expose `group.key`
-  (valeur brute), `group.label`, `group.count`, et `group.items` (sous-collection à parcourir).
+  (valeur brute), `group.label`, `group.count`, `group.measures_count` (groupes de risques), et
+  `group.items` (sous-collection à parcourir). Champs risque : `category`, `owner`,
+  `criticality_initial/residual`, `cf.<code>`, **`id`** (un chapitre par risque). Champs mesure :
+  `type`, `status`, `responsible`, `cf.<code>`.
 - **Portée implicite d'un groupe** : à l'intérieur d'un groupe (`group_by`), les collections, blocs
   (`matrix`, `radar`, `table`) et compteurs **imbriqués** sont **automatiquement restreints** aux éléments
   du groupe (filtre implicite = valeur du groupe, propagé le long des liens). C'est ce qui permet un

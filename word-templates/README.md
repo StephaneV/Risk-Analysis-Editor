@@ -14,9 +14,13 @@ puis ouvrez le document généré dans Word.
 
 | Fichier | Rôle |
 |---|---|
-| `modele-rapport-classique.docx` | Rapport complet : présentation, matrices initiale/résiduelle/trajectoire, grille de cotation, registre des risques, tableau des mesures (boucle de ligne), détail par risque avec sous-boucle, radar. |
-| `modele-rapport-eclate-par-categorie.docx` | Synthèse générale puis **un chapitre par catégorie de risque** (matrice et tableau filtrés automatiquement par catégorie). |
-| `…-annote.docx` | Mêmes modèles **annotés** (notes explicatives grises) pour comprendre la syntaxe. ⚠️ Ne pas utiliser tels quels : les notes apparaîtraient dans le rapport. |
+| `modele-rapport-classique.docx` | **Démonstration** : présentation, matrices initiale/résiduelle/trajectoire, grille, registre des risques, tableau des mesures (boucle de ligne), détail par risque avec sous-boucle, radar. |
+| `modele-rapport-eclate-par-categorie.docx` | **Démonstration** : synthèse générale puis **un chapitre par catégorie de risque** (matrice et tableau filtrés automatiquement par catégorie). |
+| `modele-referentiels.docx` | **Référentiels de l'analyse** : grille de cotation (méthode, échelles de vraisemblance/gravité, niveaux de criticité) et **champs personnalisés** (tableau récapitulatif + détail des caractéristiques et des valeurs possibles). |
+| `modele-rapport-complet-classique.docx` | **Reproduction fidèle** du rapport « Exporter en Word » (mode classique) : page de garde + logo, en-tête/pied, table des matières, métadonnées, présentation, statistiques (synthèse + répartition), grille, niveaux, référentiels/légendes, matrices, radar, registre, détails risques/mesures/liens, plan d'action. |
+| `modele-rapport-complet-par-categorie.docx` | Idem en **rapport éclaté par catégorie** : zone d'introduction, un chapitre par catégorie (sections filtrées), puis annexe. |
+| `modele-rapport-complet-par-risque.docx` | Idem en **rapport éclaté par risque** : un chapitre par risque (détail + trajectoire + mesures), puis annexe. |
+| `…-annote.docx` | Variantes **annotées** (notes explicatives grises) des modèles de démonstration. ⚠️ Ne pas utiliser telles quelles : les notes apparaîtraient dans le rapport. |
 | [`catalogue-mots-cles-rapport.md`](catalogue-mots-cles-rapport.md) | **Référence des mots-clés** (valeurs, blocs, boucles, filtres, échappement) pour rédiger vos propres modèles. |
 | `build-word-templates.js` | Script de **génération** de ces `.docx` (reproductible). |
 
@@ -34,4 +38,8 @@ se rendent dans la **langue de l'analyse**. Des variantes anglaise/italienne pou
 npm install docx        # dépendance de génération (non versionnée)
 node word-templates/build-word-templates.js
 ```
-Produit les quatre `.docx` (propres + annotés). Pour écrire ailleurs : `OUT=<dossier> node …`.
+Produit les six `.docx` de **démonstration** et de **référentiels** (propres + annotés). Pour écrire
+ailleurs : `OUT=<dossier> node …`.
+
+Les modèles `modele-rapport-complet-*.docx` (reproductions fidèles du rapport « Exporter en Word ») sont
+issus de générateurs dédiés, distincts de `build-word-templates.js`.
