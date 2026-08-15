@@ -8893,8 +8893,48 @@ function tmplRunsFragment(runsXml,doc){
   return frag;
 }
 // Cœur : tokenise un texte et produit {plain (repli texte), parts (texte|rich), rich}.
+// Conditions EN LIGNE : {{#if}}/{{#unless}}/{{else}}/{{/if}} entièrement contenues dans un même texte
+// (ex. un run stylé, une cellule de boucle de ligne). Les conditions non refermées ici (marqueurs de
+// bloc, sur des paragraphes/lignes séparés) sont laissées intactes pour le traitement de bloc.
+function tmplInlineCondTag(v){
+  const s=(v||"").trim();
+  let m=s.match(/^#\s*(if|unless)\b\s*([\s\S]*)$/); if(m)return {open:true,kind:m[1],expr:(m[2]||"").trim()};
+  if(/^else\b/.test(s))return {elseMarker:true};
+  m=s.match(/^\/\s*(if|unless)\b/); if(m)return {close:true};
+  return null;
+}
+function tmplInlineHasClose(toks,from){
+  let d=0;
+  for(let j=from;j<toks.length;j++){ if(toks[j].t!=="tag")continue; const c=tmplInlineCondTag(toks[j].v); if(!c)continue;
+    if(c.open)d++; else if(c.close){ if(d===0)return true; d--; } }
+  return false;
+}
+function tmplResolveInlineConds(toks,ctx){
+  if(!toks.some(tk=>tk.t==="tag"&&tmplInlineCondTag(tk.v)))return toks;
+  let i=0;
+  function seq(stop){
+    const out=[];
+    while(i<toks.length){
+      const tk=toks[i];
+      if(tk.t==="tag"){const c=tmplInlineCondTag(tk.v);
+        if(c&&c.open){
+          if(!tmplInlineHasClose(toks,i+1)){ out.push(tk); i++; continue; }   // condition de bloc → laisser passer
+          i++; const truth0=tmplCondition(c.expr,ctx),truth=c.kind==="unless"?!truth0:truth0;
+          const thenT=seq(true); let elseT=[];
+          if(i<toks.length&&toks[i].t==="tag"){const c2=tmplInlineCondTag(toks[i].v); if(c2&&c2.elseMarker){ i++; elseT=seq(true); }}
+          if(i<toks.length&&toks[i].t==="tag"){const c3=tmplInlineCondTag(toks[i].v); if(c3&&c3.close)i++;}
+          out.push(...(truth?thenT:elseT)); continue;
+        }
+        if(c&&(c.elseMarker||c.close)){ if(stop)return out; i++; continue; }
+      }
+      out.push(tk); i++;
+    }
+    return out;
+  }
+  return seq(false);
+}
 function tmplRenderTokens(text,ctx,strip){
-  const toks=tmplTokenize(text),parts=[]; let plain="",rich=false;
+  const toks=tmplResolveInlineConds(tmplTokenize(text),ctx),parts=[]; let plain="",rich=false;
   const pushText=s=>{parts.push({t:"text",v:s});plain+=s;};
   for(const tk of toks){
     if(tk.t==="lit"){pushText(tk.v);continue;}
@@ -9460,13 +9500,22 @@ function tmplRenderContainer(container,ctx){
         if(closer){
           const after=closer.nextSibling;
           if(sec.kind==="each"){
-            tmplLoopIterations(sec.collection,sec.attrs,ctx).forEach(itr=>{
-              const childCtx=ctx.concat(itr.frames);
+            const iters=tmplLoopIterations(sec.collection,sec.attrs,ctx);   // {{else}} = repli si collection vide
+            const itemBody=elseAt>=0?body.slice(0,elseAt):body, emptyBody=elseAt>=0?body.slice(elseAt+1):[];
+            if(iters.length){
+              iters.forEach(itr=>{
+                const childCtx=ctx.concat(itr.frames);
+                const frag=doc.createDocumentFragment();
+                itemBody.forEach(b=>frag.appendChild(b.cloneNode(true)));
+                tmplRenderContainer(frag,childCtx);
+                container.insertBefore(frag,node);
+              });
+            } else if(emptyBody.length){
               const frag=doc.createDocumentFragment();
-              body.forEach(b=>frag.appendChild(b.cloneNode(true)));
-              tmplRenderContainer(frag,childCtx);
+              emptyBody.forEach(b=>frag.appendChild(b.cloneNode(true)));
+              tmplRenderContainer(frag,ctx);
               container.insertBefore(frag,node);
-            });
+            }
           } else {                                             // if / unless
             let ok=tmplCondition(sec.expr,ctx); if(sec.kind==="unless")ok=!ok;
             const chosen=elseAt>=0?(ok?body.slice(0,elseAt):body.slice(elseAt+1)):(ok?body:[]);

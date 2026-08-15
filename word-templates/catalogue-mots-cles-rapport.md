@@ -267,6 +267,9 @@ Ex. : `{{ risk.initial.color | swatch }}` · `{{ risk.cf.source | badge }}` · `
 - **Boucle de ligne de tableau** : placez `{{#each …}}` au début de la 1re cellule d'une ligne et
   `{{/each}}` à la fin de la dernière → **la ligne** est répétée par élément (reprend la mise en forme
   du modèle).
+- **Repli si vide** : `{{#each … }} … {{else}} … {{/each}}` — le contenu placé après `{{else}}` s'affiche
+  quand la collection (**après filtre**) est vide. Ex. lister les mesures en retard, sinon « Aucune mesure
+  en retard ». (Portée paragraphe.)
 
 ---
 
@@ -304,6 +307,10 @@ la **portée ligne de tableau** (comme les boucles, §6).
 - **Forme courte** : `{{#if chemin}}` seul teste **« non vide »** (équivaut à `chemin not_empty`) ; utile
   pour un booléen (`overdue`) ou un champ renseigné.
 - **`{{#unless expr}}`** = négation de `{{#if expr}}`. `{{else}}` est accepté dans les deux.
+- **Bloc ou en ligne** : si les marqueurs sont **seuls** sur leur paragraphe (ou ligne de tableau), la
+  condition encadre des **paragraphes entiers** (portée bloc). Si l'ouverture **et** la fermeture tiennent
+  dans un **même paragraphe/cellule** (`… {{#if x}}texte{{/if}} …`), elle est évaluée **en ligne** — seul
+  moyen d'agir dans une **cellule de boucle de ligne** (ex. « En retard » en rouge dans une colonne Statut).
 - **Imbrication** libre avec les boucles et les autres conditions. Une expression invalide, une section non
   fermée ou un `{{else}}` orphelin déclenchent un **avertissement** (`tw_if_*`) et la section est laissée
   telle quelle.

@@ -20,13 +20,24 @@ const H1 = (t) => new Paragraph({ heading: HeadingLevel.HEADING_1, children: [tx
 const H2 = (children) => new Paragraph({ heading: HeadingLevel.HEADING_2,
   children: [].concat(children).map((c) => typeof c === "string" ? txt(c) : c) });
 
+// Styles partagés : espace avant/après les titres, espace entre paragraphes (0 dans les cellules),
+// et anti-orphelins (keepNext = le titre reste avec le contenu suivant ; keepLines = pas de coupure interne).
+const STYLES = {
+  default: {
+    document: { paragraph: { spacing: { after: 140 }, widowControl: true } },
+    title:    { paragraph: { spacing: { before: 120, after: 220 }, keepNext: true, keepLines: true } },
+    heading1: { paragraph: { spacing: { before: 340, after: 160 }, keepNext: true, keepLines: true } },
+    heading2: { paragraph: { spacing: { before: 260, after: 120 }, keepNext: true, keepLines: true } },
+  },
+};
+
 // Tableau à ligne de corps répétée (boucle de ligne) — mesures.
 const CW = [900, 3000, 1500, 1500, 1900, 1400];
 const cell = (children, { head = false } = {}) => new TableCell({
   width: { size: 0, type: WidthType.AUTO },
   shading: head ? { type: ShadingType.CLEAR, color: "auto", fill: "EEF2F8" } : undefined,
   margins: { top: 40, bottom: 40, left: 80, right: 80 },
-  children: [new Paragraph({ children: [].concat(children) })],
+  children: [new Paragraph({ spacing: { before: 0, after: 0 }, children: [].concat(children) })],   // pas d'espacement DANS les cellules
 });
 const headCell = (t) => cell(new TextRun({ text: t, bold: true, size: 18 }), { head: true });
 function rowLoopMeasuresTable() {
@@ -39,6 +50,26 @@ function rowLoopMeasuresTable() {
       new TableRow({ children: [
         cell([blk("{{#each measures}}"), val("{{ measure.id }}")]),
         cell(val("{{ measure.label }}")), cell(val("{{ measure.type }}")), cell(val("{{ measure.status | badge }}")),
+        cell(val("{{ measure.responsible }}")),
+        cell([val('{{ measure.due_date | date="JJ/MM/AAAA" }}'), txt(" "), blk("{{/each}}")]),
+      ] }),
+    ],
+  });
+}
+// Suivi des échéances (tableau de bord) : colonne Statut = badge + « En retard » (rouge) si en retard
+// (condition EN LIGNE, évaluée à l'intérieur de la cellule répétée).
+function rowLoopEcheancesTable() {
+  const border = { style: BorderStyle.SINGLE, size: 4, color: "C9D3E0" };
+  return new Table({
+    columnWidths: CW, width: { size: 10200, type: WidthType.DXA },
+    borders: { top: border, bottom: border, left: border, right: border, insideHorizontal: border, insideVertical: border },
+    rows: [
+      new TableRow({ tableHeader: true, children: ["ID", "Mesure", "Type", "Statut", "Responsable", "Échéance"].map(headCell) }),
+      new TableRow({ children: [
+        cell([blk('{{#each measures sort="due_date"}}'), val("{{ measure.id }}")]),
+        cell(val("{{ measure.label }}")), cell(val("{{ measure.type }}")),
+        cell([val("{{ measure.status | badge }}"),
+              new TextRun({ text: "  {{#if measure.overdue}}En retard{{/if}}", color: "C0392B", bold: true, font: "Consolas", size: 18 })]),
         cell(val("{{ measure.responsible }}")),
         cell([val('{{ measure.due_date | date="JJ/MM/AAAA" }}'), txt(" "), blk("{{/each}}")]),
       ] }),
@@ -108,7 +139,7 @@ function build(ann) {
     return k;
   };
 
-  const classique = () => new Document({ sections: [{ children: [
+  const classique = () => new Document({ styles: STYLES, sections: [{ children: [
     ...header(null),
     H1("1. Présentation"), P(val("{{ analysis.description }}")),
     H1("2. Matrices de risque"),
@@ -141,7 +172,7 @@ function build(ann) {
     P(blk('{{ radar dimension="cf.source" metric="average" evaluation="overlay" title="Criticité moyenne par source" }}')),
   ].filter(Boolean) }] });
 
-  const eclate = () => new Document({ sections: [{ children: [
+  const eclate = () => new Document({ styles: STYLES, sections: [{ children: [
     ...header("Rapport par catégorie de risque"),
     H1("Synthèse générale"),
     P(blk('{{ matrix type="trajectory" title="Vue d\'ensemble" }}')),
@@ -159,7 +190,7 @@ function build(ann) {
     P(blk("{{/each}}")), P(blk("{{/each}}")),
   ].filter(Boolean) }] });
 
-  const referentiels = () => new Document({ sections: [{ children: [
+  const referentiels = () => new Document({ styles: STYLES, sections: [{ children: [
     ...header("Référentiels de l'analyse"),
     H1("1. Informations sur l'analyse"),
     note("Toutes les métadonnées de l'analyse, y compris la référence méthodologique."),
@@ -224,7 +255,7 @@ function build(ann) {
 
   // Tableau de bord (v2) : statistiques (compteurs, couverture, graphiques donut/secteur) et sections
   // conditionnelles ({{#if}} / {{#unless}} de niveau bloc, dans et hors boucle).
-  const tableauDeBord = () => new Document({ sections: [{ children: [
+  const tableauDeBord = () => new Document({ styles: STYLES, sections: [{ children: [
     new Paragraph({ heading: HeadingLevel.TITLE, children: [txt("Tableau de bord des risques")] }),
     P([val("{{ analysis.title }}"), txt(" · "), val("{{ analysis.organization }}"),
        txt(" · mise à jour "), val('{{ analysis.updated | date="long" }}')]),
@@ -263,28 +294,28 @@ function build(ann) {
     P(new PageBreak()),
 
     H1("Suivi des échéances"),
-    note("Boucle de LIGNE de tableau : la ligne de corps se répète pour chaque mesure ; statut en badge coloré."),
-    rowLoopMeasuresTable(),
+    note("Boucle de LIGNE de tableau : la ligne de corps se répète pour chaque mesure ; statut en badge "
+       + "coloré et mention « En retard » (rouge) si l'échéance est dépassée (condition EN LIGNE dans la cellule)."),
+    rowLoopEcheancesTable(),
 
     H1("Mesures en retard"),
-    note("Boucle + condition {{#if}} de niveau bloc à l'intérieur : n'affiche que les mesures en retard "
-       + "(champ dérivé measure.overdue). Rien ne s'affiche si aucune n'est en retard."),
-    P(blk('{{#each measures sort="due_date"}}')),
-    P(blk("{{#if measure.overdue}}")),
+    note("Boucle filtrée sur les mesures en retard ; le {{else}} affiche un repli quand la liste est vide."),
+    P(blk('{{#each measures filter="overdue=\'true\'" sort="due_date"}}')),
     P([txt("⚠ ", { color: "C0392B", bold: true }), val("{{ measure.id }}"), txt(" — "), val("{{ measure.label }}"),
        txt(" · échéance "), val('{{ measure.due_date | date="JJ/MM/AAAA" }}'), txt(" · "), val("{{ measure.responsible }}")],
        { bullet: { level: 0 } }),
-    P(blk("{{/if}}")),
+    P(blk("{{else}}")),
+    P(txt("Aucune mesure en retard.")),
     P(blk("{{/each}}")),
 
     H1("Points de vigilance"),
-    note("Condition avec « or » et badge : ne liste que les risques dont la criticité résiduelle reste "
-       + "importante ou maximale (comparaison sur criticality_code)."),
-    P(blk('{{#each risks sort="criticality_residual:desc"}}')),
-    P(blk('{{#if risk.residual.criticality_code = "important" or risk.residual.criticality_code = "maximal"}}')),
+    note("Boucle filtrée sur la criticité résiduelle (importante ou maximale) ; le {{else}} affiche un repli "
+       + "quand aucun risque ne subsiste à ce niveau."),
+    P(blk('{{#each risks filter="criticality_residual=\'important\' or criticality_residual=\'maximal\'" sort="criticality_residual:desc"}}')),
     P([val("{{ risk.id }}"), txt(" — "), val("{{ risk.label }}"), txt("  "),
        val("{{ risk.residual.criticality | badge }}")], { bullet: { level: 0 } }),
-    P(blk("{{/if}}")),
+    P(blk("{{else}}")),
+    P(txt("Aucun risque résiduel important ou critique restant.")),
     P(blk("{{/each}}")),
   ].filter(Boolean) }] });
 

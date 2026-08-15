@@ -345,6 +345,9 @@ séparées par des virgules : `sort="target,code"` — départage successif), `l
 - **Boucle de ligne de tableau** *(essentiel)* : si `{{#each …}}` et `{{/each}}` sont dans une **ligne
   de tableau Word**, c'est **la ligne** qui est répétée par élément (façon naturelle de construire un
   tableau mis en forme dans le modèle). Sinon, ce sont les **paragraphes** encadrés qui sont répétés.
+- **Repli si vide** (boucle de paragraphes) : `{{#each … }} … {{else}} … {{/each}}` — les paragraphes
+  après `{{else}}` sont rendus **une fois** quand la collection (après filtre/limite) est **vide**
+  (`elseAt` dans `tmplRenderContainer`). Sinon, seul le corps avant `{{else}}` est répété par élément.
 
 ### 6.1 Conditions — `{{#if expr}}` · `{{#unless expr}}` · `{{else}}`
 
@@ -366,6 +369,11 @@ les boucles et entre conditions.
   à la casse (`tmplNorm`).
 - **Forme courte** : `{{#if chemin}}` seul ⇒ test **« non vide »** (`not_empty`). `{{#unless expr}}` =
   négation. `{{else}}` accepté dans les deux.
+- **Bloc ou en ligne** : marqueurs **seuls** sur leur paragraphe/ligne ⇒ portée **bloc** (encadre des
+  paragraphes ou des lignes). Ouverture **et** fermeture dans un **même texte** (paragraphe ou cellule) ⇒
+  condition **en ligne**, résolue pendant la substitution (`tmplResolveInlineConds` dans `tmplRenderTokens`)
+  — c'est le seul moyen d'agir dans une **cellule de boucle de ligne** (substituée par `tmplSubstituteRuns`,
+  sans traitement de bloc). Ex. mention « En retard » conditionnelle dans une colonne Statut.
 - **Robustesse** : expression invalide (`tw_if_invalid`), section non fermée (`tw_if_unclosed`), `{{else}}`
   orphelin (`tw_if_orphan`) ou chemin inconnu (`tw_if_field`) ⇒ **avertissement** ; la section est laissée
   telle quelle (rendu non bloquant).
