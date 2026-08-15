@@ -8,8 +8,9 @@
 **Décisions arrêtées** (cf. §12) : vocabulaire des balises **en anglais** ; **blocs nommés**
 (`matrix`, `radar`, `table`) ; colonnes d'un tableau omises → **colonnes par défaut de l'application** ;
 le **filtre actif de l'app n'est pas utilisé** — un rapport définit son propre filtre via la balise de
-configuration **`{{ report filter="…" }}`** ; **statistiques** (compteurs, graphiques anneau/secteur,
-tableaux de valeurs) traitées en **v2** ; **conditions `{{#if}}`** en **v2**.
+configuration **`{{ report filter="…" }}`**. La **v2** ajoute les **statistiques** (compteurs, couverture,
+graphiques anneau/secteur — §4.5), les **conditions `{{#if}}` / `{{#unless}}`** (§6.1) et les **dimensions
+d'images** `width` / `height` (§4.8).
 
 ---
 
@@ -39,7 +40,7 @@ Délimiteurs : **`{{ … }}`**. Vocabulaire **anglais**. Familles :
 | **Valeur** | `{{ path [\| format] }}` | insère une valeur (texte par défaut) |
 | **Bloc** | `{{ block attr="…" … }}` | insère un tableau / une matrice / un radar |
 | **Section / boucle** | `{{#each collection …}} … {{/each}}` | répète le contenu entre les balises |
-| **Condition** *(v2)* | `{{#if expr}} … {{else}} … {{/if}}` | contenu conditionnel |
+| **Condition** | `{{#if expr}} … {{else}} … {{/if}}`, `{{#unless expr}}` | contenu conditionnel (§6.1) |
 | **Commentaire** | `{{! … }}` | ignoré (non rendu) |
 
 - **Attributs** : `key="value"`. Listes séparées par des virgules (`columns="id,label"`).
@@ -192,13 +193,14 @@ Balises qui produisent autre chose que du texte — c'est là que se choisit le 
 | `type` | `initial` (syn. `gross`), `residual` (syn. `net`), `trajectory` | `initial` |
 | `filter` | expression de filtre (§8) | — |
 | `title` | texte (sinon aucun) | — |
-| `width` | largeur en cm | ajustée à la page |
+| `width` · `height` | dimensions en cm (§4.8) | ajustée à la page |
 
 Ex. : `{{ matrix type="initial" }}` · `{{ matrix type="initial" filter="category='Illegitimate data access'" }}`
 
 ### 4.2 Radar — `{{ radar … }}`
 Attributs : `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`, `cumulative`,
-`weighted`, `count`), `evaluation` (`initial`, `residual`, `side`, `overlay`), `filter`, `title`, `width`.
+`weighted`, `count`), `evaluation` (`initial`, `residual`, `side`, `overlay`), `filter`, `title`,
+`width` · `height` (§4.8).
 
 ### 4.3 Tableau — `{{ table … }}`
 | Attribut | Valeurs | Défaut |
@@ -223,12 +225,40 @@ aucune valeur n'a de description. Réservé au corps (comme les autres blocs).
 
 ### 4.5 Statistiques — `{{ stat type="…" }}`
 
-Reproduit les deux sections statistiques du rapport intégré :
-- `type="summary"` → tableau **synthèse** (Risques / Mesures / Risques réduits) ;
-- `type="distribution"` → tableau **répartition par criticité** (Libellé en cellule colorée · Initial ·
-  Résiduel, via `dxBadgeCell` et `critOfEval`).
+Statistiques de l'analyse (données de l'onglet Statistiques et du rapport intégré), en **tableaux**,
+**tuiles** et **graphiques**.
 
-Un `type` inconnu est signalé. (Les graphiques statistiques — anneau, secteur — restent en v2, §13.)
+**Types sans graphique :**
+
+| `type` | Rendu |
+|---|---|
+| `summary` (syn. `counts`) | tableau **synthèse** : Risques / Mesures / Risques réduits |
+| `counters` | **tuiles clés** : Risques · Mesures · Risques réduits · % traité (`statCounters`) |
+| `coverage` | **couverture** : risques sans mesure · mesures orphelines (via les liens) |
+
+**Types à graphique** (répartition — tableau *Nombre / Part* via `dxBadgeCell`, graphique via
+`tmplStatChartSVG`, légende) :
+
+| `type` | Dimension | Population |
+|---|---|---|
+| `criticality` (syn. `distribution`) | criticité Initial vs Résiduel (deux graphiques, `critOfEval`) | risques |
+| `category` | catégorie | risques |
+| `measure_type` · `measure_status` | type · statut (`STATUS_COLORS`) | mesures |
+| `risk_owner` · `measure_owner` | propriétaire · responsable | risques · mesures |
+| `cf.<code>` | champ perso (`statDist`, couleurs de valeurs) | cible du champ |
+
+Attributs des types à graphique : `display` (`table` · `chart` · `both`, défaut **`table`**), `shape`
+(`donut` · `pie`, défaut **`donut`**), `width` · `height` (§4.8), `filter` (§8).
+
+**Mise en page** (`chart`/`both`) — tableaux de mise en page **sans bordure**, centrés (`tmplTblCenter` /
+`tmplTblCenterFit`), tout sur une même ligne : `chart` → `graphique │ légende` ; `both` (dimension) →
+`tableau │ graphique │ légende` ; `criticality` `chart` → paire de graphiques puis **légende en ligne**
+(`tmplStatLegendInlineXml`) ; `criticality` `both` → paire de graphiques puis tableau. Les tableaux de
+données sont ajustés au contenu (autofit) et centrés.
+
+Le graphique SVG est **autonome** (couleurs en ligne) puis rasterisé en PNG et inséré comme les
+matrices/radars (via `tmplImgReqs`, §4.1/§13). Un `type` inconnu, ou un `cf.<code>` introuvable
+(`tw_stat_field`), est signalé.
 
 ### 4.6 Notes des champs perso — `{{ cf_notes }}`
 
@@ -239,8 +269,24 @@ les sections « Détail ». Rend `null` hors d'une entité, ou si aucun champ n'
 ### 4.7 Logo de couverture — `{{ logo }}`
 
 Insère le **logo configuré** de l'analyse (`extensions.display.report.cover.logo`), préchargé en PNG
-(`dxLogoPng`). Attribut `width="cm"` optionnel (défaut : largeur intrinsèque, max 200 px). Rend `null` si
-aucun logo n'est configuré ou si le chargement échoue. Réservé au corps.
+(`dxLogoPng`). Attributs `width` · `height` optionnels (§4.8 ; défaut : largeur intrinsèque, max 200 px).
+Rend `null` si aucun logo n'est configuré ou si le chargement échoue. Réservé au corps.
+
+### 4.8 Dimensions des images — `width` / `height`
+
+Sur tous les blocs produisant une image (`matrix`, `radar`, `logo`, `stat` en `display="chart|both"`),
+via le helper commun `tmplImgXml` / `tmplImgEmu` (unité **cm**, EMU internes) :
+
+| Réglage | Effet |
+|---|---|
+| `width` seul | largeur fixée, **hauteur calculée** (ratio conservé) |
+| `height` seul | hauteur fixée, **largeur calculée** |
+| `width` **et** `height` | **boîte maximale** : image agrandie au maximum **sans dépasser** l'une ni l'autre, ratio conservé (jamais déformée) |
+| aucun | taille par défaut (largeur intrinsèque plafonnée) |
+
+Fournir les deux valeurs **ne force donc pas** une déformation : elles définissent une boîte que l'image
+remplit en conservant ses proportions (`cx=w·EMU_CM ; cy=cx·H/W`, puis contrainte par la hauteur si
+dépassement).
 
 ---
 
@@ -299,6 +345,30 @@ séparées par des virgules : `sort="target,code"` — départage successif), `l
 - **Boucle de ligne de tableau** *(essentiel)* : si `{{#each …}}` et `{{/each}}` sont dans une **ligne
   de tableau Word**, c'est **la ligne** qui est répétée par élément (façon naturelle de construire un
   tableau mis en forme dans le modèle). Sinon, ce sont les **paragraphes** encadrés qui sont répétés.
+
+### 6.1 Conditions — `{{#if expr}}` · `{{#unless expr}}` · `{{else}}`
+
+Rend une section **seulement si** une expression est vraie. Mêmes deux portées que les boucles :
+**paragraphe** (`tmplParagraphSection`) et **ligne de tableau** (`tmplRowSection`) ; imbrication libre avec
+les boucles et entre conditions.
+
+```
+{{#if measure.overdue}}⚠ En retard{{else}}À l'heure{{/if}}
+{{#unless analysis.reduced_count}}Aucun risque réduit à ce stade.{{/unless}}
+```
+
+- **Expression** (`tmplParseCond` / `tmplEvalCond`) : `chemin operateur "valeur"`, où `chemin` est
+  **n'importe quelle valeur** résoluble en `{{ … }}` (`analysis.*`, `risk.*`, `measure.*`, `link.*`,
+  `level.*`, `grid.*`, compteurs, `cf.<code>`) — évaluée par `tmplResolveValue`, **pas** contre une entité.
+- **Opérateurs** : `=`, `!=`, `>`, `>=`, `<`, `<=`, `contains`, `empty`, `not_empty` ; combinateurs `and`,
+  `or`, parenthèses. Réutilise le **tokeniseur de filtres** (§8) : comparaison numérique quand c'est
+  possible, sinon `localeCompare` numérique ; code **ou** libellé pour les `tags`/`checklist` ; insensible
+  à la casse (`tmplNorm`).
+- **Forme courte** : `{{#if chemin}}` seul ⇒ test **« non vide »** (`not_empty`). `{{#unless expr}}` =
+  négation. `{{else}}` accepté dans les deux.
+- **Robustesse** : expression invalide (`tw_if_invalid`), section non fermée (`tw_if_unclosed`), `{{else}}`
+  orphelin (`tw_if_orphan`) ou chemin inconnu (`tw_if_field`) ⇒ **avertissement** ; la section est laissée
+  telle quelle (rendu non bloquant).
 
 ---
 
@@ -484,7 +554,8 @@ n'est jamais utilisé** : seul compte le filtre déclaré dans le modèle.
 **colonnes par défaut de l'application** ; (4) **pas** de reprise du filtre actif de l'app — filtre défini
 par `{{ report filter="…" }}`, combiné (ET) aux filtres locaux ; (5) **v1** = valeurs + boucles
 (`filter`, `sort`, `group_by`, imbrication, **ligne de tableau**) + blocs **matrix**, **radar**, **table** ;
-**statistiques** (compteurs + graphiques) en **v2** ; **conditions `{{#if}}`** en **v2**.
+**v2** = **statistiques** (compteurs, couverture, graphiques donut/secteur — §4.5), **conditions**
+`{{#if}}` / `{{#unless}}` (§6.1) et **dimensions d'images** `width` / `height` (§4.8) — **livrée**.
 
 **Arrêtées (complément) :** **propagation des filtres le long des liens confirmée** (alignée sur l'app) ;
 **échappement** des caractères spéciaux à l'intérieur des balises spécifié (§2.2).
@@ -495,16 +566,19 @@ charte restent aussi réalisables via la **boucle de ligne de tableau** (§7.9).
 
 ---
 
-## 13. Périmètre v2 et hors périmètre
+## 13. Périmètre v2 (livré) et hors périmètre
 
-**v2 — Statistiques** (toutes les données de l'onglet Statistiques) :
-- Compteurs : `analysis.risk_count`, `analysis.measure_count`, `analysis.link_count`,
-  `analysis.reduced_risk_count`, `analysis.treated_percent`, `analysis.uncovered_risk_count`,
-  `analysis.orphan_measure_count`.
-- Graphiques : `{{ stat block="criticality|categories|types|statuses|coverage|cf.<code>"
-  shape="donut|pie|table" filter="…" }}` (anneau, secteur, tableau de valeurs).
+**v2 — Statistiques** (§4.5) : compteurs (`analysis.risks_count` / `measures_count` / `links_count` /
+`reduced_count`, plus le bloc `{{ stat type="counters" }}` : Risques · Mesures · Réduits · % traité) ;
+couverture (`{{ stat type="coverage" }}`) ; **graphiques de répartition** `{{ stat type="criticality |
+category | measure_type | measure_status | risk_owner | measure_owner | cf.<code>" display="table|chart|both"
+shape="donut|pie" }}` (anneau/secteur autonome rasterisé en image, tableau *Nombre / Part*, légende).
 
-**v2 — Conditions** : `{{#if expr}} … {{else}} … {{/if}}`.
+**v2 — Conditions** (§6.1) : `{{#if expr}} … {{else}} … {{/if}}` et `{{#unless expr}}`, à la portée
+paragraphe et ligne de tableau.
+
+**v2 — Dimensions d'images** (§4.8) : `width` / `height` (cm) sur `matrix`, `radar`, `logo`, `stat` ; les
+deux ensemble = boîte maximale sans déformation.
 
 **Hors périmètre** : graphiques Word **natifs éditables** (on insère des **images**) ; styles/thème
 imposés par l'application (c'est le **modèle** qui décide) ; édition du modèle dans l'app.

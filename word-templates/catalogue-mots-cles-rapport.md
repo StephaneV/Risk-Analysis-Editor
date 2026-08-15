@@ -6,7 +6,8 @@ spécification complète : [`SPEC-rapport-modele-word.md`](../specs/SPEC-rapport
 prêts à l'emploi : **ce dossier** [`word-templates/`](.).
 
 > **v1** = valeurs, boucles, filtres, blocs `matrix` / `radar` / `table`.
-> **v2** (à venir) = statistiques (compteurs + graphiques) et conditions `{{#if}}`.
+> **v2** = statistiques (compteurs, couverture, graphiques donut/secteur — §4.5), conditions
+> `{{#if}}` / `{{#unless}}` (§8) et **dimensions d'images** `width` / `height` (§4.8).
 
 ---
 
@@ -133,12 +134,12 @@ Tous acceptent `filter="…"` (§7) et `report_filter="none"`.
 |---|---|
 | `type` | `initial` (syn. `gross`), `residual` (syn. `net`), `trajectory` — défaut `initial` |
 | `title` | titre (aucun par défaut) |
-| `width` | largeur en cm (ajustée à la page par défaut) |
+| `width` · `height` | dimensions en cm (voir **§4.8**) |
 | `filter` | filtre (§7) |
 
 ### 4.2 `{{ radar … }}`
 `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`, `cumulative`, `weighted`, `count`),
-`evaluation` (`initial`, `residual`, `side`, `overlay`), `title`, `width`, `filter`.
+`evaluation` (`initial`, `residual`, `side`, `overlay`), `title`, `width` · `height` (§4.8), `filter`.
 
 ### 4.3 `{{ table … }}`
 | Attribut | Valeurs (défaut) |
@@ -158,17 +159,64 @@ Reproduit la section « Référentiels et légendes des champs » du rapport int
 (paragraphe retiré) pour les champs sans valeurs fermées, ou dont aucune valeur n'a de description.
 
 ### 4.5 `{{ stat type="…" }}`
-Tableaux statistiques du rapport intégré :
-- `type="summary"` → **synthèse** (Risques / Mesures / Risques réduits) ;
-- `type="distribution"` → **répartition par criticité** (Libellé en cellule colorée · Initial · Résiduel).
+Statistiques de l'analyse (tableaux et **graphiques**), calquées sur l'onglet Statistiques et le rapport
+intégré.
+
+**Types sans graphique** (tableaux/tuiles simples) :
+
+| `type` | Rendu |
+|---|---|
+| `summary` (syn. `counts`) | **synthèse** : Risques / Mesures / Risques réduits |
+| `counters` | **tuiles clés** : Risques · Mesures · Risques réduits · % traité |
+| `coverage` | **couverture** : risques sans mesure · mesures orphelines (n / total) |
+
+**Types à graphique** (répartition — tableau *Nombre / Part*, anneau/secteur, légende) :
+
+| `type` | Dimension |
+|---|---|
+| `criticality` (syn. `distribution`) | **criticité** Initial vs Résiduel (deux graphiques) |
+| `category` | catégorie des risques |
+| `measure_type` · `measure_status` | type · statut des mesures |
+| `risk_owner` · `measure_owner` | propriétaire des risques · responsable des mesures |
+| `cf.<code>` | champ personnalisé (tags/select/checklist), couleurs des valeurs |
+
+Attributs des types à graphique :
+
+| Attribut | Valeurs (défaut) | Rôle |
+|---|---|---|
+| `display` | `table` · `chart` · `both` — défaut **`table`** | tableau seul · graphique + légende · les deux |
+| `shape` | `donut` · `pie` — défaut **`donut`** | forme du graphique |
+| `width` · `height` | cm (§4.8) | dimensions du graphique |
+| `filter` | filtre (§7) | restreint la population comptée |
+
+Mise en page (`display="chart|both"`) : les éléments sont posés **sur une même ligne**, centrés —
+`chart` → `graphique │ légende` ; `both` (dimension) → `tableau │ graphique │ légende` ;
+`criticality` `chart` → les deux graphiques puis une **légende en ligne** ; `criticality` `both` → les deux
+graphiques puis le tableau. Les tableaux de données sont ajustés au contenu et centrés.
+
+Ex. : `{{ stat type="counters" }}` · `{{ stat type="category" display="both" shape="pie" }}` ·
+`{{ stat type="measure_status" display="chart" filter="overdue='true'" }}`
 
 ### 4.6 `{{ cf_notes }}`
 Dans une boucle `risks` / `measures` / `links` : **notes des champs personnalisés** de l'entité courante
 (un « Libellé : valeur » par champ renseigné). Reproduit les notes des sections « Détail » du rapport.
 
 ### 4.7 `{{ logo }}`
-Insère le **logo de couverture configuré** de l'analyse (`extensions…report.cover.logo`). Attribut
-`width="cm"` optionnel. Ne produit rien si aucun logo n'est configuré.
+Insère le **logo de couverture configuré** de l'analyse (`extensions…report.cover.logo`). Attributs
+`width` · `height` optionnels (§4.8). Ne produit rien si aucun logo n'est configuré.
+
+### 4.8 Dimensions des images (`width` / `height`)
+Sur **tous les tags produisant une image** (`matrix`, `radar`, `logo`, `stat` en `display="chart|both"`) :
+
+| Réglage | Effet |
+|---|---|
+| `width="8"` | 8 cm de large, **hauteur calculée** (proportions conservées) |
+| `height="6"` | 6 cm de haut, **largeur calculée** |
+| `width="10" height="5"` | **boîte maximale** : l'image est agrandie au maximum **sans dépasser** la largeur ni la hauteur, proportions conservées (**jamais déformée**) |
+| *(aucun)* | taille par défaut (largeur intrinsèque plafonnée) |
+
+Unité : **centimètres**. Les deux valeurs ensemble ne forcent donc **pas** une déformation : elles bornent
+une boîte que l'image remplit en gardant son ratio.
 
 ---
 
@@ -238,7 +286,35 @@ Ex. : `filter="cf.source contains 'internal' and criticality_initial>='high'"`
 
 ---
 
-## 8. Échappement
+## 8. Conditions — `{{#if …}}` · `{{#unless …}}`
+
+Affiche une section **seulement si** une expression est vraie. Fonctionne à la **portée paragraphe** et à
+la **portée ligne de tableau** (comme les boucles, §6).
+
+```
+{{#if measure.overdue}}⚠ En retard{{else}}À l'heure{{/if}}
+{{#unless analysis.reduced_count}}Aucun risque réduit à ce stade.{{/unless}}
+```
+
+- **Expression** : `chemin operateur "valeur"`, où `chemin` est **n'importe quelle valeur** résoluble en
+  `{{ … }}` (`analysis.*`, `risk.*`, `measure.*`, `link.*`, `level.*`, `grid.*`, compteurs, `cf.<code>`…).
+- **Opérateurs** : `=`, `!=`, `>`, `>=`, `<`, `<=`, `contains`, `empty`, `not_empty` — combinables par
+  `and`, `or` et parenthèses (mêmes règles qu'un filtre, §7 : comparaison numérique quand c'est possible,
+  code **ou** libellé, insensible à la casse ; `contains` sur les multi-valeurs).
+- **Forme courte** : `{{#if chemin}}` seul teste **« non vide »** (équivaut à `chemin not_empty`) ; utile
+  pour un booléen (`overdue`) ou un champ renseigné.
+- **`{{#unless expr}}`** = négation de `{{#if expr}}`. `{{else}}` est accepté dans les deux.
+- **Imbrication** libre avec les boucles et les autres conditions. Une expression invalide, une section non
+  fermée ou un `{{else}}` orphelin déclenchent un **avertissement** (`tw_if_*`) et la section est laissée
+  telle quelle.
+
+Ex. : `{{#if risk.residual.criticality_code = "high" or risk.residual.criticality_code = "critical"}} … {{/if}}` ·
+`{{#if measure.due_date empty}}Sans échéance{{/if}}` ·
+`{{#if risk.cf.source contains "internal"}} … {{/if}}`
+
+---
+
+## 9. Échappement
 
 - Guillemets **interchangeables** : attribut en `"…"` ou `'…'`, chaîne de filtre en `'…'` ou `"…"`.
   Choisir celui absent du contenu → aucun échappement.
@@ -249,7 +325,7 @@ Ex. : `filter="cf.source contains 'internal' and criticality_initial>='high'"`
 
 ---
 
-## 9. Modèles d'exemple
+## 10. Modèles d'exemple
 
 Chaque modèle existe en version **propre** (prête à l'emploi) et **annotée** (`…-annote.docx`, avec
 notes explicatives — à ne pas utiliser telle quelle, les notes apparaîtraient dans le rapport).
@@ -263,3 +339,7 @@ notes explicatives — à ne pas utiliser telle quelle, les notes apparaîtraien
   **référentiels** : grille de cotation (méthode, échelles d'axes en boucle de ligne, niveaux de
   criticité) et **champs personnalisés** (tableau récapitulatif + détail des caractéristiques et des
   valeurs possibles).
+- [`modele-tableau-de-bord.docx`](modele-tableau-de-bord.docx) —
+  **tableau de bord** (v2) : tuiles clés et couverture, graphiques de répartition (criticité, catégorie,
+  statut des mesures) et sections **conditionnelles** (`{{#if}}` / `{{#unless}}`) — alerte mesures en
+  retard, risques non traités.

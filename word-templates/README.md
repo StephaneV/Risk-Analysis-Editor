@@ -17,6 +17,7 @@ puis ouvrez le document généré dans Word.
 | `modele-rapport-classique.docx` | **Démonstration** : présentation, matrices initiale/résiduelle/trajectoire, grille, registre des risques, tableau des mesures (boucle de ligne), détail par risque avec sous-boucle, radar. |
 | `modele-rapport-eclate-par-categorie.docx` | **Démonstration** : synthèse générale puis **un chapitre par catégorie de risque** (matrice et tableau filtrés automatiquement par catégorie). |
 | `modele-referentiels.docx` | **Référentiels de l'analyse** : grille de cotation (méthode, échelles de vraisemblance/gravité, niveaux de criticité) et **champs personnalisés** (tableau récapitulatif + détail des caractéristiques et des valeurs possibles). |
+| `modele-tableau-de-bord.docx` | **Tableau de bord** (v2) : tuiles clés et couverture, **graphiques** de répartition (criticité, catégorie, statut des mesures) et sections **conditionnelles** `{{#if}}` / `{{#unless}}` (alerte mesures en retard, points de vigilance). |
 | `modele-rapport-complet-classique.docx` | **Reproduction fidèle** du rapport « Exporter en Word » (mode classique) : page de garde + logo, en-tête/pied, table des matières, métadonnées, présentation, statistiques (synthèse + répartition), grille, niveaux, référentiels/légendes, matrices, radar, registre, détails risques/mesures/liens, plan d'action. |
 | `modele-rapport-complet-par-categorie.docx` | Idem en **rapport éclaté par catégorie** : zone d'introduction, un chapitre par catégorie (sections filtrées), puis annexe. |
 | `modele-rapport-complet-par-risque.docx` | Idem en **rapport éclaté par risque** : un chapitre par risque (détail + trajectoire + mesures), puis annexe. |
@@ -38,8 +39,8 @@ se rendent dans la **langue de l'analyse**. Des variantes anglaise/italienne pou
 npm install docx        # dépendance de génération (non versionnée)
 node word-templates/build-word-templates.js
 ```
-Produit les six `.docx` de **démonstration** et de **référentiels** (propres + annotés). Pour écrire
-ailleurs : `OUT=<dossier> node …`.
+Produit les `.docx` de **démonstration**, de **référentiels** et de **tableau de bord** (propres +
+annotés). Pour écrire ailleurs : `OUT=<dossier> node …`.
 
 Les modèles `modele-rapport-complet-*.docx` (reproductions fidèles du rapport « Exporter en Word ») sont
 issus de générateurs dédiés, distincts de `build-word-templates.js`.

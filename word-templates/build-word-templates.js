@@ -1,6 +1,6 @@
 // Génère les modèles Word d'exemple du générateur de rapports « modèle Word » de RAE.
-// Deux modèles (classique, éclaté par catégorie), chacun en version PROPRE et ANNOTÉE.
-// Sortie : word-templates/ (ou $OUT). Nécessite le module npm « docx » (npm i docx).
+// Modèles (classique, éclaté par catégorie, référentiels, tableau de bord), chacun en version
+// PROPRE et ANNOTÉE. Sortie : word-templates/ (ou $OUT). Nécessite le module npm « docx » (npm i docx).
 const fs = require("fs");
 const path = require("path");
 const {
@@ -222,7 +222,73 @@ function build(ann) {
     P(blk("{{/each}}")),
   ].filter(Boolean) }] });
 
-  return { classique: classique(), eclate: eclate(), referentiels: referentiels() };
+  // Tableau de bord (v2) : statistiques (compteurs, couverture, graphiques donut/secteur) et sections
+  // conditionnelles ({{#if}} / {{#unless}} de niveau bloc, dans et hors boucle).
+  const tableauDeBord = () => new Document({ sections: [{ children: [
+    new Paragraph({ heading: HeadingLevel.TITLE, children: [txt("Tableau de bord des risques")] }),
+    P([val("{{ analysis.title }}"), txt(" · "), val("{{ analysis.organization }}"),
+       txt(" · mise à jour "), val('{{ analysis.updated | date="long" }}')]),
+    note("Modèle « tableau de bord » (v2) : blocs statistiques (compteurs, couverture, graphiques) et "
+       + "sections conditionnelles. Aucune donnée saisie ici — tout est calculé à la génération."),
+
+    H1("Chiffres clés"),
+    note("Tuiles clés : Risques · Mesures · Risques réduits · % traité."),
+    P(blk('{{ stat type="counters" }}')),
+    note("Condition de niveau bloc : chaque balise {{#if}} / {{else}} / {{/if}} est SEULE sur son paragraphe."),
+    P(blk('{{#if analysis.reduced_count > "0"}}')),
+    P([val("{{ analysis.reduced_count }}"), txt(" risque(s) réduit(s) sur "), val("{{ analysis.risks_count }}"),
+       txt(" — la maîtrise progresse.")]),
+    P(blk("{{else}}")),
+    P(txt("Aucun risque n'a encore été réduit entre l'initial et le résiduel.")),
+    P(blk("{{/if}}")),
+
+    H1("Couverture du traitement"),
+    P(blk('{{ stat type="coverage" }}')),
+    note("Condition {{#unless}} : le message ne s'affiche que si aucun lien n'est défini."),
+    P(blk('{{#unless analysis.links_count > "0"}}')),
+    P(txt("⚠ Aucun lien risque↔mesure n'est défini : la couverture ne peut pas être évaluée.")),
+    P(blk("{{/unless}}")),
+
+    H1("Criticité — initial vs résiduel"),
+    note('display="both" : les deux graphiques (Initial / Résiduel) puis le tableau, centrés.'),
+    P(blk('{{ stat type="criticality" display="both" shape="donut" }}')),
+
+    H1("Répartition des risques par catégorie"),
+    note('display="chart" : graphique + légende sur une même ligne, centrés.'),
+    P(blk('{{ stat type="category" display="chart" shape="pie" }}')),
+
+    H1("Avancement des mesures"),
+    P(blk('{{ stat type="measure_status" display="both" shape="donut" }}')),
+
+    P(new PageBreak()),
+
+    H1("Suivi des échéances"),
+    note("Boucle de LIGNE de tableau : la ligne de corps se répète pour chaque mesure ; statut en badge coloré."),
+    rowLoopMeasuresTable(),
+
+    H1("Mesures en retard"),
+    note("Boucle + condition {{#if}} de niveau bloc à l'intérieur : n'affiche que les mesures en retard "
+       + "(champ dérivé measure.overdue). Rien ne s'affiche si aucune n'est en retard."),
+    P(blk('{{#each measures sort="due_date"}}')),
+    P(blk("{{#if measure.overdue}}")),
+    P([txt("⚠ ", { color: "C0392B", bold: true }), val("{{ measure.id }}"), txt(" — "), val("{{ measure.label }}"),
+       txt(" · échéance "), val('{{ measure.due_date | date="JJ/MM/AAAA" }}'), txt(" · "), val("{{ measure.responsible }}")],
+       { bullet: { level: 0 } }),
+    P(blk("{{/if}}")),
+    P(blk("{{/each}}")),
+
+    H1("Points de vigilance"),
+    note("Condition avec « or » et badge : ne liste que les risques dont la criticité résiduelle reste "
+       + "importante ou maximale (comparaison sur criticality_code)."),
+    P(blk('{{#each risks sort="criticality_residual:desc"}}')),
+    P(blk('{{#if risk.residual.criticality_code = "important" or risk.residual.criticality_code = "maximal"}}')),
+    P([val("{{ risk.id }}"), txt(" — "), val("{{ risk.label }}"), txt("  "),
+       val("{{ risk.residual.criticality | badge }}")], { bullet: { level: 0 } }),
+    P(blk("{{/if}}")),
+    P(blk("{{/each}}")),
+  ].filter(Boolean) }] });
+
+  return { classique: classique(), eclate: eclate(), referentiels: referentiels(), tableauDeBord: tableauDeBord() };
 }
 
 async function write(doc, name) {
@@ -238,4 +304,6 @@ async function write(doc, name) {
   await write(annot.eclate, "modele-rapport-eclate-par-categorie-annote.docx");
   await write(clean.referentiels, "modele-referentiels.docx");
   await write(annot.referentiels, "modele-referentiels-annote.docx");
+  await write(clean.tableauDeBord, "modele-tableau-de-bord.docx");
+  await write(annot.tableauDeBord, "modele-tableau-de-bord-annote.docx");
 })();
