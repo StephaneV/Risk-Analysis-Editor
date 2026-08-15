@@ -23,7 +23,9 @@ puis ouvrez le document généré dans Word.
 | `modele-rapport-complet-par-risque.docx` | Idem en **rapport éclaté par risque** : un chapitre par risque (détail + trajectoire + mesures), puis annexe. |
 | `…-annote.docx` | Variantes **annotées** (notes explicatives grises) des modèles de démonstration. ⚠️ Ne pas utiliser telles quelles : les notes apparaîtraient dans le rapport. |
 | [`catalogue-mots-cles-rapport.md`](catalogue-mots-cles-rapport.md) | **Référence des mots-clés** (valeurs, blocs, boucles, filtres, échappement) pour rédiger vos propres modèles. |
-| `build-word-templates.js` | Script de **génération** de ces `.docx` (reproductible). |
+| `build-word-templates.js` | Générateur des modèles de **démonstration** (classique, éclaté, référentiels, tableau de bord) — propres + annotés. |
+| `build-rapport-complet-classique.js` | Générateur de `modele-rapport-complet-classique.docx` (reproduction fidèle du rapport natif). |
+| `build-rapport-complet-eclate.js` | Générateur de `modele-rapport-complet-par-categorie.docx` et `…-par-risque.docx`. |
 
 Spécification complète du langage de gabarit :
 [`specs/SPEC-rapport-modele-word.md`](../specs/SPEC-rapport-modele-word.md).
@@ -36,11 +38,11 @@ se rendent dans la **langue de l'analyse**. Des variantes anglaise/italienne pou
 ## Régénérer les modèles
 
 ```bash
-npm install docx        # dépendance de génération (non versionnée)
-node word-templates/build-word-templates.js
+npm install docx        # dépendance de génération (non versionnée), une fois
+node build-word-templates.js              # démonstration + référentiels + tableau de bord (propres + annotés)
+node build-rapport-complet-classique.js   # modele-rapport-complet-classique.docx
+node build-rapport-complet-eclate.js      # modele-rapport-complet-par-{categorie,risque}.docx
 ```
-Produit les `.docx` de **démonstration**, de **référentiels** et de **tableau de bord** (propres +
-annotés). Pour écrire ailleurs : `OUT=<dossier> node …`.
-
-Les modèles `modele-rapport-complet-*.docx` (reproductions fidèles du rapport « Exporter en Word ») sont
-issus de générateurs dédiés, distincts de `build-word-templates.js`.
+Chaque script écrit dans ce dossier (ou dans `$OUT` si défini : `OUT=<dossier> node …`). Les trois
+`.docx` **complets** sont des reproductions fidèles du rapport « Exporter en Word » ; les autres sont des
+modèles de **démonstration** du langage de gabarit.
