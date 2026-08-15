@@ -370,10 +370,13 @@ les boucles et entre conditions.
 - **Forme courte** : `{{#if chemin}}` seul ⇒ test **« non vide »** (`not_empty`). `{{#unless expr}}` =
   négation. `{{else}}` accepté dans les deux.
 - **Bloc ou en ligne** : marqueurs **seuls** sur leur paragraphe/ligne ⇒ portée **bloc** (encadre des
-  paragraphes ou des lignes). Ouverture **et** fermeture dans un **même texte** (paragraphe ou cellule) ⇒
-  condition **en ligne**, résolue pendant la substitution (`tmplResolveInlineConds` dans `tmplRenderTokens`)
-  — c'est le seul moyen d'agir dans une **cellule de boucle de ligne** (substituée par `tmplSubstituteRuns`,
-  sans traitement de bloc). Ex. mention « En retard » conditionnelle dans une colonne Statut.
+  paragraphes ou des lignes). Ouverture **et** fermeture dans un **même paragraphe/cellule** ⇒ condition
+  **en ligne**, résolue **à l'échelle du paragraphe** (`tmplResolveInlineCondsInEl`) donc **à travers
+  plusieurs runs** (mises en forme différentes, passage à la ligne), en conservant la mise en forme de
+  chaque run et en laissant les balises de valeur intactes. C'est le seul moyen d'agir dans une **cellule
+  de boucle de ligne** (substituée par `tmplSubstituteRuns`, sans traitement de bloc). Ex. mention « En
+  retard » (rouge) conditionnelle dans une colonne Statut. Un `else`/`/if` en ligne sans `if` correspondant
+  ⇒ avertissement `tw_if_orphan` (marqueur retiré) ; un `if` non fermé dans le texte est laissé visible.
 - **Robustesse** : expression invalide (`tw_if_invalid`), section non fermée (`tw_if_unclosed`), `{{else}}`
   orphelin (`tw_if_orphan`) ou chemin inconnu (`tw_if_field`) ⇒ **avertissement** ; la section est laissée
   telle quelle (rendu non bloquant).

@@ -8925,13 +8925,64 @@ function tmplResolveInlineConds(toks,ctx){
           if(i<toks.length&&toks[i].t==="tag"){const c3=tmplInlineCondTag(toks[i].v); if(c3&&c3.close)i++;}
           out.push(...(truth?thenT:elseT)); continue;
         }
-        if(c&&(c.elseMarker||c.close)){ if(stop)return out; i++; continue; }
+        if(c&&(c.elseMarker||c.close)){ if(stop)return out; tmplWarn("tw_if_orphan"); i++; continue; }   // « else »/« /if » en ligne sans « if »
       }
       out.push(tk); i++;
     }
     return out;
   }
   return seq(false);
+}
+// Tokeniseur POSITIONNEL : comme tmplTokenize mais chaque jeton porte sa plage brute [s,e) dans `text`.
+function tmplTokenizePos(text){
+  const out=[]; let i=0, buf="", bufStart=0;
+  const flush=cur=>{ if(buf){ out.push({t:"lit",v:buf,s:bufStart,e:cur}); buf=""; } };
+  while(i<text.length){
+    if(text[i]==="\\" && (text.substr(i,3)==="\\{{"||text.substr(i,3)==="\\}}")){ if(!buf)bufStart=i; buf+=text.substr(i+1,2); i+=3; continue; }
+    if(text[i]==="{" && text[i+1]==="{"){
+      const start=i; let j=i+2, inner="", closed=false;
+      while(j<text.length){
+        if(text[j]==="\\" && j+1<text.length){ inner+=text.substr(j,2); j+=2; continue; }
+        if(text[j]==="}" && text[j+1]==="}"){ closed=true; break; }
+        inner+=text[j]; j++;
+      }
+      flush(start);
+      if(closed){ out.push({t:"tag",v:inner,s:start,e:j+2}); i=j+2; }
+      else { out.push({t:"open",v:inner,s:start,e:j}); i=j; }         // « {{ » sans fermeture : laissé tel quel
+      continue;
+    }
+    if(!buf)bufStart=i; buf+=text[i]; i++;
+  }
+  flush(i);
+  return out;
+}
+// Résout les conditions EN LIGNE à l'échelle d'un PARAGRAPHE (ou cellule), donc à travers plusieurs runs
+// (mises en forme différentes, passage à la ligne). Conserve la mise en forme de chaque run ; laisse les
+// balises de valeur intactes (substituées ensuite). Ne touche rien si aucune condition en ligne complète.
+function tmplRunSegs(el){
+  const segs=[]; let off=0;
+  Array.from(el.getElementsByTagNameNS(W_NS,"r")).forEach(r=>{
+    const tEls=Array.from(r.getElementsByTagNameNS(W_NS,"t"));
+    if(!tEls.length)return;                                  // run sans texte (saut de ligne, image…) : ignoré
+    const text=tEls.map(t=>t.textContent).join("");
+    segs.push({tEls,s:off,e:off+text.length}); off+=text.length;
+  });
+  return {segs, full: segs.map(x=>x.tEls.map(t=>t.textContent).join("")).join("")};
+}
+function tmplResolveInlineCondsInEl(el,ctx){
+  const {segs,full}=tmplRunSegs(el);
+  if(full.indexOf("{{")<0)return;
+  const toks=tmplTokenizePos(full);
+  let has=false;                                             // au moins une condition en ligne COMPLÈTE ?
+  for(let k=0;k<toks.length;k++){ if(toks[k].t==="tag"){const c=tmplInlineCondTag(toks[k].v); if(c&&c.open&&tmplInlineHasClose(toks,k+1)){has=true;break;}} }
+  if(!has)return;                                            // sinon : ne rien réécrire (bloc/valeurs gérés ailleurs)
+  const kept=tmplResolveInlineConds(toks,ctx).filter(tk=>tk.s!=null).map(tk=>[tk.s,tk.e]);
+  segs.forEach(seg=>{                                        // réécrit chaque run = intersection avec les plages conservées
+    let nt="";
+    kept.forEach(([rs,re])=>{ const a=Math.max(rs,seg.s),b=Math.min(re,seg.e); if(b>a)nt+=full.slice(a,b); });
+    seg.tEls[0].textContent=nt; seg.tEls[0].setAttribute("xml:space","preserve");
+    for(let k=1;k<seg.tEls.length;k++)seg.tEls[k].textContent="";
+  });
 }
 function tmplRenderTokens(text,ctx,strip){
   const toks=tmplResolveInlineConds(tmplTokenize(text),ctx),parts=[]; let plain="",rich=false;
@@ -9122,6 +9173,7 @@ function tmplRenderTable(tbl,ctx){
       tmplLoopIterations(info.collection,info.attrs,ctx).forEach(itr=>{
         const childCtx=ctx.concat(itr.frames);
         const clone=node.cloneNode(true);
+        Array.from(clone.getElementsByTagNameNS(W_NS,"p")).forEach(p=>tmplResolveInlineCondsInEl(p,childCtx));   // conditions en ligne dans les cellules (à travers les runs)
         tmplSubstituteRuns(clone,childCtx,true);
         tbl.insertBefore(clone,node);
       });
@@ -9534,6 +9586,7 @@ function tmplRenderContainer(container,ctx){
       if(blk){const repl=tmplRenderBlock(blk.name,blk.attrs,ctx,doc);
         if(repl){const nx=node.nextSibling;container.insertBefore(repl,node);container.removeChild(node);node=nx;continue;}
         if(tmplBlocksAllowed){const nx=node.nextSibling;container.removeChild(node);node=nx;continue;}}  // bloc sans rendu (corps) → retirer le paragraphe
+      tmplResolveInlineCondsInEl(node,ctx);              // conditions en ligne à travers les runs (avant substitution)
       tmplSubstituteInNode(node,ctx);
     } else if(node.nodeType===1 && node.localName==="tbl"){
       tmplRenderTable(node,ctx);
