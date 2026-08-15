@@ -9174,11 +9174,35 @@ function tmplStatChartImg(svg,size,attrs){
 function tmplStatLegendXml(rows,total){
   return rows.map(r=>dxP(tmplRunXml("","■ ",hex6(r.color),null)+dxRun(r.label+"  —  "+r.count+" ("+statPct(r.count,total)+")",{sz:18,color:"3B4A63"}),{sa:20,sb:0})).join("");
 }
-function tmplStatDistTableXml(colLabel,rows,total){
+// Légende EN LIGNE (pastille + libellé, à la suite) — pour une paire de graphiques (criticité).
+function tmplStatLegendInlineXml(items){
+  const runs=items.map(it=>tmplRunXml("","■ ",hex6(it.color),null)+dxRun(it.label+"      ",{sz:18,color:"3B4A63"})).join("");
+  return dxP(runs,{center:true,sa:60,sb:40});
+}
+// Centre un tableau et adapte sa largeur au contenu (autofit) — pour les tableaux de données stats.
+function tmplTblCenterFit(xml){
+  return xml.replace(/<w:tblW w:w="\d+" w:type="dxa"\/>/,'<w:tblW w:w="0" w:type="auto"/><w:jc w:val="center"/>')
+    .replace('<w:tblLayout w:type="fixed"/>','<w:tblLayout w:type="autofit"/>');
+}
+// Centre un tableau (largeur fixe conservée) — pour les tableaux de mise en page (graphique/légende).
+function tmplTblCenter(xml){
+  return xml.replace(/(<w:tblW w:w="\d+" w:type="dxa"\/>)/,'$1<w:jc w:val="center"/>');
+}
+function tmplStatDistTableXml(colLabel,rows,total,tblW){
+  tblW=tblW||4600;const w2=1100,w3=1100,w1=Math.max(1500,tblW-w2-w3);
   const head=[{txt:colLabel,b:true,fill:"EEF2F8"},{txt:t("stat_count"),b:true,fill:"EEF2F8",center:true},{txt:t("stat_share"),b:true,fill:"EEF2F8",center:true}];
   const body=rows.map(r=>[dxBadgeCell(r.label,r.color),{txt:String(r.count),center:true},{txt:statPct(r.count,total),center:true}]);
   body.push([{txt:t("stat_total"),b:true},{txt:String(total),center:true,b:true},{txt:total?"100 %":"—",center:true,b:true}]);
-  return dxTbl([head].concat(body),[Math.max(2000,DX_CW-3200),1600,1600]);
+  return tmplTblCenterFit(dxTbl([head].concat(body),[w1,w2,w3]));
+}
+// Ligne de mise en page SANS bordure : place plusieurs contenus (tableau, image, légende…) côte à côte.
+function tmplLayoutRow(cells,widths){
+  const tot=widths.reduce((a,b)=>a+b,0);
+  const tr='<w:tr>'+cells.map((c,i)=>'<w:tc><w:tcPr><w:tcW w:w="'+widths[i]+'" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'+(c||'<w:p/>')+'</w:tc>').join("")+'</w:tr>';
+  return tmplTblCenter('<w:tbl><w:tblPr><w:tblW w:w="'+tot+'" w:type="dxa"/><w:tblBorders>'
+    +["top","left","bottom","right","insideH","insideV"].map(x=>'<w:'+x+' w:val="none"/>').join("")
+    +'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="0" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr>'
+    +'<w:tblGrid>'+widths.map(w=>'<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>'+tr+'</w:tbl>');
 }
 function tmplStatDim(type,attrs,ctx){
   const risks=()=>{const ast=tmplCombinedFilter(attrs,ctx);return ast?tmplFilterList(analyse.risks||[],"risk",ast):(analyse.risks||[]).slice();};
@@ -9195,19 +9219,19 @@ function tmplStatDim(type,attrs,ctx){
   }
   return null;
 }
-function tmplTwoChartsXml(imgI,capI,imgR,capR){
-  const w=Math.floor(DX_CW/2);
+function tmplTwoChartsXml(imgI,capI,imgR,capR,cellW){
+  const w=cellW||2700;   // cellule ajustée au graphique → paire centrée, pas étalée sur la page
   const cell=(img,cap)=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/></w:tcPr>'+img+dxP(dxRun(cap,{b:true,sz:18,color:"7A8699"}),{center:true,sa:80})+'</w:tc>';
-  return '<w:tbl><w:tblPr><w:tblW w:w="'+(w*2)+'" w:type="dxa"/><w:tblBorders>'+["top","left","bottom","right","insideH","insideV"].map(x=>'<w:'+x+' w:val="none"/>').join("")+'</w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+w+'"/><w:gridCol w:w="'+w+'"/></w:tblGrid><w:tr>'+cell(imgI,capI)+cell(imgR,capR)+'</w:tr></w:tbl>';
+  return tmplTblCenter('<w:tbl><w:tblPr><w:tblW w:w="'+(w*2)+'" w:type="dxa"/><w:tblBorders>'+["top","left","bottom","right","insideH","insideV"].map(x=>'<w:'+x+' w:val="none"/>').join("")+'</w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+w+'"/><w:gridCol w:w="'+w+'"/></w:tblGrid><w:tr>'+cell(imgI,capI)+cell(imgR,capR)+'</w:tr></w:tbl>');
 }
 function tmplStatBlockXml(attrs,ctx){
   const type=(attrs.type||"summary").toLowerCase(),risks=analyse.risks||[],meas=analyse.measures||[];
   const treatedN=()=>risks.filter(r=>{const a=r.initial_assessment||{},b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
   if(type==="summary"||type==="counts"){
     const treated=treatedN();
-    return dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:String(risks.length)}],
+    return tmplTblCenterFit(dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:String(risks.length)}],
       [{txt:t("stat_measures"),color:"7A8699"},{txt:String(meas.length)}],
-      [{txt:t("stat_reduced"),color:"7A8699"},{txt:String(treated)}]],[2600,2000]);
+      [{txt:t("stat_reduced"),color:"7A8699"},{txt:String(treated)}]],[2600,2000]));
   }
   if(type==="counters"){                                   // tuiles clés (comme l'onglet Statistiques)
     const treated=treatedN(),pct=risks.length?Math.round(treated/risks.length*100):0;
@@ -9225,33 +9249,34 @@ function tmplStatBlockXml(attrs,ctx){
   if(type==="coverage"){                                   // risques sans mesure / mesures orphelines
     const L=analyse.treatments||[],rl=new Set(L.map(x=>x.risk)),ml=new Set(L.map(x=>x.measure));
     const rNo=risks.filter(r=>!rl.has(r.id)).length,mNo=meas.filter(m=>!ml.has(m.id)).length;
-    return dxTbl([[{txt:t("stat_cov_risks"),color:"7A8699"},{txt:rNo+" / "+risks.length,center:true}],
-      [{txt:t("stat_cov_measures"),color:"7A8699"},{txt:mNo+" / "+meas.length,center:true}]],[3200,2000]);
+    return tmplTblCenterFit(dxTbl([[{txt:t("stat_cov_risks"),color:"7A8699"},{txt:rNo+" / "+risks.length,center:true}],
+      [{txt:t("stat_cov_measures"),color:"7A8699"},{txt:mNo+" / "+meas.length,center:true}]],[3200,2000]));
   }
   if(type==="distribution"||type==="criticality"){
     const cats=((analyse.grid||{}).criticality_levels||[]).slice().sort((a,b)=>((a.order!=null?a.order:a.score_min)||0)-((b.order!=null?b.order:b.score_min)||0));
     const ci={},cr={};cats.forEach(c=>{ci[c.code]=0;cr[c.code]=0;});
     risks.forEach(r=>{const ik=critOfEval(r.initial_assessment).code,rk=critOfEval(residual(r)).code;if(ik in ci)ci[ik]++;if(rk in cr)cr[rk]++;});
     const disp=(attrs.display||"table").toLowerCase(),shape=(attrs.shape==="pie")?"pie":"donut";
-    const tableXml=dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("th_initial"),b:true,fill:"EEF2F8",center:true},{txt:t("th_residual"),b:true,fill:"EEF2F8",center:true}]]
-      .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:String(ci[c.code]||0),center:true},{txt:String(cr[c.code]||0),center:true}])),[3200,1600,1600]);
+    const tableXml=tmplTblCenterFit(dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("th_initial"),b:true,fill:"EEF2F8",center:true},{txt:t("th_residual"),b:true,fill:"EEF2F8",center:true}]]
+      .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:String(ci[c.code]||0),center:true},{txt:String(cr[c.code]||0),center:true}])),[3200,1600,1600]));
     if(disp==="table")return tableXml;
     const SZ=150,tot=risks.length;
     const rowsI=cats.map(c=>({count:ci[c.code]||0,color:c.color})),rowsR=cats.map(c=>({count:cr[c.code]||0,color:c.color}));
     const charts=tmplTwoChartsXml(tmplStatChartImg(tmplStatChartSVG(rowsI,shape,tot,"",SZ),SZ,attrs),t("th_initial"),
       tmplStatChartImg(tmplStatChartSVG(rowsR,shape,tot,"",SZ),SZ,attrs),t("th_residual"));
-    return disp==="chart"?charts:(tableXml+charts);
+    if(disp==="chart")return charts+tmplStatLegendInlineXml(cats.map(c=>({label:c.label,color:c.color})));   // chart : paire + légende en ligne dessous
+    return charts+tableXml;   // both : graphiques (côte à côte) puis tableau en dessous
   }
   const dim=tmplStatDim(type,attrs,ctx);                     // répartition par dimension (catégorie, statut, type, propriétaire, cf.<code>)
   if(dim){
     if(dim.none)return null;
-    const disp=(attrs.display||"table").toLowerCase(),shape=(attrs.shape==="pie")?"pie":"donut";
-    const tbl=tmplStatDistTableXml(dim.colLabel,dim.data.rows,dim.data.total);
-    const chart=dim.data.total?(tmplStatChartImg(tmplStatChartSVG(dim.data.rows,shape,dim.data.total,dim.sub,150),150,attrs)+tmplStatLegendXml(dim.data.rows,dim.data.total))
-      :dxP(dxRun("—",{color:"7A8699"}),{sa:120});
-    if(disp==="table")return tbl;
-    if(disp==="chart")return chart;
-    return tbl+chart;
+    const disp=(attrs.display||"table").toLowerCase(),shape=(attrs.shape==="pie")?"pie":"donut",total=dim.data.total;
+    if(disp==="table")return tmplStatDistTableXml(dim.colLabel,dim.data.rows,total);
+    if(!total)return dxP(dxRun("—",{color:"7A8699"}),{sa:120});
+    const chartImg=tmplStatChartImg(tmplStatChartSVG(dim.data.rows,shape,total,dim.sub,150),150,attrs);
+    if(disp==="chart")return tmplLayoutRow([chartImg,tmplStatLegendXml(dim.data.rows,total)],[2800,3800]);   // |graphique | légende|, centré
+    // both : │ tableau │ graphique │ légende │ sur une seule ligne
+    return tmplLayoutRow([tmplStatDistTableXml(dim.colLabel,dim.data.rows,total,3400)+"<w:p/>",chartImg,tmplStatLegendXml(dim.data.rows,total)],[3700,2600,3338]);
   }
   tmplWarn("tw_stat_type",attrs.type);return null;
 }
