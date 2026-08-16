@@ -424,6 +424,14 @@ Le menu **Fichier** propose deux exports bureautiques, générés **localement e
 - **Exporter en Word (.docx)** — suit la **même configuration** que le rapport (voir [§13](#13-le-rapport) : sections, ordre, colonnes, périmètre, orientation) et y ajoute une **page de garde**, une **table des matières** et un **en-tête / pied de page natifs** (avec numéros de page). Cartouche, présentation, synthèse, grille, **matrices en images**, registres et fiches détaillées. Prêt à fondre dans un gabarit d'entreprise. Également accessible via le bouton *⭳ Word* de l'onglet Rapport.
 - **Exporter en Excel (.xlsx)** — un classeur à quatre feuilles (**Synthèse / Risques / Mesures / Liens**), avec cellules typées (vraies dates et nombres), couleurs de criticité et de statut, en-têtes figés et filtres automatiques.
 
+### Exporter avec un modèle Word (gabarit personnalisé)
+
+Au-delà de l'export Word « clé en main » ci-dessus, RAE peut **remplir votre propre modèle Word**. Vous préparez un document `.docx` à votre charte contenant des **balises** entre doubles accolades — `{{ analysis.title }}`, `{{#each risks}} … {{/each}}`, `{{ matrix }}`, `{{ radar }}`, `{{ stat }}`, `{{ table }}`… — que l'application remplace par les valeurs, tableaux, matrices, radars et graphiques de l'analyse. **Le modèle conserve entièrement sa mise en page** ; vous en maîtrisez donc la forme, au contraire de l'export natif qui suit la configuration de l'onglet Rapport.
+
+- **Fichier › Exporter avec un modèle Word…**, choisissez votre `.docx` : le rapport rempli est téléchargé. Un **rapport d'avertissements** signale en fin de génération les balises non reconnues ou les champs absents.
+- Des **modèles prêts à l'emploi** (classique, éclaté par catégorie, référentiels, tableau de bord, et des reproductions fidèles du rapport natif) sont fournis dans le dossier [`word-templates/`](../word-templates/), en versions **propre** et **annotée** (les annotées expliquent chaque balise — à consulter pour apprendre, mais à ne pas exporter telles quelles).
+- Pour créer le vôtre : suivez le **[guide de rédaction des modèles](../word-templates/guide-redaction-modeles.md)** (tutoriel pas à pas) et gardez le **[catalogue des mots-clés](../word-templates/catalogue-mots-cles-rapport.md)** comme référence (toutes les balises, blocs, boucles, conditions, filtres et formats).
+
 ---
 
 ## 18. Gérer les fichiers et les modèles
@@ -514,4 +522,4 @@ C'est attendu : le score et la criticité sont **recalculés** à partir de la g
 
 ---
 
-*Ce guide correspond à Risk Analysis Editor version 1.20.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
+*Ce guide correspond à Risk Analysis Editor version 2.0.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*

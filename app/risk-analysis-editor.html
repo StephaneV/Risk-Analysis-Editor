@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 1.20.0
+  Version  : 2.0.0
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -940,6 +940,7 @@
       <button type="button" role="menuitem" id="miSaveTemplate"><span data-i18n="menu_save_template">Enregistrer comme modèle…</span></button>
       <hr>
       <button type="button" role="menuitem" id="miExportDocx"><span data-i18n="menu_export_docx">Exporter en Word (.docx)</span></button>
+      <button type="button" role="menuitem" id="miTemplateDocx"><span data-i18n="menu_template_docx">Exporter avec un modèle Word…</span></button>
       <button type="button" role="menuitem" id="miExportXlsx"><span data-i18n="menu_export_xlsx">Exporter en Excel (.xlsx)</span></button>
       <hr>
       <button type="button" role="menuitem" id="miHelp"><span data-i18n="menu_help">Aide & raccourcis</span><span class="kbd">?</span></button>
@@ -948,6 +949,7 @@
   </div>
   <button class="btn sm" id="btnSave" data-i18n="btn_save">Enregistrer</button>
   <input type="file" id="fileInput" accept=".json,.rae.json,application/json" style="display:none">
+  <input type="file" id="templateInput" accept=".docx,.dotx" style="display:none">
 </div>
 
 <nav class="tabs" id="tabs" role="tablist" data-i18n-label="nav_sections" aria-label="Sections de l'analyse">
@@ -1415,7 +1417,17 @@ const I18N = {
     cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
     cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
     cols_reorder_hint:"Ordre : glissez les en-têtes", cols_reset:"Réinitialiser", th_actions_col:"Actions",
-    menu_export_docx:"Exporter en Word (.docx)", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Exporter en Word (.docx)", menu_template_docx:"Exporter avec un modèle Word…", tmpl_invalid:"Fichier .docx invalide (word/document.xml introuvable).", tmpl_generating:"Génération du rapport…", tmpl_warn:"Rapport généré — {0} balise(s) inconnue(s) laissée(s) telles quelles (voir la console).", tmpl_evo_reduced:"Réduit", tmpl_evo_unchanged:"Inchangé", tmpl_evo_worsened:"Aggravé", tmpl_group_empty:"(vide)",
+    tmpl_warn_title:"Rapport généré — avertissements", tmpl_warn_intro:"{0} type(s) d'anomalie. Le rapport a été produit ; ces éléments ont été laissés tels quels ou ignorés :",
+    tw_unknown_tag:"Balise inconnue : {0}", tw_unknown_namespace:"Espace de noms inconnu : {0}", tw_outside_loop:"Utilisé hors d'une boucle : {0}",
+    tw_unknown_field:"Champ inconnu : {0}", tw_unknown_cf:"Champ personnalisé inconnu : {0}", tw_empty_tag:"Balise vide", tw_unknown_format:"Format inconnu ignoré : {0}",
+    tw_loop_unclosed:"Boucle non fermée : each {0}", tw_loop_orphan:"Fermeture de boucle sans ouverture", tw_loop_unknown_coll:"Collection inconnue : {0}",
+    tw_loop_row_unclosed:"Boucle de ligne de tableau non fermée : each {0}", tw_unknown_groupby:"Champ de regroupement inconnu : {0}",
+    tw_filter_invalid:"Expression de filtre invalide : {0}", tw_filter_op:"Opérateur de filtre inconnu : {0}", tw_filter_field:"Champ de filtre inconnu : {0}",
+    tw_table_source:"Source de tableau inconnue : {0}", tw_table_nosource:"Bloc « table » sans attribut « source »", tw_table_column:"Colonne inconnue ignorée : {0}",
+    tw_matrix_type:"Type de matrice inconnu : {0} (repli sur « initial »)", tw_radar_metric:"Métrique de radar inconnue : {0} (repli sur « moyenne »)", tw_radar_eval:"Évaluation de radar inconnue : {0}", tw_radar_dim:"Dimension de radar inconnue : {0} (champ personnalisé de risque introuvable)",
+    tw_radar_fewaxes:"Radar impossible : moins de 3 axes ({0})", tw_unknown_block:"Bloc inconnu : {0}", tw_xml_unreadable:"Contenu Word illisible : une partie du document a été laissée telle quelle",
+    tw_unresolved:"Accolades non résolues (balise incomplète ou scindée) : {0}", tw_block_in_hf:"Bloc « {0} » non permis en en-tête/pied (laissé tel quel)", tw_field_target:"Cible de champ perso inconnue : {0}", tw_fieldvalues_ctx:"Bloc « field_values » hors d'une boucle « custom_fields » (ignoré)", tw_stat_type:"Type de statistique inconnu : {0} (attendu : counters, summary, coverage, criticality, category, measure_type, measure_status, risk_owner, measure_owner, cf.<code>)", tw_stat_field:"Champ de statistique inconnu : {0}", tw_if_invalid:"Condition invalide : {0}", tw_if_unclosed:"Condition « if » non fermée : {0}", tw_if_orphan:"« else »/« /if » sans « if » correspondant", tw_if_field:"Champ de condition inconnu : {0}", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"Fichier exporté : {0}", toast_export_fail:"Export impossible : {0}", xl_score:"Score", xl_crit:"Criticité",
     link_confirm_off:"Ne plus demander (pour cette session)",
     btn_save_new:"Enregistrer et nouveau", copy_suffix:" (copie)", a11y_dup_risk:"Dupliquer le risque {0}", a11y_dup_measure:"Dupliquer la mesure {0}",
@@ -1759,7 +1771,17 @@ const I18N = {
     cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
     cols_up:"Move column left", cols_down:"Move column right",
     cols_reorder_hint:"Order: drag the headers", cols_reset:"Reset", th_actions_col:"Actions",
-    menu_export_docx:"Export to Word (.docx)", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Export to Word (.docx)", menu_template_docx:"Export with a Word template…", tmpl_invalid:"Invalid .docx file (word/document.xml not found).", tmpl_generating:"Generating the report…", tmpl_warn:"Report generated — {0} unknown tag(s) left as-is (see the console).", tmpl_evo_reduced:"Reduced", tmpl_evo_unchanged:"Unchanged", tmpl_evo_worsened:"Worsened", tmpl_group_empty:"(empty)",
+    tmpl_warn_title:"Report generated — warnings", tmpl_warn_intro:"{0} kind(s) of issue. The report was produced; these items were left as-is or ignored:",
+    tw_unknown_tag:"Unknown tag: {0}", tw_unknown_namespace:"Unknown namespace: {0}", tw_outside_loop:"Used outside a loop: {0}",
+    tw_unknown_field:"Unknown field: {0}", tw_unknown_cf:"Unknown custom field: {0}", tw_empty_tag:"Empty tag", tw_unknown_format:"Unknown format ignored: {0}",
+    tw_loop_unclosed:"Unclosed loop: each {0}", tw_loop_orphan:"Loop close without a matching open", tw_loop_unknown_coll:"Unknown collection: {0}",
+    tw_loop_row_unclosed:"Unclosed table-row loop: each {0}", tw_unknown_groupby:"Unknown group-by field: {0}",
+    tw_filter_invalid:"Invalid filter expression: {0}", tw_filter_op:"Unknown filter operator: {0}", tw_filter_field:"Unknown filter field: {0}",
+    tw_table_source:"Unknown table source: {0}", tw_table_nosource:"“table” block without a “source” attribute", tw_table_column:"Unknown column ignored: {0}",
+    tw_matrix_type:"Unknown matrix type: {0} (falling back to “initial”)", tw_radar_metric:"Unknown radar metric: {0} (falling back to “average”)", tw_radar_eval:"Unknown radar evaluation: {0}", tw_radar_dim:"Unknown radar dimension: {0} (risk custom field not found)",
+    tw_radar_fewaxes:"Radar not possible: fewer than 3 axes ({0})", tw_unknown_block:"Unknown block: {0}", tw_xml_unreadable:"Unreadable Word content: part of the document was left as-is",
+    tw_unresolved:"Unresolved braces (incomplete or split tag): {0}", tw_block_in_hf:"Block “{0}” not allowed in header/footer (left as-is)", tw_field_target:"Unknown custom-field target: {0}", tw_fieldvalues_ctx:"“field_values” block outside a “custom_fields” loop (ignored)", tw_stat_type:"Unknown statistic type: {0} (expected: counters, summary, coverage, criticality, category, measure_type, measure_status, risk_owner, measure_owner, cf.<code>)", tw_stat_field:"Unknown statistic field: {0}", tw_if_invalid:"Invalid condition: {0}", tw_if_unclosed:"Unclosed “if” condition: {0}", tw_if_orphan:"“else”/“/if” without a matching “if”", tw_if_field:"Unknown condition field: {0}", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File exported: {0}", toast_export_fail:"Export failed: {0}", xl_score:"Score", xl_crit:"Criticality",
     link_confirm_off:"Don't ask again (this session)",
     btn_save_new:"Save and new", copy_suffix:" (copy)", a11y_dup_risk:"Duplicate risk {0}", a11y_dup_measure:"Duplicate measure {0}",
@@ -2098,7 +2120,17 @@ const I18N = {
     cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
     cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
     cols_reorder_hint:"Ordine: trascina le intestazioni", cols_reset:"Reimposta", th_actions_col:"Azioni",
-    menu_export_docx:"Esporta in Word (.docx)", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
+    menu_export_docx:"Esporta in Word (.docx)", menu_template_docx:"Esporta con un modello Word…", tmpl_invalid:"File .docx non valido (word/document.xml non trovato).", tmpl_generating:"Generazione del rapporto…", tmpl_warn:"Rapporto generato — {0} tag sconosciuto/i lasciato/i invariato/i (vedi la console).", tmpl_evo_reduced:"Ridotto", tmpl_evo_unchanged:"Invariato", tmpl_evo_worsened:"Peggiorato", tmpl_group_empty:"(vuoto)",
+    tmpl_warn_title:"Rapporto generato — avvisi", tmpl_warn_intro:"{0} tipo/i di anomalia. Il rapporto è stato prodotto; questi elementi sono stati lasciati invariati o ignorati:",
+    tw_unknown_tag:"Tag sconosciuto: {0}", tw_unknown_namespace:"Spazio dei nomi sconosciuto: {0}", tw_outside_loop:"Usato fuori da un ciclo: {0}",
+    tw_unknown_field:"Campo sconosciuto: {0}", tw_unknown_cf:"Campo personalizzato sconosciuto: {0}", tw_empty_tag:"Tag vuoto", tw_unknown_format:"Formato sconosciuto ignorato: {0}",
+    tw_loop_unclosed:"Ciclo non chiuso: each {0}", tw_loop_orphan:"Chiusura di ciclo senza apertura", tw_loop_unknown_coll:"Collezione sconosciuta: {0}",
+    tw_loop_row_unclosed:"Ciclo di riga di tabella non chiuso: each {0}", tw_unknown_groupby:"Campo di raggruppamento sconosciuto: {0}",
+    tw_filter_invalid:"Espressione di filtro non valida: {0}", tw_filter_op:"Operatore di filtro sconosciuto: {0}", tw_filter_field:"Campo di filtro sconosciuto: {0}",
+    tw_table_source:"Sorgente di tabella sconosciuta: {0}", tw_table_nosource:"Blocco « table » senza attributo « source »", tw_table_column:"Colonna sconosciuta ignorata: {0}",
+    tw_matrix_type:"Tipo di matrice sconosciuto: {0} (ripiego su « iniziale »)", tw_radar_metric:"Metrica radar sconosciuta: {0} (ripiego su « media »)", tw_radar_eval:"Valutazione radar sconosciuta: {0}", tw_radar_dim:"Dimensione radar sconosciuta: {0} (campo personalizzato di rischio non trovato)",
+    tw_radar_fewaxes:"Radar impossibile: meno di 3 assi ({0})", tw_unknown_block:"Blocco sconosciuto: {0}", tw_xml_unreadable:"Contenuto Word illeggibile: una parte del documento è stata lasciata invariata",
+    tw_unresolved:"Parentesi graffe non risolte (tag incompleto o spezzato): {0}", tw_block_in_hf:"Blocco « {0} » non consentito in intestazione/piè di pagina (lasciato invariato)", tw_field_target:"Destinazione di campo personalizzato sconosciuta: {0}", tw_fieldvalues_ctx:"Blocco « field_values » fuori da un ciclo « custom_fields » (ignorato)", tw_stat_type:"Tipo di statistica sconosciuto: {0} (atteso: counters, summary, coverage, criticality, category, measure_type, measure_status, risk_owner, measure_owner, cf.<code>)", tw_stat_field:"Campo di statistica sconosciuto: {0}", tw_if_invalid:"Condizione non valida: {0}", tw_if_unclosed:"Condizione « if » non chiusa: {0}", tw_if_orphan:"« else »/« /if » senza « if » corrispondente", tw_if_field:"Campo di condizione sconosciuto: {0}", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File esportato: {0}", toast_export_fail:"Esportazione non riuscita: {0}", xl_score:"Punteggio", xl_crit:"Criticità",
     link_confirm_off:"Non chiedere più (per questa sessione)",
     btn_save_new:"Salva e nuovo", copy_suffix:" (copia)", a11y_dup_risk:"Duplica il rischio {0}", a11y_dup_measure:"Duplica la misura {0}",
@@ -5348,6 +5380,21 @@ function reportMatrixSVG(mode,risks){
   gridRiskOverride=_prevGR;
   return svg;
 }
+// Matrice UNIQUE (initial ou résiduel), pour la balise {{ matrix type="initial|residual" }} du modèle Word.
+function reportSingleMatrixSVG(which,risks){
+  const _prevGR=gridRiskOverride;if(risks)gridRiskOverride=risks;
+  const holder=document.createElement("div");
+  holder.style.cssText="position:absolute;left:-99999px;top:0;width:640px;background:#ffffff";
+  document.body.appendChild(holder);
+  const b=document.createElement("div");b.className="matrix-block";b.style.maxWidth="620px";b.style.margin="0 auto";
+  b.innerHTML=matrixHeader(which==="residual"?t("mtx_residual"):t("mtx_initial"));
+  const c=document.createElement("div");b.appendChild(c);holder.appendChild(b);
+  const mc=buildGrid(c,which);
+  if(getArrangement()==="manual"){ensureManualInit();renderManualSide(mc,which);}else layoutStacks(holder);
+  const legend=document.createElement("div");legend.className="legend";legend.innerHTML=critLegend();holder.appendChild(legend);
+  const svg=buildExportSVG([b],legend,holder,false).svg;
+  holder.remove();gridRiskOverride=_prevGR;return svg;
+}
 /* ============================================================
    PERSONNALISATION DU RAPPORT
    Config sous analyse.extensions.display.report. Absente => modèle par défaut
@@ -7814,6 +7861,25 @@ function dxImage(rid,idn,wPx,hPx,maxW){
   maxW=maxW||640;const w=Math.min(wPx,maxW),hh=Math.round(hPx*w/wPx),cx=Math.round(w*9525),cy=Math.round(hh*9525);
   return '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="160"/></w:pPr>'+dxDrawingRun(rid,idn,cx,cy)+'</w:p>';
 }
+// Taille d'image (EMU) selon width/height (cm) : les deux -> boîte MAX (aspect préservé, jamais déformé) ;
+// une seule -> aspect préservé ; aucune -> défaut (largeur intrinsèque plafonnée).
+function tmplImgEmu(attrs,W,H,defMaxWpx){
+  const EMU_CM=360000,EMU_PX=9525;
+  const wc=parseFloat(attrs&&attrs.width),hc=parseFloat(attrs&&attrs.height);
+  const okW=!isNaN(wc)&&wc>0,okH=!isNaN(hc)&&hc>0;
+  if(okW&&okH){                                   // boîte maximale : on ajuste à celle qui contraint le plus
+    let cx=wc*EMU_CM,cy=cx*H/W;
+    if(cy>hc*EMU_CM){cy=hc*EMU_CM;cx=cy*W/H;}
+    return {cx:Math.round(cx),cy:Math.round(cy)};
+  }
+  if(okW)return {cx:Math.round(wc*EMU_CM),cy:Math.round(wc*EMU_CM*H/W)};
+  if(okH)return {cx:Math.round(hc*EMU_CM*W/H),cy:Math.round(hc*EMU_CM)};
+  const w=Math.min(W,defMaxWpx||640);return {cx:Math.round(w*EMU_PX),cy:Math.round(H*w/W*EMU_PX)};
+}
+function tmplImgXml(rid,idn,W,H,attrs,defMaxWpx){
+  const d=tmplImgEmu(attrs,W,H,defMaxWpx);
+  return '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="160"/></w:pPr>'+dxDrawingRun(rid,idn,d.cx,d.cy)+'</w:p>';
+}
 // Charge un logo (data URI png/jpeg/svg) et le rend en PNG via canvas -> octets + dimensions.
 function dxLoadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
 async function dxLogoPng(dataUri){
@@ -8243,6 +8309,1358 @@ async function exportDocx(){
 document.getElementById("miExportDocx").addEventListener("click",()=>{closeMenu();presGuard(exportDocx);});
 document.getElementById("miExportXlsx").addEventListener("click",()=>{closeMenu();presGuard(exportXlsx);});
 document.getElementById("btnWordReport").addEventListener("click",exportDocx);
+
+/* ============================================================
+   RAPPORT À PARTIR D'UN MODÈLE WORD  (voir travaux/spec-rapport-modele-word.md)
+   Lot 0 — socle : charge un .docx porteur de balises {{…}}, NORMALISE les runs (recolle les
+   balises que Word scinde en plusieurs runs), puis re-zippe et télécharge. Le remplissage des
+   balises (valeurs, boucles, blocs) est ajouté par les lots suivants.
+   ============================================================ */
+const DOCX_MIME="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const W_NS="http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+// Parties XML d'un .docx susceptibles de contenir des balises (corps + en-têtes/pieds).
+function tmplXmlParts(parts){return Object.keys(parts).filter(p=>/^word\/(document|header\d+|footer\d+)\.xml$/.test(p));}
+/* Fusionne, dans chaque paragraphe, les runs de texte ADJACENTS de mise en forme identique
+   (même w:rPr) : recolle les balises {{…}} scindées par Word, sans changer le rendu. N'agit que
+   sur les runs « texte simple » (rPr + w:t) — jamais sur un run portant image/saut/tabulation. */
+function tmplNormalizeXml(xml){
+  let doc;
+  try{doc=new DOMParser().parseFromString(xml,"application/xml");}catch(e){return xml;}
+  if(doc.getElementsByTagName("parsererror").length)return xml;   // XML illisible : on n'y touche pas
+  const child=(el,ln)=>{for(const c of Array.from(el.children))if(c.localName===ln)return c;return null;};
+  const simpleText=r=>{for(const c of Array.from(r.children)){const ln=c.localName;if(ln!=="rPr"&&ln!=="t")return false;}return true;};
+  const rprKey=r=>{const rp=child(r,"rPr");return rp?new XMLSerializer().serializeToString(rp):"";};
+  const paras=doc.getElementsByTagNameNS(W_NS,"p");
+  for(const p of Array.from(paras)){
+    let acc=null;                                    // run accumulateur courant
+    for(const r of Array.from(p.children)){
+      if(r.localName!=="r"||!simpleText(r)){acc=null;continue;}
+      if(acc&&rprKey(acc)===rprKey(r)){
+        let at=child(acc,"t");if(!at){at=doc.createElementNS(W_NS,"w:t");acc.appendChild(at);}
+        const rt=child(r,"t");
+        at.textContent=(at.textContent||"")+(rt?rt.textContent:"");
+        at.setAttribute("xml:space","preserve");     // préserve les espaces de début/fin de balise
+        p.removeChild(r);
+      }else acc=r;
+    }
+  }
+  let out=new XMLSerializer().serializeToString(doc);
+  if(!/^<\?xml/.test(out))out=XMLD+out;
+  return out;
+}
+async function tmplLoadDocx(file){
+  const buf=await file.arrayBuffer();
+  return fflate.unzipSync(new Uint8Array(buf));      // { chemin: Uint8Array }
+}
+/* ---- Lot 1 : substitution des balises de VALEUR + directive {{ report }} + formats ----
+   Le tokenizer respecte l'échappement (\{{  \}}  \'  \"  \\). Les balises de bloc et de
+   section ({{ matrix }}, {{#each}}…) sont laissées intactes pour les lots suivants. */
+let tmplReport={date_format:null,filter:null}, tmplWarnings=[], tmplImgReqs=[], tmplBlocksAllowed=true, tmplLogo=null;
+function tmplWarn(k,a){tmplWarnings.push(a!=null?t(k,a):t(k));}
+const TMPL_KNOWN_FMT={date:1,codes:1,labels:1,join:1,percent:1,upper:1,lower:1,default:1,swatch:1,badge:1};
+const TMPL_FILTER_FIELDS={id:1,category:1,owner:1,type:1,status:1,responsible:1,overdue:1,criticality_initial:1,criticality_residual:1};
+function tmplFilterFieldKnown(f){return f.indexOf("cf.")===0||!!TMPL_FILTER_FIELDS[f];}
+function tmplGroupFieldKnown(type,f){
+  if(f.indexOf("cf.")===0)return !!(tmplCfField(type,f.slice(3))||tmplCfField("cotation",f.slice(3)));
+  if(type==="risk")return ["id","category","owner","criticality_initial","criticality_residual"].indexOf(f)>=0;
+  if(type==="measure")return ["type","status","responsible"].indexOf(f)>=0;
+  return false;
+}
+function tmplCheckFormats(mods){for(const k in (mods||{}))if(!TMPL_KNOWN_FMT[k])tmplWarn("tw_unknown_format",k);}
+function tmplWarnValue(res,path){switch(res&&res.reason){
+  case "empty":tmplWarn("tw_empty_tag");break;
+  case "namespace":tmplWarn("tw_unknown_namespace",res.detail||path);break;
+  case "outside_loop":tmplWarn("tw_outside_loop",res.detail||path);break;
+  case "cf":tmplWarn("tw_unknown_cf",res.detail||path);break;
+  case "field":tmplWarn("tw_unknown_field",res.detail||path);break;
+  default:tmplWarn("tw_unknown_tag",path);}}
+
+// Découpe un texte en littéraux et balises {{…}}, en tenant compte des échappements.
+function tmplTokenize(text){
+  const out=[]; let i=0, buf="";
+  while(i<text.length){
+    if(text[i]==="\\" && (text.substr(i,3)==="\\{{"||text.substr(i,3)==="\\}}")){ buf+=text.substr(i+1,2); i+=3; continue; }
+    if(text[i]==="{" && text[i+1]==="{"){
+      let j=i+2, inner="", closed=false;
+      while(j<text.length){
+        if(text[j]==="\\" && j+1<text.length){ inner+=text.substr(j,2); j+=2; continue; }
+        if(text[j]==="}" && text[j+1]==="}"){ closed=true; break; }
+        inner+=text[j]; j++;
+      }
+      if(closed){ if(buf){out.push({t:"lit",v:buf});buf="";} out.push({t:"tag",v:inner}); i=j+2; continue; }
+      // `{{` sans `}}` de fermeture (balise scindée par une mise en forme, ou incomplète)
+      if(buf){out.push({t:"lit",v:buf});buf="";} out.push({t:"open",v:inner}); out.push({t:"lit",v:"{{"+inner}); i=j; continue;
+    }
+    buf+=text[i]; i++;
+  }
+  if(buf)out.push({t:"lit",v:buf});
+  return out;
+}
+// Sépare « path | modificateurs » (au 1er | hors guillemets).
+function tmplSplitPipe(inner){
+  let q=null;
+  for(let i=0;i<inner.length;i++){ const c=inner[i];
+    if(c==="\\"){i++;continue;}
+    if(q){ if(c===q)q=null; } else if(c==='"'||c==="'")q=c; else if(c==="|")return {path:inner.slice(0,i),mods:inner.slice(i+1)};
+  }
+  return {path:inner,mods:""};
+}
+// Analyse `key="value"` / drapeaux, guillemets ' ou " interchangeables, échappement \.
+function tmplParseAttrs(s){
+  const out={}; s=s||""; let i=0; const ws=c=>c===" "||c==="\t";
+  while(i<s.length){
+    while(i<s.length&&ws(s[i]))i++; if(i>=s.length)break;
+    let key=""; while(i<s.length&&/[A-Za-z0-9_.]/.test(s[i])){key+=s[i];i++;}
+    if(!key){i++;continue;}
+    while(i<s.length&&ws(s[i]))i++;
+    if(s[i]==="="){ i++; while(i<s.length&&ws(s[i]))i++; let v="";
+      if(s[i]==='"'||s[i]==="'"){ const q=s[i]; i++; while(i<s.length){ if(s[i]==="\\"&&i+1<s.length){v+=s[i+1];i+=2;continue;} if(s[i]===q){i++;break;} v+=s[i];i++; } }
+      else { while(i<s.length&&!ws(s[i])){ if(s[i]==="\\"&&i+1<s.length){v+=s[i+1];i+=2;continue;} v+=s[i];i++; } }
+      out[key]=v;
+    } else out[key]=true;
+  }
+  return out;
+}
+const TMPL_BLOCKS=["matrix","radar","table","field_values","cf_notes","logo","stat"];
+// Classe une balise (inner déjà « trim »).
+function tmplClassify(inner){
+  if(inner[0]==="!")return {kind:"comment"};
+  if(inner[0]==="#"||inner[0]==="/"||/^else\b/.test(inner))return {kind:"section"};
+  const sp=tmplSplitPipe(inner), path=sp.path.trim(), name=path.split(/\s+/)[0];
+  if(name==="report")return {kind:"report"};
+  if(TMPL_BLOCKS.indexOf(name)>=0)return {kind:"block", name};
+  if(!sp.mods && /\s\S+=/.test(path))return {kind:"unknown_block", name};   // « nom attr="…" » mais nom inconnu
+  return {kind:"value", path:path, mods:tmplParseAttrs(sp.mods)};
+}
+// « JJ/MM/AAAA » etc. -> code interne de fmtDate (iso/eu/us/long).
+function tmplDateCode(tok){ if(!tok||tok===true)return null; const s=String(tok).toLowerCase();
+  if(s==="iso")return "iso"; if(s==="long")return "long";
+  if(s.indexOf("jj/mm")>=0||s==="eu")return "eu"; if(s.indexOf("mm/jj")>=0||s==="us")return "us"; return null; }
+function tmplFormatDate(v,tok){
+  if(v==null||v==="")return ""; const m=String(v).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m)return String(v);
+  const code=tmplDateCode(tok)||tmplReport.date_format||dateFormatPref();
+  if(code==="eu")return m[3]+"/"+m[2]+"/"+m[1];
+  if(code==="us")return m[2]+"/"+m[3]+"/"+m[1];
+  if(code==="long"){const dt=new Date(+m[1],+m[2]-1,+m[3]); if(!isNaN(dt.getTime())){try{return dt.toLocaleDateString(DATE_LOCALE[lang]||"fr-FR",{year:"numeric",month:"long",day:"numeric"});}catch(e){}} }
+  return m[0];
+}
+function tmplCfField(target,code){return (analyse.custom_fields||[]).find(f=>f.target===target&&f.code===code)||null;}
+function tmplRenderCf(f,v,mods){
+  if(v==null||v===""||(Array.isArray(v)&&!v.length))return mods.default!=null?mods.default:"";
+  const sep=mods.join!=null?mods.join:", ";
+  if(mods.codes)return Array.isArray(v)?v.join(sep):String(v);
+  if(f&&(f.type==="checklist"||f.type==="tags")){const arr=Array.isArray(v)?v:[];
+    return arr.map(c=>{const it=(f.items||[]).find(x=>x.code===c);return it?cfItemLabel(it):c;}).join(sep);}
+  return f?cfDisplayTxt(f,v):(Array.isArray(v)?v.join(sep):String(v));
+}
+// Résout un chemin SCALAIRE (contexte racine). Les objets risk/measure/link : lot 2.
+/* ---- Lot 2 : contexte de boucle + résolution des champs d'objet (risk/measure/link/level) ---- */
+function tmplLookup(ctx,name){for(let i=ctx.length-1;i>=0;i--){if(ctx[i].name===name)return ctx[i];}
+  if(name==="item"||name==="this")return ctx[ctx.length-1]||null; return null;}
+function tmplAssess(risk,which,sub){
+  const ev=which==="residual"?residual(risk):(risk.initial_assessment||{probability:0,severity:0});
+  if(sub==="probability")return {kind:"num",value:ev.probability};
+  if(sub==="severity")return {kind:"num",value:ev.severity};
+  const score=scoreOf(ev.probability,ev.severity),c=critFor(score);
+  if(sub==="score")return {kind:"num",value:score};
+  if(sub==="criticality")return {kind:"clabel",value:c.label,color:c.color};
+  if(sub==="criticality_code")return {kind:"text",value:c.code};
+  if(sub==="color")return {kind:"text",value:c.color};
+  return {unknown:true};
+}
+function tmplEvolution(risk){
+  const ia=risk.initial_assessment||{probability:0,severity:0},ev=residual(risk);
+  const i=scoreOf(ia.probability,ia.severity),r=scoreOf(ev.probability,ev.severity);
+  return t("tmpl_evo_"+(r<i?"reduced":r>i?"worsened":"unchanged"));
+}
+function tmplRiskField(risk,rest){switch(rest[0]){
+  case "id":return {kind:"text",value:risk.id};
+  case "label":return {kind:"text",value:risk.label};
+  case "category":return {kind:"text",value:risk.category};
+  case "owner":return {kind:"text",value:risk.owner};
+  case "description":return {kind:"md",value:risk.description};
+  case "comment":return {kind:"md",value:risk.comment};
+  case "initial": case "gross":return tmplAssess(risk,"initial",rest[1]);
+  case "residual": case "net":return tmplAssess(risk,"residual",rest[1]);
+  case "evolution":return {kind:"text",value:tmplEvolution(risk)};
+  case "cf":{const f=tmplCfField("risk",rest[1])||tmplCfField("cotation",rest[1]);return f?{kind:"cf",value:(risk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
+  default:return {unknown:true};}}
+function tmplMeasureField(m,rest){switch(rest[0]){
+  case "id":return {kind:"text",value:m.id};
+  case "label":return {kind:"text",value:m.label};
+  case "type":return {kind:"text",value:typeLabel(m.type)};
+  case "status":{const sc=STATUS_COLORS[m.status];return {kind:"clabel",value:statusLabel(m.status),color:sc?sc.bg:null};}
+  case "responsible":return {kind:"text",value:m.responsible};
+  case "due_date":return {kind:"date",value:m.due_date};
+  case "cost":return {kind:"text",value:m.cost};
+  case "description":return {kind:"md",value:m.description};
+  case "comment":return {kind:"md",value:m.comment};
+  case "overdue":return {kind:"bool",value:isOverdue(m)};
+  case "cf":{const f=tmplCfField("measure",rest[1]);return f?{kind:"cf",value:(m.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
+  default:return {unknown:true};}}
+function tmplLinkField(lk,rest){switch(rest[0]){
+  case "comment":return {kind:"md",value:lk.comment};
+  case "risk_id":return {kind:"text",value:lk.risk};
+  case "measure_id":return {kind:"text",value:lk.measure};
+  case "cf":{const f=tmplCfField("link",rest[1]);return f?{kind:"cf",value:(lk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
+  case "risk":return tmplRiskField(riskById(lk.risk)||{},rest.slice(1));
+  case "measure":return tmplMeasureField(measureById(lk.measure)||{},rest.slice(1));
+  default:return {unknown:true};}}
+function tmplLevelCount(lv,which){
+  return (analyse.risks||[]).filter(r=>{const ev=which==="i"?(r.initial_assessment||{probability:0,severity:0}):residual(r);
+    return critOfEval(ev).code===lv.code;}).length;
+}
+function tmplLevelField(lv,rest){const k=rest[0];
+  if(k==="label")return {kind:"clabel",value:lv.label,color:lv.color};   // étiquette colorée (badge/swatch possibles)
+  if(["code","color","acceptance","description"].indexOf(k)>=0)return {kind:"text",value:lv[k]};
+  if(k==="score_min"||k==="score_max")return {kind:"num",value:lv[k]};
+  if(k==="count_initial")return {kind:"num",value:tmplLevelCount(lv,"i")};
+  if(k==="count_residual")return {kind:"num",value:tmplLevelCount(lv,"r")};
+  return {unknown:true};}
+function tmplLocalized(m){if(!m||typeof m!=="object")return m||"";return m[lang]||m[Object.keys(m)[0]]||"";}
+function tmplFieldDefField(f,rest){switch(rest[0]){    // champ perso (définition/référentiel)
+  case "code":return {kind:"text",value:f.code};
+  case "label":return {kind:"text",value:cfLabel(f)};
+  case "target":return {kind:"text",value:cfTargetLabel(f.target)};
+  case "type":return {kind:"text",value:cfTypeLabel(f.type)};
+  case "required":return {kind:"bool",value:!!f.required};
+  case "filterable":return {kind:"bool",value:!!f.filterable};
+  case "help":return {kind:"md",value:tmplLocalized(f.help)};
+  case "description":return {kind:"md",value:tmplLocalized(f.description)};
+  default:return {unknown:true};}}
+function tmplOptionField(it,rest){switch(rest[0]){   // valeur possible d'un champ à valeurs fermées
+  case "code":return {kind:"text",value:it.code};
+  case "label":return {kind:"text",value:cfItemLabel(it)};
+  case "color":return {kind:"text",value:it.color||""};
+  case "description":return {kind:"md",value:tmplLocalized(it.description)};
+  default:return {unknown:true};}}
+function tmplAxisLevelField(n,rest){switch(rest[0]){  // niveau d'échelle d'axe (vraisemblance / gravité)
+  case "value":return {kind:"num",value:n.value};
+  case "label":return {kind:"text",value:n.label};
+  case "description":return {kind:"text",value:n.description};
+  default:return {unknown:true};}}
+function tmplFieldOf(type,obj,rest){
+  if(!rest.length)return {kind:"text",value:(obj&&(obj.label||obj.id))||""};
+  let r;
+  if(type==="risk")r=tmplRiskField(obj,rest);
+  else if(type==="measure")r=tmplMeasureField(obj,rest);
+  else if(type==="link")r=tmplLinkField(obj,rest);
+  else if(type==="level")r=tmplLevelField(obj,rest);
+  else if(type==="field")r=tmplFieldDefField(obj,rest);
+  else if(type==="option")r=tmplOptionField(obj,rest);
+  else if(type==="axislevel")r=tmplAxisLevelField(obj,rest);
+  else if(type==="group"){const k=rest[0];
+    if(k==="label")r={kind:"text",value:obj.label};
+    else if(k==="key")r={kind:"text",value:obj.key};
+    else if(k==="count")r={kind:"num",value:obj.count};
+    else if(k==="measures_count")r={kind:"num",value:obj.measures_count||0};
+    else r={unknown:true};}
+  else r={unknown:true};
+  if(r&&r.unknown&&!r.reason){r.reason="field";r.detail=rest.join(".");}
+  return r;}
+function tmplResolveValue(path,ctx){
+  const p=path.split("."),head=p[0];
+  if(!path.trim()||!head)return {unknown:true,reason:"empty"};
+  const fr=tmplLookup(ctx||[],head);
+  if(fr)return tmplFieldOf(fr.type,fr.obj,p.slice(1));
+  if(["risk","measure","link","group","level","item","this","field","option","step"].indexOf(head)>=0)return {unknown:true,reason:"outside_loop",detail:path};
+  const md=analyse.metadata||{};
+  if(head==="analysis"){
+    if(p[1]==="cf"){const code=p.slice(2).join("."),f=tmplCfField("analysis",code);return f?{kind:"cf",value:(analyse.custom||{})[code],field:f}:{unknown:true,reason:"cf",detail:"analysis.cf."+code};}
+    switch(p[1]){
+      case "title":return {kind:"text",value:md.title};
+      case "description":return {kind:"md",value:md.description};
+      case "author":return {kind:"text",value:md.author};
+      case "organization":return {kind:"text",value:md.organization};
+      case "scope":return {kind:"text",value:md.scope};
+      case "reference":return {kind:"text",value:md.methodology_reference};
+      case "revision":return {kind:"text",value:md.revision};
+      case "status":return {kind:"text",value:metaStatusLabel(md.status)};
+      case "language":return {kind:"text",value:md.language};
+      case "created":return {kind:"date",value:md.created_at};
+      case "updated":return {kind:"date",value:md.updated_at};
+      case "risks_count":return {kind:"num",value:(analyse.risks||[]).length};
+      case "measures_count":return {kind:"num",value:(analyse.measures||[]).length};
+      case "links_count":return {kind:"num",value:(analyse.treatments||[]).length};
+      case "reduced_count":return {kind:"num",value:(analyse.risks||[]).filter(r=>{const a=r.initial_assessment||{},b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length};
+      default:return {unknown:true,reason:"field",detail:path};
+    }
+  }
+  if(head==="grid"){const g=analyse.grid||{};
+    if(p[1]==="vertical_axis")return {kind:"text",value:(g.vertical_axis||{}).label};
+    if(p[1]==="horizontal_axis")return {kind:"text",value:(g.horizontal_axis||{}).label};
+    if(p[1]==="method"){const mc=(g.score||{}).method||"product";return {kind:"text",value:t("method."+mc)};}
+    return {unknown:true,reason:"field",detail:path};
+  }
+  return {unknown:true,reason:"namespace",detail:head};
+}
+function tmplRenderValue(res,mods){
+  if(res.kind==="cf")return tmplRenderCf(res.field,res.value,mods);
+  if(res.kind==="bool")return res.value?t("cf_yes"):t("cf_no");
+  let s;
+  if(res.kind==="date")s=tmplFormatDate(res.value,mods.date);
+  else if(res.kind==="md")s=mdToText(res.value||"");
+  else s=res.value==null?"":String(res.value);
+  if(s===""||s==null)return mods.default!=null?mods.default:"";
+  if(mods.percent)s=s+" %";
+  if(mods.upper)s=s.toUpperCase();
+  if(mods.lower)s=s.toLowerCase();
+  return s;
+}
+/* ---- Collections (racine + sous-collections de contexte) + tri/limite ---- */
+function tmplCollection(name,ctx){
+  const p=name.split(".");
+  if(name==="risks")return {list:analyse.risks||[],singular:"risk",type:"risk"};
+  if(name==="measures")return {list:analyse.measures||[],singular:"measure",type:"measure"};
+  if(name==="links")return {list:analyse.treatments||[],singular:"link",type:"link"};
+  if(name==="grid.levels")return {list:((analyse.grid||{}).criticality_levels||[]).slice().sort((a,b)=>((a.order!=null?a.order:a.score_min)||0)-((b.order!=null?b.order:b.score_min)||0)),singular:"level",type:"level"};
+  if(name==="custom_fields"||name==="fields")return {list:(analyse.custom_fields||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0)),singular:"field",type:"field"};
+  if(name==="grid.vertical_axis.levels")return {list:((analyse.grid||{}).vertical_axis||{}).levels||[],singular:"step",type:"axislevel"};
+  if(name==="grid.horizontal_axis.levels")return {list:((analyse.grid||{}).horizontal_axis||{}).levels||[],singular:"step",type:"axislevel"};
+  const fr=tmplLookup(ctx||[],p[0]),sub=p.slice(1).join(".");
+  if(fr){
+    if(fr.type==="risk"){
+      if(sub==="measures")return {list:measuresOfRisk(fr.obj.id).map(measureById).filter(Boolean),singular:"measure",type:"measure"};
+      if(sub==="links")return {list:(analyse.treatments||[]).filter(x=>x.risk===fr.obj.id),singular:"link",type:"link"};
+    } else if(fr.type==="measure"){
+      if(sub==="risks")return {list:risksOfMeasure(fr.obj.id).map(riskById).filter(Boolean),singular:"risk",type:"risk"};
+      if(sub==="links")return {list:(analyse.treatments||[]).filter(x=>x.measure===fr.obj.id),singular:"link",type:"link"};
+    } else if(fr.type==="group"){
+      if(sub==="items")return {list:fr.obj.items||[],singular:fr.obj.singular,type:fr.obj.itype};
+    } else if(fr.type==="field"){
+      if(sub==="items")return {list:fr.obj.items||[],singular:"option",type:"option"};
+    }
+  }
+  return {list:[],singular:"item",type:null};
+}
+function tmplSortKey(item,type,f){
+  if(type==="risk"){const ia=item.initial_assessment||{probability:0,severity:0};
+    if(f==="criticality_initial"||f==="score_initial")return scoreOf(ia.probability,ia.severity);
+    if(f==="criticality_residual"||f==="score_residual"){const ev=residual(item);return scoreOf(ev.probability,ev.severity);}
+    if(["id","label","category","owner"].indexOf(f)>=0)return item[f]||"";
+    return item.label||"";}
+  if(type==="measure"){
+    if(f==="due_date")return item.due_date||"9999-99-99";
+    if(f==="status")return STATUS_CODES.indexOf(item.status);
+    if(["id","label","type","responsible","cost"].indexOf(f)>=0)return item[f]||"";
+    return item.label||"";}
+  if(type==="level")return (item.order!=null?item.order:item.score_min)||0;
+  if(type==="field"){if(f==="label")return cfLabel(item);if(f==="target")return CF_TARGETS.indexOf(item.target);
+    if(f==="type")return cfTypeLabel(item.type);if(f==="code")return item.code||"";return item.order!=null?item.order:0;}
+  if(type==="option")return f==="label"?cfItemLabel(item):(item.code||"");
+  if(type==="axislevel")return f==="label"?(item.label||""):(item.value||0);
+  return (item&&(item.label||item.id))||"";
+}
+function tmplSortLimit(list,type,attrs){
+  let arr=(list||[]).slice();
+  if(attrs&&attrs.sort){   // tri multi-clés : "champ[:asc|desc], champ2[:asc|desc], …" (comparaisons successives)
+    const keys=String(attrs.sort).split(",").map(s=>s.trim()).filter(Boolean)
+      .map(s=>{const p=s.split(":");return {f:p[0],desc:(p[1]||"").toLowerCase()==="desc"};});
+    arr.sort((a,b)=>{
+      for(const k of keys){const ka=tmplSortKey(a,type,k.f),kb=tmplSortKey(b,type,k.f);
+        let c=(typeof ka==="number"&&typeof kb==="number")?ka-kb:String(ka).localeCompare(String(kb),undefined,{numeric:true});
+        if(c)return k.desc?-c:c;}
+      return 0;});}
+  if(attrs&&attrs.limit!=null){const n=parseInt(attrs.limit,10); if(n>=0)arr=arr.slice(0,n);}
+  return arr;
+}
+/* ---- Lot 3 : filtres (analyse d'expression + évaluation avec propagation) + groupes ---- */
+function tmplNorm(s){return String(s==null?"":s).toLowerCase().replace(/[_\s]+/g," ").trim();}
+function tmplCritLevels(){return ((analyse.grid||{}).criticality_levels||[]).slice().sort((a,b)=>a.score_min-b.score_min);}
+function tmplCritOrderOf(c){return tmplCritLevels().findIndex(l=>l.code===c.code);}
+function tmplCritOrderByName(name){const ls=tmplCritLevels(),n=tmplNorm(name);return ls.findIndex(l=>tmplNorm(l.code)===n||tmplNorm(l.label)===n);}
+// -- Analyseur d'expression de filtre --
+function tmplFilterTokens(s){
+  const toks=[]; let i=0; s=s||"";
+  while(i<s.length){const ch=s[i];
+    if(ch===" "||ch==="\t"){i++;continue;}
+    if(ch==="("||ch===")"){toks.push({t:ch});i++;continue;}
+    if(ch==="'"||ch==='"'){const q=ch;i++;let v="";while(i<s.length){if(s[i]==="\\"&&i+1<s.length){v+=s[i+1];i+=2;continue;}if(s[i]===q){i++;break;}v+=s[i];i++;}toks.push({t:"str",v});continue;}
+    const two=s.substr(i,2);
+    if([">=","<=","!="].indexOf(two)>=0){toks.push({t:"op",v:two});i+=2;continue;}
+    if(ch==="="||ch===">"||ch==="<"){toks.push({t:"op",v:ch});i++;continue;}
+    let w="";while(i<s.length&&!/[\s()'"=<>]/.test(s[i])){w+=s[i];i++;}
+    const lw=w.toLowerCase();
+    if(lw==="and"||lw==="or")toks.push({t:lw});
+    else if(lw==="contains"||lw==="empty"||lw==="not_empty")toks.push({t:"op",v:lw});
+    else toks.push({t:"word",v:w});
+  }
+  return toks;
+}
+function tmplParseFilter(str){
+  const toks=tmplFilterTokens(str); let pos=0, bad=false;
+  const peek=()=>toks[pos], next=()=>toks[pos++];
+  function parseOr(){let a=parseAnd(); while(peek()&&peek().t==="or"){next();const b=parseAnd(); if(!b){tmplWarn("tw_filter_invalid",str);bad=true;} a={op:"or",a,b:b||{op:"const",v:false}};} return a;}
+  function parseAnd(){let a=parseTerm(); while(peek()&&peek().t==="and"){next();const b=parseTerm(); if(!b){tmplWarn("tw_filter_invalid",str);bad=true;} a={op:"and",a,b:b||{op:"const",v:true}};} return a;}
+  function parseTerm(){const tk=peek();
+    if(tk&&tk.t==="("){next();const e=parseOr(); if(peek()&&peek().t===")")next(); else {tmplWarn("tw_filter_invalid",str);bad=true;} return e;}
+    if(tk&&tk.t==="word"){next(); const field=tk.v, o=peek();
+      if(!tmplFilterFieldKnown(field)){tmplWarn("tw_filter_field",field);bad=true;}
+      if(o&&o.t==="op"){next();
+        if(o.v==="empty"||o.v==="not_empty")return {op:"unary",field,cmp:o.v};
+        const vv=peek();
+        if(!vv||(vv.t!=="str"&&vv.t!=="word")){tmplWarn("tw_filter_invalid",str);bad=true;return {op:"const",v:false};}
+        next();return {op:"cmp",field,cmp:o.v,value:vv.v};}
+      if(o&&o.t==="word"){tmplWarn("tw_filter_op",o.v);bad=true;next();}   // opérateur inconnu (lu comme un mot)
+      return {op:"unary",field,cmp:"not_empty"};}
+    return null;
+  }
+  let ast; try{ast=parseOr();}catch(e){ast=null;bad=true;tmplWarn("tw_filter_invalid",str);}
+  if(pos<toks.length&&!bad){tmplWarn("tw_filter_invalid",str);}   // jetons résiduels
+  return ast;
+}
+// -- Évaluation d'un filtre sur un contexte {risk, measure, link} --
+function tmplFieldDesc(field,c){
+  if(field.indexOf("cf.")===0){const code=field.slice(3); let f=null,obj=null;
+    [["risk",c.risk],["measure",c.measure],["link",c.link]].forEach(pr=>{if(!f){const ff=tmplCfField(pr[0],code);if(ff){f=ff;obj=pr[1];}}});
+    if(!f){f=tmplCfField("cotation",code);if(f)obj=c.risk;}
+    const v=obj?((obj.custom||{})[code]):undefined;
+    if(f&&(f.type==="tags"||f.type==="checklist")){const arr=Array.isArray(v)?v:[];
+      return {kind:"multi",items:arr.map(cd=>{const it=(f.items||[]).find(x=>x.code===cd);return {code:cd,label:it?cfItemLabel(it):cd};})};}
+    if(f&&f.type==="boolean")return {kind:"bool",bool:!!v};
+    if(f&&f.type==="select"){const it=(f.items||[]).find(x=>x.code===v);return {kind:"text",raw:v,label:it?cfItemLabel(it):v};}
+    return {kind:"text",raw:v==null?"":String(v),label:v==null?"":String(v)};
+  }
+  const R=c.risk,M=c.measure;
+  if(field==="id")return {kind:"text",raw:R?R.id:(M?M.id:""),label:R?R.id:(M?M.id:"")};
+  if(field==="category")return {kind:"text",raw:R?R.category:"",label:R?R.category:""};
+  if(field==="owner")return {kind:"text",raw:R?R.owner:"",label:R?R.owner:""};
+  if(field==="criticality_initial"||field==="criticality_residual"){
+    if(!R)return {kind:"crit",order:-1};
+    const ev=field==="criticality_residual"?residual(R):(R.initial_assessment||{probability:0,severity:0});
+    const cc=critFor(scoreOf(ev.probability,ev.severity)); return {kind:"crit",order:tmplCritOrderOf(cc)};}
+  if(field==="type")return {kind:"text",raw:M?M.type:"",label:M?typeLabel(M.type):""};
+  if(field==="status")return {kind:"text",raw:M?M.status:"",label:M?statusLabel(M.status):""};
+  if(field==="responsible")return {kind:"text",raw:M?M.responsible:"",label:M?M.responsible:""};
+  if(field==="overdue")return {kind:"bool",bool:M?isOverdue(M):false};
+  return {kind:"text",raw:"",label:""};
+}
+function tmplDescEmpty(d){
+  if(d.kind==="multi")return !d.items.length;
+  if(d.kind==="crit")return d.order<0;
+  if(d.kind==="bool")return false;
+  return tmplNorm(d.raw)===""&&tmplNorm(d.label)==="";
+}
+function tmplCmp(node,c){
+  const d=tmplFieldDesc(node.field,c),op=node.cmp;
+  if(op==="empty")return tmplDescEmpty(d);
+  if(op==="not_empty")return !tmplDescEmpty(d);
+  const val=node.value;
+  if(d.kind==="crit"){const oi=d.order,ov=tmplCritOrderByName(val); if(oi<0||ov<0)return false;
+    return op==="="?oi===ov:op==="!="?oi!==ov:op===">="?oi>=ov:op==="<="?oi<=ov:op===">"?oi>ov:op==="<"?oi<ov:false;}
+  if(d.kind==="bool"){const b=/^(true|1|yes|oui|s[iì]|vero)$/i.test(String(val))?true:/^(false|0|no|non)$/i.test(String(val))?false:null;
+    if(op==="="||op==="contains")return b===null?false:d.bool===b; if(op==="!=")return b===null?true:d.bool!==b; return false;}
+  if(d.kind==="multi"){const nv=tmplNorm(val),has=d.items.some(it=>tmplNorm(it.code)===nv||tmplNorm(it.label)===nv);
+    return (op==="contains"||op==="=")?has:op==="!="?!has:false;}
+  const acc=[tmplNorm(d.raw),tmplNorm(d.label)],nv=tmplNorm(val);
+  if(op==="=")return acc.indexOf(nv)>=0;
+  if(op==="!=")return acc.indexOf(nv)<0;
+  if(op==="contains")return acc.some(a=>a&&a.indexOf(nv)>=0);
+  return false;
+}
+function tmplEvalFilter(ast,c){
+  if(!ast)return true;
+  if(ast.op==="const")return !!ast.v;
+  if(ast.op==="and")return tmplEvalFilter(ast.a,c)&&tmplEvalFilter(ast.b,c);
+  if(ast.op==="or")return tmplEvalFilter(ast.a,c)||tmplEvalFilter(ast.b,c);
+  return tmplCmp(ast,c);
+}
+// Propagation : un risque passe si UN contexte (lui + une de ses mesures liées, ou lui seul) satisfait le filtre.
+function tmplRiskPasses(R,ast){
+  const cs=(analyse.treatments||[]).filter(t=>t.risk===R.id).map(L=>({risk:R,measure:measureById(L.measure),link:L}));
+  cs.push({risk:R,measure:null,link:null}); return cs.some(c=>tmplEvalFilter(ast,c));}
+function tmplMeasurePasses(M,ast){
+  const cs=(analyse.treatments||[]).filter(t=>t.measure===M.id).map(L=>({risk:riskById(L.risk),measure:M,link:L}));
+  cs.push({risk:null,measure:M,link:null}); return cs.some(c=>tmplEvalFilter(ast,c));}
+function tmplFilterList(list,type,ast){
+  if(type==="risk")return list.filter(R=>tmplRiskPasses(R,ast));
+  if(type==="measure")return list.filter(M=>tmplMeasurePasses(M,ast));
+  if(type==="link")return list.filter(L=>tmplEvalFilter(ast,{risk:riskById(L.risk),measure:measureById(L.measure),link:L}));
+  return list;
+}
+function tmplCtxScopes(ctx){return (ctx||[]).filter(f=>f.type==="scope").map(f=>f.obj);}
+function tmplCombinedFilter(attrs,ctx){
+  const asts=[];
+  if(!(attrs&&attrs.report_filter==="none")&&tmplReport.filter){const a=tmplParseFilter(tmplReport.filter);if(a)asts.push(a);}
+  if(attrs&&attrs.filter){const a=tmplParseFilter(attrs.filter);if(a)asts.push(a);}
+  tmplCtxScopes(ctx).forEach(sc=>asts.push({op:"cmp",field:sc.field,cmp:sc.cmp,value:sc.value}));
+  return asts.reduce((acc,a)=>acc?{op:"and",a:acc,b:a}:a,null);
+}
+// -- Regroupement --
+function tmplGroupKeys(item,type,byField){
+  const EMPTY=t("tmpl_group_empty"), one=(k,l)=>[{key:(k==null||k==="")?"":String(k),label:(k==null||k==="")?EMPTY:String(l)}];
+  if(byField.indexOf("cf.")===0){const code=byField.slice(3),f=tmplCfField(type,code)||tmplCfField("cotation",code),v=(item.custom||{})[code];
+    if(v==null||v===""||(Array.isArray(v)&&!v.length))return [{key:"",label:EMPTY}];
+    return (Array.isArray(v)?v:[v]).map(cd=>{const it=f&&(f.items||[]).find(x=>x.code===cd);return {key:cd,label:it?cfItemLabel(it):cd};});}
+  if(type==="risk"){
+    if(byField==="id")return [{key:item.id,label:item.id+" — "+(item.label||"")}];   // un chapitre par risque
+    if(byField==="category")return one(item.category,item.category);
+    if(byField==="owner")return one(item.owner,item.owner);
+    if(byField==="criticality_initial"||byField==="criticality_residual"){
+      const ev=byField==="criticality_residual"?residual(item):(item.initial_assessment||{probability:0,severity:0}),c=critFor(scoreOf(ev.probability,ev.severity));
+      return [{key:c.code,label:c.label}];}
+  }
+  if(type==="measure"){
+    if(byField==="type")return item.type?[{key:item.type,label:typeLabel(item.type)}]:[{key:"",label:EMPTY}];
+    if(byField==="status")return item.status?[{key:item.status,label:statusLabel(item.status)}]:[{key:"",label:EMPTY}];
+    if(byField==="responsible")return one(item.responsible,item.responsible);
+  }
+  return one(item[byField],item[byField]);
+}
+function tmplGroupScope(byField,key,type){
+  let cmp="=";
+  if(byField.indexOf("cf.")===0){const f=tmplCfField(type,byField.slice(3))||tmplCfField("cotation",byField.slice(3));
+    if(f&&(f.type==="tags"||f.type==="checklist"))cmp="contains";}
+  return {field:byField,cmp,value:key};
+}
+function tmplBuildGroups(list,type,byField){
+  const map=new Map();
+  list.forEach(item=>tmplGroupKeys(item,type,byField).forEach(k=>{let g=map.get(k.key);if(!g){g={key:k.key,label:k.label,items:[]};map.set(k.key,g);}g.items.push(item);}));
+  const groups=Array.from(map.values()).map(g=>{const o={key:g.key,label:g.label,items:g.items,count:g.items.length,singular:type,itype:type,scope:tmplGroupScope(byField,g.key,type)};
+    if(type==="risk"){const s=new Set();g.items.forEach(r=>measuresOfRisk(r.id).forEach(m=>s.add(m)));o.measures_count=s.size;}
+    return o;});
+  groups.sort((a,b)=>((a.key===""?1:0)-(b.key===""?1:0))||String(a.label).localeCompare(String(b.label)));
+  return groups;
+}
+// Restreint une liste de champs perso : cible (target="…") et/ou glossaire (glossary="true" → champs à valeurs décrites).
+function tmplFilterFieldsByTarget(list,attrs){
+  if(attrs&&attrs.target!=null){const tg=String(attrs.target).toLowerCase();
+    if(CF_TARGETS.indexOf(tg)<0){tmplWarn("tw_field_target",attrs.target);return [];}
+    list=list.filter(f=>f.target===tg);}
+  if(attrs&&(attrs.glossary===true||attrs.glossary==="true"))list=list.filter(f=>cfNeedsItems(f.type)&&cfHasItemDesc(f));
+  return list;
+}
+// Construit les itérations d'une boucle : filtre (report + local + portée de groupe), regroupe, trie, limite.
+function tmplLoopIterations(name,attrs,ctx){
+  const col=tmplCollection(name,ctx); let list=col.list;
+  if(col.type===null){tmplWarn("tw_loop_unknown_coll",name);return [];}
+  if(col.type==="field")list=tmplFilterFieldsByTarget(list,attrs);
+  if(col.type==="risk"||col.type==="measure"||col.type==="link"){const ast=tmplCombinedFilter(attrs,ctx); if(ast)list=tmplFilterList(list,col.type,ast);}
+  if(attrs&&attrs.group_by){
+    if(!tmplGroupFieldKnown(col.type,attrs.group_by))tmplWarn("tw_unknown_groupby",attrs.group_by);
+    let groups=tmplBuildGroups(list,col.type,attrs.group_by);
+    if(attrs.limit!=null){const n=parseInt(attrs.limit,10);if(n>=0)groups=groups.slice(0,n);}
+    return groups.map(g=>({frames:[{name:"group",type:"group",obj:g},{name:"__scope",type:"scope",obj:g.scope}]}));
+  }
+  return tmplSortLimit(list,col.type,attrs).map((item,ix)=>({frames:[{name:col.singular,type:col.type,obj:item,index:ix}]}));
+}
+// Traite le texte d'un <w:t> : substitue valeurs (contexte ctx), retire report/comment ; les
+// balises de section sont retirées si `strip` (corps d'une boucle de ligne), sinon laissées.
+/* ---- Formats enrichis (couleur / tags) : descripteurs -> runs Word colorés ---- */
+// Renvoie une liste de descripteurs {type:text|square|badge,…} si un format enrichi (swatch/badge)
+// s'applique, sinon null (rendu texte classique). Couleur -> carré ; tags -> badge (fond) ou carré+texte.
+function tmplRichParts(res,mods){
+  if(!mods||(!mods.swatch&&!mods.badge))return null;
+  if(res.kind==="cf"&&res.field&&res.field.type==="tags"){
+    const v=res.value,arr=Array.isArray(v)?v:(v!=null&&v!==""?[v]:[]);
+    if(!arr.length)return null;
+    const sep=mods.join!=null?mods.join:" ",out=[];
+    arr.forEach((c,i)=>{const it=(res.field.items||[]).find(x=>x.code===c),label=it?cfItemLabel(it):String(c),raw=(it&&it.color)||"#888888";
+      if(i>0)out.push({type:"text",text:sep});
+      if(mods.badge)out.push({type:"badge",text:label,fill:hex6(raw),fg:hex6(badgeFg(raw))});
+      else{out.push({type:"square",fill:hex6(raw)});out.push({type:"text",text:" "+label});}});
+    return out;
+  }
+  if(res.kind==="clabel"&&res.color){   // étiquette colorée (statut, criticité) : badge ou pastille+libellé
+    const label=res.value==null?"":String(res.value); if(!label)return null;
+    if(mods.badge)return [{type:"badge",text:label,fill:hex6(res.color),fg:hex6(badgeFg(res.color))}];
+    return [{type:"square",fill:hex6(res.color)},{type:"text",text:" "+label}];
+  }
+  if(mods.swatch&&res.kind==="text"){const hex=String(res.value||"").trim();
+    if(/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(hex))return [{type:"square",fill:hex6(hex)}];}
+  return null;   // badge/swatch non pertinent -> repli texte
+}
+// Un run Word à partir d'un rPr de base (XML interne), avec couleur de texte et/ou fond (shd) surchargés.
+function tmplRunXml(baseInner,text,color,fill){
+  let inner=baseInner||"";
+  if(color!=null||fill!=null)inner=inner.replace(/<w:color\b[^>]*\/>/g,"").replace(/<w:shd\b[^>]*\/>/g,"");
+  if(fill!=null)inner+='<w:shd w:val="clear" w:color="auto" w:fill="'+fill+'"/>';
+  if(color!=null)inner+='<w:color w:val="'+color+'"/>';
+  return '<w:r><w:rPr>'+inner+'</w:rPr>'+dxT(text)+'</w:r>';
+}
+function tmplRunFromDesc(baseInner,d){
+  if(d.type==="square")return tmplRunXml(baseInner,"■",d.fill,null);
+  if(d.type==="badge")return tmplRunXml(baseInner,d.text,d.fg,d.fill);
+  return tmplRunXml(baseInner,d.text,null,null);
+}
+// Reconstruit une séquence de runs (XML) en un fragment DOM importable dans doc.
+function tmplRunsFragment(runsXml,doc){
+  const wrap='<w:document xmlns:w="'+W_NS+'"><w:body><w:p>'+runsXml+'</w:p></w:body></w:document>';
+  const d=new DOMParser().parseFromString(wrap,"application/xml");
+  if(d.getElementsByTagName("parsererror").length)return null;
+  const p=d.getElementsByTagNameNS(W_NS,"p")[0],frag=doc.createDocumentFragment();
+  Array.from(p.childNodes).forEach(n=>{if(!(n.nodeType===1&&n.localName==="pPr"))frag.appendChild(doc.importNode(n,true));});
+  return frag;
+}
+// Cœur : tokenise un texte et produit {plain (repli texte), parts (texte|rich), rich}.
+// Conditions EN LIGNE : {{#if}}/{{#unless}}/{{else}}/{{/if}} entièrement contenues dans un même texte
+// (ex. un run stylé, une cellule de boucle de ligne). Les conditions non refermées ici (marqueurs de
+// bloc, sur des paragraphes/lignes séparés) sont laissées intactes pour le traitement de bloc.
+function tmplInlineCondTag(v){
+  const s=(v||"").trim();
+  let m=s.match(/^#\s*(if|unless)\b\s*([\s\S]*)$/); if(m)return {open:true,kind:m[1],expr:(m[2]||"").trim()};
+  if(/^else\b/.test(s))return {elseMarker:true};
+  m=s.match(/^\/\s*(if|unless)\b/); if(m)return {close:true};
+  return null;
+}
+function tmplInlineHasClose(toks,from){
+  let d=0;
+  for(let j=from;j<toks.length;j++){ if(toks[j].t!=="tag")continue; const c=tmplInlineCondTag(toks[j].v); if(!c)continue;
+    if(c.open)d++; else if(c.close){ if(d===0)return true; d--; } }
+  return false;
+}
+function tmplResolveInlineConds(toks,ctx){
+  if(!toks.some(tk=>tk.t==="tag"&&tmplInlineCondTag(tk.v)))return toks;
+  let i=0;
+  function seq(stop){
+    const out=[];
+    while(i<toks.length){
+      const tk=toks[i];
+      if(tk.t==="tag"){const c=tmplInlineCondTag(tk.v);
+        if(c&&c.open){
+          if(!tmplInlineHasClose(toks,i+1)){ out.push(tk); i++; continue; }   // condition de bloc → laisser passer
+          i++; const truth0=tmplCondition(c.expr,ctx),truth=c.kind==="unless"?!truth0:truth0;
+          const thenT=seq(true); let elseT=[];
+          if(i<toks.length&&toks[i].t==="tag"){const c2=tmplInlineCondTag(toks[i].v); if(c2&&c2.elseMarker){ i++; elseT=seq(true); }}
+          if(i<toks.length&&toks[i].t==="tag"){const c3=tmplInlineCondTag(toks[i].v); if(c3&&c3.close)i++;}
+          out.push(...(truth?thenT:elseT)); continue;
+        }
+        if(c&&(c.elseMarker||c.close)){ if(stop)return out; tmplWarn("tw_if_orphan"); i++; continue; }   // « else »/« /if » en ligne sans « if »
+      }
+      out.push(tk); i++;
+    }
+    return out;
+  }
+  return seq(false);
+}
+// Tokeniseur POSITIONNEL : comme tmplTokenize mais chaque jeton porte sa plage brute [s,e) dans `text`.
+function tmplTokenizePos(text){
+  const out=[]; let i=0, buf="", bufStart=0;
+  const flush=cur=>{ if(buf){ out.push({t:"lit",v:buf,s:bufStart,e:cur}); buf=""; } };
+  while(i<text.length){
+    if(text[i]==="\\" && (text.substr(i,3)==="\\{{"||text.substr(i,3)==="\\}}")){ if(!buf)bufStart=i; buf+=text.substr(i+1,2); i+=3; continue; }
+    if(text[i]==="{" && text[i+1]==="{"){
+      const start=i; let j=i+2, inner="", closed=false;
+      while(j<text.length){
+        if(text[j]==="\\" && j+1<text.length){ inner+=text.substr(j,2); j+=2; continue; }
+        if(text[j]==="}" && text[j+1]==="}"){ closed=true; break; }
+        inner+=text[j]; j++;
+      }
+      flush(start);
+      if(closed){ out.push({t:"tag",v:inner,s:start,e:j+2}); i=j+2; }
+      else { out.push({t:"open",v:inner,s:start,e:j}); i=j; }         // « {{ » sans fermeture : laissé tel quel
+      continue;
+    }
+    if(!buf)bufStart=i; buf+=text[i]; i++;
+  }
+  flush(i);
+  return out;
+}
+// Résout les conditions EN LIGNE à l'échelle d'un PARAGRAPHE (ou cellule), donc à travers plusieurs runs
+// (mises en forme différentes, passage à la ligne). Conserve la mise en forme de chaque run ; laisse les
+// balises de valeur intactes (substituées ensuite). Ne touche rien si aucune condition en ligne complète.
+function tmplRunSegs(el){
+  const segs=[]; let off=0;
+  Array.from(el.getElementsByTagNameNS(W_NS,"r")).forEach(r=>{
+    const tEls=Array.from(r.getElementsByTagNameNS(W_NS,"t"));
+    if(!tEls.length)return;                                  // run sans texte (saut de ligne, image…) : ignoré
+    const text=tEls.map(t=>t.textContent).join("");
+    segs.push({tEls,s:off,e:off+text.length}); off+=text.length;
+  });
+  return {segs, full: segs.map(x=>x.tEls.map(t=>t.textContent).join("")).join("")};
+}
+function tmplResolveInlineCondsInEl(el,ctx){
+  const {segs,full}=tmplRunSegs(el);
+  if(full.indexOf("{{")<0)return;
+  const toks=tmplTokenizePos(full);
+  let has=false;                                             // au moins une condition en ligne COMPLÈTE ?
+  for(let k=0;k<toks.length;k++){ if(toks[k].t==="tag"){const c=tmplInlineCondTag(toks[k].v); if(c&&c.open&&tmplInlineHasClose(toks,k+1)){has=true;break;}} }
+  if(!has)return;                                            // sinon : ne rien réécrire (bloc/valeurs gérés ailleurs)
+  const kept=tmplResolveInlineConds(toks,ctx).filter(tk=>tk.s!=null).map(tk=>[tk.s,tk.e]);
+  segs.forEach(seg=>{                                        // réécrit chaque run = intersection avec les plages conservées
+    let nt="";
+    kept.forEach(([rs,re])=>{ const a=Math.max(rs,seg.s),b=Math.min(re,seg.e); if(b>a)nt+=full.slice(a,b); });
+    seg.tEls[0].textContent=nt; seg.tEls[0].setAttribute("xml:space","preserve");
+    for(let k=1;k<seg.tEls.length;k++)seg.tEls[k].textContent="";
+  });
+}
+function tmplRenderTokens(text,ctx,strip){
+  const toks=tmplResolveInlineConds(tmplTokenize(text),ctx),parts=[]; let plain="",rich=false;
+  const pushText=s=>{parts.push({t:"text",v:s});plain+=s;};
+  for(const tk of toks){
+    if(tk.t==="lit"){pushText(tk.v);continue;}
+    if(tk.t==="open"){tmplWarn("tw_unresolved",("{{"+tk.v).slice(0,40));continue;}
+    const cls=tmplClassify(tk.v.trim());
+    if(cls.kind==="comment"||cls.kind==="report")continue;
+    if(cls.kind==="section"){if(strip)continue; pushText("{{"+tk.v+"}}"); continue;}
+    if(cls.kind==="block"){if(!tmplBlocksAllowed)tmplWarn("tw_block_in_hf",cls.name);pushText("{{"+tk.v+"}}");continue;}
+    if(cls.kind==="unknown_block"){tmplWarn("tw_unknown_block",cls.name);pushText("{{"+tk.v+"}}");continue;}
+    const res=tmplResolveValue(cls.path,ctx);
+    if(res&&res.unknown){tmplWarnValue(res,cls.path);pushText("{{"+tk.v+"}}");continue;}
+    tmplCheckFormats(cls.mods);
+    const desc=tmplRichParts(res,cls.mods);
+    if(desc){rich=true;parts.push({t:"rich",desc});plain+=tmplRenderValue(res,cls.mods);}   // plain = repli
+    else pushText(tmplRenderValue(res,cls.mods));
+  }
+  return {plain,parts,rich};
+}
+function tmplProcessText(text,ctx,strip){return tmplRenderTokens(text,ctx,strip).plain;}
+function tmplScanReport(text){
+  for(const tk of tmplTokenize(text)){ if(tk.t!=="tag")continue; const inner=tk.v.trim();
+    if(/^report\b/.test(inner)){ const a=tmplParseAttrs(inner.slice(6));
+      if(a.date_format!=null)tmplReport.date_format=tmplDateCode(a.date_format)||tmplReport.date_format;
+      if(a.filter!=null)tmplReport.filter=a.filter; } }
+}
+function tmplWalkT(el,fn){Array.from(el.getElementsByTagNameNS(W_NS,"t")).forEach(fn);}
+// Substitution au niveau d'un run <w:r> : texte simple (rapide) ou reconstruction en runs colorés (formats enrichis).
+function tmplSubstituteRun(run,ctx,strip){
+  const ts=run.getElementsByTagNameNS(W_NS,"t"); if(!ts.length)return;
+  const tEls=Array.from(ts),text=tEls.map(t=>t.textContent).join("");
+  if(text.indexOf("{{")<0)return;                       // aucun tag dans ce run
+  const r=tmplRenderTokens(text,ctx,strip);
+  if(!r.rich){ tEls[0].textContent=r.plain; tEls[0].setAttribute("xml:space","preserve");
+    for(let i=1;i<tEls.length;i++)tEls[i].textContent=""; return; }
+  const rprEl=run.getElementsByTagNameNS(W_NS,"rPr")[0];
+  const baseInner=rprEl?Array.from(rprEl.childNodes).map(n=>new XMLSerializer().serializeToString(n)).join(""):"";
+  let xml=""; r.parts.forEach(p=>{ if(p.t==="text"){ if(p.v!=="")xml+=tmplRunXml(baseInner,p.v,null,null); }
+    else p.desc.forEach(d=>{xml+=tmplRunFromDesc(baseInner,d);}); });
+  const frag=tmplRunsFragment(xml,run.ownerDocument);
+  if(frag){run.parentNode.insertBefore(frag,run);run.parentNode.removeChild(run);}
+  else{ tEls[0].textContent=r.plain; for(let i=1;i<tEls.length;i++)tEls[i].textContent=""; }
+}
+function tmplSubstituteRuns(node,ctx,strip){Array.from(node.getElementsByTagNameNS(W_NS,"r")).forEach(r=>tmplSubstituteRun(r,ctx,strip));}
+function tmplSubstituteInNode(node,ctx){tmplSubstituteRuns(node,ctx,false);}
+/* ---- Boucles ---- */
+// Un paragraphe est-il UNIQUEMENT une balise d'ouverture/fermeture de section ?
+/* ---- v2‑1 : conditions {{#if}} — analyse et évaluation d'une expression sur valeurs résolues ---- */
+function tmplParseCond(str){
+  const toks=tmplFilterTokens(str); let pos=0,bad=false;
+  const peek=()=>toks[pos], next=()=>toks[pos++];
+  function parseOr(){let a=parseAnd(); while(peek()&&peek().t==="or"){next();const b=parseAnd(); if(!b)bad=true; a={op:"or",a,b:b||{op:"const",v:false}};} return a;}
+  function parseAnd(){let a=parseTerm(); while(peek()&&peek().t==="and"){next();const b=parseTerm(); if(!b)bad=true; a={op:"and",a,b:b||{op:"const",v:true}};} return a;}
+  function parseTerm(){const tk=peek();
+    if(tk&&tk.t==="("){next();const e=parseOr(); if(peek()&&peek().t===")")next(); else bad=true; return e;}
+    if(tk&&tk.t==="word"){next(); const path=tk.v,o=peek();
+      if(o&&o.t==="op"){next();
+        if(o.v==="empty"||o.v==="not_empty")return {op:"unary",path,cmp:o.v};
+        const vv=peek(); if(!vv||(vv.t!=="str"&&vv.t!=="word")){bad=true;return {op:"const",v:false};}
+        next(); return {op:"cmp",path,cmp:o.v,value:vv.v};}
+      if(o&&o.t==="word"){bad=true;next();}                       // deux mots accolés = erreur
+      return {op:"unary",path,cmp:"not_empty"};}                  // {{#if path}} seul = « non vide »
+    return null;
+  }
+  const ast=parseOr();
+  if(pos<toks.length)bad=true;
+  return bad?null:ast;
+}
+function tmplCondText(res){
+  if(res.kind==="num")return res.value==null?"":res.value;
+  if(res.kind==="cf")return tmplRenderCf(res.field,res.value,{});
+  if(res.kind==="bool")return res.value?"true":"false";
+  if(res.kind==="md")return mdToText(res.value||"");
+  return res.value==null?"":res.value;
+}
+function tmplCondEmpty(res){
+  if(!res||res.unknown)return true;
+  if(res.kind==="bool")return !res.value;
+  const v=res.value;
+  if(v==null||v==="")return true;
+  if(Array.isArray(v))return v.length===0;
+  return false;
+}
+function tmplCondCompare(res,cmp,lit){
+  const raw=tmplCondText(res);
+  if(cmp===">"||cmp===">="||cmp==="<"||cmp==="<="){
+    const a=parseFloat(raw),b=parseFloat(lit); let c;
+    if(!isNaN(a)&&!isNaN(b))c=a-b; else c=String(raw).localeCompare(String(lit),undefined,{numeric:true});
+    return cmp===">"?c>0:cmp===">="?c>=0:cmp==="<"?c<0:c<=0;
+  }
+  if(res.kind==="cf"&&res.field&&(res.field.type==="tags"||res.field.type==="checklist")){   // codes OU libellés
+    const arr=Array.isArray(res.value)?res.value:[],B=tmplNorm(lit);
+    const eq=arr.some(code=>{const it=(res.field.items||[]).find(x=>x.code===code);return tmplNorm(code)===B||(it&&tmplNorm(cfItemLabel(it))===B);});
+    const has=arr.some(code=>{const it=(res.field.items||[]).find(x=>x.code===code);return tmplNorm(code).indexOf(B)>=0||(it&&tmplNorm(cfItemLabel(it)).indexOf(B)>=0);});
+    if(cmp==="=")return eq; if(cmp==="!=")return !eq; if(cmp==="contains")return has;
+  }
+  const A=tmplNorm(raw),B=tmplNorm(lit);
+  if(cmp==="=")return A===B; if(cmp==="!=")return A!==B; if(cmp==="contains")return A.indexOf(B)>=0;
+  return false;
+}
+function tmplEvalCond(ast,ctx){
+  if(!ast)return false;
+  if(ast.op==="const")return !!ast.v;
+  if(ast.op==="or")return tmplEvalCond(ast.a,ctx)||tmplEvalCond(ast.b,ctx);
+  if(ast.op==="and")return tmplEvalCond(ast.a,ctx)&&tmplEvalCond(ast.b,ctx);
+  const res=tmplResolveValue(ast.path,ctx);
+  if(res&&res.unknown)tmplWarn("tw_if_field",ast.path);
+  if(ast.op==="unary"){const e=tmplCondEmpty(res);return ast.cmp==="empty"?e:!e;}
+  if(ast.op==="cmp"){if(!res||res.unknown)return false;return tmplCondCompare(res,ast.cmp,ast.value);}
+  return false;
+}
+function tmplCondition(expr,ctx){
+  const ast=tmplParseCond(expr||"");
+  if(ast===null){tmplWarn("tw_if_invalid",expr);return false;}
+  return tmplEvalCond(ast,ctx);
+}
+function tmplParagraphSection(p){
+  if(p.localName!=="p")return null;
+  const text=Array.from(p.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent).join("");
+  let tag=null,extra=false;
+  for(const tk of tmplTokenize(text)){ if(tk.t==="lit"){if(tk.v.trim()!=="")extra=true;} else {if(tag)extra=true;else tag=tk.v.trim();} }
+  if(!tag||extra)return null;
+  const m=tag.match(/^#\s*each\b\s*([\s\S]*)$/);
+  if(m){const mm=(m[1]||"").match(/^([A-Za-z0-9_.]+)\s*([\s\S]*)$/); if(!mm)return null;
+    return {open:true,kind:"each",collection:mm[1],attrs:tmplParseAttrs(mm[2]||"")};}
+  const mi=tag.match(/^#\s*(if|unless)\b\s*([\s\S]*)$/);
+  if(mi)return {open:true,kind:mi[1],expr:(mi[2]||"").trim()};
+  if(/^else\b/.test(tag))return {elseMarker:true};
+  const mc=tag.match(/^\/\s*(each|if|unless)\b/);
+  if(mc)return {close:true,kind:mc[1]};
+  return null;
+}
+// Une ligne de tableau contient-elle une boucle complète {{#each}}…{{/each}} ?
+function tmplRowLoop(row){
+  const text=Array.from(row.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent).join("");
+  let open=null,close=false;
+  for(const tk of tmplTokenize(text)){ if(tk.t!=="tag")continue; const inner=tk.v.trim();
+    const m=inner.match(/^#\s*each\b\s*([A-Za-z0-9_.]+)\s*([\s\S]*)$/);
+    if(m&&!open)open={collection:m[1],attrs:tmplParseAttrs(m[2]||"")};
+    else if(/^\/\s*each\b/.test(inner))close=true; }
+  if(open&&!close)tmplWarn("tw_loop_row_unclosed",open.collection);
+  return (open&&close)?open:null;
+}
+// Une LIGNE dont le contenu est UNIQUEMENT une balise de condition ({{#if}} / {{#unless}} / {{else}} / {{/if}} / {{/unless}}).
+function tmplRowSection(row){
+  const text=Array.from(row.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent).join("");
+  let tag=null,extra=false;
+  for(const tk of tmplTokenize(text)){ if(tk.t==="lit"){if(tk.v.trim()!=="")extra=true;} else {if(tag)extra=true;else tag=tk.v.trim();} }
+  if(!tag||extra)return null;
+  const mi=tag.match(/^#\s*(if|unless)\b\s*([\s\S]*)$/);
+  if(mi)return {open:true,kind:mi[1],expr:(mi[2]||"").trim()};
+  if(/^else\b/.test(tag))return {elseMarker:true};
+  const mc=tag.match(/^\/\s*(if|unless)\b/);
+  if(mc)return {close:true,kind:mc[1]};
+  return null;
+}
+function tmplRenderTable(tbl,ctx){
+  let node=tbl.firstChild;
+  while(node){
+    if(!(node.nodeType===1&&node.localName==="tr")){ node=node.nextSibling; continue; }
+    const next=node.nextSibling, sec=tmplRowSection(node);
+    if(sec&&sec.open){                                   // {{#if}} de ligne : garde/retire des lignes
+      let depth=1,cur=node.nextSibling,closer=null,elseRow=null; const rows=[];
+      while(cur){
+        if(cur.nodeType===1&&cur.localName==="tr"){const s2=tmplRowSection(cur);
+          if(s2&&s2.open)depth++;
+          else if(s2&&s2.close){depth--; if(depth===0){closer=cur;break;}}
+          else if(s2&&s2.elseMarker&&depth===1&&!elseRow)elseRow=cur;}
+        rows.push(cur); cur=cur.nextSibling;
+      }
+      if(closer){
+        const afterCloser=closer.nextSibling;
+        let ok=tmplCondition(sec.expr,ctx); if(sec.kind==="unless")ok=!ok;
+        const ix=elseRow?rows.indexOf(elseRow):-1;
+        const kept=ix>=0?(ok?rows.slice(0,ix):rows.slice(ix+1)):(ok?rows:[]);
+        const keep=new Set(kept);
+        rows.forEach(r=>{ if(!keep.has(r))tbl.removeChild(r); });   // retire else + lignes écartées
+        tbl.removeChild(closer); tbl.removeChild(node);
+        node=kept.length?kept[0]:afterCloser; continue;            // reprend sur les lignes gardées, sinon après le bloc
+      }
+      tmplWarn("tw_if_unclosed",sec.expr); node=next; continue;
+    }
+    if(sec&&(sec.close||sec.elseMarker)){ tmplWarn("tw_if_orphan"); tbl.removeChild(node); node=next; continue; }
+    const info=tmplRowLoop(node);
+    if(info){
+      tmplLoopIterations(info.collection,info.attrs,ctx).forEach(itr=>{
+        const childCtx=ctx.concat(itr.frames);
+        const clone=node.cloneNode(true);
+        Array.from(clone.getElementsByTagNameNS(W_NS,"p")).forEach(p=>tmplResolveInlineCondsInEl(p,childCtx));   // conditions en ligne dans les cellules (à travers les runs)
+        tmplSubstituteRuns(clone,childCtx,true);
+        tbl.insertBefore(clone,node);
+      });
+      tbl.removeChild(node);
+    } else Array.from(node.children).filter(c=>c.localName==="tc").forEach(tc=>tmplRenderContainer(tc,ctx));
+    node=next;
+  }
+}
+/* ---- Lot 4 : bloc {{ table … }} -> <w:tbl> généré (réutilise dxReportTable / dxTbl) ---- */
+// Correspondance noms de colonnes du modèle (anglais) -> clés internes des registres.
+const TMPL_COLMAP={
+  risks:{id:"id",label:"risk",risk:"risk",category:"cat",cat:"cat",owner:"owner",
+    criticality_initial:"initial",initial:"initial",criticality_residual:"residual",residual:"residual",
+    evolution:"evolution",measures:"measures"},
+  measures:{id:"id",label:"measure",measure:"measure",type:"type",status:"status",responsible:"resp",resp:"resp",
+    due_date:"due",due:"due",cost:"cost",risks:"covered",covered:"covered"},
+  links:{risk_id:"rid",rid:"rid",risk:"risk",measure_id:"mid",mid:"mid",measure:"measure",comment:"notes",notes:"notes"}
+};
+function tmplTableCols(tbl,columnsAttr){
+  if(columnsAttr){const map=TMPL_COLMAP[tbl]||{},cm=colMap(tbl);
+    return String(columnsAttr).split(",").map(s=>s.trim()).filter(Boolean).map(tok=>{
+      const key=tok.indexOf("cf.")===0?("cf:"+tok.slice(3)):(map[tok]||map[tok.toLowerCase()]||tok);
+      if(!cm[key])tmplWarn("tw_table_column",tok);
+      return key;});}
+  return colOrder(tbl);                              // colonnes par défaut de l'application (config sauvegardée ou défaut)
+}
+// Liste filtrée + triée (report + local + portée de groupe), sans regroupement.
+function tmplFilteredItems(name,attrs,ctx){
+  const col=tmplCollection(name,ctx); let list=col.list;
+  if(col.type==="risk"||col.type==="measure"||col.type==="link"){const ast=tmplCombinedFilter(attrs,ctx); if(ast)list=tmplFilterList(list,col.type,ast);}
+  return tmplSortLimit(list,col.type,attrs);
+}
+function tmplLevelsTableXml(cw){
+  // Aligné sur la section « Niveaux de criticité » du rapport natif : Libellé | Plage de score | Acceptation | Description.
+  const levels=((analyse.grid||{}).criticality_levels||[]).slice().sort((a,b)=>((a.order!=null?a.order:a.score_min)||0)-((b.order!=null?b.order:b.score_min)||0));
+  const widths=[2200,1300,1700,Math.max(1400,cw-5200)];
+  const header=[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("rp_range"),b:true,fill:"EEF2F8"},{txt:t("th_acceptance"),b:true,fill:"EEF2F8"},{txt:t("cf_description"),b:true,fill:"EEF2F8"}];
+  const rows=levels.length?levels.map(l=>[dxBadgeCell(l.label,l.color),{txt:l.score_min+" – "+l.score_max,center:true},{txt:accLabel(l.acceptance||"")},{txt:l.description||""}]):[[{txt:"—"},{txt:""},{txt:""},{txt:""}]];
+  return dxTbl([header].concat(rows),widths);
+}
+function tmplFieldsTableXml(cw,attrs){
+  let list=tmplFilterFieldsByTarget((analyse.custom_fields||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0)),attrs);
+  const yes=t("cf_yes"),no=t("cf_no");
+  const widths=[Math.round(cw*0.14),Math.round(cw*0.29),Math.round(cw*0.16),Math.round(cw*0.18),Math.round(cw*0.115),Math.round(cw*0.115)];
+  const header=[t("cf_code"),t("th_label"),t("cf_target"),t("th_type"),t("cf_required"),t("cf_filterable")].map(h=>({txt:h,b:true,fill:"EEF2F8"}));
+  const rows=list.length?list.map(f=>[
+    {txt:f.code||"—"},{txt:cfLabel(f)},{txt:cfTargetLabel(f.target)},{txt:cfTypeLabel(f.type)},
+    {txt:f.required?yes:no,center:true},{txt:f.filterable?yes:no,center:true}]):[[{txt:"—"},{txt:""},{txt:""},{txt:""},{txt:""},{txt:""}]];
+  return dxTbl([header].concat(rows),widths);
+}
+// Bloc {{ field_values }} : dans une boucle custom_fields, tableau Valeur → Description du champ courant
+// (badge coloré pour les tags), calqué sur la section « Référentiels et légendes des champs » du rapport.
+function tmplFieldValuesBlockXml(ctx){
+  const fr=tmplLookup(ctx||[],"field");
+  if(!fr){tmplWarn("tw_fieldvalues_ctx");return null;}
+  const f=fr.obj;
+  if(!cfNeedsItems(f.type)||!cfHasItemDesc(f))return null;   // seulement les types à valeurs fermées ayant des descriptions
+  const cw=DX_CW,widths=[Math.round(cw*0.30),Math.round(cw*0.70)];
+  const header=[{txt:t("rp_value"),b:true,fill:"EEF2F8"},{txt:t("cf_description"),b:true,fill:"EEF2F8"}];
+  const rows=(f.items||[]).map(it=>{const label=cfItemLabel(it);
+    return [f.type==="tags"?dxBadgeCell(label,it.color):{txt:label},{txt:cfItemDesc(it)||"—"}];});
+  return dxTbl([header].concat(rows),widths);
+}
+// Bloc {{ stat type="summary|distribution" }} : reproduit les sections statistiques natives (compteurs / répartition par criticité).
+/* ---- v2-3 : graphiques de répartition (donut / secteur) autonomes pour Word ---- */
+function tmplStatChartSVG(rows,shape,total,sub,size){
+  size=size||150;
+  const cx=size/2,cy=size/2,r=size/2-1,ir=shape==="pie"?0:Math.round(size*0.34);
+  const active=rows.map(r0=>({count:r0.count,color:r0.color,frac:total?r0.count/total:0})).filter(s=>s.count>0);
+  let g="";
+  if(active.length===1){const s=active[0];
+    g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+s.color+'"/>';
+    if(ir>0)g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+ir+'" fill="#ffffff"/>';
+    if(shape==="pie")g+='<text x="'+cx+'" y="'+(cy+size*0.05)+'" text-anchor="middle" font-family="Calibri,Arial" font-size="'+Math.round(size*0.13)+'" font-weight="700" fill="'+badgeFg(s.color)+'">'+s.count+'</text>';
+  }else if(active.length){let acc=0;
+    active.forEach(s=>{const a0=acc*2*Math.PI,a1=(acc+s.frac)*2*Math.PI;acc+=s.frac;
+      g+='<path d="'+statArcPath(cx,cy,r,ir,a0,a1)+'" fill="'+s.color+'"/>';
+      if(shape==="pie"&&s.frac>0.06){const mid=(a0+a1)/2,lr=r*0.62,X=(cx+lr*Math.sin(mid)).toFixed(1),Y=(cy-lr*Math.cos(mid)+size*0.04).toFixed(1);
+        g+='<text x="'+X+'" y="'+Y+'" text-anchor="middle" font-family="Calibri,Arial" font-size="'+Math.round(size*0.11)+'" font-weight="700" fill="'+badgeFg(s.color)+'">'+s.count+'</text>';}});
+  }else{ g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="#E7ECF6"/>'; if(ir>0)g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+ir+'" fill="#ffffff"/>'; }
+  if(ir>0&&active.length){g+='<text x="'+cx+'" y="'+(cy+(sub?-2:size*0.06))+'" text-anchor="middle" font-family="Calibri,Arial" font-size="'+Math.round(size*0.17)+'" font-weight="700" fill="#1F2937">'+total+'</text>';
+    if(sub)g+='<text x="'+cx+'" y="'+(cy+size*0.1)+'" text-anchor="middle" font-family="Calibri,Arial" font-size="'+Math.round(size*0.083)+'" fill="#7A8699">'+svgEsc(sub)+'</text>';}
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'">'+g+'</svg>';
+}
+function tmplStatChartImg(svg,size,attrs){
+  const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n;
+  tmplImgReqs.push({rid,svg,W:size,H:size,fn:"tmplimg"+n+".png"});
+  return tmplImgXml(rid,1000+n,size,size,attrs||{},size);
+}
+function tmplStatLegendXml(rows,total){
+  return rows.map(r=>dxP(tmplRunXml("","■ ",hex6(r.color),null)+dxRun(r.label+"  —  "+r.count+" ("+statPct(r.count,total)+")",{sz:18,color:"3B4A63"}),{sa:20,sb:0})).join("");
+}
+// Légende EN LIGNE (pastille + libellé, à la suite) — pour une paire de graphiques (criticité).
+function tmplStatLegendInlineXml(items){
+  const runs=items.map(it=>tmplRunXml("","■ ",hex6(it.color),null)+dxRun(it.label+"      ",{sz:18,color:"3B4A63"})).join("");
+  return dxP(runs,{center:true,sa:60,sb:40});
+}
+// Centre un tableau et adapte sa largeur au contenu (autofit) — pour les tableaux de données stats.
+function tmplTblCenterFit(xml){
+  return xml.replace(/<w:tblW w:w="\d+" w:type="dxa"\/>/,'<w:tblW w:w="0" w:type="auto"/><w:jc w:val="center"/>')
+    .replace('<w:tblLayout w:type="fixed"/>','<w:tblLayout w:type="autofit"/>');
+}
+// Centre un tableau (largeur fixe conservée) — pour les tableaux de mise en page (graphique/légende).
+function tmplTblCenter(xml){
+  return xml.replace(/(<w:tblW w:w="\d+" w:type="dxa"\/>)/,'$1<w:jc w:val="center"/>');
+}
+function tmplStatDistTableXml(colLabel,rows,total,tblW){
+  tblW=tblW||4600;const w2=1100,w3=1100,w1=Math.max(1500,tblW-w2-w3);
+  const head=[{txt:colLabel,b:true,fill:"EEF2F8"},{txt:t("stat_count"),b:true,fill:"EEF2F8",center:true},{txt:t("stat_share"),b:true,fill:"EEF2F8",center:true}];
+  const body=rows.map(r=>[dxBadgeCell(r.label,r.color),{txt:String(r.count),center:true},{txt:statPct(r.count,total),center:true}]);
+  body.push([{txt:t("stat_total"),b:true},{txt:String(total),center:true,b:true},{txt:total?"100 %":"—",center:true,b:true}]);
+  return tmplTblCenterFit(dxTbl([head].concat(body),[w1,w2,w3]));
+}
+// Ligne de mise en page SANS bordure : place plusieurs contenus (tableau, image, légende…) côte à côte.
+function tmplLayoutRow(cells,widths){
+  const tot=widths.reduce((a,b)=>a+b,0);
+  const tr='<w:tr>'+cells.map((c,i)=>'<w:tc><w:tcPr><w:tcW w:w="'+widths[i]+'" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'+(c||'<w:p/>')+'</w:tc>').join("")+'</w:tr>';
+  return tmplTblCenter('<w:tbl><w:tblPr><w:tblW w:w="'+tot+'" w:type="dxa"/><w:tblBorders>'
+    +["top","left","bottom","right","insideH","insideV"].map(x=>'<w:'+x+' w:val="none"/>').join("")
+    +'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="0" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr>'
+    +'<w:tblGrid>'+widths.map(w=>'<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>'+tr+'</w:tbl>');
+}
+function tmplStatDim(type,attrs,ctx){
+  const risks=()=>{const ast=tmplCombinedFilter(attrs,ctx);return ast?tmplFilterList(analyse.risks||[],"risk",ast):(analyse.risks||[]).slice();};
+  const meas=()=>{const ast=tmplCombinedFilter(attrs,ctx);return ast?tmplFilterList(analyse.measures||[],"measure",ast):(analyse.measures||[]).slice();};
+  if(type==="category")return {data:statDist(risks(),r=>r.category),colLabel:t("f_category"),sub:t("stat_risks")};
+  if(type==="measure_type")return {data:statDist(meas(),m=>m.type,{labelFn:c=>typeLabel(c)}),colLabel:t("th_type"),sub:t("stat_measures")};
+  if(type==="measure_status")return {data:statDist(meas(),m=>m.status,{labelFn:statusLabel,order:(a,b)=>STATUS_CODES.indexOf(a)-STATUS_CODES.indexOf(b),colorMap:s=>(STATUS_COLORS[s]||{}).bg}),colLabel:t("th_status"),sub:t("stat_measures")};
+  if(type==="risk_owner")return {data:statDist(risks(),r=>r.owner),colLabel:t("f_owner"),sub:t("stat_risks")};
+  if(type==="measure_owner")return {data:statDist(meas(),m=>m.responsible),colLabel:t("th_responsible"),sub:t("stat_measures")};
+  if(type.indexOf("cf.")===0){const code=type.slice(3),f=tmplCfField("risk",code)||tmplCfField("measure",code)||tmplCfField("link",code)||tmplCfField("cotation",code);
+    if(!f){tmplWarn("tw_stat_field",type);return {none:true};}
+    const list=f.target==="measure"?meas():f.target==="link"?(analyse.treatments||[]).slice():risks();
+    return {data:statDist(list,it=>statCustomKeys(it,f),{labelFn:k=>statCustomLabel(f,k),colorMap:f.type==="tags"?(k=>cfChoiceColor(f,k)):null}),colLabel:cfLabel(f),sub:(f.target==="measure"?t("stat_measures"):f.target==="link"?t("tab_links"):t("stat_risks"))};
+  }
+  return null;
+}
+function tmplTwoChartsXml(imgI,capI,imgR,capR,cellW){
+  const w=cellW||2700;   // cellule ajustée au graphique → paire centrée, pas étalée sur la page
+  const cell=(img,cap)=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/></w:tcPr>'+img+dxP(dxRun(cap,{b:true,sz:18,color:"7A8699"}),{center:true,sa:80})+'</w:tc>';
+  return tmplTblCenter('<w:tbl><w:tblPr><w:tblW w:w="'+(w*2)+'" w:type="dxa"/><w:tblBorders>'+["top","left","bottom","right","insideH","insideV"].map(x=>'<w:'+x+' w:val="none"/>').join("")+'</w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+w+'"/><w:gridCol w:w="'+w+'"/></w:tblGrid><w:tr>'+cell(imgI,capI)+cell(imgR,capR)+'</w:tr></w:tbl>');
+}
+function tmplStatBlockXml(attrs,ctx){
+  const type=(attrs.type||"summary").toLowerCase(),risks=analyse.risks||[],meas=analyse.measures||[];
+  const treatedN=()=>risks.filter(r=>{const a=r.initial_assessment||{},b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
+  if(type==="summary"||type==="counts"){
+    const treated=treatedN();
+    return tmplTblCenterFit(dxTbl([[{txt:t("stat_risks"),color:"7A8699"},{txt:String(risks.length)}],
+      [{txt:t("stat_measures"),color:"7A8699"},{txt:String(meas.length)}],
+      [{txt:t("stat_reduced"),color:"7A8699"},{txt:String(treated)}]],[2600,2000]));
+  }
+  if(type==="counters"){                                   // tuiles clés (comme l'onglet Statistiques)
+    const treated=treatedN(),pct=risks.length?Math.round(treated/risks.length*100):0;
+    const cw=DX_CW,w=Math.floor(cw/4);
+    const tile=(val,lab,col)=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F2F5FB"/><w:vAlign w:val="center"/></w:tcPr>'
+      +dxP(dxRun(val,{b:true,sz:44,color:col||"1F2937"}),{center:true,sa:0})
+      +dxP(dxRun(lab,{sz:18,color:"7A8699"}),{center:true,sa:60})+'</w:tc>';
+    return '<w:tbl><w:tblPr><w:tblW w:w="'+(w*4)+'" w:type="dxa"/><w:tblBorders>'
+      +["top","left","bottom","right","insideH","insideV"].map(x=>'<w:'+x+' w:val="single" w:sz="4" w:color="FFFFFF"/>').join("")
+      +'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="120" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="120" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr>'
+      +'<w:tblGrid>'+Array(4).fill('<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>'
+      +'<w:tr>'+tile(String(risks.length),t("stat_risks"))+tile(String(meas.length),t("stat_measures"))
+      +tile(String(treated),t("stat_reduced"),"2E9E5B")+tile(pct+" %",t("stat_treated"),"2F5BD0")+'</w:tr></w:tbl>';
+  }
+  if(type==="coverage"){                                   // risques sans mesure / mesures orphelines
+    const L=analyse.treatments||[],rl=new Set(L.map(x=>x.risk)),ml=new Set(L.map(x=>x.measure));
+    const rNo=risks.filter(r=>!rl.has(r.id)).length,mNo=meas.filter(m=>!ml.has(m.id)).length;
+    return tmplTblCenterFit(dxTbl([[{txt:t("stat_cov_risks"),color:"7A8699"},{txt:rNo+" / "+risks.length,center:true}],
+      [{txt:t("stat_cov_measures"),color:"7A8699"},{txt:mNo+" / "+meas.length,center:true}]],[3200,2000]));
+  }
+  if(type==="distribution"||type==="criticality"){
+    const cats=((analyse.grid||{}).criticality_levels||[]).slice().sort((a,b)=>((a.order!=null?a.order:a.score_min)||0)-((b.order!=null?b.order:b.score_min)||0));
+    const ci={},cr={};cats.forEach(c=>{ci[c.code]=0;cr[c.code]=0;});
+    risks.forEach(r=>{const ik=critOfEval(r.initial_assessment).code,rk=critOfEval(residual(r)).code;if(ik in ci)ci[ik]++;if(rk in cr)cr[rk]++;});
+    const disp=(attrs.display||"table").toLowerCase(),shape=(attrs.shape==="pie")?"pie":"donut";
+    const tableXml=tmplTblCenterFit(dxTbl([[{txt:t("th_label"),b:true,fill:"EEF2F8"},{txt:t("th_initial"),b:true,fill:"EEF2F8",center:true},{txt:t("th_residual"),b:true,fill:"EEF2F8",center:true}]]
+      .concat(cats.map(c=>[dxBadgeCell(c.label,c.color),{txt:String(ci[c.code]||0),center:true},{txt:String(cr[c.code]||0),center:true}])),[3200,1600,1600]));
+    if(disp==="table")return tableXml;
+    const SZ=150,tot=risks.length;
+    const rowsI=cats.map(c=>({count:ci[c.code]||0,color:c.color})),rowsR=cats.map(c=>({count:cr[c.code]||0,color:c.color}));
+    const charts=tmplTwoChartsXml(tmplStatChartImg(tmplStatChartSVG(rowsI,shape,tot,"",SZ),SZ,attrs),t("th_initial"),
+      tmplStatChartImg(tmplStatChartSVG(rowsR,shape,tot,"",SZ),SZ,attrs),t("th_residual"));
+    if(disp==="chart")return charts+tmplStatLegendInlineXml(cats.map(c=>({label:c.label,color:c.color})));   // chart : paire + légende en ligne dessous
+    return charts+tableXml;   // both : graphiques (côte à côte) puis tableau en dessous
+  }
+  const dim=tmplStatDim(type,attrs,ctx);                     // répartition par dimension (catégorie, statut, type, propriétaire, cf.<code>)
+  if(dim){
+    if(dim.none)return null;
+    const disp=(attrs.display||"table").toLowerCase(),shape=(attrs.shape==="pie")?"pie":"donut",total=dim.data.total;
+    if(disp==="table")return tmplStatDistTableXml(dim.colLabel,dim.data.rows,total);
+    if(!total)return dxP(dxRun("—",{color:"7A8699"}),{sa:120});
+    const chartImg=tmplStatChartImg(tmplStatChartSVG(dim.data.rows,shape,total,dim.sub,150),150,attrs);
+    if(disp==="chart")return tmplLayoutRow([chartImg,tmplStatLegendXml(dim.data.rows,total)],[2800,3800]);   // |graphique | légende|, centré
+    // both : │ tableau │ graphique │ légende │ sur une seule ligne
+    return tmplLayoutRow([tmplStatDistTableXml(dim.colLabel,dim.data.rows,total,3400)+"<w:p/>",chartImg,tmplStatLegendXml(dim.data.rows,total)],[3700,2600,3338]);
+  }
+  tmplWarn("tw_stat_type",attrs.type);return null;
+}
+// Bloc {{ cf_notes }} : notes des champs perso de l'entité courante (risque/mesure/lien), via dxCfNotes (identique au rapport natif).
+function tmplCfNotesBlockXml(ctx){
+  const fr=tmplLookup(ctx||[],"risk")||tmplLookup(ctx||[],"measure")||tmplLookup(ctx||[],"link");
+  if(!fr)return null;
+  const xml=dxCfNotes(fr.type,(fr.obj||{}).custom);
+  return xml||null;
+}
+// Bloc {{ logo }} : insère le logo de couverture configuré (extensions.display.report.cover.logo),
+// préchargé en PNG par tmplRender. Attribut width="cm" (défaut : largeur intrinsèque, max 200 px).
+function tmplLogoBlockXml(attrs){
+  if(!tmplLogo)return null;
+  const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n,fn="tmplimg"+n+".png";
+  tmplImgReqs.push({rid,bytes:tmplLogo.bytes,W:tmplLogo.w,H:tmplLogo.h,fn});
+  return tmplImgXml(rid,1000+n,tmplLogo.w,tmplLogo.h,attrs,200);
+}
+// Applique un style de tableau NOMMÉ du modèle : référence + retrait des bordures explicites.
+function tmplApplyTableStyle(xml,style){
+  if(!style)return xml;
+  xml=xml.replace("<w:tblPr>",'<w:tblPr><w:tblStyle w:val="'+escX(style)+'"/>');
+  return xml.replace(/<w:tblBorders>[\s\S]*?<\/w:tblBorders>/,"");
+}
+function tmplTableXml(attrs,ctx){
+  const cw=DX_CW,src=attrs.source;
+  if(!src){tmplWarn("tw_table_nosource");return null;}
+  if(src==="levels")return tmplLevelsTableXml(cw);
+  if(src==="custom_fields"||src==="fields")return tmplApplyTableStyle(tmplFieldsTableXml(cw,attrs),attrs.style);
+  if(["risks","measures","links"].indexOf(src)<0){tmplWarn("tw_table_source",src);return null;}
+  const rows=tmplFilteredItems(src,attrs,ctx),keys=tmplTableCols(src,attrs.columns);
+  return tmplApplyTableStyle(dxReportTable(src,keys,rows,cw),attrs.style);
+}
+// Parse un fragment OOXML (un ou plusieurs blocs) et l'importe dans le document cible (fragment).
+function tmplImportXml(fragXml,doc){
+  const wrap='<w:document xmlns:w="'+W_NS+'" xmlns:r="'+OD_REL+'" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'+fragXml+'</w:document>';
+  const d=new DOMParser().parseFromString(wrap,"application/xml");
+  if(d.getElementsByTagName("parsererror").length)return null;
+  const frag=doc.createDocumentFragment();
+  Array.from(d.documentElement.childNodes).forEach(n=>frag.appendChild(doc.importNode(n,true)));
+  return frag.childNodes.length?frag:null;
+}
+// Bloc {{ matrix … }} : SVG (filtré) -> requête d'image (rasterisée après l'expansion) + drawing.
+function tmplMatrixBlockXml(attrs,ctx){
+  const type=(attrs.type||"initial").toLowerCase();
+  if(attrs.type&&["initial","residual","trajectory","traj","side","ir","both","gross","net"].indexOf(type)<0)tmplWarn("tw_matrix_type",attrs.type);
+  const ast=tmplCombinedFilter(attrs,ctx);
+  const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
+  let svg;
+  if(type==="trajectory"||type==="traj")svg=reportMatrixSVG("traj",risks);
+  else if(type==="side"||type==="ir"||type==="both")svg=reportMatrixSVG("side",risks);
+  else svg=reportSingleMatrixSVG((type==="residual"||type==="net")?"residual":"initial",risks);
+  const m=/width="(\d+(?:\.\d+)?)" height="(\d+(?:\.\d+)?)"/.exec(svg);
+  const W=m?Math.round(+m[1]):800,H=m?Math.round(+m[2]):600;
+  const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n;
+  tmplImgReqs.push({rid,svg,W,H,fn:"tmplimg"+n+".png"});
+  const title=attrs.title?dxP(dxRun(attrs.title,{b:true,sz:22,color:"1F2937"}),{center:true,sa:40,sb:80}):"";
+  return title+tmplImgXml(rid,1000+n,W,H,attrs,640);
+}
+// Bloc {{ radar … }} : SVG autonome (buildRadarExportSVG) -> requête d'image + drawing.
+const TMPL_RADAR_METRIC={average:"avg",avg:"avg",max:"max",maximum:"max",cumulative:"sum",sum:"sum",weighted:"weighted",count:"count",number:"count"};
+const TMPL_RADAR_EVAL={initial:"initial",residual:"residual",side:"both-side",accolees:"both-side","both-side":"both-side",overlay:"both-over",superposees:"both-over","both-over":"both-over",both:"both-over"};
+function tmplRadarBlockXml(attrs,ctx){
+  const dim=(!attrs.dimension||attrs.dimension==="category")?"cat":(attrs.dimension.indexOf("cf.")===0?attrs.dimension.slice(3):attrs.dimension);
+  if(dim!=="cat"&&!radarDimFields().some(f=>f.code===dim))tmplWarn("tw_radar_dim",attrs.dimension);   // dimension (cf.<code>) inconnue : champ perso de risque select/checklist/tags absent
+  if(attrs.metric&&!TMPL_RADAR_METRIC[String(attrs.metric).toLowerCase()])tmplWarn("tw_radar_metric",attrs.metric);
+  if(attrs.evaluation&&!TMPL_RADAR_EVAL[String(attrs.evaluation).toLowerCase()])tmplWarn("tw_radar_eval",attrs.evaluation);
+  const metric=TMPL_RADAR_METRIC[String(attrs.metric||"avg").toLowerCase()]||"avg";
+  const evl=TMPL_RADAR_EVAL[String(attrs.evaluation||"overlay").toLowerCase()]||"both-over";
+  const cfg={dim,metric,eval:evl,title:attrs.title||""};
+  const ast=tmplCombinedFilter(attrs,ctx);
+  const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
+  const rm=radarComputeModel(cfg,risks);
+  if(rm.tooFew){   // trop peu d'axes (ex. une seule catégorie) : message, comme le rapport natif
+    const title0=attrs.title?dxP(dxRun(attrs.title,{b:true,sz:22,color:"1F2937"}),{center:true,sa:40,sb:80}):"";
+    return title0+dxP(dxRun(risks.length===0?t("matrix_empty"):t("radar_need_axes",(rm.axes||[]).length),{color:"7A8699"}),{sa:120});
+  }
+  const ex=buildRadarExportSVG(cfg,risks,{noTitle:true});   // titre géré par l'attribut (comme la matrice), pas dans l'image
+  const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n;
+  tmplImgReqs.push({rid,svg:ex.svg,W:ex.W,H:ex.H,fn:"tmplimg"+n+".png"});
+  const title=attrs.title?dxP(dxRun(attrs.title,{b:true,sz:22,color:"1F2937"}),{center:true,sa:40,sb:80}):"";
+  return title+tmplImgXml(rid,1000+n,ex.W,ex.H,attrs,640);
+}
+function tmplRenderBlock(name,attrs,ctx,doc){
+  if(!tmplBlocksAllowed){tmplWarn("tw_block_in_hf",name);return null;}   // pas de bloc en en-tête/pied
+  if(name==="table"){const xml=tmplTableXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="field_values"){const xml=tmplFieldValuesBlockXml(ctx); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="cf_notes"){const xml=tmplCfNotesBlockXml(ctx); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="stat"){const xml=tmplStatBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="logo"){const xml=tmplLogoBlockXml(attrs); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="matrix"){const xml=tmplMatrixBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="radar"){const xml=tmplRadarBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
+  return null;
+}
+// Un paragraphe est-il UNIQUEMENT une balise de bloc ({{ table … }}, {{ matrix … }}, {{ radar … }}) ?
+function tmplParagraphBlock(p){
+  if(p.localName!=="p")return null;
+  const text=Array.from(p.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent).join("");
+  let tag=null,extra=false;
+  for(const tk of tmplTokenize(text)){if(tk.t==="lit"){if(tk.v.trim()!=="")extra=true;}else{if(tag)extra=true;else tag=tk.v.trim();}}
+  if(!tag||extra)return null;
+  if(tmplClassify(tag).kind!=="block")return null;
+  const name=tag.split(/\s+/)[0];
+  return {name,attrs:tmplParseAttrs(tag.slice(name.length))};
+}
+/* ---- Promotion des blocs : un tag {{ table/matrix/radar }} placé EN LIGNE (avec d'autres runs
+   dans le paragraphe) est extrait sur son PROPRE paragraphe, afin d'être traité correctement.
+   Passe structurelle exécutée AVANT l'expansion des boucles. ---- */
+function tmplSimpleTextRun(r){if(r.localName!=="r")return false;for(const c of Array.from(r.children))if(c.localName!=="rPr"&&c.localName!=="t")return false;return true;}
+function tmplRunT(r){for(const c of Array.from(r.children))if(c.localName==="t")return c;return null;}
+function tmplCopyPPr(src,dst){const pr=Array.from(src.children).find(c=>c.localName==="pPr");if(pr)dst.appendChild(pr.cloneNode(true));}
+// Découpe un paragraphe contenant des balises de bloc EN LIGNE ; renvoie la liste des nouveaux
+// paragraphes, ou null si rien à promouvoir (aucun bloc, ou bloc déjà seul sur son paragraphe).
+function tmplSplitParagraphBlocks(p,doc){
+  const items=[]; let hasBlock=false, hasOther=false;
+  for(const c of Array.from(p.childNodes)){
+    if(c.nodeType===1&&c.localName==="pPr")continue;                                   // géré par copyPPr
+    if(c.nodeType===1&&c.localName==="r"&&tmplSimpleTextRun(c)){
+      const tEl=tmplRunT(c), text=tEl?tEl.textContent:"";
+      const toks=tmplTokenize(text);
+      if(!toks.some(tk=>tk.t==="tag"&&tmplClassify(tk.v.trim()).kind==="block")){items.push({run:c});if(text.trim())hasOther=true;continue;}
+      let buf="";
+      const flush=()=>{ if(buf!==""){const r=c.cloneNode(true);let tt=tmplRunT(r);if(!tt){tt=doc.createElementNS(W_NS,"w:t");r.appendChild(tt);}tt.textContent=buf;tt.setAttribute("xml:space","preserve");items.push({run:r});if(buf.trim())hasOther=true;buf="";} };
+      for(const tk of toks){
+        if(tk.t==="lit"){buf+=tk.v;continue;}
+        if(tk.t==="open"){buf+="{{"+tk.v;continue;}
+        const cls=tmplClassify(tk.v.trim());
+        if(cls.kind==="block"){flush();items.push({block:tk.v});hasBlock=true;}
+        else buf+="{{"+tk.v+"}}";
+      }
+      flush();
+    } else { items.push({run:c}); if(c.textContent&&c.textContent.trim())hasOther=true; }
+  }
+  if(!hasBlock)return null;
+  if(!hasOther&&items.filter(i=>i.block).length===1)return null;                        // bloc déjà seul
+  const out=[]; let cur=[];
+  const pushText=()=>{ if(cur.length){const np=p.cloneNode(false);tmplCopyPPr(p,np);cur.forEach(r=>np.appendChild(r));out.push(np);cur=[];} };
+  for(const it of items){
+    if(it.run)cur.push(it.run);
+    else { pushText(); const bp=p.cloneNode(false);tmplCopyPPr(p,bp);
+      const r=doc.createElementNS(W_NS,"w:r"),t=doc.createElementNS(W_NS,"w:t");t.setAttribute("xml:space","preserve");t.textContent="{{"+it.block+"}}";r.appendChild(t);bp.appendChild(r);out.push(bp); }
+  }
+  pushText();
+  return out;
+}
+function tmplPromoteContainer(container,doc){
+  let node=container.firstChild;
+  while(node){
+    const next=node.nextSibling;
+    if(node.nodeType===1&&node.localName==="p"){
+      const parts=tmplSplitParagraphBlocks(node,doc);
+      if(parts){parts.forEach(np=>container.insertBefore(np,node));container.removeChild(node);}
+    } else if(node.nodeType===1&&node.localName==="tbl"){
+      Array.from(node.children).filter(r=>r.localName==="tr").forEach(row=>Array.from(row.children).filter(c=>c.localName==="tc").forEach(tc=>tmplPromoteContainer(tc,doc)));
+    }
+    node=next;
+  }
+}
+// OOXML : un <w:tbl> ne peut PAS terminer une cellule ni le corps -> paragraphe de clôture au besoin.
+function tmplFixTrailingTables(doc){
+  const emptyP=()=>doc.createElementNS(W_NS,"w:p");
+  Array.from(doc.getElementsByTagNameNS(W_NS,"tc")).forEach(tc=>{const l=tc.lastElementChild;if(l&&l.localName==="tbl")tc.appendChild(emptyP());});
+  const body=doc.getElementsByTagNameNS(W_NS,"body")[0]; if(!body)return;
+  Array.from(body.children).forEach(ch=>{ if(ch.localName==="tbl"){const nx=ch.nextElementSibling; if(!nx||nx.localName==="sectPr")body.insertBefore(emptyP(),nx); } });
+}
+// Parcourt les blocs (w:p / w:tbl) d'un conteneur : développe les boucles, substitue les valeurs.
+function tmplRenderContainer(container,ctx){
+  const doc=container.ownerDocument;
+  let node=container.firstChild;
+  while(node){
+    if(node.nodeType===1 && node.localName==="p"){
+      const sec=tmplParagraphSection(node);
+      if(sec&&sec.open){
+        let depth=1,cur=node.nextSibling,closer=null,elseAt=-1; const body=[];
+        while(cur){
+          if(cur.nodeType===1&&cur.localName==="p"){const s2=tmplParagraphSection(cur);
+            if(s2&&s2.open)depth++;
+            else if(s2&&s2.close){depth--; if(depth===0){closer=cur;break;}}
+            else if(s2&&s2.elseMarker&&depth===1&&elseAt<0)elseAt=body.length;}
+          body.push(cur); cur=cur.nextSibling;
+        }
+        if(closer){
+          const after=closer.nextSibling;
+          if(sec.kind==="each"){
+            const iters=tmplLoopIterations(sec.collection,sec.attrs,ctx);   // {{else}} = repli si collection vide
+            const itemBody=elseAt>=0?body.slice(0,elseAt):body, emptyBody=elseAt>=0?body.slice(elseAt+1):[];
+            if(iters.length){
+              iters.forEach(itr=>{
+                const childCtx=ctx.concat(itr.frames);
+                const frag=doc.createDocumentFragment();
+                itemBody.forEach(b=>frag.appendChild(b.cloneNode(true)));
+                tmplRenderContainer(frag,childCtx);
+                container.insertBefore(frag,node);
+              });
+            } else if(emptyBody.length){
+              const frag=doc.createDocumentFragment();
+              emptyBody.forEach(b=>frag.appendChild(b.cloneNode(true)));
+              tmplRenderContainer(frag,ctx);
+              container.insertBefore(frag,node);
+            }
+          } else {                                             // if / unless
+            let ok=tmplCondition(sec.expr,ctx); if(sec.kind==="unless")ok=!ok;
+            const chosen=elseAt>=0?(ok?body.slice(0,elseAt):body.slice(elseAt+1)):(ok?body:[]);
+            const frag=doc.createDocumentFragment();
+            chosen.forEach(b=>frag.appendChild(b.cloneNode(true)));
+            tmplRenderContainer(frag,ctx);
+            container.insertBefore(frag,node);
+          }
+          body.forEach(b=>container.removeChild(b)); container.removeChild(closer); container.removeChild(node);
+          node=after; continue;
+        }
+        tmplWarn(sec.kind==="each"?"tw_loop_unclosed":"tw_if_unclosed", sec.kind==="each"?sec.collection:sec.expr);
+      } else if(sec&&sec.close){ tmplWarn(sec.kind==="each"?"tw_loop_orphan":"tw_if_orphan"); }
+      else if(sec&&sec.elseMarker){ tmplWarn("tw_if_orphan"); const nx=node.nextSibling;container.removeChild(node);node=nx;continue; }
+      const blk=tmplParagraphBlock(node);
+      if(blk){const repl=tmplRenderBlock(blk.name,blk.attrs,ctx,doc);
+        if(repl){const nx=node.nextSibling;container.insertBefore(repl,node);container.removeChild(node);node=nx;continue;}
+        if(tmplBlocksAllowed){const nx=node.nextSibling;container.removeChild(node);node=nx;continue;}}  // bloc sans rendu (corps) → retirer le paragraphe
+      tmplResolveInlineCondsInEl(node,ctx);              // conditions en ligne à travers les runs (avant substitution)
+      tmplSubstituteInNode(node,ctx);
+    } else if(node.nodeType===1 && node.localName==="tbl"){
+      tmplRenderTable(node,ctx);
+    }
+    node=node.nextSibling;
+  }
+}
+// Ajoute au modèle les images demandées (matrices/radars) : media PNG + relations + content-type.
+async function tmplInjectImages(parts){
+  const rels=[];
+  for(const req of tmplImgReqs){
+    let bytes=req.bytes;                                   // logo : octets PNG déjà prêts
+    if(!bytes){const blob=await rasterizePNG(req.svg,req.W,req.H,2);bytes=new Uint8Array(await blob.arrayBuffer());}
+    parts["word/media/"+req.fn]=bytes;
+    rels.push('<Relationship Id="'+req.rid+'" Type="'+OD_REL+'/image" Target="media/'+req.fn+'"/>');
+  }
+  const rp="word/_rels/document.xml.rels";
+  const rx=parts[rp]?fflate.strFromU8(parts[rp]):(XMLD+'<Relationships '+RELS_XMLNS+'></Relationships>');
+  parts[rp]=fflate.strToU8(rx.replace("</Relationships>",rels.join("")+"</Relationships>"));
+  const cp="[Content_Types].xml"; let cx=fflate.strFromU8(parts[cp]);
+  if(!/Extension="png"/i.test(cx))cx=cx.replace("</Types>",'<Default Extension="png" ContentType="image/png"/></Types>');
+  parts[cp]=fflate.strToU8(cx);
+}
+// Lot 2-5 : normalise, applique {{ report }}, développe boucles/blocs + substitue valeurs, injecte les images, re-zippe.
+async function tmplRender(parts){
+  tmplReport={date_format:null,filter:null}; tmplWarnings=[]; tmplImgReqs=[];
+  const items=tmplXmlParts(parts).map(p=>{
+    const xml=tmplNormalizeXml(fflate.strFromU8(parts[p]));
+    let doc=null; try{doc=new DOMParser().parseFromString(xml,"application/xml");}catch(e){}
+    if(doc&&doc.getElementsByTagName("parsererror").length)doc=null;
+    return {p,xml,doc};
+  });
+  items.forEach(it=>{ if(it.doc)tmplWalkT(it.doc,tn=>tmplScanReport(tn.textContent)); });   // pass 1 : report
+  tmplLogo=null;                                                                             // précharge le logo de couverture si un bloc {{ logo }} est présent
+  const _logoUri=(function(){const c=reportCfgRaw();return c&&c.cover&&c.cover.logo;})();
+  if(_logoUri&&items.some(it=>/\{\{\s*logo\b/.test(it.xml))){
+    try{const info=await dxLogoPng(_logoUri);tmplLogo={bytes:info.bytes,w:info.w,h:info.h};}catch(e){tmplLogo=null;}
+  }
+  items.forEach(it=>{                                                                        // pass 2 : boucles/blocs + valeurs
+    if(!it.doc){tmplWarn("tw_xml_unreadable");parts[it.p]=fflate.strToU8(it.xml);return;}
+    tmplBlocksAllowed=(it.p==="word/document.xml");                                          // blocs (tableaux/images) réservés au corps
+    const root=it.doc.getElementsByTagNameNS(W_NS,"body")[0]||it.doc.documentElement;
+    if(tmplBlocksAllowed)tmplPromoteContainer(root,it.doc);                                  // extraire les blocs en ligne sur leur paragraphe
+    tmplRenderContainer(root,[]);
+    if(tmplBlocksAllowed)tmplFixTrailingTables(it.doc);                                      // paragraphe de clôture après un tableau final
+    let out=new XMLSerializer().serializeToString(it.doc); if(!/^<\?xml/.test(out))out=XMLD+out;
+    parts[it.p]=fflate.strToU8(out);
+  });
+  if(tmplImgReqs.length)await tmplInjectImages(parts);                                       // pass 3 : images (async)
+  return ooxmlBlob(parts,DOCX_MIME);
+}
+async function tmplExport(file){
+  try{
+    const parts=await tmplLoadDocx(file);
+    if(!parts["word/document.xml"]){alertModal(t("tmpl_invalid"));return;}   // fichier .docx invalide (bloquant) → modale
+    const name=exportBaseName()+"-rapport.docx";
+    downloadBlob(await tmplRender(parts),name);
+    if(tmplWarnings.length){console.warn("Modèle Word — avertissements :",tmplWarnings);tmplWarnReport();}
+    else toast(t("toast_export",name));                                      // succès → toast
+  }catch(err){console.error(err);alertModal(t("toast_export_fail",err.message));}   // erreur de génération (bloquant) → modale
+}
+// Rapport d'avertissements : liste dédoublonnée (avec compte) dans une modale.
+function tmplWarnReport(){
+  const counts=new Map(); tmplWarnings.forEach(m=>counts.set(m,(counts.get(m)||0)+1));
+  const items=[...counts.entries()].map(([m,n])=>'<li>'+esc(m)+(n>1?' <span style="color:#8a94a6">(×'+n+')</span>':'')+'</li>').join("");
+  const html='<div style="font-size:13px"><p style="margin:0 0 8px">'+esc(t("tmpl_warn_intro",counts.size))+'</p>'+
+    '<ul style="margin:0;padding-left:18px;max-height:340px;overflow:auto;line-height:1.55">'+items+'</ul></div>';
+  pushModal(t("tmpl_warn_title"),html,[{label:t("btn_ok"),onClick:api=>api.close()}],{role:"alertdialog"});
+}
+document.getElementById("miTemplateDocx").addEventListener("click",()=>{closeMenu();document.getElementById("templateInput").click();});
+document.getElementById("templateInput").addEventListener("change",e=>{
+  const f=e.target.files[0];e.target.value="";if(f)presGuard(()=>tmplExport(f));
+});
 
 /* ============================================================
    VUE PRÉSENTATION — métadonnées documentaires + champs de l'analyse
@@ -9994,7 +11412,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="1.20.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="2.0.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 const SITE_URL="https://www.risk-analysis-editor.com/";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */
