@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 2.0.0
+  Version  : 2.0.1
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -9191,11 +9191,13 @@ function tmplRenderTable(tbl,ctx){
 }
 /* Ajuste les largeurs de colonnes d'un tableau d'auteur d'après son CONTENU réel
    (opt-in via {{#each … autofit }}). Le moteur mesure le texte effectivement rendu dans
-   chaque colonne (« R1 », pas le tag « {{ risk.id }} ») et répartit la largeur totale du
-   tableau au prorata — la colonne ID cesse d'être surdimensionnée. Les largeurs sont
-   écrites en dur (gridCol + tcW, disposition « fixed ») : rendu identique dans Word et
-   LibreOffice, sans dépendre de leur auto-ajustement (que LibreOffice n'applique pas de
-   façon fiable). On ne touche qu'aux lignes/cellules DIRECTES (tableaux imbriqués intacts). */
+   chaque colonne (« R1 », pas le tag « {{ risk.id }} ») : chaque colonne reçoit d'abord la
+   largeur de son plus long mot (pour ne rien couper — « R10 », une date, « Organisationnelle »),
+   puis l'espace restant est réparti au prorata du contenu vers les colonnes de texte. La
+   largeur totale du tableau est conservée ; la colonne ID cesse d'être surdimensionnée. Les
+   largeurs sont écrites en dur (gridCol + tcW, disposition « fixed ») : rendu identique dans
+   Word et LibreOffice, sans dépendre de leur auto-ajustement (que LibreOffice n'applique pas
+   de façon fiable). On ne touche qu'aux lignes/cellules DIRECTES (tableaux imbriqués intacts). */
 function tmplTableAutofit(tbl){
   const doc=tbl.ownerDocument, kids=el=>Array.from(el.children||[]);
   const grid=kids(tbl).find(c=>c.localName==="tblGrid"); if(!grid)return;
@@ -9204,18 +9206,26 @@ function tmplTableAutofit(tbl){
   const rows=kids(tbl).filter(c=>c.localName==="tr");
   const cellText=tc=>Array.from(tc.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent||"").join("");
   const gridSpan=tc=>{const p=kids(tc).find(c=>c.localName==="tcPr");const g=p&&kids(p).find(c=>c.localName==="gridSpan");const v=g&&parseInt(g.getAttribute("w:val"),10);return v>1?v:1;};
-  const maxLen=new Array(n).fill(0);                                                    // longueur de contenu max par colonne
+  const maxLen=new Array(n).fill(0), maxTok=new Array(n).fill(0);                       // longueur totale et plus long mot (insécable) par colonne
   rows.forEach(tr=>{ let ci=0;
     kids(tr).filter(c=>c.localName==="tc").forEach(tc=>{ const sp=gridSpan(tc);
-      if(sp===1&&ci<n){ const L=cellText(tc).trim().length; if(L>maxLen[ci])maxLen[ci]=L; }
+      if(sp===1&&ci<n){ const txt=cellText(tc).trim();
+        if(txt.length>maxLen[ci])maxLen[ci]=txt.length;
+        const tok=txt.split(/\s+/).reduce((m,x)=>Math.max(m,x.length),0);
+        if(tok>maxTok[ci])maxTok[ci]=tok; }
       ci+=sp; });
   });
-  const CHARW=110, PAD=340, CAP=40, MINW=500;                                           // dxa : largeur moy. d'un car., marges, plafond de longueur, mini
-  const nat=maxLen.map(L=>PAD+CHARW*Math.min(L,CAP));
-  const sum=nat.reduce((a,b)=>a+b,0)||1;
-  const w=nat.map(v=>Math.max(MINW,Math.round(v*total/sum)));                           // mise à l'échelle sur la largeur totale
-  const diff=total-w.reduce((a,b)=>a+b,0);                                              // corrige arrondis/planchers sur la colonne la plus large
-  if(diff!==0){ let k=0; for(let i=1;i<n;i++)if(w[i]>w[k])k=i; w[k]=Math.max(MINW,w[k]+diff); }
+  const CHARW=110, PAD=340, CAP=40;                                                     // dxa : largeur moy. d'un car., marges de cellule, plafond de longueur
+  const minW=maxTok.map(L=>PAD+CHARW*L);                                                // mini : ne coupe pas le plus long mot (« R10 », une date, « Organisationnelle »)
+  const want=maxLen.map(L=>PAD+CHARW*Math.min(L,CAP));                                  // souhaité : au prorata du contenu (plafonné)
+  const sumMin=minW.reduce((a,b)=>a+b,0);
+  let w;
+  if(sumMin>=total){ w=minW.map(v=>Math.round(v*total/sumMin)); }                       // trop serré (rare) : au prorata des minis
+  else{ const extra=total-sumMin, head=want.map((v,i)=>Math.max(0,v-minW[i])),          // sinon : chaque colonne garde son mini, le reste va aux colonnes de texte
+        sh=head.reduce((a,b)=>a+b,0);
+    w=minW.map((v,i)=>Math.round(v+(sh?extra*head[i]/sh:extra/n))); }
+  const diff=total-w.reduce((a,b)=>a+b,0);                                              // corrige l'arrondi sur la colonne la plus large
+  if(diff!==0){ let k=0; for(let i=1;i<n;i++)if(w[i]>w[k])k=i; w[k]+=diff; }
   const lay=kids(tbl).find(c=>c.localName==="tblPr");                                   // disposition -> fixed (largeurs autoritaires)
   if(lay){ let tl=kids(lay).find(c=>c.localName==="tblLayout");
     if(!tl){tl=doc.createElementNS(W_NS,"w:tblLayout");lay.appendChild(tl);} tl.setAttribute("w:type","fixed"); }
@@ -11494,7 +11504,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="2.0.0", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="2.0.1", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 const SITE_URL="https://www.risk-analysis-editor.com/";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */

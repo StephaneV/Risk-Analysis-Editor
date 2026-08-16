@@ -347,14 +347,17 @@ ci-dessous).
   de tableau Word**, c'est **la ligne** qui est répétée par élément (façon naturelle de construire un
   tableau mis en forme dans le modèle). Sinon, ce sont les **paragraphes** encadrés qui sont répétés.
 - **Colonnes ajustées au contenu** — drapeau **`autofit`** sur la boucle de ligne
-  (`{{#each risks autofit }} … {{/each}}`). Après rendu des lignes, `tmplTableAutofit(tbl)` **mesure la
-  longueur du texte produit** dans chaque colonne (valeurs réelles, pas la longueur des tags) et
-  **réécrit `tblGrid`/`tcW`** au prorata (largeur d'un caractère ≈ 110 dxa, marge 340, plafond 40 car.,
-  mini 500), **largeur totale du tableau conservée**, disposition forcée en `fixed`. Corrige les colonnes
-  (typiquement l'**ID**) surdimensionnées dans le modèle par la longueur des balises. Approche
-  **déterministe** (pas d'`autofit` OOXML : LibreOffice ne recalcule pas les colonnes de façon fiable au
-  rendu) → **rendu identique Word / LibreOffice**. `gridSpan` pris en compte ; tableaux imbriqués intacts ;
-  sans le drapeau, largeurs du modèle **inchangées**.
+  (`{{#each risks autofit }} … {{/each}}`). Après rendu des lignes, `tmplTableAutofit(tbl)` **mesure le
+  texte produit** dans chaque colonne (valeurs réelles, pas la longueur des tags) et **réécrit
+  `tblGrid`/`tcW`** ainsi (dxa : largeur d'un caractère ≈ 110, marge de cellule 340, plafond 40 car.) :
+  chaque colonne reçoit d'abord la largeur de son **plus long mot** (mini insécable — évite de couper
+  « R10 », une date ou « Organisationnelle »), puis l'**espace restant** est distribué **au prorata du
+  contenu** vers les colonnes de texte (si le total des minis dépasse la largeur du tableau — rare — on
+  répartit au prorata des minis). **Largeur totale du tableau conservée**, disposition forcée en `fixed`.
+  Corrige les colonnes (typiquement l'**ID**) surdimensionnées dans le modèle par la longueur des balises.
+  Approche **déterministe** (pas d'`autofit` OOXML : LibreOffice ne recalcule pas les colonnes de façon
+  fiable au rendu) → **rendu identique Word / LibreOffice**. `gridSpan` pris en compte ; tableaux imbriqués
+  intacts ; sans le drapeau, largeurs du modèle **inchangées**.
 - **Repli si vide** (boucle de paragraphes) : `{{#each … }} … {{else}} … {{/each}}` — les paragraphes
   après `{{else}}` sont rendus **une fois** quand la collection (après filtre/limite) est **vide**
   (`elseAt` dans `tmplRenderContainer`). Sinon, seul le corps avant `{{else}}` est répété par élément.
