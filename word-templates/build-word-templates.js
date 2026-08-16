@@ -77,21 +77,20 @@ function rowLoopEcheancesTable() {
   });
 }
 
-// Registre des risques en boucle de ligne : colonne « Sources » en badges colorés (| badge),
-// criticité précédée d'une pastille de couleur (| swatch).
-const RCW = [800, 2400, 1400, 2400, 1500, 1500];
+// Registre des risques en boucle de ligne : catégorie (champ de base, présent dans toute analyse) ;
+// criticité initiale/résiduelle en badges colorés (| badge).
+const RCW = [900, 2900, 2000, 2100, 2100];
 function rowLoopRisksTable() {
   const border = { style: BorderStyle.SINGLE, size: 4, color: "C9D3E0" };
   return new Table({
     columnWidths: RCW, width: { size: 10000, type: WidthType.DXA },
     borders: { top: border, bottom: border, left: border, right: border, insideHorizontal: border, insideVertical: border },
     rows: [
-      new TableRow({ tableHeader: true, children: ["ID", "Libellé", "Catégorie", "Sources", "Criticité initiale", "Criticité résiduelle"].map(headCell) }),
+      new TableRow({ tableHeader: true, children: ["ID", "Libellé", "Catégorie", "Criticité initiale", "Criticité résiduelle"].map(headCell) }),
       new TableRow({ children: [
         cell([blk('{{#each risks sort="criticality_initial:desc"}}'), val("{{ risk.id }}")]),
         cell(val("{{ risk.label }}")),
         cell(val('{{ risk.category | default="—" }}')),
-        cell(val("{{ risk.cf.source | badge }}")),
         cell(val("{{ risk.initial.criticality | badge }}")),
         cell([val("{{ risk.residual.criticality | badge }}"), txt(" "), blk("{{/each}}")]),
       ] }),
@@ -149,8 +148,9 @@ function build(ann) {
     H1("3. Grille de cotation"), P(blk('{{ table source="levels" }}')),
     H1("4. Registre des risques"),
     note("Registre construit dans Word (boucle de ligne, triée par criticité initiale décroissante) : les "
-       + "colonnes « Sources » et « Criticité » affichent les étiquettes en badges colorés (| badge). "
-       + "Le tableau auto-généré { table source=risks } est illustré dans le modèle éclaté."),
+       + "colonnes « Criticité » affichent les étiquettes en badges colorés (| badge) ; la catégorie est un "
+       + "champ de base, présent dans toute analyse. Le tableau auto-généré { table source=risks } est "
+       + "illustré dans le modèle éclaté."),
     rowLoopRisksTable(),
     H1("5. Mesures de maîtrise"),
     note("Tableau construit dans Word : la ligne de corps est répétée pour chaque mesure — la balise "
@@ -168,8 +168,8 @@ function build(ann) {
     P(blk("{{#each risk.measures }}")),
     P([val("{{ measure.label }}"), txt(" ("), val("{{ measure.status }}"), txt(")")], { bullet: { level: 0 } }),
     P(blk("{{/each}}")), P(blk("{{/each}}")),
-    H1("7. Profil par source de risque"),
-    P(blk('{{ radar dimension="cf.source" metric="average" evaluation="overlay" title="Criticité moyenne par source" }}')),
+    H1("7. Profil par catégorie de risque"),
+    P(blk('{{ radar dimension="category" metric="average" evaluation="overlay" title="Criticité moyenne par catégorie" }}')),
   ].filter(Boolean) }] });
 
   const eclate = () => new Document({ styles: STYLES, sections: [{ children: [
@@ -265,7 +265,7 @@ function build(ann) {
     H1("Chiffres clés"),
     note("Tuiles clés : Risques · Mesures · Risques réduits · % traité."),
     P(blk('{{ stat type="counters" }}')),
-    note("Condition de niveau bloc : chaque balise {{#if}} / {{else}} / {{/if}} est SEULE sur son paragraphe."),
+    note("Condition de niveau bloc : chaque balise « #if », « else », « /if » est SEULE sur son paragraphe (voir les balises bleues ci-dessous)."),
     P(blk('{{#if analysis.reduced_count > "0"}}')),
     P([val("{{ analysis.reduced_count }}"), txt(" risque(s) réduit(s) sur "), val("{{ analysis.risks_count }}"),
        txt(" — la maîtrise progresse.")]),
@@ -275,7 +275,7 @@ function build(ann) {
 
     H1("Couverture du traitement"),
     P(blk('{{ stat type="coverage" }}')),
-    note("Condition {{#unless}} : le message ne s'affiche que si aucun lien n'est défini."),
+    note("Condition « #unless » : le message ne s'affiche que si aucun lien n'est défini."),
     P(blk('{{#unless analysis.links_count > "0"}}')),
     P(txt("⚠ Aucun lien risque↔mesure n'est défini : la couverture ne peut pas être évaluée.")),
     P(blk("{{/unless}}")),
@@ -299,7 +299,7 @@ function build(ann) {
     rowLoopEcheancesTable(),
 
     H1("Mesures en retard"),
-    note("Boucle filtrée sur les mesures en retard ; le {{else}} affiche un repli quand la liste est vide."),
+    note("Boucle filtrée sur les mesures en retard ; la branche « else » affiche un repli quand la liste est vide."),
     P(blk('{{#each measures filter="overdue=\'true\'" sort="due_date"}}')),
     P([txt("⚠ ", { color: "C0392B", bold: true }), val("{{ measure.id }}"), txt(" — "), val("{{ measure.label }}"),
        txt(" · échéance "), val('{{ measure.due_date | date="JJ/MM/AAAA" }}'), txt(" · "), val("{{ measure.responsible }}")],
@@ -309,7 +309,7 @@ function build(ann) {
     P(blk("{{/each}}")),
 
     H1("Points de vigilance"),
-    note("Boucle filtrée sur la criticité résiduelle (importante ou maximale) ; le {{else}} affiche un repli "
+    note("Boucle filtrée sur la criticité résiduelle (importante ou maximale) ; la branche « else » affiche un repli "
        + "quand aucun risque ne subsiste à ce niveau."),
     P(blk('{{#each risks filter="criticality_residual=\'important\' or criticality_residual=\'maximal\'" sort="criticality_residual:desc"}}')),
     P([val("{{ risk.id }}"), txt(" — "), val("{{ risk.label }}"), txt("  "),
