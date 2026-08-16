@@ -9616,6 +9616,38 @@ async function tmplInjectImages(parts){
   if(!/Extension="png"/i.test(cx))cx=cx.replace("</Types>",'<Default Extension="png" ContentType="image/png"/></Types>');
   parts[cp]=fflate.strToU8(cx);
 }
+// Force la mise à jour des champs (table des matières, numéros de page…) à l'ouverture dans Word,
+// comme l'export natif : <w:updateFields w:val="true"/> dans word/settings.xml (créé si absent, avec
+// sa relation et son type de contenu). Sans cela, une TOC insérée dans le modèle reste figée sur son
+// contenu au moment de la création (ex. un titre de boucle « {{ risk.id }} — {{ risk.label }} »).
+function tmplEnsureUpdateFields(parts){
+  const key="word/settings.xml";
+  if(parts[key]){
+    let xml=fflate.strFromU8(parts[key]);
+    if(/<w:updateFields\b/.test(xml)){
+      xml=xml.replace(/<w:updateFields\b[^>]*\/>/,'<w:updateFields w:val="true"/>')
+             .replace(/<w:updateFields\b[^>]*>[\s\S]*?<\/w:updateFields>/,'<w:updateFields w:val="true"/>');
+    } else if(/<w:settings\b[^>]*>/.test(xml)){
+      xml=xml.replace(/(<w:settings\b[^>]*>)/,'$1<w:updateFields w:val="true"/>');
+    } else return;                                   // settings.xml inattendu : ne pas risquer de le casser
+    parts[key]=fflate.strToU8(xml);
+    return;
+  }
+  parts[key]=fflate.strToU8(XMLD+'<w:settings xmlns:w="'+W_NS+'"><w:updateFields w:val="true"/></w:settings>');
+  const rp="word/_rels/document.xml.rels";
+  let rx=parts[rp]?fflate.strFromU8(parts[rp]):(XMLD+'<Relationships '+RELS_XMLNS+'></Relationships>');
+  if(!/Target="settings\.xml"/.test(rx)){
+    let n=1; while(new RegExp('Id="rId'+n+'"').test(rx))n++;
+    rx=rx.replace("</Relationships>",'<Relationship Id="rId'+n+'" Type="'+OD_REL+'/settings" Target="settings.xml"/></Relationships>');
+    parts[rp]=fflate.strToU8(rx);
+  }
+  const cp="[Content_Types].xml";
+  if(parts[cp]){
+    let cx=fflate.strFromU8(parts[cp]);
+    if(!/settings\.xml/.test(cx))cx=cx.replace("</Types>",'<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/></Types>');
+    parts[cp]=fflate.strToU8(cx);
+  }
+}
 // Lot 2-5 : normalise, applique {{ report }}, développe boucles/blocs + substitue valeurs, injecte les images, re-zippe.
 async function tmplRender(parts){
   tmplReport={date_format:null,filter:null}; tmplWarnings=[]; tmplImgReqs=[];
@@ -9642,6 +9674,7 @@ async function tmplRender(parts){
     parts[it.p]=fflate.strToU8(out);
   });
   if(tmplImgReqs.length)await tmplInjectImages(parts);                                       // pass 3 : images (async)
+  tmplEnsureUpdateFields(parts);                                                             // TOC/champs à jour à l'ouverture (comme l'export natif)
   return ooxmlBlob(parts,DOCX_MIME);
 }
 async function tmplExport(file){
