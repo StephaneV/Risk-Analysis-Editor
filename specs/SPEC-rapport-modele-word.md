@@ -327,7 +327,8 @@ Le rendu **image** (matrice, radar) passe par les **blocs** du §4, pas par un f
 
 Attributs de `{{#each <collection> …}}` : `filter` (§8), `sort` (`field[:asc|desc]`, **multi-clés**
 séparées par des virgules : `sort="target,code"` — départage successif), `limit` (N premiers),
-`group_by` (regroupement, ci-dessous), `report_filter="none"`.
+`group_by` (regroupement, ci-dessous), `report_filter="none"`, `autofit` (colonnes ajustées au contenu,
+ci-dessous).
 
 - **Collections** : `risks`, `measures`, `links`, `grid.levels`, `custom_fields`,
   `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, et les **sous-collections**
@@ -345,6 +346,15 @@ séparées par des virgules : `sort="target,code"` — départage successif), `l
 - **Boucle de ligne de tableau** *(essentiel)* : si `{{#each …}}` et `{{/each}}` sont dans une **ligne
   de tableau Word**, c'est **la ligne** qui est répétée par élément (façon naturelle de construire un
   tableau mis en forme dans le modèle). Sinon, ce sont les **paragraphes** encadrés qui sont répétés.
+- **Colonnes ajustées au contenu** — drapeau **`autofit`** sur la boucle de ligne
+  (`{{#each risks autofit }} … {{/each}}`). Après rendu des lignes, `tmplTableAutofit(tbl)` **mesure la
+  longueur du texte produit** dans chaque colonne (valeurs réelles, pas la longueur des tags) et
+  **réécrit `tblGrid`/`tcW`** au prorata (largeur d'un caractère ≈ 110 dxa, marge 340, plafond 40 car.,
+  mini 500), **largeur totale du tableau conservée**, disposition forcée en `fixed`. Corrige les colonnes
+  (typiquement l'**ID**) surdimensionnées dans le modèle par la longueur des balises. Approche
+  **déterministe** (pas d'`autofit` OOXML : LibreOffice ne recalcule pas les colonnes de façon fiable au
+  rendu) → **rendu identique Word / LibreOffice**. `gridSpan` pris en compte ; tableaux imbriqués intacts ;
+  sans le drapeau, largeurs du modèle **inchangées**.
 - **Repli si vide** (boucle de paragraphes) : `{{#each … }} … {{else}} … {{/each}}` — les paragraphes
   après `{{else}}` sont rendus **une fois** quand la collection (après filtre/limite) est **vide**
   (`elseAt` dans `tmplRenderContainer`). Sinon, seul le corps avant `{{else}}` est répété par élément.

@@ -258,7 +258,7 @@ Ex. : `{{ risk.initial.color | swatch }}` · `{{ risk.cf.source | badge }}` · `
 - **Collections** : `risks`, `measures`, `links`, `grid.levels`, `custom_fields`,
   `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, et les **sous-collections**
   (`risk.measures`, `measure.risks`, `field.items`, …). Imbrication libre.
-- **Attributs** : `filter`, `sort`, `limit`, `group_by`, `report_filter`.
+- **Attributs** : `filter`, `sort`, `limit`, `group_by`, `report_filter`, `autofit`.
 - **Tri multi-clés** : `sort="champ1[:asc|desc], champ2[:asc|desc], …"` — les clés sont appliquées
   successivement (départage). Ex. `sort="target,code"` (cible puis code), `sort="criticality_initial:desc,label"`.
 - **Regroupement** `group_by="field"` → boucle de **groupes** : `{{ group.label }}`, `{{ group.count }}`,
@@ -270,6 +270,13 @@ Ex. : `{{ risk.initial.color | swatch }}` · `{{ risk.cf.source | badge }}` · `
 - **Boucle de ligne de tableau** : placez `{{#each …}}` au début de la 1re cellule d'une ligne et
   `{{/each}}` à la fin de la dernière → **la ligne** est répétée par élément (reprend la mise en forme
   du modèle).
+- **Colonnes ajustées au contenu** — drapeau `autofit` sur la boucle de ligne :
+  `{{#each risks autofit }} … {{/each}}`. Le générateur **mesure le texte réellement produit** dans
+  chaque colonne (« R1 », pas la longueur du tag `{{ risk.id }}`) et **répartit la largeur totale du
+  tableau au prorata**. Résout la colonne ID (ou toute colonne à contenu court) trop large parce que
+  calibrée dans le modèle sur la longueur des balises. La largeur totale du tableau est **conservée** ;
+  les largeurs sont écrites en dur (rendu identique dans Word et LibreOffice). Sans le drapeau, les
+  largeurs du modèle sont **respectées à l'identique**.
 - **Repli si vide** : `{{#each … }} … {{else}} … {{/each}}` — le contenu placé après `{{else}}` s'affiche
   quand la collection (**après filtre**) est vide. Ex. lister les mesures en retard, sinon « Aucune mesure
   en retard ». (Portée paragraphe.)

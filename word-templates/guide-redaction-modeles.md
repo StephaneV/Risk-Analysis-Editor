@@ -80,6 +80,12 @@ Dans la **ligne de corps** (3 cellules), écrivez :
 
 La balise d'ouverture ouvre la boucle, la balise de fermeture (dans la dernière cellule) la referme.
 
+> **Astuce — colonnes trop larges.** Dans le modèle, une colonne se dimensionne mal parce qu'elle
+> contient un tag long (`{{ risk.id }}` ≈ 13 caractères) alors que la valeur produite est courte
+> (« R1 ») : la colonne ID ressort trop large. Ajoutez le drapeau **`autofit`** à la boucle de ligne —
+> `{{#each risks autofit }}` — et le générateur ajuste chaque colonne à son **contenu réel** (largeur
+> totale du tableau conservée). Sans le drapeau, vos largeurs sont respectées telles quelles.
+
 ### 4.3 Un tableau « clé en main »
 Sans construire le tableau vous-même : `{{ table source="risks" }}` (colonnes par défaut de l'application) ou
 `{{ table source="risks" columns="id,label,category,criticality_initial,criticality_residual" }}`.

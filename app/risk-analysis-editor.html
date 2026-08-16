@@ -9147,7 +9147,7 @@ function tmplRowSection(row){
   return null;
 }
 function tmplRenderTable(tbl,ctx){
-  let node=tbl.firstChild;
+  let node=tbl.firstChild,doAutofit=false;
   while(node){
     if(!(node.nodeType===1&&node.localName==="tr")){ node=node.nextSibling; continue; }
     const next=node.nextSibling, sec=tmplRowSection(node);
@@ -9175,6 +9175,7 @@ function tmplRenderTable(tbl,ctx){
     if(sec&&(sec.close||sec.elseMarker)){ tmplWarn("tw_if_orphan"); tbl.removeChild(node); node=next; continue; }
     const info=tmplRowLoop(node);
     if(info){
+      if(info.attrs&&info.attrs.autofit)doAutofit=true;                 // {{#each … autofit}} : colonnes ajustées au contenu réel
       tmplLoopIterations(info.collection,info.attrs,ctx).forEach(itr=>{
         const childCtx=ctx.concat(itr.frames);
         const clone=node.cloneNode(true);
@@ -9186,6 +9187,49 @@ function tmplRenderTable(tbl,ctx){
     } else Array.from(node.children).filter(c=>c.localName==="tc").forEach(tc=>tmplRenderContainer(tc,ctx));
     node=next;
   }
+  if(doAutofit)tmplTableAutofit(tbl);
+}
+/* Ajuste les largeurs de colonnes d'un tableau d'auteur d'après son CONTENU réel
+   (opt-in via {{#each … autofit }}). Le moteur mesure le texte effectivement rendu dans
+   chaque colonne (« R1 », pas le tag « {{ risk.id }} ») et répartit la largeur totale du
+   tableau au prorata — la colonne ID cesse d'être surdimensionnée. Les largeurs sont
+   écrites en dur (gridCol + tcW, disposition « fixed ») : rendu identique dans Word et
+   LibreOffice, sans dépendre de leur auto-ajustement (que LibreOffice n'applique pas de
+   façon fiable). On ne touche qu'aux lignes/cellules DIRECTES (tableaux imbriqués intacts). */
+function tmplTableAutofit(tbl){
+  const doc=tbl.ownerDocument, kids=el=>Array.from(el.children||[]);
+  const grid=kids(tbl).find(c=>c.localName==="tblGrid"); if(!grid)return;
+  const cols=kids(grid).filter(c=>c.localName==="gridCol"); const n=cols.length; if(!n)return;
+  const total=cols.reduce((a,c)=>a+(parseInt(c.getAttribute("w:w"),10)||0),0)||9000;   // largeur totale conservée
+  const rows=kids(tbl).filter(c=>c.localName==="tr");
+  const cellText=tc=>Array.from(tc.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent||"").join("");
+  const gridSpan=tc=>{const p=kids(tc).find(c=>c.localName==="tcPr");const g=p&&kids(p).find(c=>c.localName==="gridSpan");const v=g&&parseInt(g.getAttribute("w:val"),10);return v>1?v:1;};
+  const maxLen=new Array(n).fill(0);                                                    // longueur de contenu max par colonne
+  rows.forEach(tr=>{ let ci=0;
+    kids(tr).filter(c=>c.localName==="tc").forEach(tc=>{ const sp=gridSpan(tc);
+      if(sp===1&&ci<n){ const L=cellText(tc).trim().length; if(L>maxLen[ci])maxLen[ci]=L; }
+      ci+=sp; });
+  });
+  const CHARW=110, PAD=340, CAP=40, MINW=500;                                           // dxa : largeur moy. d'un car., marges, plafond de longueur, mini
+  const nat=maxLen.map(L=>PAD+CHARW*Math.min(L,CAP));
+  const sum=nat.reduce((a,b)=>a+b,0)||1;
+  const w=nat.map(v=>Math.max(MINW,Math.round(v*total/sum)));                           // mise à l'échelle sur la largeur totale
+  const diff=total-w.reduce((a,b)=>a+b,0);                                              // corrige arrondis/planchers sur la colonne la plus large
+  if(diff!==0){ let k=0; for(let i=1;i<n;i++)if(w[i]>w[k])k=i; w[k]=Math.max(MINW,w[k]+diff); }
+  const lay=kids(tbl).find(c=>c.localName==="tblPr");                                   // disposition -> fixed (largeurs autoritaires)
+  if(lay){ let tl=kids(lay).find(c=>c.localName==="tblLayout");
+    if(!tl){tl=doc.createElementNS(W_NS,"w:tblLayout");lay.appendChild(tl);} tl.setAttribute("w:type","fixed"); }
+  cols.forEach((c,i)=>c.setAttribute("w:w",String(w[i])));                              // écrit la grille
+  rows.forEach(tr=>{ let ci=0;                                                          // écrit tcW (somme des colonnes couvertes si gridSpan)
+    kids(tr).filter(c=>c.localName==="tc").forEach(tc=>{ const sp=gridSpan(tc);
+      let ww=0; for(let k=0;k<sp&&ci+k<n;k++)ww+=w[ci+k];
+      let p=kids(tc).find(c=>c.localName==="tcPr");
+      if(!p){p=doc.createElementNS(W_NS,"w:tcPr");tc.insertBefore(p,tc.firstChild);}
+      let cw=kids(p).find(c=>c.localName==="tcW");
+      if(!cw){cw=doc.createElementNS(W_NS,"w:tcW");p.insertBefore(cw,p.firstChild);}
+      cw.setAttribute("w:w",String(ww)); cw.setAttribute("w:type","dxa");
+      ci+=sp; });
+  });
 }
 /* ---- Lot 4 : bloc {{ table … }} -> <w:tbl> généré (réutilise dxReportTable / dxTbl) ---- */
 // Correspondance noms de colonnes du modèle (anglais) -> clés internes des registres.
