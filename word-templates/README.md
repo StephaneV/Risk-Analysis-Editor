@@ -10,6 +10,10 @@ l'analyse courante.
 Dans l'application : **Fichier › Exporter avec un modèle Word…**, choisissez l'un des `.docx` ci-dessous,
 puis ouvrez le document généré dans Word.
 
+**Pour rédiger votre propre modèle**, commencez par le
+[**guide de rédaction**](guide-redaction-modeles.md) (tutoriel pas à pas), puis gardez le
+[catalogue des mots-clés](catalogue-mots-cles-rapport.md) sous la main comme référence.
+
 ## Contenu
 
 | Fichier | Rôle |
@@ -22,7 +26,8 @@ puis ouvrez le document généré dans Word.
 | `modele-rapport-complet-par-categorie.docx` | Idem en **rapport éclaté par catégorie** : zone d'introduction, un chapitre par catégorie (sections filtrées), puis annexe. |
 | `modele-rapport-complet-par-risque.docx` | Idem en **rapport éclaté par risque** : un chapitre par risque (détail + trajectoire + mesures), puis annexe. |
 | `…-annote.docx` | Variantes **annotées** (notes explicatives grises) des modèles de démonstration. ⚠️ Ne pas utiliser telles quelles : les notes apparaîtraient dans le rapport. |
-| [`catalogue-mots-cles-rapport.md`](catalogue-mots-cles-rapport.md) | **Référence des mots-clés** (valeurs, blocs, boucles, filtres, échappement) pour rédiger vos propres modèles. |
+| [`guide-redaction-modeles.md`](guide-redaction-modeles.md) | **Guide de rédaction** (tutoriel pas à pas) pour créer votre propre modèle. |
+| [`catalogue-mots-cles-rapport.md`](catalogue-mots-cles-rapport.md) | **Référence des mots-clés** (valeurs, blocs, boucles, filtres, échappement). |
 | `build-word-templates.js` | Générateur des modèles de **démonstration** (classique, éclaté, référentiels, tableau de bord) — propres + annotés. |
 | `build-rapport-complet-classique.js` | Générateur de `modele-rapport-complet-classique.docx` (reproduction fidèle du rapport natif). |
 | `build-rapport-complet-eclate.js` | Générateur de `modele-rapport-complet-par-categorie.docx` et `…-par-risque.docx`. |
