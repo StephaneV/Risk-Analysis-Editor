@@ -8322,7 +8322,10 @@ const W_NS="http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 function tmplXmlParts(parts){return Object.keys(parts).filter(p=>/^word\/(document|header\d+|footer\d+)\.xml$/.test(p));}
 /* Fusionne, dans chaque paragraphe, les runs de texte ADJACENTS de mise en forme identique
    (même w:rPr) : recolle les balises {{…}} scindées par Word, sans changer le rendu. N'agit que
-   sur les runs « texte simple » (rPr + w:t) — jamais sur un run portant image/saut/tabulation. */
+   sur les runs « texte simple » (rPr + w:t) — jamais sur un run portant image/saut/tabulation.
+   Les marqueurs VIDES que Word insère au milieu d'une balise (vérification orthographique/grammaticale
+   « w:proofErr », signets « w:bookmarkStart/End ») ne portent aucun texte visible : ils sont ignorés
+   pour ne pas interrompre la fusion (les proofErr, purement consultatifs, sont retirés). */
 function tmplNormalizeXml(xml){
   let doc;
   try{doc=new DOMParser().parseFromString(xml,"application/xml");}catch(e){return xml;}
@@ -8334,6 +8337,8 @@ function tmplNormalizeXml(xml){
   for(const p of Array.from(paras)){
     let acc=null;                                    // run accumulateur courant
     for(const r of Array.from(p.children)){
+      if(r.localName==="proofErr"){p.removeChild(r);continue;}                 // marqueur de correction : retiré, n'interrompt pas la fusion
+      if(r.localName==="bookmarkStart"||r.localName==="bookmarkEnd")continue;  // signet (vide) : conservé, mais n'interrompt pas la fusion
       if(r.localName!=="r"||!simpleText(r)){acc=null;continue;}
       if(acc&&rprKey(acc)===rprKey(r)){
         let at=child(acc,"t");if(!at){at=doc.createElementNS(W_NS,"w:t");acc.appendChild(at);}
