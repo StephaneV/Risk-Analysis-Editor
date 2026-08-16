@@ -140,6 +140,9 @@ Tous acceptent `filter="…"` (§7) et `report_filter="none"`.
 ### 4.2 `{{ radar … }}`
 `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`, `cumulative`, `weighted`, `count`),
 `evaluation` (`initial`, `residual`, `side`, `overlay`), `title`, `width` · `height` (§4.8), `filter`.
+Le champ de `dimension` d'un `cf.<code>` doit être un **champ personnalisé de risque** de type
+*sélection* / *cases* / *étiquettes* ; s'il est introuvable, un **avertissement** est émis (le radar n'est
+pas produit).
 
 ### 4.3 `{{ table … }}`
 | Attribut | Valeurs (défaut) |
