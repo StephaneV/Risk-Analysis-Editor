@@ -2,7 +2,7 @@
   ============================================================================
   Risk Analysis Editor — éditeur de matrices de risque (format .rae.json)
   ----------------------------------------------------------------------------
-  Version  : 2.0.1
+  Version  : 2.0.2
   Auteur   : Stéphane Vinter
   Licence  : MIT — © 2026 Stéphane Vinter (voir LICENSE)
   GitHub   : https://github.com/StephaneV/Risk-Analysis-Editor
@@ -1670,6 +1670,8 @@ const I18N = {
     rc_head_logo:"Afficher le logo dans l'en-tête",
     rc_head_hint:"L'en-tête et le pied de page sont réservés à l'export Word : ils n'apparaissent pas dans le rapport à l'écran ni à l'impression PDF. Les variables « {page} » et « {pages} » n'ont de sens que dans Word.",
     rc_orient_title:"Orientation du rapport", rc_orient_portrait:"Portrait", rc_orient_landscape:"Paysage",
+    rc_badge_title:"Style des badges", rc_badge_cell:"Cellule colorée", rc_badge_flat:"Surlignage", rc_badge_chip:"Puce nette", rc_badge_pill:"Pastille arrondie",
+    rc_badge_hint:"S'applique aux étiquettes de criticité, de statut et aux tags (rapport à modèle Word). Surchargeable par tableau.",
     rc_scope_title:"Périmètre du rapport", rc_scope_all:"Analyse complète",
     rc_scope_filtered:"Sous-ensemble filtré (selon les filtres et la recherche actifs)",
     rc_iterate_title:"Rapport éclaté", rc_iterate_cap:"Répéter le rapport pour chaque valeur d'un critère (chapitres filtrés). Les sections se répartissent en tête / répétées / annexe.",
@@ -2019,6 +2021,8 @@ const I18N = {
     rc_head_logo:"Show the logo in the header",
     rc_head_hint:"The header and footer are reserved for the Word export: they do not appear in the on-screen report or in PDF printing. The “{page}” and “{pages}” variables only make sense in Word.",
     rc_orient_title:"Report orientation", rc_orient_portrait:"Portrait", rc_orient_landscape:"Landscape",
+    rc_badge_title:"Badge style", rc_badge_cell:"Filled cell", rc_badge_flat:"Highlight", rc_badge_chip:"Neat chip", rc_badge_pill:"Rounded pill",
+    rc_badge_hint:"Applies to criticality, status and tag labels (Word-template report). Can be overridden per table.",
     rc_scope_title:"Report scope", rc_scope_all:"Full analysis",
     rc_scope_filtered:"Filtered subset (per active filters and search)",
     rc_iterate_title:"Split report", rc_iterate_cap:"Repeat the report for each value of a criterion (filtered chapters). Sections are placed in header / repeated / appendix.",
@@ -2368,6 +2372,8 @@ const I18N = {
     rc_head_logo:"Mostra il logo nell'intestazione",
     rc_head_hint:"L'intestazione e il piè di pagina sono riservati all'export Word: non compaiono nel report a schermo né nella stampa PDF. Le variabili « {page} » e « {pages} » hanno senso solo in Word.",
     rc_orient_title:"Orientamento del report", rc_orient_portrait:"Verticale", rc_orient_landscape:"Orizzontale",
+    rc_badge_title:"Stile dei badge", rc_badge_cell:"Cella colorata", rc_badge_flat:"Evidenziazione", rc_badge_chip:"Pastiglia netta", rc_badge_pill:"Pastiglia arrotondata",
+    rc_badge_hint:"Si applica alle etichette di criticità, stato e ai tag (report con modello Word). Sovrascrivibile per tabella.",
     rc_scope_title:"Ambito del report", rc_scope_all:"Analisi completa",
     rc_scope_filtered:"Sottoinsieme filtrato (secondo i filtri e la ricerca attivi)",
     rc_iterate_title:"Report suddiviso", rc_iterate_cap:"Ripeti il report per ogni valore di un criterio (capitoli filtrati). Le sezioni si dividono in intestazione / ripetute / allegato.",
@@ -5477,6 +5483,7 @@ function reportCfg(){
   const cfg={};
   cfg.scope = raw.scope==="filtered"?"filtered":"all";
   cfg.orientation = raw.orientation==="landscape"?"landscape":"portrait";
+  cfg.badge_style = ["cell","flat","chip","pill"].indexOf(raw.badge_style)>=0 ? raw.badge_style : "cell";   // style de badge par défaut du rapport
   cfg.cover = Object.assign({on:true,logo:"",title:"",subtitle:"",show_organization:true,show_author:true,show_date:true,version:"",confidentiality:"",free_text:""}, raw.cover||{});
   cfg.cover.on = raw.cover? raw.cover.on!==false : true;
   cfg.toc = { on: raw.toc? raw.toc.on!==false : true };
@@ -7578,6 +7585,10 @@ function ooxmlBlob(files,mime){
   return new Blob([fflate.zipSync(enc,{level:6})],{type:mime});
 }
 function hex6(c){c=String(c||"").replace("#","");if(c.length===3)c=c.split("").map(x=>x+x).join("");return c.toUpperCase();}
+// Assombrit une couleur hex (facteur < 1) — utilisé pour la bordure discrète d'un badge « chip ».
+function hexDarken(c,f){c=hex6(c);const n=parseInt(c,16)||0;f=(f==null?0.82:f);
+  const r=Math.round(((n>>16)&255)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f);
+  return ((r<<16)|(g<<8)|b).toString(16).padStart(6,"0").toUpperCase();}
 function exportBaseName(){return slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";}
 function corePropsXML(){
   const md=analyse.metadata||{},d=new Date().toISOString().replace(/\.\d+Z$/,"Z");
@@ -7788,6 +7799,25 @@ function dxTbl(rows,widths){
   return h+'</w:tbl>';
 }
 function dxBadgeCell(label,colr){return {txt:label,fill:hex6(colr),color:hex6(badgeFg(colr)),b:true,center:true};}
+// Cellule d'un tableau clé en main pour une valeur badgeable, selon le style demandé :
+// "cell" (défaut) = fond de cellule plein ; sinon badge inline centré (flat / chip / pill).
+function dxBadgeCellStyled(label,colr,style){
+  if(!style||style==="cell")return dxBadgeCell(label,colr);
+  const fill=hex6(colr),fg=hex6(badgeFg(colr));
+  if(style==="pill")return {runs:tmplBadgePillRun(label,fill,fg),center:true};
+  if(style==="chip")return {runs:tmplBadgeChipRun("",label,fg,fill),center:true};
+  return {runs:tmplRunXml("",label,fg,fill),center:true};   // flat (surlignage)
+}
+// Runs XML d'une colonne « tags » multi-valeurs rendue en badges (flat/chip/pill), une puce par valeur.
+function dxTagsBadgeRuns(f,val,style){
+  const arr=Array.isArray(val)?val:(val!=null&&val!==""?[val]:[]);
+  if(!arr.length)return null;
+  const sep='<w:r><w:t xml:space="preserve"> </w:t></w:r>';
+  return arr.map((c,i)=>{const it=(f.items||[]).find(x=>x.code===c),label=it?cfItemLabel(it):String(c),
+      col=hex6((it&&it.color)||"888888"),fg=hex6(badgeFg(col));
+    const run=style==="pill"?tmplBadgePillRun(label,col,fg):(style==="chip"?tmplBadgeChipRun("",label,fg,col):tmplRunXml("",label,fg,col));
+    return (i>0?sep:"")+run;}).join("");
+}
 /* Markdown -> WordprocessingML, via le HTML du moteur Markdown maison (vocabulaire connu).
    Listes rendues par préfixe (• / n.) + retrait : volontairement simple (pas de numbering.xml). */
 function mdDocxBlocks(md){
@@ -7892,21 +7922,21 @@ async function dxLogoPng(dataUri){
 /* ---- Tableaux de registre pilotés par les colonnes choisies (voir reportCfg) ---- */
 const DX_COLW={id:.6,risk:2,measure:2,cat:1.1,owner:1.1,initial:1.2,residual:1.2,evolution:1.1,measures:1.5,
   type:1,status:1.1,resp:1.1,due:1,cost:.8,covered:1.5,rid:.7,mid:.7,notes:1.8};
-function dxCellFor(tbl,key,row){
+function dxCellFor(tbl,key,row,bstyle){
   if(tbl==="risks"){
     if(key==="id")return {txt:row.id,b:true};
     if(key==="risk")return {txt:row.label};
     if(key==="cat")return {txt:row.category||"—"};
     if(key==="owner")return {txt:row.owner||"—"};
-    if(key==="initial"){const ev=row.initial_assessment,c=critOfEval(ev);return dxBadgeCell(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color);}
-    if(key==="residual"){const ev=residual(row),c=critOfEval(ev);return dxBadgeCell(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color);}
+    if(key==="initial"){const ev=row.initial_assessment,c=critOfEval(ev);return dxBadgeCellStyled(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color,bstyle);}
+    if(key==="residual"){const ev=residual(row),c=critOfEval(ev);return dxBadgeCellStyled(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color,bstyle);}
     if(key==="evolution"){const d=scoreOf(residual(row).probability,residual(row).severity)-scoreOf(row.initial_assessment.probability,row.initial_assessment.severity);return {txt:(d>0?"+":"")+d,center:true};}
     if(key==="measures"){const m=measuresOfRisk(row.id);return {txt:m.length?m.join(", "):"—"};}
   }else if(tbl==="measures"){
     if(key==="id")return {txt:row.id,b:true};
     if(key==="measure")return {txt:row.label};
     if(key==="type")return {txt:row.type?typeLabel(row.type):"—"};
-    if(key==="status"){const sc=row.status?STATUS_COLORS[row.status]:null;return sc?dxBadgeCell(statusLabel(row.status),sc.bg):{txt:row.status?statusLabel(row.status):"—",center:true};}
+    if(key==="status"){const sc=row.status?STATUS_COLORS[row.status]:null;return sc?dxBadgeCellStyled(statusLabel(row.status),sc.bg,bstyle):{txt:row.status?statusLabel(row.status):"—",center:true};}
     if(key==="resp")return {txt:row.responsible||"—"};
     if(key==="due")return {txt:fmtDate(row.due_date)||"—"};
     if(key==="cost")return {txt:(row.cost!=null&&row.cost!=="")?String(row.cost):"—"};
@@ -7920,11 +7950,13 @@ function dxCellFor(tbl,key,row){
   }
   if(key.indexOf("cf:")===0){
     const f=customFieldsFor(cfTargetOf(tbl)).find(x=>"cf:"+x.code===key);
-    if(f){const v=cfDisplayTxt(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
+    if(f){
+      if(f.type==="tags"&&(bstyle==="pill"||bstyle==="chip"||bstyle==="flat")){const runs=dxTagsBadgeRuns(f,(row.custom||{})[f.code],bstyle);if(runs)return {runs};}
+      const v=cfDisplayTxt(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
   }
   return {txt:"—"};
 }
-function dxReportTable(tbl,colKeys,rows,cw){
+function dxReportTable(tbl,colKeys,rows,cw,bstyle){
   cw=cw||DX_CW;
   const cm=colMap(tbl),keys=(colKeys||[]).filter(k=>cm[k]&&cm[k].pinned!=="last");
   if(!keys.length)return dxP(dxRun("—",{color:"7A8699"}),{sa:120});
@@ -7932,7 +7964,7 @@ function dxReportTable(tbl,colKeys,rows,cw){
   const widths=wts.map(w=>Math.max(700,Math.round(cw*w/sum)));
   const centered={initial:1,residual:1,evolution:1,status:1};
   const header=keys.map(k=>({txt:cm[k].label,b:true,fill:"EEF2F8",center:!!centered[k]}));
-  const data=rows.length?rows.map(row=>keys.map(k=>dxCellFor(tbl,k,row))):[keys.map((k,i)=>({txt:i===0?"—":"",center:i===0}))];
+  const data=rows.length?rows.map(row=>keys.map(k=>dxCellFor(tbl,k,row,bstyle))):[keys.map((k,i)=>({txt:i===0?"—":"",center:i===0}))];
   return dxTbl([header].concat(data),widths);
 }
 function dxPlanTable(list,cw){return dxReportTable("measures",["id","measure","status","resp","due"],list,cw);}
@@ -8856,19 +8888,21 @@ function tmplLoopIterations(name,attrs,ctx){
 // s'applique, sinon null (rendu texte classique). Couleur -> carré ; tags -> badge (fond) ou carré+texte.
 function tmplRichParts(res,mods){
   if(!mods||(!mods.swatch&&!mods.badge))return null;
+  // style de badge : bare {{ …| badge }} => défaut du rapport (tmplReport.badge) ; sinon valeur explicite (flat|chip|pill|cell)
+  const bstyle=(mods.badge===true||["","1","true"].indexOf(String(mods.badge).toLowerCase())>=0)?(tmplReport.badge||"flat"):String(mods.badge).toLowerCase();
   if(res.kind==="cf"&&res.field&&res.field.type==="tags"){
     const v=res.value,arr=Array.isArray(v)?v:(v!=null&&v!==""?[v]:[]);
     if(!arr.length)return null;
     const sep=mods.join!=null?mods.join:" ",out=[];
     arr.forEach((c,i)=>{const it=(res.field.items||[]).find(x=>x.code===c),label=it?cfItemLabel(it):String(c),raw=(it&&it.color)||"#888888";
       if(i>0)out.push({type:"text",text:sep});
-      if(mods.badge)out.push({type:"badge",text:label,fill:hex6(raw),fg:hex6(badgeFg(raw))});
+      if(mods.badge)out.push({type:"badge",style:bstyle,text:label,fill:hex6(raw),fg:hex6(badgeFg(raw))});
       else{out.push({type:"square",fill:hex6(raw)});out.push({type:"text",text:" "+label});}});
     return out;
   }
   if(res.kind==="clabel"&&res.color){   // étiquette colorée (statut, criticité) : badge ou pastille+libellé
     const label=res.value==null?"":String(res.value); if(!label)return null;
-    if(mods.badge)return [{type:"badge",text:label,fill:hex6(res.color),fg:hex6(badgeFg(res.color))}];
+    if(mods.badge)return [{type:"badge",style:bstyle,text:label,fill:hex6(res.color),fg:hex6(badgeFg(res.color))}];
     return [{type:"square",fill:hex6(res.color)},{type:"text",text:" "+label}];
   }
   if(mods.swatch&&res.kind==="text"){const hex=String(res.value||"").trim();
@@ -8883,14 +8917,52 @@ function tmplRunXml(baseInner,text,color,fill){
   if(color!=null)inner+='<w:color w:val="'+color+'"/>';
   return '<w:r><w:rPr>'+inner+'</w:rPr>'+dxT(text)+'</w:r>';
 }
+// Badge « chip » (défaut) : vrai texte, fond coloré + marge intérieure (espaces insécables ombrés)
+// + fine bordure d'une teinte plus sombre. Plus soigné que le simple surlignage, texte réel.
+function tmplBadgeChipRun(baseInner,text,fg,fill){
+  const NB=" ",bdr='<w:bdr w:val="single" w:sz="4" w:space="0" w:color="'+hexDarken(fill,0.78)+'"/>';
+  return tmplRunXml((baseInner||"")+bdr,NB+text+NB,fg,fill);
+}
+// Badge « pill » : pastille arrondie rendue en image (SVG->PNG inline), fidèle au tag HTML.
+// Réservée au corps du document (les images ne sont reliées que dans word/document.xml) ;
+// repli « chip » en en-tête/pied.
+function tmplBadgePillRun(label,fill,fg){
+  const fontPx=14,padX=11,H=26,r=H/2;
+  const ctx=(tmplBadgePillRun._c||(tmplBadgePillRun._c=document.createElement("canvas").getContext("2d")));
+  ctx.font='700 '+fontPx+'px "Segoe UI",Arial,sans-serif';
+  const W=Math.max(H,Math.round(ctx.measureText(label).width+padX*2));
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'">'
+    +'<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="'+r+'" ry="'+r+'" fill="#'+hex6(fill)+'"/>'
+    +'<text x="'+(W/2)+'" y="'+(H/2+0.5)+'" text-anchor="middle" dominant-baseline="central" '
+    +'font-family="Segoe UI,Arial,sans-serif" font-size="'+fontPx+'" font-weight="700" fill="#'+hex6(fg)+'">'+svgEsc(label)+'</text></svg>';
+  const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n,EMU_PX=9525;
+  // W/H de la requête = taille intrinsèque du SVG (rasterizePNG dessine le SVG à cette taille puis
+  // sur-échantillonne ×2). L'image PNG épouse exactement la pastille : aucune marge transparente.
+  tmplImgReqs.push({rid,svg,W,H,fn:"tmplimg"+n+".png"});
+  // Boîte d'affichage = 40 % de la taille native du PNG (celui-ci fait 2× l'affichage via le
+  // sur-échantillon ×2 de rasterizePNG) → Word affiche l'image à 40 %. DISP réduit la pastille.
+  const DISP=0.80;   // 0,8 = 40 % ÷ 50 % (l'affichage par défaut, dû au ×2)
+  // Pastille pensée pour une CELLULE de tableau (usage normal d'un badge). En ligne dans une phrase,
+  // une image inline se cale par le bas sur la ligne de base et « remonte » ; préférer `chip` en flux.
+  return dxDrawingRun(rid,1000+n,Math.round(W*EMU_PX*DISP),Math.round(H*EMU_PX*DISP));
+}
 function tmplRunFromDesc(baseInner,d){
   if(d.type==="square")return tmplRunXml(baseInner,"■",d.fill,null);
-  if(d.type==="badge")return tmplRunXml(baseInner,d.text,d.fg,d.fill);
+  if(d.type==="badge"){
+    if(d.style==="pill")return tmplBlocksAllowed?tmplBadgePillRun(d.text,d.fill,d.fg):tmplBadgeChipRun(baseInner,d.text,d.fg,d.fill);   // pastille (repli chip hors corps)
+    if(d.style==="chip")return tmplBadgeChipRun(baseInner,d.text,d.fg,d.fill);    // puce nette
+    return tmplRunXml(baseInner,d.text,d.fg,d.fill);                              // flat (défaut) — ancien surlignage
+  }
   return tmplRunXml(baseInner,d.text,null,null);
 }
 // Reconstruit une séquence de runs (XML) en un fragment DOM importable dans doc.
 function tmplRunsFragment(runsXml,doc){
-  const wrap='<w:document xmlns:w="'+W_NS+'"><w:body><w:p>'+runsXml+'</w:p></w:body></w:document>';
+  const wrap='<w:document xmlns:w="'+W_NS+'"'+
+    ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'+
+    ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"'+
+    ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'+
+    ' xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
+    '<w:body><w:p>'+runsXml+'</w:p></w:body></w:document>';
   const d=new DOMParser().parseFromString(wrap,"application/xml");
   if(d.getElementsByTagName("parsererror").length)return null;
   const p=d.getElementsByTagNameNS(W_NS,"p")[0],frag=doc.createDocumentFragment();
@@ -9014,7 +9086,8 @@ function tmplScanReport(text){
   for(const tk of tmplTokenize(text)){ if(tk.t!=="tag")continue; const inner=tk.v.trim();
     if(/^report\b/.test(inner)){ const a=tmplParseAttrs(inner.slice(6));
       if(a.date_format!=null)tmplReport.date_format=tmplDateCode(a.date_format)||tmplReport.date_format;
-      if(a.filter!=null)tmplReport.filter=a.filter; } }
+      if(a.filter!=null)tmplReport.filter=a.filter;
+      if(a.badge!=null)tmplReport.badge=String(a.badge).toLowerCase(); } }
 }
 function tmplWalkT(el,fn){Array.from(el.getElementsByTagNameNS(W_NS,"t")).forEach(fn);}
 // Substitution au niveau d'un run <w:r> : texte simple (rapide) ou reconstruction en runs colorés (formats enrichis).
@@ -9206,18 +9279,20 @@ function tmplTableAutofit(tbl){
   const rows=kids(tbl).filter(c=>c.localName==="tr");
   const cellText=tc=>Array.from(tc.getElementsByTagNameNS(W_NS,"t")).map(t=>t.textContent||"").join("");
   const gridSpan=tc=>{const p=kids(tc).find(c=>c.localName==="tcPr");const g=p&&kids(p).find(c=>c.localName==="gridSpan");const v=g&&parseInt(g.getAttribute("w:val"),10);return v>1?v:1;};
-  const maxLen=new Array(n).fill(0), maxTok=new Array(n).fill(0);                       // longueur totale et plus long mot (insécable) par colonne
+  const CHARW=110, PAD=340, CAP=40, IMGPAD=216, EMU_DXA=635;                            // dxa : largeur moy. d'un car., marges, plafond, marge autour d'une image, EMU->dxa
+  const cellImgDxa=tc=>{ let mx=0;                                                      // largeur (dxa) de la plus large image inline de la cellule (ex. pastille « pill »)
+    Array.from(tc.getElementsByTagName("*")).forEach(e=>{ if(e.localName==="extent"){
+      const cx=parseInt(e.getAttribute("cx"),10); if(cx>0)mx=Math.max(mx,Math.round(cx/EMU_DXA)); } }); return mx; };
+  const minW=new Array(n).fill(0), want=new Array(n).fill(0);                           // mini insécable et largeur souhaitée, par colonne
   rows.forEach(tr=>{ let ci=0;
     kids(tr).filter(c=>c.localName==="tc").forEach(tc=>{ const sp=gridSpan(tc);
       if(sp===1&&ci<n){ const txt=cellText(tc).trim();
-        if(txt.length>maxLen[ci])maxLen[ci]=txt.length;
-        const tok=txt.split(/\s+/).reduce((m,x)=>Math.max(m,x.length),0);
-        if(tok>maxTok[ci])maxTok[ci]=tok; }
+        const tok=txt.split(/\s+/).reduce((m,x)=>Math.max(m,x.length),0);              // plus long mot (insécable)
+        let cMin=PAD+CHARW*tok, cWant=PAD+CHARW*Math.min(txt.length,CAP);
+        const img=cellImgDxa(tc); if(img>0){ const iw=img+IMGPAD; if(iw>cMin)cMin=iw; if(iw>cWant)cWant=iw; }
+        if(cMin>minW[ci])minW[ci]=cMin; if(cWant>want[ci])want[ci]=cWant; }
       ci+=sp; });
   });
-  const CHARW=110, PAD=340, CAP=40;                                                     // dxa : largeur moy. d'un car., marges de cellule, plafond de longueur
-  const minW=maxTok.map(L=>PAD+CHARW*L);                                                // mini : ne coupe pas le plus long mot (« R10 », une date, « Organisationnelle »)
-  const want=maxLen.map(L=>PAD+CHARW*Math.min(L,CAP));                                  // souhaité : au prorata du contenu (plafonné)
   const sumMin=minW.reduce((a,b)=>a+b,0);
   let w;
   if(sumMin>=total){ w=minW.map(v=>Math.round(v*total/sumMin)); }                       // trop serré (rare) : au prorata des minis
@@ -9459,7 +9534,8 @@ function tmplTableXml(attrs,ctx){
   if(src==="custom_fields"||src==="fields")return tmplApplyTableStyle(tmplFieldsTableXml(cw,attrs),attrs.style);
   if(["risks","measures","links"].indexOf(src)<0){tmplWarn("tw_table_source",src);return null;}
   const rows=tmplFilteredItems(src,attrs,ctx),keys=tmplTableCols(src,attrs.columns);
-  return tmplApplyTableStyle(dxReportTable(src,keys,rows,cw),attrs.style);
+  const bstyle=(attrs.badge!=null?String(attrs.badge).toLowerCase():tmplReport.badge);   // style des badges (criticité/statut) : attribut ou défaut du rapport
+  return tmplApplyTableStyle(dxReportTable(src,keys,rows,cw,bstyle),attrs.style);
 }
 // Parse un fragment OOXML (un ou plusieurs blocs) et l'importe dans le document cible (fragment).
 function tmplImportXml(fragXml,doc){
@@ -9704,7 +9780,7 @@ function tmplEnsureUpdateFields(parts){
 }
 // Lot 2-5 : normalise, applique {{ report }}, développe boucles/blocs + substitue valeurs, injecte les images, re-zippe.
 async function tmplRender(parts){
-  tmplReport={date_format:null,filter:null}; tmplWarnings=[]; tmplImgReqs=[];
+  tmplReport={date_format:null,filter:null,badge:reportCfg().badge_style}; tmplWarnings=[]; tmplImgReqs=[];   // badge : style par défaut (config rapport), surchargeable par {{ report badge="…" }}
   const items=tmplXmlParts(parts).map(p=>{
     const xml=tmplNormalizeXml(fflate.strFromU8(parts[p]));
     let doc=null; try{doc=new DOMParser().parseFromString(xml,"application/xml");}catch(e){}
@@ -10040,6 +10116,11 @@ function renderReportSettings(){
       '<select class="rc-rowctrl" id="rcOrient" data-role="orientation">'+
       '<option value="portrait"'+(cfg.orientation!=="landscape"?" selected":"")+'>'+esc(t("rc_orient_portrait"))+'</option>'+
       '<option value="landscape"'+(cfg.orientation==="landscape"?" selected":"")+'>'+esc(t("rc_orient_landscape"))+'</option></select></label>'+
+    '<label class="rc-field"><span class="rc-lab">'+esc(t("rc_badge_title"))+'</span>'+
+      '<select class="rc-rowctrl" id="rcBadge" data-role="badge">'+
+      ["cell","flat","chip","pill"].map(v=>'<option value="'+v+'"'+(cfg.badge_style===v?" selected":"")+'>'+esc(t("rc_badge_"+v))+'</option>').join("")+
+      '</select></label>'+
+    '<div class="rc-hint">ℹ '+esc(t("rc_badge_hint"))+'</div>'+
     '<h3>'+esc(t("rc_head"))+'</h3><div class="rc-zones">'+zone("rcHL",t("rc_zone_left"),cfg.header.left)+zone("rcHC",t("rc_zone_center"),cfg.header.center)+zone("rcHR",t("rc_zone_right"),cfg.header.right)+'</div>'+
     '<label class="rc-checks" style="margin-top:10px"><input type="checkbox" id="rcHeadLogo"'+(cfg.header.logo?" checked":"")+'> '+esc(t("rc_head_logo"))+'</label>'+
     '<h3>'+esc(t("rc_foot"))+'</h3><div class="rc-zones">'+zone("rcFL",t("rc_zone_left"),cfg.footer.left)+zone("rcFC",t("rc_zone_center"),cfg.footer.center)+zone("rcFR",t("rc_zone_right"),cfg.footer.right)+'</div>'+
@@ -10059,6 +10140,7 @@ function collectReportCfg(){
   const _mode=(p.querySelector('input[name="rcMode"]:checked')||{}).value||"all";
   store.scope=(_mode==="filtered")?"filtered":"all";
   store.orientation=(rcVal("#rcOrient")==="landscape")?"landscape":"portrait";
+  store.badge_style=(["cell","flat","chip","pill"].indexOf(rcVal("#rcBadge"))>=0)?rcVal("#rcBadge"):"cell";
   store.cover={on:p.querySelector('[data-pin="cover"] input').checked,logo:rcVal("#rcLogoData"),
     title:rcVal("#rcCoverTitle"),subtitle:rcVal("#rcCoverSub"),
     show_organization:rcChk("#rcShowOrg"),show_author:rcChk("#rcShowAuthor"),show_date:rcChk("#rcShowDate"),
@@ -11504,7 +11586,7 @@ function confirmModal(message,onYes,opts){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dynModals.length)dynModals[dynModals.length-1].close();});
 /* ---------- À propos ---------- */
-const APP_VERSION="2.0.1", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
+const APP_VERSION="2.0.2", APP_AUTHOR="Stéphane Vinter", APP_LICENSE="MIT";
 const GITHUB_URL="https://github.com/StephaneV/Risk-Analysis-Editor";
 const SITE_URL="https://www.risk-analysis-editor.com/";
 /* Logo inline (autonome, hors-ligne) : mini-matrice de risque 3×3. Source : docs/images/RAE-logo-mini.svg */

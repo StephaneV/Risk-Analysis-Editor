@@ -154,11 +154,15 @@ mesures/liens liés (**propagation**). Voir catalogue §7.
 `{{ chemin | format }}`. Les plus utiles :
 
 - `date="JJ/MM/AAAA"` · `default="—"` (valeur de repli) · `percent` · `upper` / `lower` · `join="; "` ;
-- `badge` : libellé sur **fond coloré** (statut, criticité, étiquettes) ;
+- `badge` : libellé sur **fond coloré** (statut, criticité, étiquettes). Le style d'un `| badge` **sans
+  valeur** vient du réglage **Style des badges** de l'onglet Rapport (`cell` par défaut). Styles forçables :
+  `badge="flat"` (surlignage), `badge="chip"` (**puce nette** bordée), `badge="pill"` (**pastille
+  arrondie**, comme le rendu HTML). On peut aussi le fixer par tableau clé en main
+  (`{{ table source="risks" badge="pill" }}`) ou globalement (`{{ report badge="pill" }}`) ;
 - `swatch` : **pastille** carrée colorée (couleur) ou pastille + libellé (tags/criticité) ;
 - `codes` / `labels` : champ perso par ses codes ou ses libellés.
 
-Ex. : `{{ measure.status | badge }}` · `{{ risk.initial.criticality | badge }}` ·
+Ex. : `{{ measure.status | badge="pill" }}` · `{{ risk.initial.criticality | badge }}` ·
 `{{ measure.due_date | date="JJ/MM/AAAA" }}` · `{{ risk.owner | default="—" }}`. (Catalogue §5.)
 
 ---

@@ -29,6 +29,7 @@ Directive globale (non affichée), de préférence en tête de document.
 |---|---|---|
 | `filter` | filtre appliqué à **tout** le rapport (§7) | `{{ report filter="category='Accès illégitime'" }}` |
 | `date_format` | format de date par défaut | `{{ report date_format="JJ/MM/AAAA" }}` |
+| `badge` | style de badge par défaut : `cell` · `flat` · `chip` · `pill` (§5) | `{{ report badge="pill" }}` |
 
 Le filtre global se **combine (ET)** aux filtres locaux. Un bloc/boucle l'ignore avec `report_filter="none"`.
 
@@ -152,8 +153,10 @@ pas produit).
 | `sort` | `field[:asc\|desc]` (multi-clés : `field1,field2:desc`) |
 | `style` | nom d'un **style de tableau du modèle** (`<w:tblStyle>`) |
 | `filter` | filtre (§7) |
+| `badge` | style des badges (criticité, statut **et colonnes `tags`** — une puce par valeur) de ce tableau : `cell` · `flat` · `chip` · `pill` (défaut : style du rapport, §5) |
 
-Ex. : `{{ table source="risks" columns="id,label,category,criticality_initial,criticality_residual" }}`
+Ex. : `{{ table source="risks" columns="id,label,category,criticality_initial,criticality_residual" }}` ·
+`{{ table source="risks" badge="pill" }}` (criticités en pastilles arrondies)
 
 ### 4.4 `{{ field_values }}`
 Dans une boucle `custom_fields` (§3.6) : tableau **Valeur / Description** des valeurs du champ courant,
@@ -234,10 +237,24 @@ une boîte que l'image remplit en gardant son ratio.
 | `upper` / `lower` | casse |
 | `default="—"` | valeur de repli si vide |
 | `swatch` | **couleur** (`*.color`) → **pastille carrée** ; **tags** / **étiquettes colorées** (statut, criticité) → pastille + libellé |
-| `badge` | **tags** / **étiquettes colorées** (statut, criticité) → libellé sur **fond coloré** |
+| `badge` | **tags** / **étiquettes colorées** (statut, criticité) → **puce colorée** (style au choix, ci-dessous) |
 
 Ex. : `{{ risk.initial.color | swatch }}` · `{{ risk.cf.source | badge }}` · `{{ option.color | swatch }}` ·
-`{{ measure.status | badge }}` · `{{ risk.initial.criticality | badge }}`
+`{{ measure.status | badge }}` · `{{ risk.initial.criticality | badge="pill" }}`
+
+**Style de badge.** Un `{{ … | badge }}` **sans valeur** prend le **style par défaut du rapport**
+(onglet Rapport › *Style des badges*, ou `{{ report badge="…" }}`). On peut forcer le style
+sur une balise précise :
+
+| Valeur | Rendu |
+|---|---|
+| `cell` *(défaut du rapport)* | dans un **tableau clé en main**, remplit toute la cellule ; en ligne, se rabat sur `flat` |
+| `flat` | **surlignage** : fond coloré collé au texte, sans marge (rendu historique) |
+| `chip` | vrai texte sur **fond coloré**, avec marge et fine bordure — soigné, **sélectionnable/recherchable**, coins carrés |
+| `pill` | **pastille arrondie** en image (fidèle au rendu HTML) — la plus jolie, mais le texte devient une image (non sélectionnable) ; **corps du document uniquement** (repli `chip` en en-tête/pied) ; **idéale en cellule de tableau** — en flux de texte, une image inline « remonte » sur la ligne, préférer `chip` |
+
+Portées : **globale** = *Style des badges* du rapport (défaut `cell`) ou `{{ report badge="pill" }}` ;
+**par tableau clé en main** = `{{ table source="risks" badge="pill" }}` ; **par balise** = `{{ … | badge="chip" }}`.
 
 > `swatch` / `badge` produisent des **runs colorés** dans le document. `badge` = libellé sur fond coloré
 > (texte contrasté) ; `swatch` = pastille carrée colorée (seule pour une **valeur couleur**, suivie du

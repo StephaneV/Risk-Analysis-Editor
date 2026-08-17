@@ -56,6 +56,7 @@ Définit des réglages **valables pour tout le document** (à placer de préfér
 |---|---|
 | `filter` | **filtre global** appliqué à l'ensemble du rapport (valeurs comptées, boucles, matrices, radars, tableaux) — voir §8 |
 | `date_format` | format de date par défaut (`ISO`, `JJ/MM/AAAA`, `MM/JJ/AAAA`, `long`) |
+| `badge` | style de badge par défaut (`cell` · `flat` · `chip` · `pill`) — sinon `extensions.display.report.badge_style` |
 
 - Le filtre global **se combine (ET)** avec le `filter="…"` éventuel d'un bloc ou d'une boucle.
 - Un bloc/boucle peut **ignorer** le filtre global avec `report_filter="none"`.
@@ -207,6 +208,7 @@ Attributs : `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`,
 |---|---|---|
 | `source` | `risks`, `measures`, `links`, `levels`, `custom_fields` | requis |
 | `columns` | liste de champs (ex. `id,label,category,criticality_initial,cf.source`) | **colonnes par défaut de l'application** pour ce registre |
+| `badge` | style des badges criticité/statut **et colonnes `tags`** (`dxTagsBadgeRuns` : une puce par valeur) : `cell` · `flat` · `chip` · `pill` | défaut du rapport (`tmplReport.badge`) |
 | `filter` | expression (§8) | — |
 | `sort` | `field[:asc\|desc]`, multi-clés séparées par des virgules (`field1,field2:desc`) | ordre du fichier |
 
@@ -304,7 +306,23 @@ dépassement).
 | `upper` / `lower` | casse |
 | `default="—"` | valeur de repli si vide |
 | `swatch` | **couleur** (`*.color`, hex) → **pastille carrée** (`■`) ; **tags** / **étiquette colorée** (statut, criticité) → pastille + libellé |
-| `badge` | **tags** / **étiquette colorée** (statut de mesure, criticité initiale/résiduelle) → libellé sur **fond coloré** (`w:shd`, texte contrasté via `badgeFg`) |
+| `badge` | **tags** / **étiquette colorée** (statut de mesure, criticité initiale/résiduelle) → **puce colorée**, style au choix (ci-dessous) |
+
+**Styles de badge.** Un `| badge` **sans valeur** prend le **défaut du rapport** `tmplReport.badge` —
+initialisé depuis `reportCfg().badge_style` (config `extensions.display.report.badge_style`, défaut
+`cell`), surchargeable par `{{ report badge="…" }}`. Résolution dans `tmplRunFromDesc` / `dxBadgeCellStyled`
+sur le descripteur `{type:"badge",style,…}` :
+
+| Valeur | Rendu | Détail |
+|---|---|---|
+| `cell` (défaut config) | en **cellule de tableau clé en main** : remplit la cellule (`dxBadgeCell`) ; **en ligne** : se rabat sur `flat` | fond de cellule plein |
+| `flat` | **surlignage** `w:shd` collé au texte (rendu historique) | `tmplRunXml` |
+| `chip` | fond coloré + **marge** (espaces insécables ombrés) + fine **bordure** (`w:bdr`, teinte assombrie via `hexDarken`) | vrai texte, sélectionnable, coins carrés (`tmplBadgeChipRun`) |
+| `pill` | **pastille arrondie** SVG→PNG **inline** (`tmplBadgePillRun` → `dxDrawingRun`) | fidèle au tag HTML ; texte rastérisé ; **corps uniquement** (`tmplBlocksAllowed`, sinon repli `chip`) ; l'autofit lit la largeur via `wp:extent`. Idéale en **cellule** ; en flux de texte l'image se cale par le bas et « remonte » (préférer `chip`). PNG rasterisé à sa taille intrinsèque (aucune marge transparente) |
+
+Portées : globale (`reportCfg().badge_style` / `{{ report badge }}`) → défaut de `| badge` **et** des
+tableaux clé en main ; par tableau (`{{ table … badge="…" }}` → `dxReportTable`/`dxCellFor`) ; par balise
+(`| badge="…"`). Le **rapport intégré** (natif) reste en `cell`.
 
 `swatch` / `badge` sont des **rendus enrichis** : la substitution reconstruit le run en une séquence de
 runs colorés (couleur de texte `w:color` pour la pastille, fond `w:shd` pour le badge), en héritant du
