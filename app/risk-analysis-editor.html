@@ -957,6 +957,7 @@
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-risks" data-view="risks"><span data-i18n="tab_risks">Risques</span> <span class="badge" id="badgeRisks">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-measures" data-view="measures"><span data-i18n="tab_measures">Mesures</span> <span class="badge" id="badgeMeasures">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-links" data-view="links"><span data-i18n="tab_links">Liens</span> <span class="badge" id="badgeLinks">0</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-objects" data-view="objects"><span data-i18n="tab_objects">Objets</span> <span class="badge" id="badgeObjects">0</span></button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-matrices" data-view="matrices" data-i18n="tab_matrices">Matrices</button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-radars" data-view="radars" data-i18n="tab_radars">Radars</button>
   <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="view-stats" data-view="stats" data-i18n="tab_stats">Statistiques</button>
@@ -1167,6 +1168,13 @@
       <button class="btn ghost" id="presCancel" data-i18n="btn_cancel" disabled>Annuler</button>
       <button class="btn" id="presSave" data-i18n="btn_save_modal" disabled>Enregistrer</button>
     </div>
+  </section>
+
+  <!-- ============ OBJETS (instances) ============ -->
+  <section class="view" id="view-objects">
+    <div class="caption" data-i18n="obj_caption">Gérez les instances de vos types d'objets (biens supports, valeurs métier…). Les types se définissent dans Paramètres › Types d'objets.</div>
+    <div id="objectsBody"></div>
+    <div class="empty" id="objectsEmpty" style="display:none" data-i18n="obj_none">Aucun type d'objet défini. Créez-en un dans Paramètres › Types d'objets pour ajouter des instances.</div>
   </section>
 
   <!-- ============ PARAMÈTRES ============ -->
@@ -1718,6 +1726,10 @@ const I18N = {
     ot_attributes:"Attributs", ot_none_attr:"Aucun attribut.", ot_add_attr:"+ Ajouter un attribut", ot_del_confirm:"Supprimer ce type d'objet ?",
     ot_err_code_dup:"Ce code de type est déjà utilisé.", ot_err_prefix:"Le préfixe d'identifiant est obligatoire.",
     attr_new:"Nouvel attribut", attr_edit:"Modifier l'attribut",
+    tab_objects:"Objets", obj_caption:"Gérez les instances de vos types d'objets (biens supports, valeurs métier…). Les types se définissent dans Paramètres › Types d'objets.",
+    obj_none:"Aucun type d'objet défini. Créez-en un dans Paramètres › Types d'objets pour ajouter des instances.",
+    obj_add:"+ Ajouter une instance", obj_id:"Id", obj_none_type:"Aucune instance.",
+    obj_new_of:"Nouvelle instance — {0}", obj_edit_of:"Modifier — {0}", obj_no_attr:"Ce type n'a aucun attribut. Ajoutez-en dans Paramètres › Types d'objets.", obj_del_confirm:"Supprimer cette instance ?",
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     cf_filterable:"Utilisable comme filtre",
@@ -2075,6 +2087,10 @@ const I18N = {
     ot_attributes:"Attributes", ot_none_attr:"No attribute.", ot_add_attr:"+ Add an attribute", ot_del_confirm:"Delete this object type?",
     ot_err_code_dup:"This type code is already used.", ot_err_prefix:"The id prefix is required.",
     attr_new:"New attribute", attr_edit:"Edit attribute",
+    tab_objects:"Objects", obj_caption:"Manage instances of your object types (supporting assets, business values…). Types are defined in Settings › Object types.",
+    obj_none:"No object type defined. Create one in Settings › Object types to add instances.",
+    obj_add:"+ Add an instance", obj_id:"Id", obj_none_type:"No instance.",
+    obj_new_of:"New instance — {0}", obj_edit_of:"Edit — {0}", obj_no_attr:"This type has no attribute. Add some in Settings › Object types.", obj_del_confirm:"Delete this instance?",
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     cf_filterable:"Usable as a filter",
@@ -2432,6 +2448,10 @@ const I18N = {
     ot_attributes:"Attributi", ot_none_attr:"Nessun attributo.", ot_add_attr:"+ Aggiungi un attributo", ot_del_confirm:"Eliminare questo tipo di oggetto?",
     ot_err_code_dup:"Questo codice di tipo è già utilizzato.", ot_err_prefix:"Il prefisso dell'identificatore è obbligatorio.",
     attr_new:"Nuovo attributo", attr_edit:"Modifica attributo",
+    tab_objects:"Oggetti", obj_caption:"Gestisci le istanze dei tuoi tipi di oggetto (beni di supporto, valori aziendali…). I tipi si definiscono in Impostazioni › Tipi di oggetto.",
+    obj_none:"Nessun tipo di oggetto definito. Creane uno in Impostazioni › Tipi di oggetto per aggiungere istanze.",
+    obj_add:"+ Aggiungi un'istanza", obj_id:"Id", obj_none_type:"Nessuna istanza.",
+    obj_new_of:"Nuova istanza — {0}", obj_edit_of:"Modifica — {0}", obj_no_attr:"Questo tipo non ha attributi. Aggiungine in Impostazioni › Tipi di oggetto.", obj_del_confirm:"Eliminare questa istanza?",
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     cf_filterable:"Utilizzabile come filtro",
@@ -3016,6 +3036,7 @@ function activateView(view){
   if(view==="radars") requestAnimationFrame(renderRadars);
   if(view==="stats") renderStats();
   if(view==="links") renderLinks();
+  if(view==="objects") renderObjects();
   if(view==="settings") renderSettings();
   if(view==="plan") renderPlan();
   if(view==="report") renderReport();
@@ -3558,6 +3579,7 @@ function renderAll(){
   renderRisks();
   renderMeasures();
   renderLinks();
+  renderObjects();
   renderPlan();
   updateBadges();
   renderStats();
@@ -3576,6 +3598,7 @@ function updateBadges(){
   document.getElementById("badgeLinks").textContent=analyse.treatments.length;
   const overdue=analyse.measures.filter(isOverdue).length, bp=document.getElementById("badgePlan");
   if(bp){bp.textContent=overdue;bp.style.display=overdue?"":"none";bp.style.background="var(--danger)";bp.style.color="#fff";}
+  const bo=document.getElementById("badgeObjects");if(bo)bo.textContent=objectsAll().length;
 }
 
 /* ============================================================
@@ -10735,6 +10758,67 @@ document.getElementById("otTable").addEventListener("click",e=>{const b=e.target
   if(b.dataset.otDel!=null){const i=+b.dataset.otDel;confirmModal(t("ot_del_confirm"),()=>{list.splice(i,1);otReindex();markDirty();renderObjectTypes();},{danger:true});return;}
   if(b.dataset.otUp!=null){const i=+b.dataset.otUp;if(i>0){[list[i-1],list[i]]=[list[i],list[i-1]];otReindex();markDirty();renderObjectTypes();}return;}
   if(b.dataset.otDown!=null){const i=+b.dataset.otDown;if(i<list.length-1){[list[i+1],list[i]]=[list[i],list[i+1]];otReindex();markDirty();renderObjectTypes();}return;}
+});
+
+/* ============================================================
+   OBJETS & RÉFÉRENCES — Onglet « Objets » : instances (Lot 3)
+   Formulaire d'instance généré depuis les attributs du type (réutilise cfControlHTML /
+   cfReadValue / cfValidate). Id auto par type. Création à la volée via openObjectModal(…,onSaved).
+   ============================================================ */
+function refreshObjectsUI(){renderObjects();renderObjectTypes();updateBadges();}
+function renderObjects(){
+  const host=document.getElementById("objectsBody"); if(!host)return; host.innerHTML="";
+  const types=objectTypes();
+  const emp=document.getElementById("objectsEmpty"); if(emp)emp.style.display=types.length?"none":"block";
+  types.forEach(ot=>{
+    const insts=objectsOfType(ot.code), attrs=ot.attributes||[];
+    let h='<div class="card" style="margin-bottom:14px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">'+
+        '<h3 style="margin:0">'+esc(otLabel(ot))+' <span class="muted" style="font-weight:400">('+insts.length+')</span></h3>'+
+        '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button></div>';
+    if(insts.length){
+      h+='<div class="table-scroll"><table><thead><tr><th class="muted">'+esc(t("obj_id"))+'</th>'+
+        attrs.map(a=>'<th>'+esc(cfLabel(a))+'</th>').join("")+'<th></th></tr></thead><tbody>';
+      insts.forEach(inst=>{
+        h+='<tr><td class="muted">'+esc(inst.id)+'</td>'+
+          attrs.map(a=>'<td>'+cfDisplayHTML(a,(inst.values||{})[a.code],true)+'</td>').join("")+
+          '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
+          '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
+      });
+      h+='</tbody></table></div>';
+    }else h+='<div class="empty" style="display:block">'+esc(t("obj_none_type"))+'</div>';
+    h+='</div>';
+    host.insertAdjacentHTML("beforeend",h);
+  });
+}
+/* Modale d'une INSTANCE. onSaved(id) : rappelé après enregistrement (création à la volée, Lot 4). */
+function openObjectModal(typeCode,id,onSaved){
+  const ot=objectTypeByCode(typeCode); if(!ot)return;
+  const isNew=id==null, existing=isNew?null:objectById(id);
+  const inst=isNew?{type:typeCode,values:{}}:JSON.parse(JSON.stringify(existing||{type:typeCode,values:{}}));
+  inst.values=inst.values||{}; const attrs=ot.attributes||[];
+  const body='<div id="objMsg" style="color:var(--danger);font-size:12.5px;min-height:1em"></div>'+
+    (attrs.length?attrs.map(a=>cfControlHTML(a,inst.values[a.code])).join(""):'<div class="muted">'+esc(t("obj_no_attr"))+'</div>');
+  let root;
+  pushModal(t(isNew?"obj_new_of":"obj_edit_of",otLabel(ot)),body,[
+    {label:t("btn_cancel"),cls:"ghost",onClick:a=>a.close()},
+    {label:isNew?t("btn_create"):t("btn_save_modal"),onClick:a=>{
+      const values={};
+      for(const at of attrs){const cont=root.querySelector('[data-cf="'+at.code+'"]');const v=cfReadValue(cont,at);const err=cfValidate(at,v);if(err){root.querySelector("#objMsg").textContent=err;return;}if(cfPresent(at,v))values[at.code]=v;}
+      let savedId=id;
+      if(isNew){savedId=newObjectId(typeCode);objectsAll().push({id:savedId,type:typeCode,values});}
+      else{const o=objectById(id);if(o)o.values=values;}
+      markDirty();refreshObjectsUI();a.close();
+      if(onSaved)onSaved(savedId);
+    }}
+  ]);
+  root=[...document.querySelectorAll('body > .modal-bg')].pop();
+}
+document.getElementById("view-objects").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.objAdd!=null)return openObjectModal(b.dataset.objAdd,null);
+  if(b.dataset.objEdit!=null){const inst=objectById(b.dataset.objEdit);if(inst)openObjectModal(inst.type,inst.id);return;}
+  if(b.dataset.objDel!=null){const inst=objectById(b.dataset.objDel);if(!inst)return;
+    confirmModal(t("obj_del_confirm"),()=>{const arr=objectsAll(),i=arr.findIndex(o=>o.id===inst.id);if(i>=0)arr.splice(i,1);markDirty();refreshObjectsUI();},{danger:true});return;}
 });
 
 /* ----- Champs personnalisés : contrôles de saisie, lecture, validation ----- */
