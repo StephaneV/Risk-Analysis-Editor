@@ -2473,7 +2473,7 @@ function emptyAnalysis(lg){
   return {
     format:"risk-analysis-editor",version:"1.0",
     metadata:{title:D.newTitle,created_at:today(),updated_at:today(),status:"draft",language:(lg||lang)},
-    grid:defaultGrid(lg),risks:[],measures:[],treatments:[]
+    grid:defaultGrid(lg),risks:[],measures:[],treatments:[],object_types:[],objects:[]
   };
 }
 
@@ -2915,6 +2915,24 @@ function riskById(id){return analyse.risks.find(r=>r.id===id);}
 /* ---------- Champs personnalisés (définitions) ---------- */
 function customFields(){analyse.custom_fields=Array.isArray(analyse.custom_fields)?analyse.custom_fields:[];return analyse.custom_fields;}
 function customFieldsFor(target){return customFields().filter(f=>f&&f.target===target).slice().sort((a,b)=>(a.order||0)-(b.order||0));}
+/* ---------- Objets & références : types d'objets (schémas) + instances partagées ---------- */
+function objectTypes(){analyse.object_types=Array.isArray(analyse.object_types)?analyse.object_types:[];return analyse.object_types;}
+function objectsAll(){analyse.objects=Array.isArray(analyse.objects)?analyse.objects:[];return analyse.objects;}
+function objectTypeByCode(code){return objectTypes().find(ot=>ot&&ot.code===code)||null;}
+function objectTypeAttr(type,attrCode){const ot=(typeof type==="string")?objectTypeByCode(type):type;return (ot&&(ot.attributes||[]).find(a=>a&&a.code===attrCode))||null;}
+function objectsOfType(code){return objectsAll().filter(o=>o&&o.type===code);}
+function objectById(id){return objectsAll().find(o=>o&&o.id===id)||null;}
+/* Libellé d'affichage d'une instance : valeur de l'attribut `name_attr` du type, repli sur l'id. */
+function objectLabel(inst){
+  if(!inst)return "";
+  const ot=objectTypeByCode(inst.type),na=ot&&ot.name_attr,v=(na&&inst.values)?inst.values[na]:null;
+  return (v!=null&&v!=="")?String(Array.isArray(v)?v.join(", "):v):(inst.id||"");
+}
+/* Nouvel id d'instance : `<id_prefix><n>`, plus petit n libre PAR TYPE. */
+function newObjectId(typeCode){
+  const ot=objectTypeByCode(typeCode),pfx=(ot&&ot.id_prefix)||typeCode||"obj",used=new Set(objectsOfType(typeCode).map(o=>o.id));
+  let n=1; while(used.has(pfx+n))n++; return pfx+n;
+}
 /* Une valeur de champ personnalisé est « saisie » si elle n'est ni vide ni une liste vide. */
 function cfValueFilled(v){return !(v===undefined||v===null||v===""||(Array.isArray(v)&&v.length===0));}
 /* Nombre d'enregistrements de la cible du champ qui portent déjà une valeur pour ce code.
@@ -3446,6 +3464,8 @@ function normalize(d){
   const MS={brouillon:"draft","validé":"approved","archivé":"archived"};
   if(d.metadata.status&&MS[d.metadata.status])d.metadata.status=MS[d.metadata.status];
   d.measures=d.measures||[];d.treatments=d.treatments||[];
+  d.object_types=Array.isArray(d.object_types)?d.object_types:[];   // objets & références : collections optionnelles (rétrocompat)
+  d.objects=Array.isArray(d.objects)?d.objects:[];
   d.grid.score=d.grid.score||{method:"product"};
   d.grid.criticality_levels=d.grid.criticality_levels||defaultGrid().criticality_levels;
   d.risks.forEach(r=>{if(!r.residual_assessment)r.residual_assessment=JSON.parse(JSON.stringify(r.initial_assessment));});
