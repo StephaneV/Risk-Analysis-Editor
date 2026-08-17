@@ -1175,6 +1175,7 @@
       <button data-pmode="display" class="active" data-i18n="settings_display">Affichage</button>
       <button data-pmode="grid" data-i18n="settings_grid">Grille de cotation</button>
       <button data-pmode="fields" data-i18n="cf_section">Champs personnalisés</button>
+      <button data-pmode="objtypes" data-i18n="ot_section">Types d'objets</button>
       <button data-pmode="report" data-i18n="settings_report">Rapport</button>
       <button data-pmode="stats" data-i18n="settings_stats">Statistiques</button>
       <button data-pmode="radars" data-i18n="tab_radars">Radars</button>
@@ -1295,6 +1296,17 @@
       </table></div>
       <div class="empty" id="cfEmpty" style="display:none" data-i18n="cf_none">Aucun champ personnalisé défini.</div>
       <button class="btn ghost sm" id="btnAddCF" style="margin-top:10px" data-i18n="cf_add">+ Ajouter un champ</button>
+    </div>
+
+    <!-- -------- Sous-onglet : Types d'objets -------- -->
+    <div class="card ppanel" data-pmode="objtypes" style="display:none">
+      <div class="caption" data-i18n="ot_caption">Définissez des types d'objets réutilisables (biens supports, valeurs métier…) et leurs attributs. Les instances se gèrent dans l'onglet « Objets ».</div>
+      <div class="table-scroll"><table id="otTable"><caption class="sr-only" data-i18n="ot_section">Types d'objets</caption>
+        <thead><tr><th data-i18n="th_label">Nom</th><th data-i18n="cf_code">Code</th><th data-i18n="ot_prefix">Préfixe</th><th data-i18n="ot_attrs">Attributs</th><th data-i18n="ot_instances">Instances</th><th></th></tr></thead>
+        <tbody id="otBody"></tbody>
+      </table></div>
+      <div class="empty" id="otEmpty" style="display:none" data-i18n="ot_none">Aucun type d'objet défini.</div>
+      <button class="btn ghost sm" id="btnAddOT" style="margin-top:10px" data-i18n="ot_add">+ Ajouter un type d'objet</button>
     </div>
 
     <!-- -------- Sous-onglet : Rapport (personnalisation) -------- -->
@@ -1700,6 +1712,12 @@ const I18N = {
     flt_none:"Aucun résultat pour ce filtre.",
     flt_by_field:"Filtrer par « {0} »", flt_field_all:"{0} : tout", flt_clear:"Réinitialiser les filtres", flt_all:"Tout", flt_clear_one:"Retirer ce filtre", flt_label:"Filtres :",
     cf_section:"Champs personnalisés", cf_caption:"Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.",
+    ot_section:"Types d'objets", ot_caption:"Définissez des types d'objets réutilisables (biens supports, valeurs métier…) et leurs attributs. Les instances se gèrent dans l'onglet « Objets ».",
+    ot_none:"Aucun type d'objet défini.", ot_add:"+ Ajouter un type d'objet", ot_prefix:"Préfixe d'id", ot_attrs:"Attributs", ot_instances:"Instances",
+    ot_new:"Nouveau type d'objet", ot_edit:"Modifier le type d'objet", ot_name_attr:"Attribut servant de libellé", ot_name_attr_none:"— (identifiant)", ot_name_attr_help:"Attribut affiché pour désigner une instance ; à défaut, l'identifiant.",
+    ot_attributes:"Attributs", ot_none_attr:"Aucun attribut.", ot_add_attr:"+ Ajouter un attribut", ot_del_confirm:"Supprimer ce type d'objet ?",
+    ot_err_code_dup:"Ce code de type est déjà utilisé.", ot_err_prefix:"Le préfixe d'identifiant est obligatoire.",
+    attr_new:"Nouvel attribut", attr_edit:"Modifier l'attribut",
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     cf_filterable:"Utilisable comme filtre",
@@ -2051,6 +2069,12 @@ const I18N = {
     flt_none:"No result for this filter.",
     flt_by_field:"Filter by \"{0}\"", flt_field_all:"{0}: all", flt_clear:"Clear filters", flt_all:"All", flt_clear_one:"Remove this filter", flt_label:"Filters:",
     cf_section:"Custom fields", cf_caption:"Define extra fields attached to the analysis, risks or measures.",
+    ot_section:"Object types", ot_caption:"Define reusable object types (supporting assets, business values…) and their attributes. Instances are managed in the “Objects” tab.",
+    ot_none:"No object type defined.", ot_add:"+ Add an object type", ot_prefix:"Id prefix", ot_attrs:"Attributes", ot_instances:"Instances",
+    ot_new:"New object type", ot_edit:"Edit object type", ot_name_attr:"Label attribute", ot_name_attr_none:"— (identifier)", ot_name_attr_help:"Attribute shown to name an instance; falls back to the identifier.",
+    ot_attributes:"Attributes", ot_none_attr:"No attribute.", ot_add_attr:"+ Add an attribute", ot_del_confirm:"Delete this object type?",
+    ot_err_code_dup:"This type code is already used.", ot_err_prefix:"The id prefix is required.",
+    attr_new:"New attribute", attr_edit:"Edit attribute",
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     cf_filterable:"Usable as a filter",
@@ -2402,6 +2426,12 @@ const I18N = {
     flt_none:"Nessun risultato per questo filtro.",
     flt_by_field:"Filtra per « {0} »", flt_field_all:"{0} : tutto", flt_clear:"Azzera i filtri", flt_all:"Tutto", flt_clear_one:"Rimuovi questo filtro", flt_label:"Filtri:",
     cf_section:"Campi personalizzati", cf_caption:"Definisci campi aggiuntivi associati all'analisi, ai rischi o alle misure.",
+    ot_section:"Tipi di oggetto", ot_caption:"Definisci tipi di oggetto riutilizzabili (beni di supporto, valori aziendali…) e i loro attributi. Le istanze si gestiscono nella scheda «Oggetti».",
+    ot_none:"Nessun tipo di oggetto definito.", ot_add:"+ Aggiungi un tipo di oggetto", ot_prefix:"Prefisso id", ot_attrs:"Attributi", ot_instances:"Istanze",
+    ot_new:"Nuovo tipo di oggetto", ot_edit:"Modifica tipo di oggetto", ot_name_attr:"Attributo etichetta", ot_name_attr_none:"— (identificatore)", ot_name_attr_help:"Attributo mostrato per indicare un'istanza; in mancanza, l'identificatore.",
+    ot_attributes:"Attributi", ot_none_attr:"Nessun attributo.", ot_add_attr:"+ Aggiungi un attributo", ot_del_confirm:"Eliminare questo tipo di oggetto?",
+    ot_err_code_dup:"Questo codice di tipo è già utilizzato.", ot_err_prefix:"Il prefisso dell'identificatore è obbligatorio.",
+    attr_new:"Nuovo attributo", attr_edit:"Modifica attributo",
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     cf_filterable:"Utilizzabile come filtro",
@@ -9950,6 +9980,7 @@ function setParamMode(m){
   paramMode=m;
   document.querySelectorAll("#paramSeg button").forEach(b=>b.classList.toggle("active",b.dataset.pmode===m));
   document.querySelectorAll("#view-settings .ppanel").forEach(p=>{p.style.display=(p.dataset.pmode===m)?"":"none";});
+  if(m==="objtypes")renderObjectTypes();
   if(m==="report")renderReportSettings();
   if(m==="stats")renderStatsSettings();
   if(m==="radars")renderRadarSettings();
@@ -10306,6 +10337,7 @@ function renderSettings(){
   renderCrit();
   renderMatrixEditor();
   renderCustomFields();
+  renderObjectTypes();
   setParamMode(paramMode);
 }
 
@@ -10551,6 +10583,159 @@ function openCustomFieldModal(idx){
     f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
   document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
 }
+
+/* ============================================================
+   OBJETS & RÉFÉRENCES — Éditeur des TYPES d'objets (Lot 2)
+   Types et attributs édités via des modales EMPILABLES (pushModal), en réutilisant
+   les briques HTML des champs perso (cfBoundsHTML / cfTypeOptsHTML / cfItemsRowsHTML).
+   ============================================================ */
+function otLabel(ot){return (ot&&ot.label&&ot.label[lang])||(ot&&ot.code)||"";}
+function otReindex(){objectTypes().forEach((ot,i)=>ot.order=i);}
+function renderObjectTypes(){
+  const tb=document.getElementById("otBody"); if(!tb)return; tb.innerHTML="";
+  const list=objectTypes();
+  const emp=document.getElementById("otEmpty"); if(emp)emp.style.display=list.length?"none":"block";
+  list.forEach((ot,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=
+      '<td><b>'+esc(otLabel(ot))+'</b></td>'+
+      '<td class="muted">'+esc(ot.code||"")+'</td>'+
+      '<td class="muted">'+esc(ot.id_prefix||"")+'</td>'+
+      '<td>'+((ot.attributes||[]).length)+'</td>'+
+      '<td>'+objectsOfType(ot.code).length+'</td>'+
+      '<td><div class="actions">'+
+        '<button class="btn icon sm" data-ot-up="'+i+'"'+(i===0?" disabled":"")+a11y("a11y_move_up",otLabel(ot))+'>▲</button>'+
+        '<button class="btn icon sm" data-ot-down="'+i+'"'+(i===list.length-1?" disabled":"")+a11y("a11y_move_down",otLabel(ot))+'>▼</button>'+
+        '<button class="btn icon sm" data-ot-edit="'+i+'"'+a11y("a11y_edit_field",otLabel(ot))+'>✎</button>'+
+        '<button class="btn icon sm" data-ot-del="'+i+'"'+a11y("a11y_del_field",otLabel(ot))+'>🗑</button></div></td>';
+    tb.appendChild(tr);
+  });
+}
+/* Modale d'un TYPE d'objet (empilable). Les attributs sont édités par-dessus (openAttrModal). */
+function openObjectTypeModal(idx){
+  const isNew=idx==null;
+  const draft=isNew?{code:"",label:{},id_prefix:"",name_attr:"",attributes:[]}:JSON.parse(JSON.stringify(objectTypes()[idx]));
+  draft.label=draft.label||{};draft.attributes=draft.attributes||[];
+  const nameAttrOptions=()=>'<option value="">'+esc(t("ot_name_attr_none"))+'</option>'+
+    draft.attributes.map(a=>'<option value="'+esc(a.code)+'"'+(a.code===draft.name_attr?" selected":"")+'>'+esc(cfLabel(a))+' ('+esc(a.code)+')</option>').join("");
+  const attrsRows=()=>draft.attributes.length
+    ? draft.attributes.map((a,i)=>'<tr><td><b>'+esc(cfLabel(a))+'</b> <span class="muted">'+esc(a.code)+'</span></td><td class="muted">'+esc(cfTypeLabel(a.type))+'</td><td>'+(a.required?'✓':'<span class="muted">—</span>')+'</td>'+
+        '<td><div class="actions"><button class="btn icon sm" data-oa-up="'+i+'"'+(i===0?" disabled":"")+'>▲</button><button class="btn icon sm" data-oa-down="'+i+'"'+(i===draft.attributes.length-1?" disabled":"")+'>▼</button><button class="btn icon sm" data-oa-edit="'+i+'">✎</button><button class="btn icon sm" data-oa-del="'+i+'">🗑</button></div></td></tr>').join("")
+    : '<tr><td colspan="4" class="muted">'+esc(t("ot_none_attr"))+'</td></tr>';
+  const body=
+    '<div id="otMsg" style="color:var(--danger);font-size:12.5px;min-height:1em"></div>'+
+    '<div class="grid2">'+
+      '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="otLabel" value="'+esc(draft.label[lang]||"")+'"></label>'+
+      '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="otCode" value="'+esc(draft.code||"")+'"></label>'+
+      '<label class="field"><span class="lab">'+esc(t("ot_prefix"))+REQ+'</span><input id="otPrefix" value="'+esc(draft.id_prefix||"")+'" placeholder="BS"></label>'+
+      '<label class="field full"><span class="lab">'+esc(t("ot_name_attr"))+'</span><select id="otNameAttr">'+nameAttrOptions()+'</select><span class="hint">'+esc(t("ot_name_attr_help"))+'</span></label>'+
+    '</div>'+
+    '<h3>'+esc(t("ot_attributes"))+'</h3>'+
+    '<div class="table-scroll"><table id="otAttrsTable"><tbody id="otAttrs">'+attrsRows()+'</tbody></table></div>'+
+    '<button class="btn ghost sm" id="otAddAttr" type="button" style="margin-top:8px">'+esc(t("ot_add_attr"))+'</button>';
+  const readForm=()=>{
+    const lv=document.getElementById("otLabel").value.trim(); if(lv)draft.label[lang]=lv;else delete draft.label[lang];
+    draft.code=document.getElementById("otCode").value.trim();
+    draft.id_prefix=document.getElementById("otPrefix").value.trim();
+    draft.name_attr=document.getElementById("otNameAttr").value;
+  };
+  const rerenderAttrs=()=>{document.getElementById("otAttrs").innerHTML=attrsRows();document.getElementById("otNameAttr").innerHTML=nameAttrOptions();};
+  const showMsg=m=>{document.getElementById("otMsg").textContent=m||"";};
+  pushModal(isNew?t("ot_new"):t("ot_edit"),body,[
+    {label:t("btn_cancel"),cls:"ghost",onClick:a=>a.close()},
+    {label:isNew?t("btn_create"):t("btn_save_modal"),onClick:a=>{
+      readForm();
+      if(!draft.code){showMsg(t("cf_err_code"));return;}
+      if(objectTypes().some((x,i)=>x.code===draft.code && i!==idx)){showMsg(t("ot_err_code_dup"));return;}
+      if(!Object.keys(draft.label).length){showMsg(t("cf_err_label"));return;}
+      if(!draft.id_prefix){showMsg(t("ot_err_prefix"));return;}
+      const list=objectTypes();
+      if(isNew){draft.order=list.length;list.push(draft);}else{draft.order=(list[idx].order!=null)?list[idx].order:idx;list[idx]=draft;}
+      otReindex();markDirty();renderObjectTypes();a.close();
+    }}
+  ]);
+  document.getElementById("otLabel").addEventListener("blur",e=>{const c=document.getElementById("otCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
+  document.getElementById("otAddAttr").addEventListener("click",()=>{readForm();openAttrModal(null,draft.attributes,rerenderAttrs);});
+  document.getElementById("otAttrsTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;readForm();const A=draft.attributes;
+    if(b.dataset.oaEdit!=null)return openAttrModal(+b.dataset.oaEdit,A,rerenderAttrs);
+    if(b.dataset.oaDel!=null){A.splice(+b.dataset.oaDel,1);if(!A.some(x=>x.code===draft.name_attr))draft.name_attr="";rerenderAttrs();return;}
+    if(b.dataset.oaUp!=null){const i=+b.dataset.oaUp;if(i>0){[A[i-1],A[i]]=[A[i],A[i-1]];rerenderAttrs();}return;}
+    if(b.dataset.oaDown!=null){const i=+b.dataset.oaDown;if(i<A.length-1){[A[i+1],A[i]]=[A[i],A[i+1]];rerenderAttrs();}return;}
+  });
+}
+/* Modale d'un ATTRIBUT d'objet (empilable) — mêmes briques que le champ perso, sans cible ni filtrable. */
+function openAttrModal(idx,list,onSave){
+  const isNew=idx==null;
+  const f=isNew?{code:"",type:"text",required:false,label:{},help:{},items:[]}:JSON.parse(JSON.stringify(list[idx]));
+  f.label=f.label||{};f.help=f.help||{};f.description=f.description||{};f.items=f.items||[];
+  const opt=(arr,cur,labeler)=>arr.map(v=>'<option value="'+v+'"'+(v===cur?" selected":"")+'>'+esc(labeler(v))+'</option>').join("");
+  const body=
+    '<div id="attrMsg" style="color:var(--danger);font-size:12.5px;min-height:1em"></div>'+
+    '<div class="grid2">'+
+      '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="cfCode" value="'+esc(f.code)+'"></label>'+
+      '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="cfType">'+opt(CF_TYPES,f.type,cfTypeLabel)+'</select></label>'+
+      '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
+      '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="cfLab" value="'+esc(f.label[lang]||"")+'"></label>'+
+      '<label class="field full"><span class="lab">'+esc(t("cf_help"))+'</span><input id="cfHelpTxt" value="'+esc(f.help[lang]||"")+'"></label>'+
+      '<label class="field full"><span class="lab">'+esc(t("cf_description"))+'</span><textarea id="cfDescTxt">'+esc((f.description&&f.description[lang])||"")+'</textarea></label>'+
+    '</div>'+
+    '<div id="cfBounds">'+cfBoundsHTML(f)+'</div>'+
+    '<div class="grid2" id="cfTypeOpts">'+cfTypeOptsHTML(f)+'</div>'+
+    '<div id="cfItemsWrap" style="display:'+(cfNeedsItems(f.type)?"block":"none")+'">'+
+      '<h3>'+esc(t("cf_items"))+'</h3><div id="cfItems">'+cfItemsRowsHTML(f.items,f.type==="tags")+'</div>'+
+      '<button class="btn ghost sm" id="cfItemAdd" type="button">'+esc(t("cf_item_add"))+'</button>'+
+    '</div>';
+  const syncItems=()=>{[...document.querySelectorAll('#cfItems [data-cfi]')].forEach(r=>{
+    const i=+r.dataset.cfi, it=f.items[i]||(f.items[i]={code:"",label:{}});
+    it.code=r.querySelector('[data-if=code]').value.trim();it.label=it.label||{};
+    const v=r.querySelector('[data-if=lab]').value.trim();if(v)it.label[lang]=v;else delete it.label[lang];
+    const cv=r.querySelector('[data-if=color]');if(cv)it.color=cv.value;
+    const dv=r.querySelector('[data-if=desc]');if(dv){it.description=it.description||{};const d=dv.value.trim();if(d)it.description[lang]=d;else delete it.description[lang];}});};
+  const showMsg=m=>{document.getElementById("attrMsg").textContent=m||"";};
+  pushModal(isNew?t("attr_new"):t("attr_edit"),body,[
+    {label:t("btn_cancel"),cls:"ghost",onClick:a=>a.close()},
+    {label:isNew?t("btn_create"):t("btn_save_modal"),onClick:a=>{
+      const code=val("cfCode").trim(), type=val("cfType");
+      if(!code){showMsg(t("cf_err_code"));return;}
+      if(list.some((x,i)=>x.code===code && i!==idx)){showMsg(t("cf_err_code_dup"));return;}
+      const labVal=val("cfLab").trim(),label=Object.assign({},f.label);if(labVal)label[lang]=labVal;else delete label[lang];
+      if(!Object.keys(label).length){showMsg(t("cf_err_label"));return;}
+      const obj={code,type,required:document.getElementById("cfReq").checked,label};
+      const helpVal=val("cfHelpTxt").trim(),help=Object.assign({},f.help);if(helpVal)help[lang]=helpVal;else delete help[lang];if(Object.keys(help).length)obj.help=help;
+      const descVal=val("cfDescTxt").trim(),desc=Object.assign({},f.description||{});if(descVal)desc[lang]=descVal;else delete desc[lang];if(Object.keys(desc).length)obj.description=desc;
+      const kind=cfBoundKind(type);
+      if(kind==="items"){const mi=val("cfMinI").trim(),ma=val("cfMaxI").trim();if(mi!=="")obj.min_items=+mi;if(ma!=="")obj.max_items=+ma;if(mi!==""&&ma!==""&&+mi>+ma){showMsg(t("cf_err_minmax"));return;}}
+      else if(kind){const mi=val("cfMin").trim(),ma=val("cfMax").trim();if(mi!=="")obj.min=(kind==="date")?mi:+mi;if(ma!=="")obj.max=(kind==="date")?ma:+ma;if(mi!==""&&ma!==""&&((kind==="date")?mi>ma:+mi>+ma)){showMsg(t("cf_err_minmax"));return;}}
+      if(type==="regexp"){const pat=val("cfPattern").trim();if(pat){try{new RegExp(pat);}catch(e){showMsg(t("cf_err_pattern"));return;}obj.pattern=pat;}}
+      if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
+      if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){showMsg(t("cf_err_colors"));return;}obj.colors=cols;}const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
+      if(cfNeedsItems(type)){syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
+        if(!items.length){showMsg(t("cf_err_items"));return;}const codes=new Set();
+        for(const it of items){if(!it.code||codes.has(it.code)){showMsg(t("cf_err_item_code"));return;}codes.add(it.code);}
+        obj.items=items.map(it=>{const o={code:it.code,label:Object.assign({},it.label)};if(type==="tags")o.color=it.color||"#4c7dff";if(it.description&&Object.keys(it.description).length)o.description=Object.assign({},it.description);return o;});}
+      if(isNew)list.push(obj);else list[idx]=obj;
+      if(onSave)onSave(); a.close();
+    }}
+  ]);
+  const typeSel=document.getElementById("cfType");
+  const refreshType=()=>{syncItems();f.type=typeSel.value;
+    if(f.type==="tags"&&f.palette!=="custom"&&!TAG_PALETTES.hasOwnProperty(f.palette)){f.palette="vives";applyTagPalette(f);}
+    document.getElementById("cfBounds").innerHTML=cfBoundsHTML(f);
+    document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
+    document.getElementById("cfItemsWrap").style.display=cfNeedsItems(f.type)?"block":"none";
+    document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");};
+  typeSel.addEventListener("change",refreshType);
+  document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
+  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
+  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
+}
+document.getElementById("btnAddOT").addEventListener("click",()=>openObjectTypeModal(null));
+document.getElementById("otTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const list=objectTypes();
+  if(b.dataset.otEdit!=null)return openObjectTypeModal(+b.dataset.otEdit);
+  if(b.dataset.otDel!=null){const i=+b.dataset.otDel;confirmModal(t("ot_del_confirm"),()=>{list.splice(i,1);otReindex();markDirty();renderObjectTypes();},{danger:true});return;}
+  if(b.dataset.otUp!=null){const i=+b.dataset.otUp;if(i>0){[list[i-1],list[i]]=[list[i],list[i-1]];otReindex();markDirty();renderObjectTypes();}return;}
+  if(b.dataset.otDown!=null){const i=+b.dataset.otDown;if(i<list.length-1){[list[i+1],list[i]]=[list[i],list[i+1]];otReindex();markDirty();renderObjectTypes();}return;}
+});
 
 /* ----- Champs personnalisés : contrôles de saisie, lecture, validation ----- */
 /* Aide de la langue courante, sinon vide (aucune infobulle) — pas de repli. */
@@ -11530,6 +11715,10 @@ function openModal(title,bodyHtml,onConfirm,okLabel){
 let modalReturnFocus=null;
 function closeModal(){
   document.getElementById("modalBg").classList.remove("open");modalConfirm=null;
+  // Vider le corps : sinon les id de la dernière fiche (ex. cfCode) restent dans le DOM et
+  // entrent en collision avec une modale empilée (pushModal) qui réutilise les mêmes id
+  // (éditeur d'attribut d'objet) — getElementById lirait alors le champ fantôme.
+  document.getElementById("modalBody").innerHTML="";
   refreshInert();
   // Le focus revient sur l'élément qui a ouvert la modale (sinon il repart du haut de page).
   if(modalReturnFocus&&document.body.contains(modalReturnFocus))modalReturnFocus.focus();
