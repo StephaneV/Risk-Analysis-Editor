@@ -159,11 +159,14 @@ modèle peut lister le catalogue et déplier les objets pointés.
 {{/each}}
 ```
 
-**Déplier les objets référencés** par un risque — boucle imbriquée, variable `object` :
+**Déplier les objets référencés** par un risque — boucle imbriquée, variable `object` (chaque
+`{{#each}}` / `{{/each}}` sur **sa propre ligne**) :
 ```
 {{#each risks}}
   {{ risk.id }} — {{ risk.label }}
-  {{#each risk.cf.biens_concernes}} • {{ object.label }} ({{ object.attr.type }}){{/each}}
+  {{#each risk.cf.biens_concernes}}
+     • {{ object.label }} ({{ object.attr.type }})
+  {{/each}}
 {{/each}}
 ```
 
@@ -172,6 +175,13 @@ déplie alors avec `{{#each object.attr.<code>}}`). Pour un rendu **en ligne** s
 `{{ risk.cf.<ref> }}` donne les libellés séparés par « , » (`| codes` pour les identifiants). Répartitions
 statistiques : `{{ stat type="objects" }}`, `object_attr:<type>:<attr>`, `object_usage:<type>`. Détails :
 catalogue **§3.7**.
+
+**Restituer *tout* sans connaître le schéma.** Pour un modèle **agnostique** (une analyse quelconque),
+utilisez les blocs `{{ object_notes }}` (tous les attributs de l'objet courant) et `{{ cf_notes }}`
+(champs perso du risque/mesure/lien ; `target="analysis"` / `target="cotation"` pour ces cibles), ou les
+**boucles réflexives** `{{#each object.attributes}}` / `{{#each risk.custom_fields}}` (avec
+`{{ attribute.value }}`, `{{ attribute.is_reference }}` et `{{#each attribute.objects}}` pour traverser
+une référence). Voir catalogue **§3.8**.
 
 ---
 

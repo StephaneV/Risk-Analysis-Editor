@@ -8269,6 +8269,17 @@ function dxCfNotes(target,custom){
   });
   return out;
 }
+// Notes « Libellé : valeur » de TOUS les attributs d'une instance d'objet (générique ; miroir de dxCfNotes).
+function dxObjNotes(inst){
+  const ot=objectTypeByCode(inst&&inst.type); if(!ot)return "";
+  let out="";
+  (ot.attributes||[]).forEach(a=>{
+    const raw=(inst.values||{})[a.code],v=cfDisplayTxt(a,raw);if(!v)return;
+    if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
+    else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
+  });
+  return out;
+}
 function dxPageBreak(){return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';}
 // Champ Word (PAGE / NUMPAGES) avec un résultat de repli affiché avant mise à jour.
 function dxField(instr){return '<w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> '+instr+' </w:instrText></w:r>'+
@@ -8775,7 +8786,7 @@ function tmplParseAttrs(s){
   }
   return out;
 }
-const TMPL_BLOCKS=["matrix","radar","table","field_values","cf_notes","logo","stat"];
+const TMPL_BLOCKS=["matrix","radar","table","field_values","cf_notes","object_notes","logo","stat"];
 // Classe une balise (inner déjà « trim »).
 function tmplClassify(inner){
   if(inner[0]==="!")return {kind:"comment"};
@@ -8913,10 +8924,21 @@ function tmplObjTypeField(ot,rest){                   // définition de type d'o
     case "name_attr":return {kind:"text",value:ot.name_attr};
     case "count":return {kind:"num",value:objectsOfType(ot.code).length};
     default:return {unknown:true};}}
+// Champ/attribut RÉFLEXIF avec sa valeur ({def, value}) : boucles génériques object.attributes /
+// <entité>.custom_fields, sans connaître les codes.
+function tmplValAttrField(o,rest){
+  switch(rest[0]){
+    case "label":return {kind:"text",value:cfLabel(o.def)};
+    case "code":return {kind:"text",value:o.def.code};
+    case "type":return {kind:"text",value:cfTypeLabel(o.def.type)};
+    case "is_reference":return {kind:"bool",value:o.def.type==="reference"};
+    case "value":return {kind:"cf",value:o.value,field:o.def};
+    default:return {unknown:true};}}
 function tmplFieldOf(type,obj,rest){
   if(!rest.length){
     if(type==="object")return {kind:"text",value:objectLabel(obj)};
     if(type==="objtype")return {kind:"text",value:otLabel(obj)};
+    if(type==="valattr")return {kind:"cf",value:obj.value,field:obj.def};   // {{ attribute }} / {{ field }} = valeur rendue
     return {kind:"text",value:(obj&&(obj.label||obj.id))||""};
   }
   let r;
@@ -8929,6 +8951,7 @@ function tmplFieldOf(type,obj,rest){
   else if(type==="axislevel")r=tmplAxisLevelField(obj,rest);
   else if(type==="object")r=tmplObjectField(obj,rest);
   else if(type==="objtype")r=tmplObjTypeField(obj,rest);
+  else if(type==="valattr")r=tmplValAttrField(obj,rest);
   else if(type==="group"){const k=rest[0];
     if(k==="label")r={kind:"text",value:obj.label};
     else if(k==="key")r={kind:"text",value:obj.key};
@@ -9001,8 +9024,17 @@ function tmplCollection(name,ctx){
   if(name==="object_types")return {list:objectTypes(),singular:"type",type:"objtype"};
   if(name.indexOf("analysis.cf.")===0){const code=name.slice(12),f=tmplCfField("analysis",code);
     if(f&&f.type==="reference")return {list:tmplRefInstances((analyse.custom||{})[code]),singular:"object",type:"object"};}
+  if(name==="analysis.custom_fields"||name==="analysis.fields")   // valeurs de champs perso d'analyse (réflexif)
+    return {list:customFieldsFor("analysis").map(f=>({def:f,value:(analyse.custom||{})[f.code]})),singular:"field",type:"valattr"};
   const fr=tmplLookup(ctx||[],p[0]),sub=p.slice(1).join(".");
   if(fr){
+    // Boucles réflexives (attributs/champs avec leur valeur), pour un rendu générique sans coder les codes.
+    if(fr.type==="object"&&sub==="attributes")
+      return {list:((objectTypeByCode(fr.obj.type)||{}).attributes||[]).map(a=>({def:a,value:(fr.obj.values||{})[a.code]})),singular:"attribute",type:"valattr"};
+    if((fr.type==="risk"||fr.type==="measure"||fr.type==="link")&&sub==="custom_fields")
+      return {list:customFieldsFor(fr.type).map(f=>({def:f,value:(fr.obj.custom||{})[f.code]})),singular:"field",type:"valattr"};
+    if(fr.type==="valattr"&&sub==="objects"&&fr.obj.def.type==="reference")
+      return {list:tmplRefInstances(fr.obj.value),singular:"object",type:"object"};
     // Boucle sur les objets référencés : champ perso « reference » d'une entité, ou attribut « reference » d'un objet.
     if((fr.type==="risk"||fr.type==="measure"||fr.type==="link")&&sub.indexOf("cf.")===0){
       const code=sub.slice(3),f=tmplCfField(fr.type,code)||(fr.type==="risk"?tmplCfField("cotation",code):null);
@@ -9877,12 +9909,23 @@ function tmplStatBlockXml(attrs,ctx){
   }
   tmplWarn("tw_stat_type",attrs.type);return null;
 }
-// Bloc {{ cf_notes }} : notes des champs perso de l'entité courante (risque/mesure/lien), via dxCfNotes (identique au rapport natif).
-function tmplCfNotesBlockXml(ctx){
+// Bloc {{ cf_notes }} : notes des champs perso de l'entité courante (risque/mesure/lien), via dxCfNotes
+// (identique au rapport natif). target="analysis" (champs d'analyse) ou target="cotation" phase="initial|residual"
+// (dans une boucle risks) restituent aussi ces cibles de façon générique.
+function tmplCfNotesBlockXml(ctx,attrs){
+  attrs=attrs||{};
+  if(attrs.target==="analysis")return dxCfNotes("analysis",analyse.custom)||null;
+  if(attrs.target==="cotation"){const rf=tmplLookup(ctx||[],"risk"); if(!rf)return null;
+    const ph=(String(attrs.phase||"residual").toLowerCase().indexOf("init")>=0)?"initial_assessment":"residual_assessment";
+    const ev=(rf.obj||{})[ph]; return dxCfNotes("cotation",ev&&ev.custom)||null;}
   const fr=tmplLookup(ctx||[],"risk")||tmplLookup(ctx||[],"measure")||tmplLookup(ctx||[],"link");
   if(!fr)return null;
-  const xml=dxCfNotes(fr.type,(fr.obj||{}).custom);
-  return xml||null;
+  return dxCfNotes(fr.type,(fr.obj||{}).custom)||null;
+}
+// Bloc {{ object_notes }} : notes de TOUS les attributs de l'objet courant (dans une boucle d'objets).
+function tmplObjNotesBlockXml(ctx){
+  const fr=tmplLookup(ctx||[],"object"); if(!fr)return null;
+  return dxObjNotes(fr.obj)||null;
 }
 // Bloc {{ logo }} : insère le logo de couverture configuré (extensions.display.report.cover.logo),
 // préchargé en PNG par tmplRender. Attribut width="cm" (défaut : largeur intrinsèque, max 200 px).
@@ -9962,7 +10005,8 @@ function tmplRenderBlock(name,attrs,ctx,doc){
   if(!tmplBlocksAllowed){tmplWarn("tw_block_in_hf",name);return null;}   // pas de bloc en en-tête/pied
   if(name==="table"){const xml=tmplTableXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
   if(name==="field_values"){const xml=tmplFieldValuesBlockXml(ctx); return xml?tmplImportXml(xml,doc):null;}
-  if(name==="cf_notes"){const xml=tmplCfNotesBlockXml(ctx); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="cf_notes"){const xml=tmplCfNotesBlockXml(ctx,attrs); return xml?tmplImportXml(xml,doc):null;}
+  if(name==="object_notes"){const xml=tmplObjNotesBlockXml(ctx); return xml?tmplImportXml(xml,doc):null;}
   if(name==="stat"){const xml=tmplStatBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}
   if(name==="logo"){const xml=tmplLogoBlockXml(attrs); return xml?tmplImportXml(xml,doc):null;}
   if(name==="matrix"){const xml=tmplMatrixBlockXml(attrs,ctx); return xml?tmplImportXml(xml,doc):null;}

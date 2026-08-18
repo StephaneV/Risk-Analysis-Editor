@@ -157,17 +157,70 @@ Champs d'un objet (frame `object`) :
 d'instances), et la sous-collection `{{#each type.attributes}}` (frame `attribute`, mêmes champs que
 `field` du §3.6 : `{{ attribute.label }}`, `{{ attribute.code }}`, `{{ attribute.type }}`…).
 
+> Chaque `{{#each}}` / `{{/each}}` va sur **sa propre ligne** (= son paragraphe Word) ; les boucles ne
+> s'écrivent **pas** en ligne (contrairement aux conditions, §8).
+
 ```
 {{#each objects type="bien_support" sort="id"}}
   {{ object.id }} — {{ object.label }} ({{ object.attr.type }})
   Valeurs métier soutenues :
-  {{#each object.attr.valeurs_soutenues sort="id"}} · {{ object.label }}{{/each}}
+  {{#each object.attr.valeurs_soutenues sort="id"}}
+     · {{ object.label }}
+  {{/each}}
 {{/each}}
 
 {{#each risks limit=5 sort="criticality_residual:desc"}}
   {{ risk.id }} — {{ risk.label }}
   Biens supports concernés :
-  {{#each risk.cf.biens_concernes}} • {{ object.label }} ({{ object.attr.type }}){{/each}}
+  {{#each risk.cf.biens_concernes}}
+     • {{ object.label }} ({{ object.attr.type }})
+  {{/each}}
+{{/each}}
+```
+
+### 3.8 Restitution générique — sans connaître le schéma (réflexif)
+
+Pour écrire **un seul modèle** qui restitue *toutes* les informations de *n'importe quelle* analyse
+(objets, attributs, champs perso, références) **sans coder aucun code** de type/attribut/champ.
+
+**Blocs « notes » tout-faits** — « Libellé : valeur » de tous les champs renseignés, références
+déréférencées :
+
+| Bloc | Restitue |
+|---|---|
+| `{{ object_notes }}` | tous les **attributs** de l'objet courant (dans une boucle d'objets) |
+| `{{ cf_notes }}` | champs perso du **risque / mesure / lien** courant |
+| `{{ cf_notes target="analysis" }}` | champs perso de l'**analyse** |
+| `{{ cf_notes target="cotation" phase="initial\|residual" }}` | champs de **cotation** (dans une boucle `risks`) |
+
+**Boucles réflexives** — pour une mise en page libre (l'attribut/champ porte **sa valeur**) :
+
+| Collection | Frame | Champs |
+|---|---|---|
+| `object.attributes` (dans une boucle d'objets) | `attribute` | `label`, `code`, `type`, **`value`** (rendue, déréférencée), **`is_reference`** |
+| `risk.custom_fields` · `measure.custom_fields` · `link.custom_fields` · `analysis.custom_fields` | `field` | idem |
+
+Traverser une référence **sans son code** : `{{#each attribute.objects}}` (ou `{{#each field.objects}}`)
+itère les **instances pointées** lorsque `is_reference` est vrai.
+
+```
+{{! Inventaire complet et agnostique — un modèle, toute analyse }}
+{{#each objects sort="id"}}
+  {{ object.type }} — {{ object.id }} : {{ object.label }}
+  {{ object_notes }}
+{{/each}}
+
+{{! Variante « boucles » (mise en page libre + traversée des références) }}
+{{#each objects}}
+  {{ object.label }}
+  {{#each object.attributes}}
+    {{ attribute.label }} : {{ attribute.value }}
+    {{#if attribute.is_reference}}
+      {{#each attribute.objects}}
+         → {{ object.label }}
+      {{/each}}
+    {{/if}}
+  {{/each}}
 {{/each}}
 ```
 
@@ -257,9 +310,13 @@ graphiques puis le tableau. Les tableaux de données sont ajustés au contenu et
 Ex. : `{{ stat type="counters" }}` · `{{ stat type="category" display="both" shape="pie" }}` ·
 `{{ stat type="measure_status" display="chart" filter="overdue='true'" }}`
 
-### 4.6 `{{ cf_notes }}`
-Dans une boucle `risks` / `measures` / `links` : **notes des champs personnalisés** de l'entité courante
-(un « Libellé : valeur » par champ renseigné). Reproduit les notes des sections « Détail » du rapport.
+### 4.6 `{{ cf_notes }}` · `{{ object_notes }}`
+`{{ cf_notes }}` — dans une boucle `risks` / `measures` / `links` : **notes des champs personnalisés**
+de l'entité courante (un « Libellé : valeur » par champ renseigné). Reproduit les notes des sections
+« Détail » du rapport. Cibles supplémentaires : `{{ cf_notes target="analysis" }}` (champs de
+l'analyse) et `{{ cf_notes target="cotation" phase="initial|residual" }}` (champs de cotation, dans une
+boucle `risks`). `{{ object_notes }}` — dans une boucle d'objets : **tous les attributs** de l'objet
+courant, mêmes règles (références déréférencées). Voir la **restitution générique**, §3.8.
 
 ### 4.7 `{{ logo }}`
 Insère le **logo de couverture configuré** de l'analyse (`extensions…report.cover.logo`). Attributs
@@ -330,7 +387,9 @@ Portées : **globale** = *Style des badges* du rapport (défaut `cell`) ou `{{ r
   `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, **`objects`** (attr. `type="<code>"`),
   **`object_types`**, et les **sous-collections** (`risk.measures`, `measure.risks`, `field.items`,
   **`risk.cf.<ref>`** / `measure.cf.<ref>` / `link.cf.<ref>` / `analysis.cf.<ref>` = objets référencés,
-  **`object.attr.<ref>`** = objet→objet, **`type.attributes`**, …). Imbrication libre. Détails objets : §3.7.
+  **`object.attr.<ref>`** = objet→objet, **`type.attributes`**, et les **réflexives** (§3.8) :
+  **`object.attributes`**, **`<entité>.custom_fields`**, **`attribute.objects`** / `field.objects`).
+  Imbrication libre. Détails objets : §3.7–3.8.
 - **Attributs** : `filter`, `sort`, `limit`, `group_by`, `report_filter`, `autofit`, et **`type`**
   (filtre de type pour `objects`). Le tri des objets accepte `sort="id"` / `sort="label"`.
 - **Tri multi-clés** : `sort="champ1[:asc|desc], champ2[:asc|desc], …"` — les clés sont appliquées
