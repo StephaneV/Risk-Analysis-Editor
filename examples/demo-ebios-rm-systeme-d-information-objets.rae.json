@@ -155,6 +155,13 @@
         "sources_fiche": [
           "SR1",
           "SR3"
+        ],
+        "biens_concernes": [
+          "BS1",
+          "BS2",
+          "BS3",
+          "BS4",
+          "BS5"
         ]
       }
     },
@@ -191,6 +198,11 @@
         "parties_prenantes": [
           "PP1",
           "PP3"
+        ],
+        "biens_concernes": [
+          "BS1",
+          "BS7",
+          "BS9"
         ]
       }
     },
@@ -220,6 +232,9 @@
         ],
         "evenements": [
           "ER2"
+        ],
+        "biens_concernes": [
+          "BS8"
         ]
       }
     },
@@ -257,6 +272,11 @@
         ],
         "parties_prenantes": [
           "PP6"
+        ],
+        "biens_concernes": [
+          "BS2",
+          "BS3",
+          "BS4"
         ]
       }
     },
@@ -292,6 +312,10 @@
         "parties_prenantes": [
           "PP2",
           "PP3"
+        ],
+        "biens_concernes": [
+          "BS4",
+          "BS7"
         ]
       }
     },
@@ -363,6 +387,10 @@
         ],
         "parties_prenantes": [
           "PP1"
+        ],
+        "biens_concernes": [
+          "BS1",
+          "BS9"
         ]
       }
     },
@@ -401,6 +429,14 @@
         ],
         "sources_fiche": [
           "SR1"
+        ],
+        "biens_concernes": [
+          "BS1",
+          "BS2",
+          "BS3",
+          "BS4",
+          "BS5",
+          "BS6"
         ]
       }
     },
@@ -442,6 +478,12 @@
         "parties_prenantes": [
           "PP2",
           "PP3"
+        ],
+        "biens_concernes": [
+          "BS1",
+          "BS3",
+          "BS5",
+          "BS7"
         ]
       }
     },
@@ -480,6 +522,13 @@
         "sources_fiche": [
           "SR2",
           "SR4"
+        ],
+        "biens_concernes": [
+          "BS1",
+          "BS2",
+          "BS3",
+          "BS4",
+          "BS5"
         ]
       }
     },
@@ -518,6 +567,11 @@
         "sources_fiche": [
           "SR5",
           "SR1"
+        ],
+        "biens_concernes": [
+          "BS1",
+          "BS3",
+          "BS5"
         ]
       }
     },
@@ -557,6 +611,12 @@
         ],
         "parties_prenantes": [
           "PP1"
+        ],
+        "biens_concernes": [
+          "BS2",
+          "BS3",
+          "BS4",
+          "BS7"
         ]
       }
     }
@@ -580,11 +640,6 @@
         ],
         "domaine": [
           "technique"
-        ],
-        "biens_proteges": [
-          "BS3",
-          "BS2",
-          "BS4"
         ]
       }
     },
@@ -606,11 +661,6 @@
         ],
         "domaine": [
           "technique"
-        ],
-        "biens_proteges": [
-          "BS1",
-          "BS7",
-          "BS9"
         ]
       }
     },
@@ -632,9 +682,6 @@
         ],
         "domaine": [
           "organisationnel"
-        ],
-        "biens_proteges": [
-          "BS8"
         ]
       }
     },
@@ -657,10 +704,6 @@
         "domaine": [
           "organisationnel",
           "juridique"
-        ],
-        "biens_proteges": [
-          "BS3",
-          "BS2"
         ]
       }
     },
@@ -682,10 +725,6 @@
         ],
         "domaine": [
           "organisationnel"
-        ],
-        "biens_proteges": [
-          "BS4",
-          "BS7"
         ]
       }
     },
@@ -707,10 +746,6 @@
         ],
         "domaine": [
           "physique"
-        ],
-        "biens_proteges": [
-          "BS9",
-          "BS1"
         ]
       }
     },
@@ -734,11 +769,6 @@
         "domaine": [
           "technique",
           "organisationnel"
-        ],
-        "biens_proteges": [
-          "BS6",
-          "BS1",
-          "BS3"
         ]
       }
     },
@@ -761,9 +791,6 @@
         "domaine": [
           "organisationnel",
           "juridique"
-        ],
-        "biens_proteges": [
-          "BS7"
         ]
       }
     },
@@ -785,11 +812,6 @@
         ],
         "domaine": [
           "technique"
-        ],
-        "biens_proteges": [
-          "BS5",
-          "BS1",
-          "BS3"
         ]
       }
     },
@@ -810,9 +832,6 @@
         ],
         "domaine": [
           "technique"
-        ],
-        "biens_proteges": [
-          "BS5"
         ]
       }
     },
@@ -835,10 +854,6 @@
         ],
         "domaine": [
           "technique"
-        ],
-        "biens_proteges": [
-          "BS7",
-          "BS4"
         ]
       }
     }
@@ -1697,16 +1712,16 @@
       "order": 6
     },
     {
-      "code": "biens_proteges",
+      "code": "biens_concernes",
       "type": "reference",
       "object_type": "bien_support",
       "multiple": true,
       "label": {
-        "fr": "Biens supports protégés"
+        "fr": "Biens supports concernés"
       },
-      "target": "measure",
+      "target": "risk",
       "filterable": true,
-      "order": 4
+      "order": 7
     }
   ],
   "custom": {
