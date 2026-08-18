@@ -1724,6 +1724,8 @@ const I18N = {
     ot_none:"Aucun type d'objet défini.", ot_add:"+ Ajouter un type d'objet", ot_prefix:"Préfixe d'id", ot_attrs:"Attributs", ot_instances:"Instances",
     ot_new:"Nouveau type d'objet", ot_edit:"Modifier le type d'objet", ot_name_attr:"Attribut servant de libellé", ot_name_attr_none:"— (identifiant)", ot_name_attr_help:"Attribut affiché pour désigner une instance ; à défaut, l'identifiant.",
     ot_attributes:"Attributs", ot_none_attr:"Aucun attribut.", ot_add_attr:"+ Ajouter un attribut", ot_del_confirm:"Supprimer ce type d'objet ?",
+    ot_del_cascade:"Ce type a {0} instance(s) et {1} champ(s) de référence. Tout supprimer (instances et références) ?", ot_del_cascade_btn:"Tout supprimer",
+    obj_del_used:"Cette instance est référencée {0} fois. La supprimer et retirer ces références partout ?",
     ot_err_code_dup:"Ce code de type est déjà utilisé.", ot_err_prefix:"Le préfixe d'identifiant est obligatoire.",
     attr_new:"Nouvel attribut", attr_edit:"Modifier l'attribut",
     tab_objects:"Objets", obj_caption:"Gérez les instances de vos types d'objets (biens supports, valeurs métier…). Les types se définissent dans Paramètres › Types d'objets.",
@@ -2088,6 +2090,8 @@ const I18N = {
     ot_none:"No object type defined.", ot_add:"+ Add an object type", ot_prefix:"Id prefix", ot_attrs:"Attributes", ot_instances:"Instances",
     ot_new:"New object type", ot_edit:"Edit object type", ot_name_attr:"Label attribute", ot_name_attr_none:"— (identifier)", ot_name_attr_help:"Attribute shown to name an instance; falls back to the identifier.",
     ot_attributes:"Attributes", ot_none_attr:"No attribute.", ot_add_attr:"+ Add an attribute", ot_del_confirm:"Delete this object type?",
+    ot_del_cascade:"This type has {0} instance(s) and {1} reference field(s). Delete everything (instances and references)?", ot_del_cascade_btn:"Delete all",
+    obj_del_used:"This instance is referenced {0} time(s). Delete it and remove those references everywhere?",
     ot_err_code_dup:"This type code is already used.", ot_err_prefix:"The id prefix is required.",
     attr_new:"New attribute", attr_edit:"Edit attribute",
     tab_objects:"Objects", obj_caption:"Manage instances of your object types (supporting assets, business values…). Types are defined in Settings › Object types.",
@@ -2452,6 +2456,8 @@ const I18N = {
     ot_none:"Nessun tipo di oggetto definito.", ot_add:"+ Aggiungi un tipo di oggetto", ot_prefix:"Prefisso id", ot_attrs:"Attributi", ot_instances:"Istanze",
     ot_new:"Nuovo tipo di oggetto", ot_edit:"Modifica tipo di oggetto", ot_name_attr:"Attributo etichetta", ot_name_attr_none:"— (identificatore)", ot_name_attr_help:"Attributo mostrato per indicare un'istanza; in mancanza, l'identificatore.",
     ot_attributes:"Attributi", ot_none_attr:"Nessun attributo.", ot_add_attr:"+ Aggiungi un attributo", ot_del_confirm:"Eliminare questo tipo di oggetto?",
+    ot_del_cascade:"Questo tipo ha {0} istanza/e e {1} campo/i di riferimento. Eliminare tutto (istanze e riferimenti)?", ot_del_cascade_btn:"Elimina tutto",
+    obj_del_used:"Questa istanza è referenziata {0} volta/e. Eliminarla e rimuovere questi riferimenti ovunque?",
     ot_err_code_dup:"Questo codice di tipo è già utilizzato.", ot_err_prefix:"Il prefisso dell'identificatore è obbligatorio.",
     attr_new:"Nuovo attributo", attr_edit:"Modifica attributo",
     tab_objects:"Oggetti", obj_caption:"Gestisci le istanze dei tuoi tipi di oggetto (beni di supporto, valori aziendali…). I tipi si definiscono in Impostazioni › Tipi di oggetto.",
@@ -2991,6 +2997,52 @@ function objectLabel(inst){
 function newObjectId(typeCode){
   const ot=objectTypeByCode(typeCode),pfx=(ot&&ot.id_prefix)||typeCode||"obj",used=new Set(objectsOfType(typeCode).map(o=>o.id));
   let n=1; while(used.has(pfx+n))n++; return pfx+n;
+}
+/* ---- Intégrité référentielle (lot 5) ---- */
+/* Porteurs (store custom/values + code) qui référencent l'instance `id`, en balayant les champs
+   `reference` de toutes les cibles + les attributs `reference` des objets. */
+function objRefUsages(id){
+  const hits=[], has=v=>Array.isArray(v)?v.indexOf(id)>=0:v===id;
+  const refFields=customFields().filter(f=>f&&f.type==="reference");
+  const scan=(store,kind)=>{if(!store)return;refFields.forEach(f=>{if(has(store[f.code]))hits.push({store,code:f.code,kind});});};
+  if(analyse.custom)scan(analyse.custom,"analysis");
+  (analyse.risks||[]).forEach(r=>{scan(r.custom,"risk");if(r.initial_assessment)scan(r.initial_assessment.custom,"cotation");if(r.residual_assessment)scan(r.residual_assessment.custom,"cotation");});
+  (analyse.measures||[]).forEach(m=>scan(m.custom,"measure"));
+  (analyse.treatments||[]).forEach(tr=>scan(tr.custom,"link"));
+  objectsAll().forEach(o=>{const ot=objectTypeByCode(o.type);if(!ot||!o.values)return;
+    (ot.attributes||[]).forEach(a=>{if(a&&a.type==="reference"&&has(o.values[a.code]))hits.push({store:o.values,code:a.code,kind:"object"});});});
+  return hits;
+}
+/* Retire l'id de tous ses porteurs (mono → suppression de la clé ; multi → filtrage, clé retirée si vide). */
+function objRemoveRefId(id){objRefUsages(id).forEach(h=>{const v=h.store[h.code];
+  if(Array.isArray(v)){const nv=v.filter(x=>x!==id);if(nv.length)h.store[h.code]=nv;else delete h.store[h.code];}
+  else delete h.store[h.code];});}
+/* Usages d'un TYPE d'objet : instances + champs/attributs `reference` qui le ciblent. */
+function objTypeUsages(code){
+  const fields=customFields().filter(f=>f&&f.type==="reference"&&f.object_type===code),attrs=[];
+  objectTypes().forEach(ot=>(ot.attributes||[]).forEach(a=>{if(a&&a.type==="reference"&&a.object_type===code)attrs.push({type:ot,attr:a});}));
+  return {instances:objectsOfType(code),fields,attrs};
+}
+function purgeFieldValues(f){const del=s=>{if(s&&s[f.code]!==undefined)delete s[f.code];};
+  if(f.target==="analysis")del(analyse.custom);
+  else if(f.target==="risk")(analyse.risks||[]).forEach(r=>del(r.custom));
+  else if(f.target==="measure")(analyse.measures||[]).forEach(m=>del(m.custom));
+  else if(f.target==="link")(analyse.treatments||[]).forEach(t=>del(t.custom));
+  else if(f.target==="cotation")(analyse.risks||[]).forEach(r=>{if(r.initial_assessment)del(r.initial_assessment.custom);if(r.residual_assessment)del(r.residual_assessment.custom);});}
+/* Suppression d'un type en CASCADE (avec confirmation) : instances + champs/attributs de référence
+   qui le ciblent (définitions et valeurs). */
+function deleteObjectType(idx){
+  const list=objectTypes(),ot=list[idx]; if(!ot)return;
+  const u=objTypeUsages(ot.code);
+  const doDelete=()=>{
+    u.fields.forEach(f=>{purgeFieldValues(f);const i=customFields().indexOf(f);if(i>=0)customFields().splice(i,1);});
+    u.attrs.forEach(({type,attr})=>{objectsOfType(type.code).forEach(o=>{if(o.values&&o.values[attr.code]!==undefined)delete o.values[attr.code];});const i=type.attributes.indexOf(attr);if(i>=0)type.attributes.splice(i,1);});
+    analyse.objects=(analyse.objects||[]).filter(o=>o.type!==ot.code);
+    list.splice(idx,1); otReindex(); cfReindex(); markDirty(); renderAll();
+  };
+  const refCount=u.fields.length+u.attrs.length;
+  if(u.instances.length||refCount)confirmModal(t("ot_del_cascade",u.instances.length,refCount),doDelete,{danger:true,okLabel:t("ot_del_cascade_btn")});
+  else confirmModal(t("ot_del_confirm"),doDelete,{danger:true});
 }
 /* Une valeur de champ personnalisé est « saisie » si elle n'est ni vide ni une liste vide. */
 function cfValueFilled(v){return !(v===undefined||v===null||v===""||(Array.isArray(v)&&v.length===0));}
@@ -10771,7 +10823,7 @@ function openAttrModal(idx,list,onSave,selfType){
 document.getElementById("btnAddOT").addEventListener("click",()=>openObjectTypeModal(null));
 document.getElementById("otTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const list=objectTypes();
   if(b.dataset.otEdit!=null)return openObjectTypeModal(+b.dataset.otEdit);
-  if(b.dataset.otDel!=null){const i=+b.dataset.otDel;confirmModal(t("ot_del_confirm"),()=>{list.splice(i,1);otReindex();markDirty();renderObjectTypes();},{danger:true});return;}
+  if(b.dataset.otDel!=null)return deleteObjectType(+b.dataset.otDel);
   if(b.dataset.otUp!=null){const i=+b.dataset.otUp;if(i>0){[list[i-1],list[i]]=[list[i],list[i-1]];otReindex();markDirty();renderObjectTypes();}return;}
   if(b.dataset.otDown!=null){const i=+b.dataset.otDown;if(i<list.length-1){[list[i+1],list[i]]=[list[i],list[i+1]];otReindex();markDirty();renderObjectTypes();}return;}
 });
@@ -10834,7 +10886,8 @@ document.getElementById("view-objects").addEventListener("click",e=>{const b=e.t
   if(b.dataset.objAdd!=null)return openObjectModal(b.dataset.objAdd,null);
   if(b.dataset.objEdit!=null){const inst=objectById(b.dataset.objEdit);if(inst)openObjectModal(inst.type,inst.id);return;}
   if(b.dataset.objDel!=null){const inst=objectById(b.dataset.objDel);if(!inst)return;
-    confirmModal(t("obj_del_confirm"),()=>{const arr=objectsAll(),i=arr.findIndex(o=>o.id===inst.id);if(i>=0)arr.splice(i,1);markDirty();refreshObjectsUI();},{danger:true});return;}
+    const uses=objRefUsages(inst.id),msg=uses.length?t("obj_del_used",uses.length):t("obj_del_confirm");
+    confirmModal(msg,()=>{objRemoveRefId(inst.id);const arr=objectsAll(),i=arr.findIndex(o=>o.id===inst.id);if(i>=0)arr.splice(i,1);markDirty();renderAll();},{danger:true});return;}
 });
 
 /* ----- Champs personnalisés : contrôles de saisie, lecture, validation ----- */
