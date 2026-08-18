@@ -34,6 +34,7 @@ Le plus simple est de **copier un modèle existant** de ce dossier et de l'adapt
 | un rapport « un chapitre par catégorie » | `modele-rapport-eclate-par-categorie.docx` |
 | décrire la grille et les champs perso | `modele-referentiels.docx` |
 | un tableau de bord (stats + conditions) | `modele-tableau-de-bord.docx` |
+| lister/déplier les objets et références | *voir la recette §4.8 (objets & références)* |
 | reproduire fidèlement l'export Word natif | `modele-rapport-complet-*.docx` |
 
 **Astuce — les variantes annotées.** Chaque modèle existe aussi en version `…-annote.docx` avec des
@@ -147,6 +148,31 @@ Opérateurs : `= != > >= < <= contains empty not_empty`, combinés par `and`/`or
 compare au **code** ou au **libellé** (insensible à la casse). Un filtre de risque restreint aussi les
 mesures/liens liés (**propagation**). Voir catalogue §7.
 
+### 4.8 Objets et références (biens supports, valeurs métier…)
+Si l'analyse définit des **objets** (Paramètres › Types d'objets) et des champs de type **référence**, le
+modèle peut lister le catalogue et déplier les objets pointés.
+
+**Lister un catalogue** — toutes les instances d'un type :
+```
+{{#each objects type="valeur_metier" sort="id"}}
+  {{ object.id }} — {{ object.label }} : C {{ object.attr.besoin_c }}
+{{/each}}
+```
+
+**Déplier les objets référencés** par un risque — boucle imbriquée, variable `object` :
+```
+{{#each risks}}
+  {{ risk.id }} — {{ risk.label }}
+  {{#each risk.cf.biens_concernes}} • {{ object.label }} ({{ object.attr.type }}){{/each}}
+{{/each}}
+```
+
+`{{ object.attr.<code> }}` lit un attribut (déréférencé si l'attribut est lui-même une référence — on le
+déplie alors avec `{{#each object.attr.<code>}}`). Pour un rendu **en ligne** simple, sans boucle :
+`{{ risk.cf.<ref> }}` donne les libellés séparés par « , » (`| codes` pour les identifiants). Répartitions
+statistiques : `{{ stat type="objects" }}`, `object_attr:<type>:<attr>`, `object_usage:<type>`. Détails :
+catalogue **§3.7**.
+
 ---
 
 ## 5. Mettre en forme les valeurs (formats `| …`)
@@ -180,7 +206,9 @@ Ex. : `{{ measure.status | badge="pill" }}` · `{{ risk.initial.criticality | ba
 - **Modèle portable = champs de base.** `category`, `owner`, `status`, `criticality_*` existent dans toute
   analyse. Un champ **perso** `cf.<code>` n'existe que si l'analyse le définit : sinon la balise n'est pas
   résolue (accolades visibles) et un avertissement est émis. Prévoyez un `| default="—"` ou réservez les
-  `cf.<code>` aux modèles dédiés à une analyse précise.
+  `cf.<code>` aux modèles dédiés à une analyse précise. **Idem pour les objets** : `objects`,
+  `object_types`, `object.attr.<code>` et `{{#each risk.cf.<ref>}}` ne produisent quelque chose que si
+  l'analyse définit les types/attributs correspondants (sinon collection vide, sans erreur).
 - **Guillemets interchangeables.** Un attribut en `"…"` peut contenir des `'…'` (et inversement) :
   `filter="cf.source contains 'internal'"`. Pour une accolade **littérale** dans le texte, échappez : `\{{`
   et `\}}`.

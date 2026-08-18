@@ -8,6 +8,8 @@ prêts à l'emploi : **ce dossier** [`word-templates/`](.).
 > **v1** = valeurs, boucles, filtres, blocs `matrix` / `radar` / `table`.
 > **v2** = statistiques (compteurs, couverture, graphiques donut/secteur — §4.5), conditions
 > `{{#if}}` / `{{#unless}}` (§8) et **dimensions d'images** `width` / `height` (§4.8).
+> **v3** = **objets & références** (§3.7) : collections `objects` / `object_types`, champs `object.*`,
+> boucles sur les objets référencés (`{{#each risk.cf.<ref>}}`), blocs `stat` objets (§4.5).
 
 ---
 
@@ -124,6 +126,51 @@ obligatoire, filtrable), avec `target="…"` optionnel.
 **Tableau des valeurs** (dans une boucle `custom_fields`) : `{{ field_values }}` — tableau
 **Valeur / Description** du champ courant, **badge coloré pour les tags** (§4.4).
 
+### 3.7 Objets & références — `object.*`, `type.*`
+
+Les champs de type **référence** (champ personnalisé d'entité **ou** attribut d'objet) pointent vers
+des **fiches d'objet** (valeurs métier, biens supports, sources de risque…). Trois usages.
+
+**a) Rendu simple** — libellés des objets pointés (aucune boucle) :
+`{{ risk.cf.<ref> }}` (libellés séparés par « , ») · `{{ risk.cf.<ref> | codes }}` (identifiants bruts) ·
+`{{ risk.cf.<ref> | join:" ; " }}`. Vaut aussi pour `measure.cf.*`, `link.cf.*`, `analysis.cf.*`.
+
+**b) Boucle sur les objets référencés** — `{{#each risk.cf.<ref>}} … {{/each}}` (idem `measure`, `link`,
+`analysis`), variable de boucle **`object`**. Récursif objet→objet : `{{#each object.attr.<ref>}} …
+{{/each}}` (l'`object` interne masque l'externe).
+
+**c) Boucle sur le catalogue** — `{{#each objects type="<code>" sort="id|label" limit=N}}` : toutes les
+instances (le référentiel **n'est pas** restreint par les filtres de risque/mesure). Sans `type=`,
+itère tous les objets (`{{ object.type }}` les distingue).
+
+Champs d'un objet (frame `object`) :
+
+| Balise | Contenu |
+|---|---|
+| `{{ object.id }}` | identifiant (ex. `VM1`) |
+| `{{ object.label }}` | libellé = valeur de l'attribut-nom (`name_attr`), repli id |
+| `{{ object.type }}` · `{{ object.type_code }}` | libellé du type · code du type |
+| `{{ object.attr.<code> }}` | valeur d'un **attribut** — déréférencée si référence, libellés pour select/tags, dates formatées |
+
+**Types d'objets (schéma)** — collection `object_types`, frame `type` : `{{ type.code }}`,
+`{{ type.label }}`, `{{ type.id_prefix }}`, `{{ type.name_attr }}`, `{{ type.count }}` (nombre
+d'instances), et la sous-collection `{{#each type.attributes}}` (frame `attribute`, mêmes champs que
+`field` du §3.6 : `{{ attribute.label }}`, `{{ attribute.code }}`, `{{ attribute.type }}`…).
+
+```
+{{#each objects type="bien_support" sort="id"}}
+  {{ object.id }} — {{ object.label }} ({{ object.attr.type }})
+  Valeurs métier soutenues :
+  {{#each object.attr.valeurs_soutenues sort="id"}} · {{ object.label }}{{/each}}
+{{/each}}
+
+{{#each risks limit=5 sort="criticality_residual:desc"}}
+  {{ risk.id }} — {{ risk.label }}
+  Biens supports concernés :
+  {{#each risk.cf.biens_concernes}} • {{ object.label }} ({{ object.attr.type }}){{/each}}
+{{/each}}
+```
+
 ---
 
 ## 4. Blocs — matrice, radar, tableau
@@ -184,7 +231,14 @@ intégré.
 | `category` | catégorie des risques |
 | `measure_type` · `measure_status` | type · statut des mesures |
 | `risk_owner` · `measure_owner` | propriétaire des risques · responsable des mesures |
-| `cf.<code>` | champ personnalisé (tags/select/checklist), couleurs des valeurs |
+| `cf.<code>` | champ personnalisé (tags/select/checklist **ou référence** — libellés d'objets déréférencés) |
+| `objects` | **objets par type** (répartition du référentiel) |
+| `object_attr:<type>:<attr>` | un **type d'objet par attribut** (ex. `object_attr:valeur_metier:besoin_c`) |
+| `object_usage:<type>` | **complétude** d'un type : instances **référencées** vs **orphelines** |
+
+> Les blocs `objects`, `object_attr:…`, `object_usage:…` portent sur **tout le référentiel** (non
+> filtré par les filtres de risque/mesure). `object_attr` accepte un attribut à valeurs fermées **ou**
+> de référence.
 
 Attributs des types à graphique :
 
@@ -273,9 +327,12 @@ Portées : **globale** = *Style des badges* du rapport (défaut `cell`) ou `{{ r
 ```
 
 - **Collections** : `risks`, `measures`, `links`, `grid.levels`, `custom_fields`,
-  `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, et les **sous-collections**
-  (`risk.measures`, `measure.risks`, `field.items`, …). Imbrication libre.
-- **Attributs** : `filter`, `sort`, `limit`, `group_by`, `report_filter`, `autofit`.
+  `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, **`objects`** (attr. `type="<code>"`),
+  **`object_types`**, et les **sous-collections** (`risk.measures`, `measure.risks`, `field.items`,
+  **`risk.cf.<ref>`** / `measure.cf.<ref>` / `link.cf.<ref>` / `analysis.cf.<ref>` = objets référencés,
+  **`object.attr.<ref>`** = objet→objet, **`type.attributes`**, …). Imbrication libre. Détails objets : §3.7.
+- **Attributs** : `filter`, `sort`, `limit`, `group_by`, `report_filter`, `autofit`, et **`type`**
+  (filtre de type pour `objects`). Le tri des objets accepte `sort="id"` / `sort="label"`.
 - **Tri multi-clés** : `sort="champ1[:asc|desc], champ2[:asc|desc], …"` — les clés sont appliquées
   successivement (départage). Ex. `sort="target,code"` (cible puis code), `sort="criticality_initial:desc,label"`.
 - **Regroupement** `group_by="field"` → boucle de **groupes** : `{{ group.label }}`, `{{ group.count }}`,
