@@ -2084,6 +2084,15 @@
           "label": {
             "fr": "Données utilisées"
           }
+        },
+        {
+          "code": "sous_traitants",
+          "type": "reference",
+          "object_type": "sous_traitant",
+          "multiple": true,
+          "label": {
+            "fr": "Sous-traitants impliqués"
+          }
         }
       ]
     },
@@ -2221,6 +2230,24 @@
           "multiple": true,
           "label": {
             "fr": "Données portées"
+          }
+        },
+        {
+          "code": "operateur",
+          "type": "reference",
+          "object_type": "sous_traitant",
+          "multiple": false,
+          "label": {
+            "fr": "Opérateur / hébergeur"
+          }
+        },
+        {
+          "code": "finalites",
+          "type": "reference",
+          "object_type": "finalite",
+          "multiple": true,
+          "label": {
+            "fr": "Finalités servies"
           }
         }
       ]
@@ -2450,6 +2477,10 @@
           "DP1",
           "DP2",
           "DP4"
+        ],
+        "sous_traitants": [
+          "ST1",
+          "ST2"
         ]
       }
     },
@@ -2464,6 +2495,10 @@
           "DP1",
           "DP3",
           "DP4"
+        ],
+        "sous_traitants": [
+          "ST1",
+          "ST2"
         ]
       }
     },
@@ -2477,6 +2512,10 @@
         "donnees": [
           "DP4",
           "DP2"
+        ],
+        "sous_traitants": [
+          "ST1",
+          "ST2"
         ]
       }
     },
@@ -2490,6 +2529,9 @@
         "donnees": [
           "DP5",
           "DP1"
+        ],
+        "sous_traitants": [
+          "ST4"
         ]
       }
     },
@@ -2570,6 +2612,13 @@
           "DP2",
           "DP3",
           "DP4"
+        ],
+        "operateur": "ST1",
+        "finalites": [
+          "FN1",
+          "FN2",
+          "FN3",
+          "FN4"
         ]
       }
     },
@@ -2585,6 +2634,13 @@
           "DP2",
           "DP3",
           "DP4"
+        ],
+        "operateur": "ST2",
+        "finalites": [
+          "FN1",
+          "FN2",
+          "FN3",
+          "FN4"
         ]
       }
     },
@@ -2612,6 +2668,11 @@
           "DP2",
           "DP3",
           "DP4"
+        ],
+        "operateur": "ST4",
+        "finalites": [
+          "FN1",
+          "FN2"
         ]
       }
     },
@@ -2627,6 +2688,12 @@
           "DP2",
           "DP3",
           "DP4"
+        ],
+        "operateur": "ST2",
+        "finalites": [
+          "FN1",
+          "FN2",
+          "FN3"
         ]
       }
     },
@@ -2640,6 +2707,11 @@
         "donnees_portees": [
           "DP2",
           "DP3"
+        ],
+        "operateur": "ST3",
+        "finalites": [
+          "FN1",
+          "FN2"
         ]
       }
     },
@@ -2653,6 +2725,10 @@
         "donnees_portees": [
           "DP2",
           "DP3"
+        ],
+        "operateur": "ST4",
+        "finalites": [
+          "FN2"
         ]
       }
     },
@@ -2667,6 +2743,11 @@
           "DP2",
           "DP3",
           "DP1"
+        ],
+        "finalites": [
+          "FN1",
+          "FN2",
+          "FN3"
         ]
       }
     },
