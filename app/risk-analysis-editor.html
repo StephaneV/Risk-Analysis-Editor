@@ -1663,6 +1663,11 @@ const I18N = {
     radar_cfg_saved:"Préférences enregistrées avec l'analyse (rubrique extensions.display.radar).", radar_cfg_reset:"Réinitialiser les valeurs par défaut",
     stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
     stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
+    stats_add_object:"Ajouter un bloc « objet »", stats_add_object_usage:"Ajouter un bloc « complétude »",
+    stat_by_object_type:"Objets par type", stat_object_dist:"{0} par « {1} »",
+    stat_object_usage:"Complétude — {0}", stat_object_usage_short:"Complétude",
+    stat_referenced:"Référencées", stat_orphan:"Orphelines", stat_usage_col:"État",
+    stat_objects:"objets", stat_object:"objet",
     dist_initial:"← initial", dist_residual:"résiduel →",
     tab_report:"Rapport", report_print:"🖨 Imprimer",
     report_hint:"Aperçu ci-dessous. Le bouton Imprimer ouvre la boîte d'impression du navigateur (→ PDF).",
@@ -2029,6 +2034,11 @@ const I18N = {
     radar_cfg_saved:"Preferences saved with the analysis (extensions.display.radar).", radar_cfg_reset:"Reset to defaults",
     stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
     stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
+    stats_add_object:"Add an « object » block", stats_add_object_usage:"Add a « completeness » block",
+    stat_by_object_type:"Objects by type", stat_object_dist:"{0} by « {1} »",
+    stat_object_usage:"Completeness — {0}", stat_object_usage_short:"Completeness",
+    stat_referenced:"Referenced", stat_orphan:"Orphan", stat_usage_col:"State",
+    stat_objects:"objects", stat_object:"object",
     dist_initial:"← initial", dist_residual:"residual →",
     tab_report:"Report", report_print:"🖨 Print",
     report_hint:"Preview below. The Print button opens the browser's print dialog (→ PDF).",
@@ -2395,6 +2405,11 @@ const I18N = {
     radar_cfg_saved:"Preferenze salvate con l'analisi (sezione extensions.display.radar).", radar_cfg_reset:"Ripristina i valori predefiniti",
     stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
     stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
+    stats_add_object:"Aggiungi un blocco « oggetto »", stats_add_object_usage:"Aggiungi un blocco « completezza »",
+    stat_by_object_type:"Oggetti per tipo", stat_object_dist:"{0} per « {1} »",
+    stat_object_usage:"Completezza — {0}", stat_object_usage_short:"Completezza",
+    stat_referenced:"Referenziati", stat_orphan:"Orfani", stat_usage_col:"Stato",
+    stat_objects:"oggetti", stat_object:"oggetto",
     dist_initial:"← iniziale", dist_residual:"residuo →",
     tab_report:"Rapporto", report_print:"🖨 Stampa",
     report_hint:"Anteprima qui sotto. Il pulsante Stampa apre la finestra di stampa del browser (→ PDF).",
@@ -3694,7 +3709,8 @@ const STAT_STD=[
   {id:"measure_status",type:"measure_status",defOn:true, size:"half"},
   {id:"risk_owner",    type:"risk_owner",    defOn:false,size:"half"},
   {id:"measure_owner", type:"measure_owner", defOn:false,size:"half"},
-  {id:"coverage",      type:"coverage",      defOn:false,size:"half"}
+  {id:"coverage",      type:"coverage",      defOn:false,size:"half"},
+  {id:"object_by_type",type:"object_by_type",defOn:false,size:"half",cond:()=>objectTypes().length>0}
 ];
 const STAT_STD_BYID={};STAT_STD.forEach(s=>STAT_STD_BYID[s.id]=s);
 function statNoChart(type){return type==="counters"||type==="coverage";}   // pas de graphique
@@ -3704,6 +3720,8 @@ function normStatBlock(b){
     display:["table","chart","both"].indexOf(b.display)>=0?b.display:"both",
     shape:(b.shape==="pie")?"pie":"donut"};
   if(b.type==="custom"){o.target=b.target;o.field=b.field;}
+  if(b.type==="object_attr"){o.object_type=b.object_type;o.attr=b.attr;}
+  if(b.type==="object_usage")o.object_type=b.object_type;
   if(b.type==="counters")o.size="full";            // les tuiles occupent toujours la largeur
   if(b.type==="coverage")o.display="table";
   return o;
@@ -3721,13 +3739,22 @@ function statsCfg(){
       const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);
       if(!f)return;
       out.push(normStatBlock(b));seen[b.id]=1;
-    }else if(STAT_STD_BYID[b.id]){out.push(normStatBlock(b));seen[b.id]=1;}
+    }else if(b.type==="object_attr"){
+      if(!statObjAttrClosed(statObjAttr(b.object_type,b.attr)))return;   // type/attribut disparu -> retiré
+      out.push(normStatBlock(b));seen[b.id]=1;
+    }else if(b.type==="object_usage"){
+      if(!objectTypeByCode(b.object_type))return;                        // type disparu -> retiré
+      out.push(normStatBlock(b));seen[b.id]=1;
+    }else if(STAT_STD_BYID[b.id]){
+      const s=STAT_STD_BYID[b.id];if(s.cond&&!s.cond())return;           // bloc standard conditionnel non applicable
+      out.push(normStatBlock(b));seen[b.id]=1;
+    }
   });
-  STAT_STD.forEach(s=>{if(!seen[s.id])out.push(normStatBlock({id:s.id,type:s.type,on:saved?false:s.defOn,size:s.size,display:"both",shape:"donut"}));});
+  STAT_STD.forEach(s=>{if(s.cond&&!s.cond())return;if(!seen[s.id])out.push(normStatBlock({id:s.id,type:s.type,on:saved?false:s.defOn,size:s.size,display:"both",shape:"donut"}));});
   return out;
 }
 function statBlocks(){return statsCfg();}
-function cleanStatBlock(b){const o={id:b.id,type:b.type,on:b.on!==false,size:b.size,display:b.display,shape:b.shape};if(b.type==="custom"){o.target=b.target;o.field=b.field;}return o;}
+function cleanStatBlock(b){const o={id:b.id,type:b.type,on:b.on!==false,size:b.size,display:b.display,shape:b.shape};if(b.type==="custom"){o.target=b.target;o.field=b.field;}if(b.type==="object_attr"){o.object_type=b.object_type;o.attr=b.attr;}if(b.type==="object_usage")o.object_type=b.object_type;return o;}
 /* Écrit la config, marque à sauver, redessine l'onglet ET les options. */
 function statsSetBlocks(blocks){
   analyse.extensions=analyse.extensions||{};analyse.extensions.display=analyse.extensions.display||{};
@@ -3743,7 +3770,7 @@ function statsMove(id,beforeId){
   statsSetBlocks(bl);
 }
 /* Champs personnalisés à valeurs fermées, candidats à un bloc de répartition. */
-function statCustomCandidates(){const out=[];["risk","measure","link"].forEach(tg=>(customFieldsFor(tg)||[]).forEach(f=>{if(cfIsClosed(f.type))out.push({target:tg,field:f.code,label:cfLabel(f)});}));return out;}
+function statCustomCandidates(){const out=[];["risk","measure","link"].forEach(tg=>(customFieldsFor(tg)||[]).forEach(f=>{if(cfIsClosed(f.type)||f.type==="reference")out.push({target:tg,field:f.code,label:cfLabel(f)});}));return out;}
 function statCustomId(tg,code){return "custom:"+tg+":"+code;}
 function statsAddCustom(){
   const cand=statCustomCandidates();if(!cand.length)return;
@@ -3755,6 +3782,39 @@ function statsAddCustom(){
 function statsSetCustomField(oldId,tg,code){
   const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
   bl[i]=normStatBlock(Object.assign({},bl[i],{id:statCustomId(tg,code),target:tg,field:code}));
+  statsSetBlocks(bl);
+}
+/* Attributs d'objet à valeurs fermées ou de référence, candidats à un bloc « type par attribut ». */
+function statObjAttrClosed(a){return a&&(cfIsClosed(a.type)||a.type==="reference");}
+function statObjCandidates(){const out=[];objectTypes().forEach(ot=>(ot.attributes||[]).forEach(a=>{
+  if(statObjAttrClosed(a))out.push({object_type:ot.code,attr:a.code,label:otLabel(ot)+" · "+cfLabel(a)});}));return out;}
+function statObjId(otype,attr){return "object_attr:"+otype+":"+attr;}
+function statObjAttr(otype,attr){return objectTypeAttr(otype,attr);}
+function statsAddObject(){
+  const cand=statObjCandidates();if(!cand.length)return;
+  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="object_attr")used[b.id]=1;});
+  const pick=cand.find(c=>!used[statObjId(c.object_type,c.attr)])||cand[0];
+  bl.push(normStatBlock({id:statObjId(pick.object_type,pick.attr),type:"object_attr",on:true,size:"half",display:"both",shape:"donut",object_type:pick.object_type,attr:pick.attr}));
+  statsSetBlocks(bl);
+}
+function statsSetObjectField(oldId,otype,attr){
+  const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
+  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statObjId(otype,attr),object_type:otype,attr:attr}));
+  statsSetBlocks(bl);
+}
+/* Complétude : par type, instances référencées (quelque part) vs orphelines. */
+function statUsageCandidates(){return objectTypes().map(ot=>({object_type:ot.code,label:otLabel(ot)}));}
+function statUsageId(otype){return "object_usage:"+otype;}
+function statsAddObjectUsage(){
+  const cand=statUsageCandidates();if(!cand.length)return;
+  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="object_usage")used[b.id]=1;});
+  const pick=cand.find(c=>!used[statUsageId(c.object_type)])||cand[0];
+  bl.push(normStatBlock({id:statUsageId(pick.object_type),type:"object_usage",on:true,size:"half",display:"both",shape:"donut",object_type:pick.object_type}));
+  statsSetBlocks(bl);
+}
+function statsSetUsageType(oldId,otype){
+  const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
+  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statUsageId(otype),object_type:otype}));
   statsSetBlocks(bl);
 }
 function statsRemoveBlock(id){statsSetBlocks(statsCfg().filter(b=>b.id!==id));}
@@ -3779,6 +3839,7 @@ let STAT_HOVER={};
 function statReset(){STAT_HOVER={};}
 function statItemRef(it,kind){
   if(kind==="link")return {id:(it.risk||"?")+" ↔ "+(it.measure||"?"),label:""};
+  if(kind==="object")return {id:it.id||"",label:objectLabel(it)};
   return {id:it.id||"",label:it.label||""};
 }
 function statReg(sid,series,idx,kind,label,items){
@@ -3786,7 +3847,7 @@ function statReg(sid,series,idx,kind,label,items){
 }
 function statTipHTML(rec){
   const n=rec.items.length,one=n===1;
-  const kindLbl=rec.kind==="risk"?t(one?"stat_risk":"stat_risks"):rec.kind==="measure"?t(one?"stat_measure":"stat_measures"):t(one?"stat_link":"tab_links");
+  const kindLbl=rec.kind==="risk"?t(one?"stat_risk":"stat_risks"):rec.kind==="measure"?t(one?"stat_measure":"stat_measures"):rec.kind==="object"?t(one?"stat_object":"stat_objects"):t(one?"stat_link":"tab_links");
   const MAX=14,shown=rec.items.slice(0,MAX);
   let h='<b>'+esc(rec.label)+'</b><br><span class="t-cat">'+n+' '+esc(kindLbl)+'</span>';
   if(n)h+='<br>'+shown.map(x=>'• '+esc(x.id)+(x.label?' · '+esc(x.label):'')).join('<br>');
@@ -3865,15 +3926,26 @@ function statTitle(b){
     case "measure_owner":return t("stat_by_owner_measure");
     case "coverage":return t("stat_coverage");
     case "custom":{const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);return t("stat_by_field",f?cfLabel(f):"?");}
+    case "object_by_type":return t("stat_by_object_type");
+    case "object_attr":{const ot=objectTypeByCode(b.object_type),a=statObjAttr(b.object_type,b.attr);return t("stat_object_dist",ot?otLabel(ot):"?",a?cfLabel(a):"?");}
+    case "object_usage":{const ot=objectTypeByCode(b.object_type);return t("stat_object_usage",ot?otLabel(ot):"?");}
   }
   return b.id;
 }
-function statCustomKeys(it,f){const v=(it.custom||{})[f.code];
+/* Clés de répartition d'une valeur selon son type de champ/attribut (partagé champ perso ⇄
+   attribut d'objet). Multi (checklist/tags/référence) -> tableau ; booléen -> "true"/"false". */
+function statValueKeys(v,f){
   if(v==null||v==="")return [];
-  if(f.type==="checklist"||f.type==="tags")return Array.isArray(v)?v:[v];
+  if(f.type==="checklist"||f.type==="tags"||f.type==="reference")return Array.isArray(v)?v:[v];
   if(f.type==="boolean")return [v?"true":"false"];
   return [String(v)];}
-function statCustomLabel(f,k){if(f.type==="boolean")return k==="true"?t("cf_yes"):t("cf_no");const it=(f.items||[]).find(x=>x.code===k);return it?cfItemLabel(it):k;}
+function statValueLabel(f,k){if(f.type==="boolean")return k==="true"?t("cf_yes"):t("cf_no");
+  if(f.type==="reference"){const o=objectById(k);return o?objectLabel(o):k;}   // libellé d'instance, repli id
+  const it=(f.items||[]).find(x=>x.code===k);return it?cfItemLabel(it):k;}
+function statCustomKeys(it,f){return statValueKeys((it.custom||{})[f.code],f);}
+function statCustomLabel(f,k){return statValueLabel(f,k);}
+/* Idem pour un attribut d'instance (valeurs dans o.values). */
+function statObjAttrKeys(o,a){return statValueKeys((o.values||{})[a.code],a);}
 function statBlockBody(block){
   switch(block.type){
     case "counters":{const c=statCounters();
@@ -3904,6 +3976,21 @@ function statBlockBody(block){
       const sub=(f.type==="checklist"||f.type==="tags")?t("stat_values")
         :(block.target==="risk"?t("stat_risks"):block.target==="measure"?t("stat_measures"):t("tab_links"));
       return statDistCard(block,cfLabel(f),data,sub,block.target);}
+    case "object_by_type":{
+      const data=statDist(objectsAll(),o=>o.type,{labelFn:code=>{const ot=objectTypeByCode(code);return ot?otLabel(ot):code;}});
+      return statDistCard(block,t("th_type"),data,t("stat_objects"),"object");}
+    case "object_attr":{const a=statObjAttr(block.object_type,block.attr);
+      if(!a)return '<div class="st-content"><p class="muted">—</p></div>';
+      const data=statDist(objectsOfType(block.object_type),o=>statObjAttrKeys(o,a),{labelFn:k=>statValueLabel(a,k),colorMap:a.type==="tags"?(k=>cfChoiceColor(a,k)):null});
+      const sub=(a.type==="checklist"||a.type==="tags"||a.type==="reference")?t("stat_values"):t("stat_objects");
+      return statDistCard(block,cfLabel(a),data,sub,"object");}
+    case "object_usage":{const ot=objectTypeByCode(block.object_type);
+      if(!ot)return '<div class="st-content"><p class="muted">—</p></div>';
+      const data=statDist(objectsOfType(block.object_type),o=>objRefUsages(o.id).length>0?"ref":"orphan",
+        {labelFn:k=>k==="ref"?t("stat_referenced"):t("stat_orphan"),
+         order:(a,b)=>(a==="ref"?0:1)-(b==="ref"?0:1),
+         colorMap:k=>k==="ref"?"#27ae60":"#9aa7b8"});
+      return statDistCard(block,t("stat_usage_col"),data,t("stat_objects"),"object");}
     case "criticality":{const d=statCriticality(),disp=block.display||"both",shape=block.shape||"donut";
       d.rows.forEach((r,i)=>{statReg(block.id,"initial",i,"risk",r.label,r.itemsI);statReg(block.id,"residual",i,"risk",r.label,r.itemsR);});
       const tbl='<table class="st-tbl"><thead><tr><th>'+esc(t("stat_criticality"))+'</th><th class="num">'+esc(t("stat_initial"))+'</th><th class="num">'+esc(t("stat_residual"))+'</th></tr></thead><tbody>'+
@@ -3965,7 +4052,7 @@ function radarMetricLabel(metric){return t({avg:"radar_metric_avg",max:"radar_me
 
 function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
 function critBands(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>a.score_max-b.score_max);}
-function radarDimFields(){return customFieldsFor("risk").filter(f=>["select","checklist","tags"].indexOf(f.type)>=0);}
+function radarDimFields(){return customFieldsFor("risk").filter(f=>["select","checklist","tags","reference"].indexOf(f.type)>=0);}
 /* Dimension produisant le plus d'axes (pour l'aperçu des paramètres) : catégorie ou champ perso. */
 function radarBestDim(){
   const R=visibleRisks();let best="cat",n=radarAxes(R,"cat").length;
@@ -3978,7 +4065,7 @@ function radarKeysOf(r,dim){
   if(dim==="cat"){const c=(r.category||"").trim();return [c||"__unset__"];}
   const f=radarFieldOf(dim);if(!f)return ["__unset__"];
   const v=(r.custom||{})[f.code];
-  if(f.type==="select")return [(v!=null&&v!=="")?String(v):"__unset__"];
+  if(f.type==="select"||(f.type==="reference"&&!f.multiple))return [(v!=null&&v!=="")?String(v):"__unset__"];
   const arr=Array.isArray(v)?v.filter(x=>x!=null&&x!==""):[];
   return arr.length?arr.map(String):["__unset__"];
 }
@@ -3986,6 +4073,7 @@ function radarAxisLabel(dim,key){
   if(key==="__unset__")return t("radar_unset");
   if(dim==="cat")return key;
   const f=radarFieldOf(dim);if(!f)return key;
+  if(f.type==="reference"){const o=objectById(key);return o?objectLabel(o):key;}
   const it=(f.items||[]).find(i=>i.code===key);return it?cfItemLabel(it):key;
 }
 /* Axes = valeurs utilisées (ordre des items pour un champ, ordre d'apparition pour la catégorie),
@@ -3993,8 +4081,14 @@ function radarAxisLabel(dim,key){
 function radarAxes(risks,dim){
   const used={};risks.forEach(r=>radarKeysOf(r,dim).forEach(k=>{used[k]=(used[k]||0)+1;}));
   let keys=[];
+  const f=(dim==="cat")?null:radarFieldOf(dim);
   if(dim==="cat"){risks.forEach(r=>radarKeysOf(r,dim).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);}));}
-  else{const f=radarFieldOf(dim);keys=f?(f.items||[]).map(i=>i.code).filter(c=>used[c]):[];}
+  else if(f&&f.type==="reference"){
+    // axes = instances effectivement référencées, dans l'ordre du référentiel ; ids orphelins ensuite
+    objectsOfType(f.object_type).forEach(o=>{if(used[o.id])keys.push(o.id);});
+    Object.keys(used).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);});
+  }
+  else{keys=f?(f.items||[]).map(i=>i.code).filter(c=>used[c]):[];}
   if(used["__unset__"])keys.push("__unset__");
   return keys;
 }
@@ -4335,9 +4429,23 @@ function statCustomSelectHTML(b){
   return '<select class="st2-field" data-act="field">'+statCustomCandidates().map(c=>{const v=c.target+"|"+c.field;
     return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(c.label)+' ('+esc(t("stat_tg_"+c.target))+')</option>';}).join("")+'</select>';
 }
+function statObjSelectHTML(b){
+  const cur=b.object_type+"|"+b.attr;
+  return '<select class="st2-objfield" data-act="objfield">'+statObjCandidates().map(c=>{const v=c.object_type+"|"+c.attr;
+    return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(c.label)+'</option>';}).join("")+'</select>';
+}
+function statUsageSelectHTML(b){
+  return '<span class="st2-fixed">'+esc(t("stat_object_usage_short"))+'</span><select class="st2-usagefield" data-act="usagefield">'+statUsageCandidates().map(c=>
+    '<option value="'+esc(c.object_type)+'"'+(c.object_type===b.object_type?' selected':'')+'>'+esc(c.label)+'</option>').join("")+'</select>';
+}
 function statSettingsRowHTML(b){
+  const delBtn='<button type="button" class="st2-del" data-act="del" title="'+esc(t("stat_remove"))+'" aria-label="'+esc(t("stat_remove"))+'">🗑</button>';
   const name=b.type==="custom"
-    ? statCustomSelectHTML(b)+'<button type="button" class="st2-del" data-act="del" title="'+esc(t("stat_remove"))+'" aria-label="'+esc(t("stat_remove"))+'">🗑</button>'
+    ? statCustomSelectHTML(b)+delBtn
+    : b.type==="object_attr"
+    ? statObjSelectHTML(b)+delBtn
+    : b.type==="object_usage"
+    ? statUsageSelectHTML(b)+delBtn
     : '<span class="t">'+esc(statTitle(b))+'</span>';
   return '<div class="st2-row'+(b.on?'':' off')+'" data-sid="'+esc(b.id)+'">'+
     '<span class="st2-grip" title="'+esc(t("stat_move"))+'" aria-hidden="true">⠿</span>'+
@@ -4348,11 +4456,13 @@ function statSettingsRowHTML(b){
 }
 function renderStatsSettings(){
   const panel=document.getElementById("statsCfgPanel");if(!panel)return;
-  const canAdd=statCustomCandidates().length>0;
+  const canAdd=statCustomCandidates().length>0, canAddObj=statObjCandidates().length>0, canAddUsage=statUsageCandidates().length>0;
   panel.innerHTML='<p class="muted" style="margin:0 0 12px">'+esc(t("stats_cfg_intro"))+'</p>'+
     '<div class="st2-list">'+statsCfg().map(statSettingsRowHTML).join("")+'</div>'+
     '<div class="st2-actions">'+
       (canAdd?'<button type="button" class="btn ghost sm" data-act="add">+ '+esc(t("stats_add_custom"))+'</button>':'')+
+      (canAddObj?'<button type="button" class="btn ghost sm" data-act="addobj">+ '+esc(t("stats_add_object"))+'</button>':'')+
+      (canAddUsage?'<button type="button" class="btn ghost sm" data-act="addusage">+ '+esc(t("stats_add_object_usage"))+'</button>':'')+
       '<button type="button" class="btn ghost sm" data-act="reset">↺ '+esc(t("stats_reset"))+'</button>'+
     '</div>';
 }
@@ -4368,14 +4478,21 @@ function renderStatsSettings(){
     if(opt){const seg=opt.closest(".st2-seg");if(!seg.classList.contains("off")&&id)statsUpdate(id,{[seg.dataset.act]:opt.dataset.val});return;}
     if(!act)return;const kind=act.dataset.act;
     if(kind==="add"){statsAddCustom();return;}
+    if(kind==="addobj"){statsAddObject();return;}
+    if(kind==="addusage"){statsAddObjectUsage();return;}
     if(kind==="reset"){statsReset();return;}
     if(!id)return;
     if(kind==="toggle"){const b=statsCfg().find(x=>x.id===id);if(b)statsUpdate(id,{on:!b.on});return;}
     if(kind==="del"){statsRemoveBlock(id);return;}
   });
-  panel.addEventListener("change",e=>{const sel=e.target.closest(".st2-field");if(!sel)return;
+  panel.addEventListener("change",e=>{
     const row=e.target.closest(".st2-row"),id=row?row.dataset.sid:null;if(!id)return;
-    const p=sel.value.split("|");statsSetCustomField(id,p[0],p[1]);});
+    const cf=e.target.closest(".st2-field");
+    if(cf){const p=cf.value.split("|");statsSetCustomField(id,p[0],p[1]);return;}
+    const of=e.target.closest(".st2-objfield");
+    if(of){const p=of.value.split("|");statsSetObjectField(id,p[0],p[1]);return;}
+    const uf=e.target.closest(".st2-usagefield");
+    if(uf){statsSetUsageType(id,uf.value);return;}});
   panel.addEventListener("dragstart",e=>{const row=e.target.closest(".st2-row");if(!row||row.getAttribute("draggable")!=="true"){e.preventDefault();return;}
     dragId=row.dataset.sid;row.classList.add("st2-dragging");e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain",dragId);}catch(_){}});
   panel.addEventListener("dragover",e=>{if(dragId==null)return;e.preventDefault();const over=e.target.closest(".st2-row");
