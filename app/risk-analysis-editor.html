@@ -1736,7 +1736,10 @@ const I18N = {
     cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées, et aux champs rattachés aux risques, aux mesures ou aux liens.",
     cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées, hors champs de l'analyse.",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
-    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)",
+    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.reference":"Référence à un objet",
+    cf_object_type:"Type d'objet ciblé", cf_ref_none:"— (aucun)", cf_ref_add:"+ ajouter une instance…", cf_ref_create:"＋ créer", cf_ref_remove:"Retirer",
+    cf_ref_notype:"Aucun type d'objet défini (Paramètres › Types d'objets).", cf_err_ref_type:"Choisissez le type d'objet ciblé.",
+    cf_ref_self_warn:"Auto-référence : un objet de ce type en référence un autre (attention aux boucles).",
     cf_pattern:"Motif (expression régulière)", cf_pattern_ph:"ex. [A-Z]{2}-\\d{4}", cf_err_pattern:"Expression régulière invalide.",
     cf_val_url:"« {0} » : URL invalide (elle doit commencer par http:// ou https://).",
     cf_val_email:"« {0} » : adresse email invalide.", cf_val_tel:"« {0} » : numéro de téléphone invalide.",
@@ -2097,7 +2100,10 @@ const I18N = {
     cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types, on risk, measure or link fields.",
     cf_filterable_na:"Not applicable: restricted to closed-value types, excluding analysis fields.",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
-    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)",
+    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.reference":"Object reference",
+    cf_object_type:"Target object type", cf_ref_none:"— (none)", cf_ref_add:"+ add an instance…", cf_ref_create:"＋ new", cf_ref_remove:"Remove",
+    cf_ref_notype:"No object type defined (Settings › Object types).", cf_err_ref_type:"Choose the target object type.",
+    cf_ref_self_warn:"Self-reference: an object of this type references another (mind loops).",
     cf_pattern:"Pattern (regular expression)", cf_pattern_ph:"e.g. [A-Z]{2}-\\d{4}", cf_err_pattern:"Invalid regular expression.",
     cf_val_url:"“{0}”: invalid URL (it must start with http:// or https://).",
     cf_val_email:"“{0}”: invalid email address.", cf_val_tel:"“{0}”: invalid phone number.",
@@ -2458,7 +2464,10 @@ const I18N = {
     cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi, sui campi di rischio, misura o collegamento.",
     cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi, esclusi i campi dell'analisi.",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
-    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)",
+    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.reference":"Riferimento a un oggetto",
+    cf_object_type:"Tipo di oggetto di destinazione", cf_ref_none:"— (nessuno)", cf_ref_add:"+ aggiungi un'istanza…", cf_ref_create:"＋ crea", cf_ref_remove:"Rimuovi",
+    cf_ref_notype:"Nessun tipo di oggetto definito (Impostazioni › Tipi di oggetto).", cf_err_ref_type:"Scegli il tipo di oggetto di destinazione.",
+    cf_ref_self_warn:"Auto-riferimento: un oggetto di questo tipo ne riferisce un altro (attenzione ai cicli).",
     cf_pattern:"Modello (espressione regolare)", cf_pattern_ph:"es. [A-Z]{2}-\\d{4}", cf_err_pattern:"Espressione regolare non valida.",
     cf_val_url:"« {0} »: URL non valido (deve iniziare con http:// o https://).",
     cf_val_email:"« {0} »: indirizzo email non valido.", cf_val_tel:"« {0} »: numero di telefono non valido.",
@@ -10367,7 +10376,7 @@ function renderSettings(){
 /* ============================================================
    CHAMPS PERSONNALISÉS — éditeur de définitions
    ============================================================ */
-const CF_TYPES=["boolean","integer","float","date","text","textarea","url","email","tel","regexp","select","checklist","tags","progress"];
+const CF_TYPES=["boolean","integer","float","date","text","textarea","url","email","tel","regexp","select","checklist","tags","progress","reference"];
 /* Formats des types contrôlés. Le téléphone reste permissif (usages FR et internationaux). */
 const CF_RE_URL=/^https?:\/\/[^\s]+$/i, CF_RE_EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, CF_RE_TEL=/^\+?[0-9][0-9\s().\-]{5,}$/;
 /* Motif d'un champ « regexp » : correspondance sur la totalité de la valeur.
@@ -10472,6 +10481,11 @@ function cfTypeOptsHTML(f){
       '<label class="field"><span class="lab">'+esc(t("cf_step"))+'</span><input type="number" id="cfStep" min="1" max="100" step="1" value="'+(f.step!=null?f.step:10)+'"></label>'+
       '<div class="field full" id="cfCustomColors" style="display:'+(pal==="custom"?"block":"none")+'"><span class="lab">'+esc(t("cf_pal_colors"))+'</span><div id="cfColors">'+cfColorsRowsHTML(f.colors)+'</div><button class="btn ghost sm" id="cfColorAdd" type="button">'+esc(t("cf_pal_add_color"))+'</button></div>'+
       '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfPalettePreview" class="cf-pal-preview" style="background:'+palettePreviewBg(progressColors(f))+'"></div></div>';}
+  if(f.type==="reference"){const types=objectTypes();
+    return '<label class="field"><span class="lab">'+esc(t("cf_object_type"))+REQ+'</span>'+
+      (types.length?'<select id="cfObjectType">'+types.map(ot=>'<option value="'+esc(ot.code)+'"'+(ot.code===f.object_type?" selected":"")+'>'+esc(otLabel(ot))+'</option>').join("")+'</select>'
+        :'<div class="hint">'+esc(t("cf_ref_notype"))+'</div>')+'</label>'+
+      '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfMultiple" style="width:16px;height:16px;flex:none"'+(f.multiple?" checked":"")+'> '+esc(t("cf_multiple"))+'</label></label>';}
   return "";
 }
 function openCustomFieldModal(idx){
@@ -10544,6 +10558,7 @@ function openCustomFieldModal(idx){
     if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";
       if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){modalMsg(t("cf_err_colors"));return false;}obj.colors=cols;}
       const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
+    if(type==="reference"){const oty=val("cfObjectType");if(!oty){modalMsg(t("cf_err_ref_type"));return false;}obj.object_type=oty;const m=document.getElementById("cfMultiple");obj.multiple=!!(m&&m.checked);}
     if(cfNeedsItems(type)){
       syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
       if(!items.length){modalMsg(t("cf_err_items"));return false;}
@@ -10678,16 +10693,16 @@ function openObjectTypeModal(idx){
     }}
   ]);
   document.getElementById("otLabel").addEventListener("blur",e=>{const c=document.getElementById("otCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
-  document.getElementById("otAddAttr").addEventListener("click",()=>{readForm();openAttrModal(null,draft.attributes,rerenderAttrs);});
+  document.getElementById("otAddAttr").addEventListener("click",()=>{readForm();openAttrModal(null,draft.attributes,rerenderAttrs,draft.code);});
   document.getElementById("otAttrsTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;readForm();const A=draft.attributes;
-    if(b.dataset.oaEdit!=null)return openAttrModal(+b.dataset.oaEdit,A,rerenderAttrs);
+    if(b.dataset.oaEdit!=null)return openAttrModal(+b.dataset.oaEdit,A,rerenderAttrs,draft.code);
     if(b.dataset.oaDel!=null){A.splice(+b.dataset.oaDel,1);if(!A.some(x=>x.code===draft.name_attr))draft.name_attr="";rerenderAttrs();return;}
     if(b.dataset.oaUp!=null){const i=+b.dataset.oaUp;if(i>0){[A[i-1],A[i]]=[A[i],A[i-1]];rerenderAttrs();}return;}
     if(b.dataset.oaDown!=null){const i=+b.dataset.oaDown;if(i<A.length-1){[A[i+1],A[i]]=[A[i],A[i+1]];rerenderAttrs();}return;}
   });
 }
 /* Modale d'un ATTRIBUT d'objet (empilable) — mêmes briques que le champ perso, sans cible ni filtrable. */
-function openAttrModal(idx,list,onSave){
+function openAttrModal(idx,list,onSave,selfType){
   const isNew=idx==null;
   const f=isNew?{code:"",type:"text",required:false,label:{},help:{},items:[]}:JSON.parse(JSON.stringify(list[idx]));
   f.label=f.label||{};f.help=f.help||{};f.description=f.description||{};f.items=f.items||[];
@@ -10732,6 +10747,7 @@ function openAttrModal(idx,list,onSave){
       if(type==="regexp"){const pat=val("cfPattern").trim();if(pat){try{new RegExp(pat);}catch(e){showMsg(t("cf_err_pattern"));return;}obj.pattern=pat;}}
       if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
       if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){showMsg(t("cf_err_colors"));return;}obj.colors=cols;}const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
+      if(type==="reference"){const oty=val("cfObjectType");if(!oty){showMsg(t("cf_err_ref_type"));return;}obj.object_type=oty;const m=document.getElementById("cfMultiple");obj.multiple=!!(m&&m.checked);if(selfType&&oty===selfType)toast(t("cf_ref_self_warn"));}
       if(cfNeedsItems(type)){syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
         if(!items.length){showMsg(t("cf_err_items"));return;}const codes=new Set();
         for(const it of items){if(!it.code||codes.has(it.code)){showMsg(t("cf_err_item_code"));return;}codes.add(it.code);}
@@ -10833,6 +10849,7 @@ function cfDisplay(f,v){
   if(f.type==="select"){const it=(f.items||[]).find(x=>x.code===v);return it?cfItemLabel(it):String(v);}
   if(f.type==="checklist"||f.type==="tags"){const arr=Array.isArray(v)?v:[];return arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code);return it?cfItemLabel(it):code;}).join(", ");}
   if(f.type==="progress")return Math.max(0,Math.min(100,Math.round(+v||0)))+" %";
+  if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];return arr.map(id=>{const o=objectById(id);return o?objectLabel(o):id;}).join(", ");}
   return String(v);
 }
 /* Comme cfDisplay, mais applique le format de date choisi (contextes d'affichage : rapport
@@ -10985,6 +11002,8 @@ function cfDisplayHTML(f,v,rich){
       return '<span class="cf-chip" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'"'+(dsc?' data-cfdesc="'+esc(dsc)+'"':'')+'>'+esc(it?cfItemLabel(it):code)+'</span>';}).join("")+'</span>';}
   if(f.type==="progress"){const pv=Math.max(0,Math.min(100,Math.round(+v||0)));
     return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
+  if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];
+    return '<span class="cf-chips">'+arr.map(id=>{const o=objectById(id);return '<span class="cf-chip" style="--tagc:#5b7089;--tagfg:#fff">'+esc(o?objectLabel(o):id)+'</span>';}).join("")+'</span>';}
   return esc(cfDisplay(f,v));
 }
 function cfHasVal(v){return !(v===undefined||v===null||v===""||(Array.isArray(v)&&!v.length));}
@@ -11000,6 +11019,10 @@ function cfParseValue(f,raw){
   if(f.type==="select"){const it=cfMatchItem(f,raw);return it?it.code:undefined;}
   if(f.type==="checklist"||f.type==="tags"){const codes=raw.split(/[,;]/).map(s=>{const it=cfMatchItem(f,s.trim());return it?it.code:null;}).filter(Boolean);return codes.length?codes:undefined;}
   if(f.type==="progress"){const v=parseInt(String(raw).replace(/[^0-9-]/g,""),10);return isNaN(v)?undefined:Math.max(0,Math.min(100,v));}
+  if(f.type==="reference"){const ids=raw.split(/[,;]/).map(s=>s.trim()).filter(Boolean).map(tok=>{
+    if(objectById(tok))return tok;   // un id
+    const o=objectsOfType(f.object_type).find(x=>normV(objectLabel(x))===normV(tok));return o?o.id:null;}).filter(Boolean);
+    return f.multiple?(ids.length?ids:undefined):(ids[0]||undefined);}
   return raw; // date, text, textarea
 }
 /* Colonnes personnalisées d'un import : associe chaque champ à sa colonne (par libellé FR/EN ou code), sans réutiliser une colonne déjà prise. */
@@ -11074,11 +11097,38 @@ function cfControlHTML(f,value){
         return '<button type="button" class="cf-tag'+(on?" on":"")+'" data-cftag="'+esc(it.code)+'"'+(cfItemDesc(it)?' data-cfdesc="'+esc(cfItemDesc(it))+'"':'')+' style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(cfItemLabel(it))+'</button>';}).join("")+'</div>';break;}
     case "progress":{full=true;const pv=(value!=null&&value!=="")?Math.max(0,Math.min(100,Math.round(+value||0))):0;const cols=progressColors(f);const colStr=cols?cols.join(","):"";
       c='<div class="cf-progress-edit"><input type="range" min="0" max="100" step="'+(f.step||10)+'" data-cfv data-pcolors="'+esc(colStr)+'" style="accent-color:'+(cols&&cols.length?paletteColor(cols,pv):"var(--accent)")+'" value="'+pv+'"><output class="cf-progress-val">'+pv+' %</output></div>';break;}
+    case "reference":{const insts=objectsOfType(f.object_type),cur=value==null?[]:(Array.isArray(value)?value:[value]);
+      if(f.multiple){full=true;
+        c='<div class="cf-refs" data-cfv data-cfref="'+esc(f.object_type)+'" data-multi="1"><div class="cf-ref-chips">'+cur.map(id=>cfRefChipHTML(id)).join("")+'</div>'+
+          '<div class="inline" style="margin-top:6px"><select class="cf-ref-add"><option value="">'+esc(t("cf_ref_add"))+'</option>'+insts.filter(o=>cur.indexOf(o.id)<0).map(o=>'<option value="'+esc(o.id)+'">'+esc(objectLabel(o))+'</option>').join("")+'</select>'+
+          '<button type="button" class="btn ghost sm cf-ref-create">'+esc(t("cf_ref_create"))+'</button></div></div>';
+      }else{
+        c='<div class="inline cf-refs" data-cfref="'+esc(f.object_type)+'"><select data-cfv><option value="">'+esc(t("cf_ref_none"))+'</option>'+insts.map(o=>'<option value="'+esc(o.id)+'"'+(cur[0]===o.id?" selected":"")+'>'+esc(objectLabel(o))+'</option>').join("")+'</select>'+
+          '<button type="button" class="btn ghost sm cf-ref-create">'+esc(t("cf_ref_create"))+'</button></div>';
+      }break;}
   }
   const dsc=cfDescription(f);
   return '<div class="cf-field'+(full?" full":"")+'" '+data+'>'+lab+c+
     (dsc?'<div class="hint cf-desc">'+esc(dsc)+'</div>':'')+'</div>';
 }
+/* ---- Champ « reference » : puce d'instance + interactions (ajouter / retirer / créer à la volée) ---- */
+function cfRefChipHTML(id){const inst=objectById(id),lbl=inst?objectLabel(inst):id;
+  return '<span class="cf-ref-chip" data-refid="'+esc(id)+'" style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:2px 4px 2px 10px;border-radius:20px;background:#e7ecf6;color:#1f2937;font-size:12px">'+esc(lbl)+
+    '<button type="button" class="cf-ref-del" data-refid="'+esc(id)+'" title="'+esc(t("cf_ref_remove"))+'" style="border:none;background:none;cursor:pointer;color:#5b7089;font-size:13px;line-height:1;padding:0 4px">✕</button></span>';}
+function cfRefPending(box){if(box&&box.closest&&box.closest("#cfAnalysisValues"))presSetPending(true);}
+document.addEventListener("change",e=>{const s=e.target;if(!s.matches||!s.matches(".cf-ref-add")||!s.value)return;
+  const box=s.closest(".cf-refs");box.querySelector(".cf-ref-chips").insertAdjacentHTML("beforeend",cfRefChipHTML(s.value));
+  const opt=[...s.options].find(o=>o.value===s.value);if(opt)opt.remove();s.value="";cfRefPending(box);});
+document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest(".cf-ref-del");if(!d)return;e.preventDefault();
+  const box=d.closest(".cf-refs"),chip=d.closest(".cf-ref-chip"),id=chip.dataset.refid,add=box.querySelector(".cf-ref-add");
+  chip.remove();if(add){const o=objectById(id);add.insertAdjacentHTML("beforeend",'<option value="'+esc(id)+'">'+esc(o?objectLabel(o):id)+'</option>');}cfRefPending(box);});
+document.addEventListener("click",e=>{const c=e.target.closest&&e.target.closest(".cf-ref-create");if(!c)return;e.preventDefault();
+  const box=c.closest(".cf-refs"),type=box.dataset.cfref;if(!type)return;
+  openObjectModal(type,null,newId=>{
+    if(box.dataset.multi==="1"){box.querySelector(".cf-ref-chips").insertAdjacentHTML("beforeend",cfRefChipHTML(newId));
+      const add=box.querySelector(".cf-ref-add"),opt=add&&[...add.options].find(o=>o.value===newId);if(opt)opt.remove();}
+    else{const sel=box.querySelector("select[data-cfv]"),o=objectById(newId);sel.insertAdjacentHTML("beforeend",'<option value="'+esc(newId)+'">'+esc(o?objectLabel(o):newId)+'</option>');sel.value=newId;}
+    cfRefPending(box);});});
 /* Marque un champ obligatoire : astérisque visible + aria-required sur le contrôle.
    L'astérisque est aria-hidden, l'information étant déjà portée par aria-required. */
 const REQ='<span class="req" aria-hidden="true">*</span>';
@@ -11164,6 +11214,9 @@ function cfReadValue(cont,f){
   if(f.type==="boolean")return cont.querySelector("[data-cfv]").checked;
   if(f.type==="checklist")return [...cont.querySelectorAll("[data-cfchk]:checked")].map(c=>c.value);
   if(f.type==="tags")return [...cont.querySelectorAll(".cf-tag.on")].map(b=>b.dataset.cftag);
+  if(f.type==="reference"){
+    if(f.multiple){const box=cont.querySelector(".cf-refs");return box?[...box.querySelectorAll(".cf-ref-chip")].map(ch=>ch.dataset.refid):[];}
+    const s=cont.querySelector("select[data-cfv]");return (s&&s.value)?s.value:undefined;}
   const el=cont.querySelector("[data-cfv]");const v=(el&&el.value||"").trim();
   if(v==="")return undefined;
   if(f.type==="integer"||f.type==="progress")return parseInt(v,10);
@@ -11177,7 +11230,7 @@ function cfPresent(f,v){
 function cfValidate(f,v){
   const L=cfLabel(f);
   if(f.required){
-    const missing=f.type==="boolean"?v!==true:(f.type==="checklist"||f.type==="tags")?(!v||!v.length):(v===undefined||v===""||v===null);
+    const missing=f.type==="boolean"?v!==true:(f.type==="checklist"||f.type==="tags"||(f.type==="reference"&&f.multiple))?(!v||!v.length):(v===undefined||v===""||v===null);
     if(missing)return t("cf_req_missing",L);
   }
   if(!cfPresent(f,v))return null;
