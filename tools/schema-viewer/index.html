@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schéma d'analyse — visualiseur entité-relation</title>
+<script src="mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f6fa; --panel:#ffffff; --panel2:#eef1f6; --border:#d7dde7;
+    --text:#1f2733; --muted:#6b7686; --accent:#3a63d6; --accent-d:#2c4fb0;
+    --ref:#8e44ad; --core:#0f766e; --danger:#c0392b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  header{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex:none;flex-wrap:wrap}
+  header h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .sub{color:var(--muted);font-size:12px}
+  .spacer{flex:1}
+  .btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 11px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{background:var(--panel2)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-d)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .toolbar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex:none;flex-wrap:wrap}
+  .toolbar .grp{display:flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:8px;padding:3px;background:var(--panel2)}
+  .toolbar .grp .btn{border:none;background:transparent;padding:5px 9px}
+  .toolbar .grp .btn:hover{background:#fff}
+  .stat{color:var(--muted);font-size:12.5px}
+  .stat b{color:var(--text)}
+  .legend{display:flex;gap:14px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .legend .k{font-weight:700;color:var(--text);font-family:ui-monospace,Consolas,monospace}
+  main{position:relative;flex:1;overflow:hidden;background:
+    radial-gradient(circle at 1px 1px, #dfe4ec 1px, transparent 0) 0 0/22px 22px, var(--bg)}
+  #viewport{position:absolute;inset:0;overflow:hidden;cursor:grab}
+  #viewport.grabbing{cursor:grabbing}
+  #stage{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+  #stage svg{max-width:none!important;height:auto;display:block}
+  #drop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
+  #drop .card{pointer-events:auto;background:var(--panel);border:2px dashed var(--border);border-radius:16px;padding:34px 40px;text-align:center;max-width:520px;box-shadow:0 8px 30px rgba(20,30,50,.08)}
+  #drop.hide{display:none}
+  #drop h2{margin:.2em 0 .4em;font-size:17px}
+  #drop p{margin:.3em 0;color:var(--muted)}
+  main.dragover #drop .card{border-color:var(--accent);background:#f0f4ff}
+  #err{position:absolute;left:16px;right:16px;bottom:16px;background:#fdecea;border:1px solid #f5c6c0;color:#8a271c;border-radius:10px;padding:12px 14px;font-size:13px;display:none;z-index:6;max-height:40%;overflow:auto;white-space:pre-wrap}
+  #src{position:absolute;right:0;top:0;bottom:0;width:420px;max-width:85vw;background:var(--panel);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .18s;z-index:7;display:flex;flex-direction:column}
+  #src.open{transform:none}
+  #src header{border-bottom:1px solid var(--border)}
+  #src textarea{flex:1;border:none;resize:none;padding:12px 14px;font:12px/1.5 ui-monospace,Consolas,monospace;color:var(--text);background:var(--panel);outline:none}
+  .pill{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:600}
+  .pill.ref{background:#f3e8fb;color:var(--ref)}
+  .pill.core{background:#d7f0ec;color:var(--core)}
+  .pill.oref{background:#d3dbf5;color:#3a63d6}
+  .pill.ouref{background:#f6e2b3;color:#b7791f}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Schéma d'analyse <span class="sub">— visualiseur entité-relation (.rae.json)</span></h1>
+  <div class="spacer"></div>
+  <label class="btn primary" for="file">📂 Charger un .rae.json</label>
+  <input type="file" id="file" accept=".json,.rae.json,application/json">
+</header>
+
+<div class="toolbar">
+  <div class="grp">
+    <button class="btn" id="zin" title="Zoom avant">＋</button>
+    <button class="btn" id="zout" title="Zoom arrière">－</button>
+    <button class="btn" id="fit" title="Ajuster à l'écran">⤢ Ajuster</button>
+    <button class="btn" id="reset" title="100 %">1:1</button>
+  </div>
+  <span class="stat" id="zoomlbl">100 %</span>
+  <button class="btn" id="orient" title="Basculer l'orientation du graphe">⇅ Orientation : haut-bas</button>
+  <button class="btn" id="attrs" title="Afficher / masquer les attributs (hors clés PK et références FK)">☰ Attributs : complets</button>
+  <div class="spacer"></div>
+  <span class="stat" id="summary"></span>
+  <div class="grp">
+    <button class="btn" id="expsvg" title="Exporter en SVG" disabled>⭳ SVG</button>
+    <button class="btn" id="exppng" title="Exporter en PNG" disabled>⭳ PNG</button>
+    <button class="btn" id="togsrc" title="Voir le code Mermaid">&lt;/&gt; Source</button>
+  </div>
+</div>
+
+<div class="toolbar" style="padding-top:4px;padding-bottom:6px">
+  <div class="legend">
+    <span><span class="pill core">Entité cœur</span> risque, mesure, lien, analyse, cotation</span>
+    <span>Type d'objet : <span class="pill oref">référencé</span> <span class="pill ouref">non référencé</span></span>
+    <span><span class="pill ref">référence</span> champ de type « reference » : sa valeur est un lien vers une fiche d'objet (violet, marqué <b>FK</b>)</span>
+    <span><span class="k">PK</span> attribut servant de libellé (name_attr)</span>
+    <span>cardinalité : <span class="k">||</span> un&nbsp;·&nbsp;<span class="k">o|</span> zéro/un&nbsp;·&nbsp;<span class="k">o{</span> zéro/plusieurs</span>
+    <span><span class="k">──</span> relation structurelle (ossature)&nbsp;·&nbsp;<span class="k">┈┈</span> relation de référence</span>
+  </div>
+</div>
+
+<main id="main">
+  <div id="viewport">
+    <div id="stage"></div>
+  </div>
+  <div id="drop"><div class="card">
+    <h2>Dépose un fichier <code>.rae.json</code> ici</h2>
+    <p>ou utilise le bouton « Charger » en haut à droite.</p>
+    <p style="font-size:12px">Le schéma (types d'objets, entités cœur, champs et relations de référence) est dessiné en diagramme entité-relation.</p>
+  </div></div>
+  <div id="err"></div>
+  <aside id="src">
+    <header><b style="font-size:13px">Code Mermaid généré</b><div class="spacer"></div><button class="btn" id="copysrc">Copier</button></header>
+    <textarea id="srctext" spellcheck="false" readonly></textarea>
+  </aside>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  const LANG_ORDER=["fr","en","it"];
+  const CORE=[["analysis","Analyse"],["risk","Risque"],["cotation","Cotation"],["measure","Mesure"],["link","Lien"]];
+  const CORE_LABEL={}; CORE.forEach(c=>CORE_LABEL[c[0]]=c[1]);
+  // Attributs intégrés (structure fixe du modèle) : [type, code, libellé, clé PK/FK/""].
+  const BUILTINS={
+    analysis:[
+      ["string","title","Titre","PK"],["text","description","Description",""],
+      ["string","author","Auteur",""],["string","organization","Organisation",""],
+      ["string","scope","Périmètre",""],["string","methodology_reference","Référentiel méthodo.",""],
+      ["string","revision","Révision",""],["string","status","Statut",""],
+      ["string","language","Langue",""],["date","created_at","Créé le",""],["date","updated_at","Mis à jour le",""]
+    ],
+    risk:[
+      ["string","id","Identifiant","PK"],["string","label","Intitulé",""],
+      ["string","category","Catégorie",""],["text","description","Description",""],["text","comment","Commentaire",""]
+    ],
+    cotation:[
+      ["number","probability","Probabilité",""],["number","severity","Gravité",""]
+    ],
+    measure:[
+      ["string","id","Identifiant","PK"],["string","label","Intitulé",""],
+      ["string","type","Type",""],["string","status","Statut",""],
+      ["string","responsible","Responsable",""],["date","due_date","Échéance",""],
+      ["string","cost","Coût",""],["text","description","Description",""],["text","comment","Commentaire",""]
+    ],
+    link:[
+      ["id","risk","Risque",""],["id","measure","Mesure",""],["text","comment","Commentaire",""]
+    ]
+  };
+
+  // ---- utilitaires ----
+  function labelOf(dict,fallback){
+    if(dict&&typeof dict==="object"){
+      for(const l of LANG_ORDER){ if(dict[l]) return dict[l]; }
+      const vals=Object.values(dict).filter(Boolean); if(vals.length) return vals[0];
+    }
+    return fallback||"";
+  }
+  function asciiId(s,used){
+    let base=(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"")
+      .replace(/[^A-Za-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+    if(!base) base="E";
+    if(!/^[A-Za-z]/.test(base)) base="E_"+base;
+    let id=base,i=2; while(used[id]){ id=base+"_"+(i++); } used[id]=true; return id;
+  }
+  function tok(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9_]+/g,"_").replace(/^_+|_+$/g,"")||"x"; }
+  function q(s){ return String(s==null?"":s).replace(/"/g,"'").replace(/\s+/g," ").trim(); }
+
+  // ---- construction du modèle de schéma ----
+  function buildModel(a){
+    a=a||{};
+    const objectTypes=Array.isArray(a.object_types)?a.object_types:[];
+    const customFields=Array.isArray(a.custom_fields)?a.custom_fields:[];
+    const used={};
+    const entities=[];              // {id,label,kind,rows:[{type,name,key,comment}], _code/_target}
+    const codeToId={};              // object type code -> entity id
+    const otByCode={}; objectTypes.forEach(ot=>{ if(ot&&ot.code) otByCode[ot.code]=ot; });
+
+    // 1) types d'objets
+    objectTypes.forEach(ot=>{
+      if(!ot||!ot.code) return;
+      const id=asciiId(labelOf(ot.label,ot.code),used);
+      codeToId[ot.code]=id;
+      entities.push({id,label:labelOf(ot.label,ot.code),kind:"object",_ot:ot,rows:[]});
+    });
+    // 2) entités cœur (ossature du modèle) — toujours présentes
+    const byTarget={}; customFields.forEach(f=>{ if(f&&f.target){ (byTarget[f.target]=byTarget[f.target]||[]).push(f); } });
+    const coreId={};
+    CORE.forEach(([t,lbl])=>{
+      const id=asciiId(lbl,used); coreId[t]=id;
+      entities.push({id,label:lbl,kind:"core",_target:t,rows:[]});
+    });
+
+    const entById={}; entities.forEach(e=>entById[e.id]=e);
+    const rels=[]; const warns=[];
+
+    function targetIdFor(code){
+      if(codeToId[code]) return codeToId[code];
+      // référence vers un type inconnu -> nœud fantôme
+      const id=asciiId((code||"?")+"_inconnu",used);
+      const e={id,label:(code||"?")+" (type inconnu)",kind:"missing",rows:[{type:"",name:"?",key:"",comment:"type absent du fichier"}]};
+      entities.push(e); entById[id]=e; codeToId[code]=id; warns.push("Référence vers un type d'objet inconnu : "+code);
+      return id;
+    }
+    function cardOf(f){ return f.multiple?"multi":(f.required?"mono, obligatoire":"mono"); }
+    // références = relations non identifiantes -> trait pointillé (..)
+    function relCard(f){ return f.multiple?"}o..o{":(f.required?"}o..||":"}o..o|"); }
+
+    function pushRow(ent,f,isName){
+      const isRef=f.type==="reference";
+      let comment=labelOf(f.label,f.code);
+      if(isRef){ const tl=(otByCode[f.object_type]&&labelOf(otByCode[f.object_type].label,f.object_type))||f.object_type||"?";
+        comment+=" → "+tl+" ("+cardOf(f)+")"; }
+      else if(f.required){ comment+=" *"; }
+      ent.rows.push({type:tok(f.type||"text"),name:tok(f.code||"champ"),key:isRef?"FK":(isName?"PK":""),comment:q(comment)});
+    }
+
+    // attributs des types d'objets + relations objet->objet
+    objectTypes.forEach(ot=>{
+      const ent=entById[codeToId[ot.code]]; if(!ent) return;
+      const nameAttr=ot.name_attr;
+      (ot.attributes||[]).forEach(at=>{
+        if(!at||!at.code) return;
+        pushRow(ent,at,at.code===nameAttr);
+        if(at.type==="reference"){ rels.push({from:ent.id,to:targetIdFor(at.object_type),card:relCard(at),label:q(labelOf(at.label,at.code)),kind:"ref"}); }
+      });
+      if(!ent.rows.length) ent.rows.push({type:"id",name:tok(ot.id_prefix||ot.code),key:"PK",comment:"identifiant"});
+    });
+    // attributs intégrés + champs personnalisés des entités cœur, + relations entité->objet
+    CORE.forEach(([t])=>{
+      const id=coreId[t]; if(!id) return; const ent=entById[id];
+      (BUILTINS[t]||[]).forEach(bt=>ent.rows.push({type:tok(bt[0]),name:tok(bt[1]),key:bt[3]||"",comment:q(bt[2])}));
+      (byTarget[t]||[]).slice().sort((x,y)=>(x.order||0)-(y.order||0)).forEach(f=>{
+        if(!f||!f.code) return;
+        pushRow(ent,f,false);
+        if(f.type==="reference"){ rels.push({from:id,to:targetIdFor(f.object_type),card:relCard(f),label:q(labelOf(f.label,f.code)),kind:"ref"}); }
+      });
+    });
+
+    // 3) relations structurelles implicites (ossature du modèle) — trait plein
+    function sref(a,c,card,label){ if(coreId[a]&&coreId[c]) rels.push({from:coreId[a],to:coreId[c],card:card,label:label,kind:"struct"}); }
+    sref("analysis","risk",   "||--o{","risques");
+    sref("analysis","measure","||--o{","mesures");
+    sref("analysis","link",   "||--o{","liens");
+    sref("risk","cotation",   "||--o{","cotations (initiale, résiduelle)");
+    sref("link","risk",       "}o--||","risque");
+    sref("link","measure",    "}o--||","mesure");
+
+    // un type d'objet est « référencé » s'il est la cible d'au moins une relation de référence
+    const refTargets=new Set(rels.filter(r=>r.kind==="ref").map(r=>r.to));
+    entities.forEach(e=>{ if(e.kind==="object") e.referenced=refTargets.has(e.id); });
+    const nstruct=rels.filter(r=>r.kind==="struct").length;
+    const unref=entities.filter(e=>e.kind==="object"&&!e.referenced).length;
+    return {entities,rels,warns,
+      counts:{types:objectTypes.length,core:Object.keys(coreId).length,
+        fields:customFields.length,attrs:objectTypes.reduce((n,ot)=>n+((ot.attributes||[]).length),0),
+        rels:rels.length,struct:nstruct,ref:rels.length-nstruct,unrefTypes:unref}};
+  }
+
+  // ---- génération du texte Mermaid erDiagram ----
+  function toMermaid(model){
+    const L=["erDiagram"];
+    model.entities.forEach(e=>{
+      L.push("  "+e.id+" {");
+      let rows=e.rows;
+      if(keysOnly) rows=rows.filter(r=>r.key==="PK"||r.key==="FK");
+      if(!rows.length) rows=[{type:"attr",name:"masques",key:"",comment:"(attributs masqués)"}];
+      rows.forEach(r=>{
+        L.push("    "+(r.type||"x")+" "+(r.name||"x")+(r.key?" "+r.key:"")+' "'+(r.comment||"")+'"');
+      });
+      L.push("  }");
+    });
+    model.rels.forEach(r=>{ L.push("  "+r.from+" "+r.card+" "+r.to+' : "'+(r.label||" ")+'"'); });
+    return L.join("\n");
+  }
+
+  // ---- rendu ----
+  let orientation="TB";   // "TB" haut-bas · "LR" gauche-droite
+  let keysOnly=false;     // true = n'afficher que les clés PK et les références FK
+  function configureMermaid(){ mermaid.initialize({startOnLoad:false,securityLevel:"loose",theme:"default",
+    er:{layoutDirection:orientation,entityPadding:14,fontSize:13,useMaxWidth:false}}); }
+
+  const stage=document.getElementById("stage");
+  const viewport=document.getElementById("viewport");
+  const errBox=document.getElementById("err");
+  const srcText=document.getElementById("srctext");
+  let curSVG=null;
+
+  let lastData=null,lastName="";
+  async function renderFromData(data,name){
+    hideErr();
+    lastData=data; lastName=name||"";
+    let model;
+    try{ model=buildModel(data); }catch(e){ return showErr("Lecture du schéma impossible : "+(e&&e.message||e)); }
+    if(!model.entities.length){ stage.innerHTML=""; document.getElementById("drop").classList.remove("hide");
+      return showErr("Aucun schéma à afficher : ce fichier ne contient ni type d'objet ni champ personnalisé."); }
+    const def=toMermaid(model);
+    srcText.value=def;
+    configureMermaid();
+    try{
+      const {svg}=await mermaid.render("erGraph_"+Date.now(),def);
+      stage.innerHTML=svg; curSVG=stage.querySelector("svg");
+      styleCoreEntities(curSVG,model.entities.filter(e=>e.kind==="core").map(e=>e.id));
+      styleObjectEntities(curSVG,model.entities.filter(e=>e.kind==="object").map(e=>({id:e.id,referenced:e.referenced})));
+      styleRefRows(curSVG);
+      wrapRelationshipLabels(curSVG,model.rels);
+      document.getElementById("drop").classList.add("hide");
+      document.getElementById("expsvg").disabled=false;
+      document.getElementById("exppng").disabled=false;
+      const c=model.counts;
+      document.getElementById("summary").innerHTML=
+        (name?("<b>"+q(name)+"</b> — "):"")+
+        "<b>"+c.types+"</b> type(s) d'objet"+(c.unrefTypes?(" (dont <b>"+c.unrefTypes+"</b> non référencé"+(c.unrefTypes>1?"s":"")+")"):"")+
+        " · <b>"+c.core+"</b> entité(s) cœur · <b>"+
+        c.fields+"</b> champ(s) perso · <b>"+c.rels+"</b> relation(s) ("+c.struct+" struct. / "+c.ref+" réf.)";
+      fit();
+      if(model.warns.length) showErr("⚠ "+model.warns.join("\n⚠ "));
+    }catch(e){ showErr("Échec du rendu Mermaid : "+(e&&e.message||e)+"\n\n— Vérifie le code généré via « Source »."); }
+  }
+  window.SchemaViewer={renderFromData,buildModel,toMermaid};
+
+  // Mermaid retire les caractères non alphanumériques de l'id du groupe DOM (Bien_support -> entity-Biensupport-…).
+  const domId=id=>String(id).replace(/[^A-Za-z0-9]/g,"");
+  function entGroup(svg,id){ return svg.querySelector('g[id^="entity-'+domId(id)+'-"]'); }
+  // Teinte les entités cœur (post-traitement du SVG Mermaid). Style inline -> prime sur le CSS injecté.
+  const CORE_FILL="#d7f0ec", CORE_HEAD="#b7e3da", CORE_LINE="#0f766e";
+  function styleCoreEntities(svg,coreIds){
+    if(!svg) return;
+    coreIds.forEach(id=>{
+      const g=entGroup(svg,id); if(!g) return;
+      g.querySelectorAll("rect").forEach(r=>{
+        const c=(r.getAttribute("class")||"");
+        if(c.indexOf("entityBox")>=0){ r.style.fill=CORE_HEAD; r.style.stroke=CORE_LINE; }
+        else if(c.indexOf("attributeBox")>=0){ r.style.fill=CORE_FILL; r.style.stroke=CORE_LINE; }
+      });
+      const title=g.querySelector('text[id^="text-entity-"]:not([id*="-attr-"])')||g.querySelector("text.entityLabel");
+      if(title){ title.style.fill=CORE_LINE; title.style.fontWeight="700"; }
+    });
+  }
+  // Colore les types d'objets : référencés (bleu) vs non référencés (ambre).
+  const OBJ={ref:{fill:"#eaeefc",head:"#d3dbf5",line:"#3a63d6"},unref:{fill:"#fdf1da",head:"#f6e2b3",line:"#b7791f"}};
+  function styleObjectEntities(svg,objs){
+    if(!svg) return;
+    objs.forEach(o=>{
+      const g=entGroup(svg,o.id); if(!g) return;
+      const c=o.referenced?OBJ.ref:OBJ.unref;
+      g.querySelectorAll("rect").forEach(r=>{ const cl=r.getAttribute("class")||"";
+        if(cl.indexOf("entityBox")>=0){ r.style.fill=c.head; r.style.stroke=c.line; }
+        else if(cl.indexOf("attributeBox")>=0){ r.style.fill=c.fill; r.style.stroke=c.line; } });
+      const title=g.querySelector('text[id^="text-entity-"]:not([id*="-attr-"])')||g.querySelector("text.entityLabel");
+      if(title){ title.style.fill=c.line; title.style.fontWeight="700"; }
+    });
+  }
+  // Fond des libellés laissé par défaut (semi-transparent). On se contente de replier sur plusieurs
+  // lignes les libellés plus larges que l'espacement entre les deux entités reliées, pour éviter
+  // qu'ils débordent sur les nœuds/terminaisons (surtout en disposition gauche-droite).
+  const SVGNS="http://www.w3.org/2000/svg";
+  function wrapRelationshipLabels(svg,rels){
+    if(!svg) return;
+    const texts=[...svg.querySelectorAll("text.relationshipLabel")];
+    const boxes=[...svg.querySelectorAll("rect.relationshipLabelBox")];
+    const pool=(rels||[]).slice();   // appariement par contenu (consommé) : robuste à l'ordre
+    texts.forEach((t,i)=>{
+      const full=(t.textContent||"").trim();
+      if(!full || full.indexOf(" ")<0) return;                 // rien à replier (un seul mot)
+      const ri=pool.findIndex(r=>r&&(r.label||"").trim()===full);
+      const rel=ri>=0?pool[ri]:null; if(ri>=0) pool[ri]=null;
+      if(!rel) return;
+      const ga=entGroup(svg,rel.from), gb=entGroup(svg,rel.to); if(!ga||!gb) return;
+      const aR=ga.getBoundingClientRect(), bR=gb.getBoundingClientRect(), tR=t.getBoundingClientRect();
+      const dx=Math.max(0, aR.left-bR.right, bR.left-aR.right);
+      const dy=Math.max(0, aR.top-bR.bottom, bR.top-aR.bottom);
+      let gap=Math.hypot(dx,dy);
+      if(gap<1) gap=Math.hypot((aR.left+aR.width/2)-(bR.left+bR.width/2),(aR.top+aR.height/2)-(bR.top+bR.height/2));
+      const target=Math.max(gap*0.95, 56);                     // largeur cible (px écran)
+      if(tR.width<=target) return;                             // tient déjà dans l'espacement
+      const cw=tR.width/Math.max(1,full.length), maxChars=Math.max(5, Math.floor(target/cw));
+      const words=full.split(/\s+/), lines=[]; let cur="";
+      words.forEach(w=>{ const cand=cur?cur+" "+w:w;
+        if(cand.length<=maxChars||!cur) cur=cand; else { lines.push(cur); cur=w; } });
+      if(cur) lines.push(cur);
+      if(lines.length<2) return;
+      // reconstruit le texte en <tspan> centrés verticalement (unités SVG)
+      let bb0; try{ bb0=t.getBBox(); }catch(_){ return; }
+      const lh=(bb0.height||13)*1.02;
+      let x=t.getAttribute("x"); if(x==null){ x=bb0.x+bb0.width/2; t.setAttribute("text-anchor","middle"); }
+      while(t.firstChild) t.removeChild(t.firstChild);
+      lines.forEach((ln,li)=>{ const ts=document.createElementNS(SVGNS,"tspan");
+        ts.setAttribute("x",x); ts.setAttribute("dy", (li===0? -((lines.length-1)*lh/2) : lh).toFixed(2));
+        ts.textContent=ln; t.appendChild(ts); });
+      // ajuste le fond par défaut (fill non modifié) pour couvrir les lignes
+      const box=boxes[i]; if(box){ let bb; try{ bb=t.getBBox(); }catch(_){ bb=null; }
+        if(bb){ const p=2; box.setAttribute("x",(bb.x-p).toFixed(2)); box.setAttribute("y",(bb.y-p).toFixed(2));
+          box.setAttribute("width",(bb.width+2*p).toFixed(2)); box.setAttribute("height",(bb.height+2*p).toFixed(2)); } }
+    });
+  }
+  // Colore en violet les lignes de champ « reference » (repérées par leur cellule clé = FK).
+  const REF_COL="#8e44ad";
+  function styleRefRows(svg){
+    if(!svg) return;
+    svg.querySelectorAll('text[id*="-attr-"][id$="-key"]').forEach(k=>{
+      if((k.textContent||"").trim()!=="FK") return;
+      const base=k.id.replace(/-key$/,"");
+      ["type","name","key","comment"].forEach(c=>{ const el=svg.querySelector('[id="'+base+"-"+c+'"]');
+        if(el){ el.style.fill=REF_COL; if(c==="key") el.style.fontWeight="700"; } });
+    });
+  }
+
+  function showErr(m){ errBox.textContent=m; errBox.style.display="block"; }
+  function hideErr(){ errBox.style.display="none"; }
+
+  // ---- pan & zoom ----
+  let scale=1,tx=0,ty=0;
+  function apply(){ stage.style.transform="translate("+tx+"px,"+ty+"px) scale("+scale+")";
+    document.getElementById("zoomlbl").textContent=Math.round(scale*100)+" %"; }
+  function setScale(ns,cx,cy){ ns=Math.min(6,Math.max(.05,ns));
+    const r=viewport.getBoundingClientRect(); cx=(cx==null?r.width/2:cx); cy=(cy==null?r.height/2:cy);
+    const wx=(cx-tx)/scale, wy=(cy-ty)/scale; scale=ns; tx=cx-wx*scale; ty=cy-wy*scale; apply(); }
+  function fit(){
+    if(!curSVG) return;
+    const bb=curSVG.getBoundingClientRect(); // taille rendue actuelle
+    const w=curSVG.viewBox&&curSVG.viewBox.baseVal&&curSVG.viewBox.baseVal.width||bb.width||1;
+    const h=curSVG.viewBox&&curSVG.viewBox.baseVal&&curSVG.viewBox.baseVal.height||bb.height||1;
+    curSVG.setAttribute("width",w); curSVG.setAttribute("height",h); curSVG.style.width=w+"px"; curSVG.style.height=h+"px";
+    const r=viewport.getBoundingClientRect(); const m=40;
+    scale=Math.min((r.width-m)/w,(r.height-m)/h,1.5); if(!isFinite(scale)||scale<=0) scale=1;
+    tx=(r.width-w*scale)/2; ty=(r.height-h*scale)/2; apply();
+  }
+  viewport.addEventListener("wheel",e=>{ e.preventDefault(); const f=e.deltaY<0?1.12:1/1.12;
+    const r=viewport.getBoundingClientRect(); setScale(scale*f,e.clientX-r.left,e.clientY-r.top); },{passive:false});
+  let drag=null;
+  viewport.addEventListener("mousedown",e=>{ drag={x:e.clientX,y:e.clientY,tx,ty}; viewport.classList.add("grabbing"); });
+  window.addEventListener("mousemove",e=>{ if(!drag) return; tx=drag.tx+(e.clientX-drag.x); ty=drag.ty+(e.clientY-drag.y); apply(); });
+  window.addEventListener("mouseup",()=>{ drag=null; viewport.classList.remove("grabbing"); });
+  document.getElementById("zin").onclick=()=>setScale(scale*1.2);
+  document.getElementById("zout").onclick=()=>setScale(scale/1.2);
+  document.getElementById("fit").onclick=fit;
+  document.getElementById("reset").onclick=()=>{ scale=1; const r=viewport.getBoundingClientRect();
+    tx=r.width/2-(curSVG?curSVG.getBoundingClientRect().width/scale/2:0); ty=40; apply(); };
+  document.getElementById("orient").onclick=()=>{ orientation=(orientation==="TB")?"LR":"TB";
+    document.getElementById("orient").textContent="⇅ Orientation : "+(orientation==="TB"?"haut-bas":"gauche-droite");
+    if(lastData) renderFromData(lastData,lastName); };
+  document.getElementById("attrs").onclick=()=>{ keysOnly=!keysOnly;
+    document.getElementById("attrs").textContent="☰ Attributs : "+(keysOnly?"clés seules":"complets");
+    if(lastData) renderFromData(lastData,lastName); };
+
+  // ---- chargement de fichier ----
+  function readFile(file){ if(!file) return; const rd=new FileReader();
+    rd.onload=()=>{ try{ const obj=JSON.parse(rd.result); renderFromData(obj,file.name); }
+      catch(e){ showErr("JSON invalide : "+(e&&e.message||e)); } };
+    rd.onerror=()=>showErr("Lecture du fichier impossible."); rd.readAsText(file,"utf-8"); }
+  document.getElementById("file").addEventListener("change",e=>{ readFile(e.target.files[0]); e.target.value=""; });
+
+  const main=document.getElementById("main");
+  ["dragenter","dragover"].forEach(ev=>main.addEventListener(ev,e=>{ e.preventDefault(); main.classList.add("dragover"); }));
+  ["dragleave","drop"].forEach(ev=>main.addEventListener(ev,e=>{ if(ev==="dragleave"&&e.relatedTarget) return; e.preventDefault(); main.classList.remove("dragover"); }));
+  main.addEventListener("drop",e=>{ const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) readFile(f); });
+
+  // ---- source & export ----
+  document.getElementById("togsrc").onclick=()=>document.getElementById("src").classList.toggle("open");
+  document.getElementById("copysrc").onclick=()=>{ srcText.select(); try{document.execCommand("copy");}catch(_){}} ;
+
+  function download(blob,fn){ const u=URL.createObjectURL(blob); const a=document.createElement("a");
+    a.href=u; a.download=fn; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1500); }
+  function svgString(){ if(!curSVG) return null; const c=curSVG.cloneNode(true);
+    c.setAttribute("xmlns","http://www.w3.org/2000/svg"); c.setAttribute("xmlns:xlink","http://www.w3.org/1999/xlink");
+    return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(c); }
+  document.getElementById("expsvg").onclick=()=>{ const s=svgString(); if(!s) return;
+    download(new Blob([s],{type:"image/svg+xml"}),"schema.svg"); };
+  document.getElementById("exppng").onclick=()=>{ const s=svgString(); if(!s) return;
+    const w=curSVG.viewBox.baseVal.width||curSVG.getBoundingClientRect().width, h=curSVG.viewBox.baseVal.height||curSVG.getBoundingClientRect().height;
+    const SS=2; const img=new Image();
+    img.onload=()=>{ const cv=document.createElement("canvas"); cv.width=Math.max(1,w*SS); cv.height=Math.max(1,h*SS);
+      const ctx=cv.getContext("2d"); ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,cv.width,cv.height); ctx.setTransform(SS,0,0,SS,0,0); ctx.drawImage(img,0,0);
+      cv.toBlob(b=>{ if(b) download(b,"schema.png"); },"image/png"); };
+    img.onerror=()=>showErr("Export PNG impossible (image SVG non chargée).");
+    img.src="data:image/svg+xml;base64,"+btoa(unescape(encodeURIComponent(s))); };
+})();
+</script>
+</body>
+</html>
