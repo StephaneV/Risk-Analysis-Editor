@@ -1735,8 +1735,8 @@ const I18N = {
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     cf_filterable:"Utilisable comme filtre",
-    cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées, et aux champs rattachés aux risques, aux mesures ou aux liens.",
-    cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées, hors champs de l'analyse.",
+    cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées et aux références, sur les champs rattachés aux risques, aux mesures ou aux liens.",
+    cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées et aux références, hors champs de l'analyse.",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.reference":"Référence à un objet",
     cf_object_type:"Type d'objet ciblé", cf_ref_none:"— (aucun)", cf_ref_add:"+ ajouter une instance…", cf_ref_create:"＋ créer", cf_ref_remove:"Retirer",
@@ -2101,8 +2101,8 @@ const I18N = {
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     cf_filterable:"Usable as a filter",
-    cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types, on risk, measure or link fields.",
-    cf_filterable_na:"Not applicable: restricted to closed-value types, excluding analysis fields.",
+    cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types and references, on risk, measure or link fields.",
+    cf_filterable_na:"Not applicable: restricted to closed-value types and references, excluding analysis fields.",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.reference":"Object reference",
     cf_object_type:"Target object type", cf_ref_none:"— (none)", cf_ref_add:"+ add an instance…", cf_ref_create:"＋ new", cf_ref_remove:"Remove",
@@ -2467,8 +2467,8 @@ const I18N = {
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     cf_filterable:"Utilizzabile come filtro",
-    cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi, sui campi di rischio, misura o collegamento.",
-    cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi, esclusi i campi dell'analisi.",
+    cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi e ai riferimenti, sui campi di rischio, misura o collegamento.",
+    cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi e ai riferimenti, esclusi i campi dell'analisi.",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.reference":"Riferimento a un oggetto",
     cf_object_type:"Tipo di oggetto di destinazione", cf_ref_none:"— (nessuno)", cf_ref_add:"+ aggiungi un'istanza…", cf_ref_create:"＋ crea", cf_ref_remove:"Rimuovi",
@@ -5567,6 +5567,7 @@ function reportActiveFilters(){
       const want=cfFilters[f.code];if(!want)return;
       let v=want;
       if(f.type==="boolean")v=want==="true"?t("cf_yes"):t("cf_no");
+      else if(f.type==="reference"){const o=objectById(want);v=o?objectLabel(o):want;}
       else{const it=(f.items||[]).find(x=>x.code===want);v=it?cfItemLabel(it):want;}
       out.push({label:cfLabel(f),value:v});
     });
@@ -5594,7 +5595,8 @@ function reportDefaultZone(id){return REPORT_HEADER_SECS.indexOf(id)>=0?"header"
 function reportIterationValid(by){
   if(["none","risk_category","measure_type","risk_owner","measure_responsible","per_risk"].indexOf(by)>=0)return true;
   if(/^cf:.+$/.test(by||"")){const code=by.slice(3);
-    return !!["risk","measure"].some(tg=>customFieldsFor(tg).some(f=>f.code===code&&cfFilterOptionApplies(f.target,f.type)));}
+    /* Les références ne servent pas (encore) de critère d'éclatement du rapport — traité au lot Rapport. */
+    return !!["risk","measure"].some(tg=>customFieldsFor(tg).some(f=>f.code===code&&f.type!=="reference"&&cfFilterOptionApplies(f.target,f.type)));}
   return false;
 }
 /* Config effective, normalisée : valeurs par défaut + robustesse (id inconnu ignoré ;
@@ -6179,7 +6181,7 @@ function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
    - le type doit être à valeurs fermées, seul à pouvoir alimenter une liste de choix ;
    - la cible ne peut pas être l'analyse : il n'y en a qu'une, il n'y a rien à trier.
    Condition unique, partagée par la modale, le tableau des paramètres et le filtrage. */
-function cfFilterOptionApplies(target,type){return cfIsClosed(type)&&target!=="analysis"&&target!=="cotation";}
+function cfFilterOptionApplies(target,type){return (cfIsClosed(type)||type==="reference")&&target!=="analysis"&&target!=="cotation";}
 function cfFilterableFields(target){
   return customFieldsFor(target).filter(f=>f.filterable&&cfFilterOptionApplies(f.target,f.type));
 }
@@ -6241,12 +6243,15 @@ function filtersApplyFromFile(){
 /* Valeurs proposées : les items du champ, ou Oui/Non pour un booléen. */
 function cfFilterChoices(f){
   if(f.type==="boolean")return [["true",t("cf_yes")],["false",t("cf_no")]];
+  if(f.type==="reference")return objectsOfType(f.object_type).map(o=>[o.id,objectLabel(o)]);
   return (f.items||[]).map(it=>[it.code,cfItemLabel(it)]);
 }
 /* Une entité passe-t-elle les filtres de sa cible ?
    - booléen : « Non » retient aussi les fiches où la case n'a jamais été cochée, ce qui
      correspond à ce que l'utilisateur voit — une case décochée ;
-   - listes à cocher et étiquettes : la valeur doit figurer parmi celles retenues. */
+   - listes à cocher, étiquettes et références multivaluées : l'id/valeur retenu doit figurer
+     parmi ceux de la fiche (tableau) ;
+   - référence mono et sélection simple : la valeur doit être exactement celle retenue. */
 function cfEntityMatches(obj,target){
   const fs=cfFilterableFields(target);
   for(let i=0;i<fs.length;i++){
