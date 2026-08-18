@@ -1714,6 +1714,7 @@ const I18N = {
     rp_revision:"Révision", rp_value:"Valeur", rp_range:"Plage de score",
     rp_risk_details:"Détail des risques", rp_measure_details:"Détail des mesures", rp_link_details:"Détail des liens",
     rp_field_glossary:"Référentiels et légendes des champs",
+    rp_objects:"Objets", rp_obj_id:"Réf.", rp_obj_view_table:"Tableau", rp_obj_view_detail:"Détail",
     tab_plan:"Plan d'action", plan_caption:"Suivi des mesures de maîtrise : échéances, statut et avancement. Sur le tableau par statut, au clavier : Entrée pour ouvrir une mesure, Ctrl+flèches pour changer sa colonne.",
     plan_view_echeance:"Échéancier", plan_view_statut:"Par statut", plan_view_responsable:"Par responsable",
     plan_progress:"Avancement", plan_overdue:"en retard", plan_overdue_n:"{0} en retard",
@@ -2085,6 +2086,7 @@ const I18N = {
     rp_revision:"Revision", rp_value:"Value", rp_range:"Score range",
     rp_risk_details:"Risk details", rp_measure_details:"Measure details", rp_link_details:"Link details",
     rp_field_glossary:"Field reference and legends",
+    rp_objects:"Objects", rp_obj_id:"Ref.", rp_obj_view_table:"Table", rp_obj_view_detail:"Detail",
     tab_plan:"Action plan", plan_caption:"Follow-up of controls: due dates, status and progress. On the status board, keyboard: Enter to open a measure, Ctrl+arrows to move it between columns.",
     plan_view_echeance:"Timeline", plan_view_statut:"By status", plan_view_responsable:"By owner",
     plan_progress:"Progress", plan_overdue:"overdue", plan_overdue_n:"{0} overdue",
@@ -2456,6 +2458,7 @@ const I18N = {
     rp_revision:"Revisione", rp_value:"Valore", rp_range:"Intervallo di punteggio",
     rp_risk_details:"Dettaglio dei rischi", rp_measure_details:"Dettaglio delle misure", rp_link_details:"Dettaglio dei collegamenti",
     rp_field_glossary:"Riferimenti e legende dei campi",
+    rp_objects:"Oggetti", rp_obj_id:"Rif.", rp_obj_view_table:"Tabella", rp_obj_view_detail:"Dettaglio",
     tab_plan:"Piano d'azione", plan_caption:"Monitoraggio delle misure di controllo: scadenze, stato e avanzamento. Nella bacheca per stato, da tastiera: Invio per aprire una misura, Ctrl+frecce per spostarla di colonna.",
     plan_view_echeance:"Scadenzario", plan_view_statut:"Per stato", plan_view_responsable:"Per responsabile",
     plan_progress:"Avanzamento", plan_overdue:"in ritardo", plan_overdue_n:"{0} in ritardo",
@@ -5658,7 +5661,7 @@ function reportSingleMatrixSVG(which,risks){
    (page de garde, table des matières, toutes les sections activées, ordre par défaut).
    ============================================================ */
 const REPORT_SECTION_IDS=["metadata","presentation","summary_counts","summary_distribution",
-  "grid_axes","grid_criticality","field_glossary","matrix_ir","matrix_initial","matrix_residual","matrix_traj","radar","risks_table","risks_detail",
+  "grid_axes","grid_criticality","field_glossary","objects","matrix_ir","matrix_initial","matrix_residual","matrix_traj","radar","risks_table","risks_detail",
   "measures_table","measures_detail","links_table","links_detail","action_plan"];
 const REPORT_META_ROW_IDS=["author","organization","scope","methodology","created","updated","revision","status"];
 /* Par défaut (sans configuration), toutes les sections sont activées SAUF les matrices
@@ -5667,10 +5670,15 @@ const REPORT_META_ROW_IDS=["author","organization","scope","methodology","create
 function cfHasItemDesc(f){return cfNeedsItems(f.type)&&(f.items||[]).some(it=>it.description&&Object.keys(it.description).length);}
 function glossaryFieldList(){const out=[];["analysis","risk","measure","link"].forEach(tg=>customFieldsFor(tg).forEach(f=>{if(cfHasItemDesc(f))out.push({target:tg,field:f});}));return out;}
 function reportGlossaryItemTitle(id){const i=id.indexOf(":"),tg=id.slice(0,i),code=id.slice(i+1);const f=customFieldsFor(tg).find(x=>x.code===code);return (f?cfLabel(f):code)+" ("+cfTargetLabel(tg)+")";}
+/* Sous-élément de la section « Objets » : id « ot:<code> » -> libellé du type + nombre d'instances. */
+function reportObjectItemTitle(id){const code=id.slice(3);const ot=objectTypeByCode(code);
+  return (ot?otLabel(ot):code)+" ("+objectsOfType(code).length+")";}
 function reportSectionDefaultOn(id){
   if(id==="matrix_initial"||id==="matrix_residual"||id==="radar")return false;
   // Section « Référentiels » : activée par défaut seulement si au moins un item porte une description.
   if(id==="field_glossary")return glossaryFieldList().length>0;
+  // Section « Objets » : activée par défaut seulement s'il existe au moins un type d'objet.
+  if(id==="objects")return objectTypes().length>0;
   return true;
 }
 /* Filtres actifs (natifs propagés + champs personnalisés) décrivant le sous-ensemble filtré : [{label,value}]. */
@@ -5698,7 +5706,7 @@ function reportDefaultCols(secId){return ({
   links_table:["rid","risk","mid","measure","notes"]})[secId]||[];}
 function reportSectionTitle(id){return ({
   metadata:t("rp_metadata"), presentation:t("rp_presentation"), summary_counts:t("rp_summary"),
-  summary_distribution:t("stat_distribution"), grid_axes:t("settings_grid"), grid_criticality:t("crit_title"), field_glossary:t("rp_field_glossary"),
+  summary_distribution:t("stat_distribution"), grid_axes:t("settings_grid"), grid_criticality:t("crit_title"), field_glossary:t("rp_field_glossary"), objects:t("rp_objects"),
   matrix_ir:t("mtx_both_side"), matrix_initial:t("mtx_initial_only"), matrix_residual:t("mtx_residual_only"),
   matrix_traj:t("mtx_traj"), radar:t("rp_radar"), risks_table:t("risks_title"), risks_detail:t("rp_risk_details"),
   measures_table:t("measures_title"), measures_detail:t("rp_measure_details"), links_table:t("links_title"),
@@ -5706,7 +5714,7 @@ function reportSectionTitle(id){return ({
 function reportCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.report;return (d&&typeof d==="object")?d:null;}
 function reportCfgStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.report=d.report||{};}
 /* Rapport éclaté : sections d'intro (« en tête »), le reste « répété » par chapitre. */
-const REPORT_HEADER_SECS=["metadata","presentation","summary_counts","summary_distribution","grid_axes","grid_criticality","field_glossary"];
+const REPORT_HEADER_SECS=["metadata","presentation","summary_counts","summary_distribution","grid_axes","grid_criticality","field_glossary","objects"];
 function reportDefaultZone(id){return REPORT_HEADER_SECS.indexOf(id)>=0?"header":"repeated";}
 /* Critère d'éclatement valide ? (risque/mesure natif, un-par-risque, ou champ perso filtrable). */
 function reportIterationValid(by){
@@ -5757,6 +5765,8 @@ function reportCfg(){
     if(s.id==="metadata")o.rows=ordered(s.rows,REPORT_META_ROW_IDS,true);
     else if(s.id==="presentation")o.items=ordered(s.items,["description"].concat(customFieldsFor("analysis").map(f=>"cf:"+f.code)),true);
     else if(s.id==="field_glossary")o.items=ordered(s.items,glossaryFieldList().map(x=>x.target+":"+x.field.code),true);
+    else if(s.id==="objects"){o.items=ordered(s.items,objectTypes().map(ot=>"ot:"+ot.code),true);
+      o.view=["table","detail"].indexOf(s.view)>=0?s.view:"table";}
     else if(reportTableId(s.id))o.columns=columns(s.columns,reportTableId(s.id),reportDefaultCols(s.id));
     else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
     else if(s.id==="radar"){
@@ -5930,6 +5940,32 @@ function renderReport(){
       });
       if(!body)return "";
       return card("field_glossary",'<h2>'+esc(t("rp_field_glossary"))+'</h2>'+body);
+    },
+    objects:s=>{
+      // Un sous-bloc par type d'objet activé : tableau (une ligne par instance) ou détail (un bloc par instance).
+      const mode=(s&&s.view)==="detail"?"detail":"table";
+      let body="";
+      ((s&&s.items)||[]).filter(x=>x.on).forEach(it=>{
+        const ot=objectTypeByCode(it.id.slice(3)); if(!ot)return;
+        const insts=objectsOfType(ot.code); if(!insts.length)return;
+        const attrs=ot.attributes||[];
+        body+='<h3>'+esc(otLabel(ot))+' <span class="rp-item-sub">('+insts.length+')</span></h3>';
+        if(mode==="detail"){
+          insts.forEach(inst=>{
+            body+='<div class="rp-item"><div><b>'+esc(inst.id)+' — '+esc(objectLabel(inst))+'</b></div>';
+            attrs.forEach(a=>{const v=(inst.values||{})[a.code];
+              if(cfHasVal(v))body+='<div class="rp-note md"><b>'+esc(cfLabel(a))+' :</b> '+cfDisplayHTML(a,v,true)+'</div>';});
+            body+='</div>';
+          });
+        }else{
+          let tb='<table><thead><tr><th>'+esc(t("rp_obj_id"))+'</th>'+attrs.map(a=>'<th>'+esc(cfLabel(a))+'</th>').join("")+'</tr></thead><tbody>';
+          insts.forEach(inst=>{ tb+='<tr><td><b>'+esc(inst.id)+'</b></td>'+
+            attrs.map(a=>{const v=(inst.values||{})[a.code];return '<td class="md">'+(cfHasVal(v)?cfDisplayHTML(a,v,true):'')+'</td>';}).join("")+'</tr>'; });
+          body+=tb+'</tbody></table>';
+        }
+      });
+      if(!body)return "";
+      return card("objects",'<h2>'+esc(t("rp_objects"))+'</h2>'+body);
     },
     matrix_ir:()=>{
       let inner='<h2>'+esc(t("mtx_both_side"))+'</h2>';
@@ -8434,6 +8470,31 @@ async function buildDocx(){
       });
       return out;
     },
+    objects:s=>{
+      const mode=(s&&s.view)==="detail"?"detail":"table";
+      let out="",any=false;
+      ((s&&s.items)||[]).filter(x=>x.on).forEach(it=>{
+        const ot=objectTypeByCode(it.id.slice(3)); if(!ot)return;
+        const insts=objectsOfType(ot.code); if(!insts.length)return;
+        const attrs=ot.attributes||[];
+        if(!any){out=heading(t("rp_objects"));any=true;}
+        out+=h3(otLabel(ot));
+        if(mode==="detail"){
+          insts.forEach(inst=>{
+            out+=dxP(dxRun(inst.id+" — "+objectLabel(inst),{b:true}),{sb:120,sa:40});
+            attrs.forEach(a=>{const raw=(inst.values||{})[a.code],v=cfDisplayTxt(a,raw);if(!v)return;
+              if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
+              else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});});
+          });
+        }else{
+          const head=[{txt:t("rp_obj_id"),b:true,fill:"EEF2F8"}].concat(attrs.map(a=>({txt:cfLabel(a),b:true,fill:"EEF2F8"})));
+          const rows=insts.map(inst=>[{txt:inst.id,b:true}].concat(attrs.map(a=>({txt:cfDisplayTxt(a,(inst.values||{})[a.code])||""}))));
+          const n=attrs.length, idW=1400, rest=Math.max(900, n?Math.round((CW-idW)/n):(CW-idW));
+          out+=dxTbl([head].concat(rows),[idW].concat(attrs.map(()=>rest)));
+        }
+      });
+      return out;
+    },
     matrix_ir:async()=>{
       let out=heading(t("mtx_both_side"));
       out+=nR?await addSvgImage(reportMatrixSVG("side",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
@@ -10282,6 +10343,12 @@ function rcSecItemHTML(s,iterating){
     sub=rcSubrowsHTML("rcsub-presentation",s.items.map(it=>({id:it.id,on:it.on,label:reportPresItemTitle(it.id),cf:it.id.indexOf("cf:")===0})));}
   else if(s.id==="field_glossary"){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-field_glossary">'+esc(t("rc_items"))+' ▾</button>';
     sub=rcSubrowsHTML("rcsub-field_glossary",(s.items||[]).map(it=>({id:it.id,on:it.on,label:reportGlossaryItemTitle(it.id),cf:true})));}
+  else if(s.id==="objects"){
+    ctrl='<select class="rc-rowctrl" data-role="objview">'+
+        [["table","rp_obj_view_table"],["detail","rp_obj_view_detail"]].map(a=>
+          '<option value="'+a[0]+'"'+(s.view===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>'+
+      '<button type="button" class="rc-expand" data-exp="rcsub-objects">'+esc(t("rc_items"))+' ▾</button>';
+    sub=rcSubrowsHTML("rcsub-objects",(s.items||[]).map(it=>({id:it.id,on:it.on,label:reportObjectItemTitle(it.id)})));}
   else if(reportTableId(s.id)){ctrl='<button type="button" class="rc-expand" data-exp="rcsub-'+s.id+'">'+esc(t("rc_columns"))+' ▾</button>';
     sub=rcSubrowsHTML("rcsub-"+s.id,rcTableColRows(reportTableId(s.id),s.columns));}
   else if(s.id==="action_plan"){ctrl='<select class="rc-rowctrl" data-role="view">'+
@@ -10412,6 +10479,9 @@ function collectReportCfg(){
     if(id==="metadata"||id==="presentation"||id==="field_glossary"){
       const arr=[];it.querySelectorAll(".rc-subrow").forEach(sr=>arr.push({id:sr.dataset.sub,on:sr.querySelector("input").checked}));
       if(id==="metadata")o.rows=arr;else o.items=arr;
+    }else if(id==="objects"){
+      const arr=[];it.querySelectorAll(".rc-subrow").forEach(sr=>arr.push({id:sr.dataset.sub,on:sr.querySelector("input").checked}));
+      o.items=arr;o.view=(it.querySelector('[data-role="objview"]')||{}).value||"table";
     }else if(reportTableId(id)){
       const cols=[];it.querySelectorAll(".rc-subrow").forEach(sr=>{if(sr.querySelector("input").checked)cols.push(sr.dataset.sub);});o.columns=cols;
     }else if(id==="action_plan")o.view=(it.querySelector('[data-role="view"]')||{}).value||"due_date";
