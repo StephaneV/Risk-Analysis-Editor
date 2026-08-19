@@ -3,7 +3,7 @@
 **Nom du format :** Risk Analysis Editor (RAE)
 **Identifiant format :** `risk-analysis-editor`
 **Version de la spécification :** 1.0
-**Date :** 2026-07-09
+**Date :** 2026-08-19
 **Extension recommandée :** `.rae.json` (ou `.json`)
 **Type MIME :** `application/vnd.rae+json`
 **Encodage :** UTF-8, sans BOM
@@ -20,6 +20,7 @@ Un fichier conforme contient :
 - la **liste des risques** avec leur évaluation initiale (brute) et résiduelle (nette) ;
 - la **liste des mesures** de maîtrise ;
 - les **liens** entre risques et mesures (traitements) ;
+- des **champs personnalisés** et des **objets** définis par l'utilisateur (référentiels réutilisables et références entre entités) ;
 - des **métadonnées** de gestion documentaire.
 
 Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIOS RM, COSO, référentiel interne…) : la grille est entièrement paramétrable.
@@ -62,6 +63,8 @@ Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIO
   "treatments": [ … ],      // §4.5  liens risque ↔ mesure
   "custom_fields": [ … ],    // §4.6  définitions de champs personnalisés
   "custom":  { … },        // §4.6  valeurs des champs personnalisés de l'analyse
+  "object_types": [ … ],    // §4.7  définitions des types d'objets
+  "objects":  [ … ],        // §4.7  instances d'objet
   "extensions": { … }        // §6    données propriétaires (facultatif)
 }
 ```
@@ -79,6 +82,8 @@ Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIO
 | `treatments` | tableau | F | Liens risque↔mesure (§4.5). Absent ou vide = aucun lien. |
 | `custom_fields` | tableau | F | Définitions de champs personnalisés (§4.6). |
 | `custom` | objet | F | Valeurs des champs personnalisés **de l'analyse** (§4.6). |
+| `object_types` | tableau | F | Définitions des **types d'objets** (§4.7). Absent ou vide = aucun objet. |
+| `objects` | tableau | F | **Instances d'objet** (§4.7). Absent ou vide = aucune instance. |
 | `extensions` | objet | F | Espace d'extension libre (§6). |
 
 ---
@@ -222,11 +227,12 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `code` | chaîne | O | Identifiant du champ, **unique**, stable. Sert de clé dans les objets `custom` et d'en-tête de colonne à l'export CSV. |
 | `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"cotation"` (évaluation initiale/résiduelle d'un risque), `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
-| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %). |
+| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %), `"reference"` (référence vers une ou plusieurs instances d'objet, §4.7). |
+| `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : `code` du type d'objet ciblé (`object_types[].code`, §4.7). La valeur stockée est alors l'`id` d'une instance (ou un tableau d'`id` si `multiple`). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
-| `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** (`select`, `checklist`, `tags`, `boolean`) **et aux cibles `risk`, `measure`, `link`** ; ignoré ailleurs. Cf. § *Filtrage par champ personnalisé*. |
+| `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** (`select`, `checklist`, `tags`, `boolean`, `reference`) **et aux cibles `risk`, `measure`, `link`** ; ignoré ailleurs. Cf. § *Filtrage par champ personnalisé*. |
 | `pattern` | chaîne | F | Type `regexp` uniquement : expression régulière (syntaxe JavaScript) que la valeur doit respecter **en totalité** (ancrage implicite). Motif absent ou non compilable : aucun contrôle de format. |
-| `multiple` | booléen | F | Type `tags` uniquement : autorise la sélection de plusieurs étiquettes (sinon une seule). |
+| `multiple` | booléen | F | Type `tags` ou `reference` : autorise la sélection de plusieurs valeurs (sinon une seule). |
 | `palette` | chaîne | F | Type `progress` uniquement : palette de la barre. Couleur **interpolée en TSL** entre des jalons équirépartis de 0 à 100 %. Valeurs : `"accent"` (couleur unique du thème, défaut), `"red-green"`, `"red-orange-green"`, `"red-orange-yellow-green"`, `"white-black"`, `"custom"` (couleurs dans `colors`). |
 | `colors` | tableau | Cond. | Type `progress`, palette `"custom"` : jalons de couleur hex `#RRGGBB`, du premier (0 %) au dernier (100 %). Au moins un élément. |
 | `step` | entier | F | Type `progress` uniquement : pas du curseur (1–100). Défaut `10`. |
@@ -261,6 +267,7 @@ Chaque objet `custom` associe un `code` de champ à sa valeur, selon le type :
 | `checklist` | tableau de `code` d'items |
 | `tags` | tableau de `code` d'items (même en sélection unique : un seul élément) |
 | `progress` | nombre entier `0`–`100` (pourcentage) |
+| `reference` | `id` d'une instance d'objet (`multiple` faux) ou tableau d'`id` d'instances (`multiple` vrai) |
 
 Exemple :
 
@@ -297,7 +304,7 @@ Un champ portant `"filterable": true` alimente une **liste de filtrage** dans le
 
 L'option n'a de sens que si deux conditions sont réunies, et elle est ignorée sinon :
 
-- le **type** est à valeurs énumérables — `select`, `checklist`, `tags`, `boolean` — seul cas où une liste de choix peut être construite ;
+- le **type** est à valeurs énumérables — `select`, `checklist`, `tags`, `boolean`, `reference` (choix = instances du type ciblé) — seul cas où une liste de choix peut être construite ;
 - la **cible** est `risk`, `measure` ou `link`. Un champ rattaché à l'**analyse** (`"target": "analysis"`) ou à une **cotation** (`"target": "cotation"`) ne peut pas être filtrable.
 
 Un fichier portant `"filterable": true` hors de ces conditions reste valide : la propriété est simplement sans effet.
@@ -322,6 +329,90 @@ Le bouton **Réinitialiser** efface **tous les filtres propagés** (catégorie, 
 
 Le placement manuel des pastilles et l'évitement des collisions dans les matrices continuent de raisonner sur **tous** les risques : masquer une pastille ne déplace pas les autres.
 
+---
+
+### 4.7 `object_types` et `objects` — objets et références
+
+Là où un champ personnalisé ajoute une **valeur** à une entité, un **objet** décrit une **entité à part entière**, réutilisable et partagée par toute l'analyse (valeur métier, bien support, partie prenante, source de risque, finalité de traitement, donnée personnelle…). Le mécanisme est **agnostique** : c'est l'utilisateur qui définit les types, leurs attributs et les liens entre eux.
+
+- Les **types** sont définis à la racine dans `object_types` (schéma d'attributs).
+- Les **instances** sont regroupées à la racine dans `objects` ; chacune référence son type et porte ses valeurs.
+- Une **référence** est un champ (personnalisé ou attribut d'objet) de type `reference` qui pointe vers une ou plusieurs instances par leur `id`.
+
+> **Codes libres, libellés multilingues** — comme pour les champs personnalisés (§4.6) : les `code` (de type, d'attribut, d'item) sont des chaînes libres et stables ; les `label` sont multilingues.
+
+#### 4.7.1 Définition d'un type (`object_types[]`)
+
+| Champ | Type | O/F | Description |
+|---|---|---|---|
+| `code` | chaîne | O | Identifiant du type, **unique**, stable. Référencé par `objects[].type` et par l'attribut `object_type` des champs/attributs `reference`. |
+| `label` | objet | O | Libellé multilingue du type (même forme que `label` d'un champ, §4.6). |
+| `id_prefix` | chaîne | O | Préfixe des identifiants d'instance, ex. `"BS"` → `BS1`, `BS2`… La **numérotation est propre à chaque type**. |
+| `name_attr` | chaîne | F | `code` de l'attribut servant de **libellé** à une instance (dans les listes, les pastilles de référence). Vide ou absent : l'`id` est utilisé. |
+| `attributes` | tableau | O | Schéma des **attributs** du type, dans l'ordre (§4.7.2). Peut être vide (instances réduites à un `id`). |
+
+#### 4.7.2 Attribut d'un type (`attributes[]`)
+
+Un attribut se décrit **exactement comme un champ personnalisé** (§4.6.1) — mêmes `type`, `label`, `help`, `description`, `required`, `pattern`, bornes, `items`, `palette`, `colors`, `step`, `order` — **sans** `target` ni `filterable`, et **avec** le type supplémentaire `reference` :
+
+| Champ | Type | O/F | Description |
+|---|---|---|---|
+| `code` | chaîne | O | Identifiant de l'attribut, **unique** dans le type. Sert de clé dans `objects[].values`. |
+| `label` | objet | O | Libellé multilingue. |
+| `type` | chaîne | O | Mêmes types qu'un champ personnalisé (§4.6.1) **plus** `"reference"` (objet → objet). |
+| `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : `code` du type ciblé. Peut être **le type courant** (auto-référence — attention aux boucles). |
+| `multiple` | booléen | F | Type `tags` ou `reference` : plusieurs valeurs autorisées. |
+| *(autres)* | — | F | `required`, `pattern`, `min`/`max`, `min_items`/`max_items`, `items` (pour `select`/`checklist`/`tags`), `help`, `description`, `palette`, `colors`, `step`, `order` — voir §4.6.1. |
+
+#### 4.7.3 Instance (`objects[]`)
+
+| Champ | Type | O/F | Description |
+|---|---|---|---|
+| `id` | chaîne | O | Identifiant de l'instance, ex. `"BS1"`. **Unique au sein de son type.** Stable. |
+| `type` | chaîne | O | `code` du type de l'instance (`object_types[].code`). |
+| `values` | objet | O | Valeurs des attributs, par `code` d'attribut. Mêmes conventions de stockage que `custom` (§4.6.3) selon le type de l'attribut ; pour un attribut `reference`, la valeur est l'`id` d'une instance (ou un tableau d'`id` si `multiple`). |
+
+#### 4.7.4 Références et intégrité
+
+Une valeur de type `reference` (champ personnalisé d'entité **ou** attribut d'objet) contient l'`id` — ou un tableau d'`id` — d'instances du type `object_type`. L'application maintient la cohérence :
+
+- **Suppression d'une instance référencée** : l'`id` est **retiré partout** où il apparaît (tableaux multivalués et références simples, tous champs et attributs confondus).
+- **Suppression d'un type** : **en cascade** — instances supprimées, champs personnalisés et attributs qui le ciblaient retirés, valeurs correspondantes purgées.
+- **Référence orpheline** (id inexistant) : **ignorée en silence** à l'affichage et à la réouverture, sans erreur (tolérance ascendante, §2).
+
+#### 4.7.5 Exemple
+
+```json
+{
+  "object_types": [
+    { "code": "valeur_metier", "id_prefix": "VM", "name_attr": "nom",
+      "label": { "fr": "Valeur métier" },
+      "attributes": [ { "code": "nom", "type": "text", "label": { "fr": "Nom" } } ] },
+    { "code": "bien_support", "id_prefix": "BS", "name_attr": "nom",
+      "label": { "fr": "Bien support" },
+      "attributes": [
+        { "code": "nom", "type": "text", "label": { "fr": "Nom" } },
+        { "code": "valeurs_soutenues", "type": "reference", "object_type": "valeur_metier",
+          "multiple": true, "label": { "fr": "Valeurs métier soutenues" } }
+      ] }
+  ],
+  "objects": [
+    { "id": "VM1", "type": "valeur_metier", "values": { "nom": "Gestion de la relation client" } },
+    { "id": "BS1", "type": "bien_support",
+      "values": { "nom": "CRM", "valeurs_soutenues": ["VM1"] } }
+  ],
+  "custom_fields": [
+    { "code": "vm_impactees", "target": "risk", "type": "reference",
+      "object_type": "valeur_metier", "multiple": true, "filterable": true,
+      "label": { "fr": "Valeurs métier impactées" } }
+  ],
+  "risks": [
+    { "id": "R1", "label": "…", "initial_assessment": { "probability": 3, "severity": 4 },
+      "custom": { "vm_impactees": ["VM1"] } }
+  ]
+}
+```
+
 ## 5. Règles de cohérence et validation
 
 Un fichier est **valide** s'il respecte le schéma JSON (§8) **et** les règles sémantiques suivantes :
@@ -335,9 +426,11 @@ Un fichier est **valide** s'il respecte le schéma JSON (§8) **et** les règles
 | C5 | Les plages `[score_min, score_max]` des `criticality_levels` couvrent tous les scores atteignables et ne se chevauchent pas. |
 | C6 | Dans chaque `traitement`, `risk` et `measure` référencent des `id` existants (intégrité référentielle). |
 | C7 | Si `method = "matrix"`, les dimensions de `matrix` égalent (nb niveaux probabilité) × (nb niveaux gravité). |
-| C8 | Une cotation résiduelle ne devrait pas être **plus grave** que l'initiale (avertissement). |
+| C8 | Les `code` de `object_types` sont uniques ; chaque `objects[].type` référence un `object_types[].code` existant ; chaque `objects[].id` est unique **au sein de son type**. Tout attribut/champ `reference` porte un `object_type` existant. |
+| C9 | Une cotation résiduelle ne devrait pas être **plus grave** que l'initiale (avertissement). |
+| C10 | Une valeur de `reference` devrait pointer vers une instance **existante** du type ciblé ; une référence orpheline est tolérée et ignorée (avertissement, §4.7.4). |
 
-**Niveaux de sévérité :** C1–C7 sont **bloquants** (fichier invalide). C8 est un **avertissement** (fichier valide mais douteux).
+**Niveaux de sévérité :** C1–C8 sont **bloquants** (fichier invalide). C9 et C10 sont des **avertissements** (fichier valide mais douteux).
 
 ---
 
@@ -380,7 +473,7 @@ Un schéma JSON (Draft 2020-12) accompagne cette spécification et permet la val
 
 - Fichier : [`schema-analyse-risque.json`](schema-analyse-risque.json)
 
-Le schéma couvre les contraintes structurelles (types, obligatoires, énumérations). Les règles sémantiques C3–C9 (§5), qui dépassent l'expressivité pratique de JSON Schema, sont à vérifier par l'outil.
+Le schéma couvre les contraintes structurelles (types, obligatoires, énumérations, dont `object_types` / `objects` et le type de champ `reference`). Les règles sémantiques C2–C10 (§5) — unicité et intégrité référentielle des risques, mesures, liens **et objets/références** —, qui dépassent l'expressivité pratique de JSON Schema, sont à vérifier par l'outil.
 
 ---
 

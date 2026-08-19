@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://omt.mc/schemas/risk-analysis-editor-1.0.json",
   "title": "Risk Analysis Editor file — .rae.json (v1.0)",
-  "description": "File format holding a risk analysis: grid, risks, measures, risk↔measure links and initial/residual assessments. Property names are in English; free-text values (labels, descriptions) may be in any language.",
+  "description": "File format holding a risk analysis: grid, risks, measures, risk↔measure links, initial/residual assessments, custom fields, and user-defined objects with references (object_types / objects). Property names are in English; free-text values (labels, descriptions) may be in any language.",
   "type": "object",
   "required": ["format", "version", "grid", "risks"],
   "additionalProperties": true,
@@ -78,6 +78,16 @@
     "custom_fields": {
       "type": "array",
       "items": { "$ref": "#/$defs/customField" }
+    },
+    "object_types": {
+      "type": "array",
+      "description": "Types d'objets définis par l'utilisateur (référentiels réutilisables : valeurs métier, biens supports, parties prenantes, données personnelles…). Chaque type porte un schéma d'attributs ; ses instances sont dans « objects ». Absent ou vide : aucun objet.",
+      "items": { "$ref": "#/$defs/objectType" }
+    },
+    "objects": {
+      "type": "array",
+      "description": "Instances d'objet, toutes types confondus. Chaque instance référence son type par « type » (object_types[].code) et porte ses valeurs dans « values ». Les identifiants (« id ») sont uniques par type.",
+      "items": { "$ref": "#/$defs/object" }
     },
     "custom": {
       "type": "object",
@@ -254,11 +264,12 @@
         "label": { "$ref": "#/$defs/i18nText" },
         "help": { "$ref": "#/$defs/i18nText", "description": "Aide courte multilingue, affichée en infobulle sur le libellé." },
         "description": { "$ref": "#/$defs/i18nText", "description": "Description longue multilingue du champ, affichée sous le contrôle de saisie." },
-        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "progress"] },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "progress", "reference"] },
+        "object_type": { "type": "string", "description": "Type reference uniquement : code du type d'objet ciblé (object_types[].code). La valeur du champ (dans « custom ») est alors l'identifiant d'une instance (objects[].id), ou un tableau d'identifiants si « multiple »." },
         "pattern": { "type": "string", "description": "Type regexp : expression régulière que la valeur doit respecter en totalité." },
         "required": { "type": "boolean" },
-        "filterable": { "type": "boolean", "description": "Si true, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé (risques, mesures, liens, matrices, plan d'action). Réservé aux types à valeurs fermées (select, checklist, tags, boolean) et aux cibles risk, measure, link : un champ rattaché à l'analyse ou à une cotation ne peut pas être filtrable. Sans effet ailleurs." },
-        "multiple": { "type": "boolean", "description": "Type tags : autorise la sélection de plusieurs valeurs (sinon une seule)." },
+        "filterable": { "type": "boolean", "description": "Si true, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé (risques, mesures, liens, matrices, plan d'action). Réservé aux types à valeurs fermées (select, checklist, tags, boolean, reference) et aux cibles risk, measure, link : un champ rattaché à l'analyse ou à une cotation ne peut pas être filtrable. Sans effet ailleurs." },
+        "multiple": { "type": "boolean", "description": "Type tags ou reference : autorise la sélection de plusieurs valeurs (sinon une seule)." },
         "palette": { "enum": ["accent", "red-green", "red-orange-green", "red-orange-yellow-green", "white-black", "custom", "vives", "pastel", "office", "daltonien", "chaudes", "froides", "gris", "bleu_vert", "jaune_orange", "rouge_violet"], "description": "Palette de couleur. Type progress : dégradé de la barre (\"accent\" = couleur unique du thème ; \"custom\" = couleurs de `colors`). Type tags : palette d'attribution automatique des couleurs des valeurs, dans l'ordre, avec nuance de luminosité au rebouclage (\"custom\" = couleurs saisies par item)." },
         "colors": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1, "description": "Type progress, palette \"custom\" : jalons de couleur (hex #RRGGBB), du premier (0 %) au dernier (100 %)." },
         "step": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Type progress : pas du curseur (défaut 10)." },
@@ -282,8 +293,16 @@
           }
         }
       },
-      "if": { "properties": { "type": { "enum": ["select", "checklist", "tags"] } } },
-      "then": { "required": ["items"] }
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["select", "checklist", "tags"] } }, "required": ["type"] },
+          "then": { "required": ["items"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "reference" } }, "required": ["type"] },
+          "then": { "required": ["object_type"] }
+        }
+      ]
     },
     "axis": {
       "type": "object",
@@ -374,6 +393,85 @@
         "measure": { "type": "string", "minLength": 1 },
         "comment": { "type": "string" },
         "custom": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "objectType": {
+      "type": "object",
+      "required": ["code", "label", "id_prefix", "attributes"],
+      "additionalProperties": true,
+      "properties": {
+        "code": { "type": "string", "minLength": 1, "description": "Identifiant technique du type, unique. Référencé par objects[].type et par les champs/attributs « reference » (object_type)." },
+        "label": { "$ref": "#/$defs/i18nText", "description": "Libellé multilingue du type." },
+        "id_prefix": { "type": "string", "minLength": 1, "description": "Préfixe des identifiants d'instance (ex. « BS » → BS1, BS2…). La numérotation est propre à chaque type." },
+        "name_attr": { "type": "string", "description": "Code de l'attribut servant de libellé à une instance dans les listes et les références. Vide ou absent : l'identifiant est utilisé." },
+        "attributes": {
+          "type": "array",
+          "description": "Schéma des attributs du type, dans l'ordre. Un attribut se décrit comme un champ personnalisé (mêmes types), avec en plus le type « reference » (objet → objet).",
+          "items": { "$ref": "#/$defs/objectAttribute" }
+        }
+      }
+    },
+    "objectAttribute": {
+      "type": "object",
+      "required": ["code", "label", "type"],
+      "additionalProperties": true,
+      "description": "Attribut d'un type d'objet. Même forme qu'un champ personnalisé (§ customField) sans « target » ni « filterable » : « code », « label », « type » (dont « reference »), et selon le type « items », « object_type », « multiple », « required », « pattern », bornes, « palette », « colors », « step », « order »…",
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "label": { "$ref": "#/$defs/i18nText" },
+        "help": { "$ref": "#/$defs/i18nText" },
+        "description": { "$ref": "#/$defs/i18nText" },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "progress", "reference"] },
+        "object_type": { "type": "string", "description": "Type reference uniquement : code du type d'objet ciblé (peut être le type courant — auto-référence). La valeur (dans objects[].values) est un identifiant d'instance, ou un tableau si « multiple »." },
+        "pattern": { "type": "string" },
+        "required": { "type": "boolean" },
+        "multiple": { "type": "boolean", "description": "Type tags ou reference : autorise plusieurs valeurs." },
+        "palette": { "type": "string" },
+        "colors": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" } },
+        "step": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "min": { "type": ["number", "string"] },
+        "max": { "type": ["number", "string"] },
+        "min_items": { "type": "integer" },
+        "max_items": { "type": "integer" },
+        "order": { "type": "integer" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code", "label"],
+            "additionalProperties": true,
+            "properties": {
+              "code": { "type": "string", "minLength": 1 },
+              "label": { "$ref": "#/$defs/i18nText" },
+              "description": { "$ref": "#/$defs/i18nText" },
+              "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["select", "checklist", "tags"] } }, "required": ["type"] },
+          "then": { "required": ["items"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "reference" } }, "required": ["type"] },
+          "then": { "required": ["object_type"] }
+        }
+      ]
+    },
+    "object": {
+      "type": "object",
+      "required": ["id", "type", "values"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "Identifiant de l'instance (ex. « BS1 »), unique au sein de son type." },
+        "type": { "type": "string", "minLength": 1, "description": "Code du type de l'instance (object_types[].code)." },
+        "values": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Valeurs des attributs, par code d'attribut. Scalaire (texte, nombre, booléen, date ISO, code de valeur pour select/tags) ; tableau de codes pour checklist / tags multiples ; identifiant d'instance (ou tableau d'identifiants si « multiple ») pour un attribut « reference »."
+        }
       }
     }
   }
