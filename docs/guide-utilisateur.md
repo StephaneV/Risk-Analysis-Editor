@@ -22,14 +22,15 @@ Ce guide décrit l'utilisation complète de **Risk Analysis Editor**, l'éditeur
 12. [Le plan d'action](#12-le-plan-daction)
 13. [Le rapport](#13-le-rapport)
 14. [Les champs personnalisés](#14-les-champs-personnalisés)
-15. [Rechercher, trier, filtrer, personnaliser les colonnes](#15-rechercher-trier-filtrer-personnaliser-les-colonnes)
-16. [Import et export CSV](#16-import-et-export-csv)
-17. [Exports Word et Excel](#17-exports-word-et-excel)
-18. [Gérer les fichiers et les modèles](#18-gérer-les-fichiers-et-les-modèles)
-19. [Raccourcis clavier et accessibilité](#19-raccourcis-clavier-et-accessibilité)
-20. [Compatibilité navigateurs](#20-compatibilité-navigateurs)
-21. [Format de fichier et interopérabilité](#21-format-de-fichier-et-interopérabilité)
-22. [Questions fréquentes et astuces](#22-questions-fréquentes-et-astuces)
+15. [Les objets et les références](#15-les-objets-et-les-références)
+16. [Rechercher, trier, filtrer, personnaliser les colonnes](#16-rechercher-trier-filtrer-personnaliser-les-colonnes)
+17. [Import et export CSV](#17-import-et-export-csv)
+18. [Exports Word et Excel](#18-exports-word-et-excel)
+19. [Gérer les fichiers et les modèles](#19-gérer-les-fichiers-et-les-modèles)
+20. [Raccourcis clavier et accessibilité](#20-raccourcis-clavier-et-accessibilité)
+21. [Compatibilité navigateurs](#21-compatibilité-navigateurs)
+22. [Format de fichier et interopérabilité](#22-format-de-fichier-et-interopérabilité)
+23. [Questions fréquentes et astuces](#23-questions-fréquentes-et-astuces)
 
 ---
 
@@ -88,21 +89,21 @@ En haut de la fenêtre :
 - l'**état du document** au centre : le nom du fichier lié (par ex. `demo-aipd-sst.rae.json`) et une pastille **« modifié »** dès qu'une modification n'est pas enregistrée ;
 - le sélecteur de **langue** de l'interface (Français / English / Italiano) ;
 - le sélecteur de **thème** (Clair / Sombre) ;
-- le menu **Fichier** (voir §18) ;
+- le menu **Fichier** (voir §19) ;
 - le bouton **Enregistrer**, qui écrit les modifications dans le fichier `.rae.json`.
 
 ### Les onglets
 
-La navigation se fait par onglets : **Présentation**, **Risques**, **Mesures**, **Liens**, **Matrices**, **Statistiques**, **Plan d'action**, **Rapport**, et **Paramètres** (à droite). Les onglets Risques, Mesures et Liens affichent un **compteur** du nombre d'éléments.
+La navigation se fait par onglets : **Présentation**, **Risques**, **Mesures**, **Liens**, **Objets**, **Matrices**, **Radars**, **Statistiques**, **Plan d'action**, **Rapport**, et **Paramètres** (à droite). Les onglets Risques, Mesures, Liens et Objets affichent un **compteur** du nombre d'éléments.
 
 ### Enregistrement et sécurité des données
 
-- **Enregistrement.** Le bouton *Enregistrer* (ou `Ctrl+S`) écrit dans le fichier. Selon le navigateur, il écrit directement dans le fichier ouvert, ou propose un téléchargement (voir §20).
+- **Enregistrement.** Le bouton *Enregistrer* (ou `Ctrl+S`) écrit dans le fichier. Selon le navigateur, il écrit directement dans le fichier ouvert, ou propose un téléchargement (voir §21).
 - **Sauvegarde automatique.** L'outil conserve en arrière-plan une copie de travail : si vous fermez l'onglet par accident, il vous **propose de restaurer** l'analyse non enregistrée à la réouverture.
 - **Garde anti-perte de saisie.** Si vous fermez une fiche en cours d'édition par un clic à côté, la touche `Échap` ou la croix ✕ alors que vous avez commencé à saisir, l'outil demande **confirmation** avant d'abandonner vos modifications. Le bouton *Annuler* de la fiche, lui, ferme directement.
 - **Avertissement de fermeture.** Si des modifications ne sont pas enregistrées, le navigateur vous avertit avant de quitter la page.
 
-> ℹ️ **Les demandes d'autorisation du navigateur.** Pour lire ou écrire un fichier **directement sur votre poste**, le navigateur vous demande d'abord votre **autorisation** — c'est une protection de sécurité normale. Une invite peut donc apparaître lorsque vous **ouvrez**, **enregistrez** ou **rouvrez** une analyse ; sur Chrome et Edge, une invite peut aussi proposer de **restaurer l'accès aux fichiers récents** de votre dernière visite. **Acceptez** pour laisser l'outil travailler dans votre fichier. Vos données **restent sur votre poste** : ces autorisations ne concernent que l'accès **local** aux fichiers, rien n'est envoyé sur Internet. Sur Firefox et Safari, l'outil utilise à la place un téléchargement ou une ouverture classiques, sans ces invites (voir [§20](#20-compatibilité-navigateurs)).
+> ℹ️ **Les demandes d'autorisation du navigateur.** Pour lire ou écrire un fichier **directement sur votre poste**, le navigateur vous demande d'abord votre **autorisation** — c'est une protection de sécurité normale. Une invite peut donc apparaître lorsque vous **ouvrez**, **enregistrez** ou **rouvrez** une analyse ; sur Chrome et Edge, une invite peut aussi proposer de **restaurer l'accès aux fichiers récents** de votre dernière visite. **Acceptez** pour laisser l'outil travailler dans votre fichier. Vos données **restent sur votre poste** : ces autorisations ne concernent que l'accès **local** aux fichiers, rien n'est envoyé sur Internet. Sur Firefox et Safari, l'outil utilise à la place un téléchargement ou une ouverture classiques, sans ces invites (voir [§21](#21-compatibilité-navigateurs)).
 
 ---
 
@@ -194,7 +195,7 @@ Chaque ligne offre trois actions :
 - **⧉ Dupliquer** — ouvre une **fiche de création pré-remplie** (identifiant suivant, libellé suffixé « (copie) », mesures associées reprises). La copie n'est créée **qu'à la validation** ;
 - **🗑 Supprimer** — après confirmation. Un message **« Annuler »** apparaît alors quelques secondes pour **restaurer** la fiche supprimée (liens compris) en cas d'erreur.
 
-**Réordonner les lignes.** Lorsqu'aucun tri de colonne n'est actif, une **poignée ⠿** apparaît au survol dans la colonne ID : glissez-la pour changer l'ordre des risques dans le fichier (au clavier : `Ctrl+↑`/`Ctrl+↓`). Cet ordre gouverne l'affichage par défaut, le rapport et les exports. Voir [§15](#15-rechercher-trier-filtrer-personnaliser-les-colonnes).
+**Réordonner les lignes.** Lorsqu'aucun tri de colonne n'est actif, une **poignée ⠿** apparaît au survol dans la colonne ID : glissez-la pour changer l'ordre des risques dans le fichier (au clavier : `Ctrl+↑`/`Ctrl+↓`). Cet ordre gouverne l'affichage par défaut, le rapport et les exports. Voir [§16](#16-rechercher-trier-filtrer-personnaliser-les-colonnes).
 
 ---
 
@@ -284,7 +285,7 @@ Une **barre d'outils** pilote l'affichage :
 
 **Infobulles au survol** (comme sur les secteurs des Statistiques) : un **point** affiche la **liste des risques** de l'axe ; un **libellé d'axe** affiche la **description** de la valeur (pour un champ personnalisé dont l'item porte une description) ; un **niveau** dans la légende affiche la **description du niveau de criticité**.
 
-Sous le graphique, un **tableau** récapitule les valeurs par axe. Comme les autres onglets, le radar **respecte les filtres actifs** (§15).
+Sous le graphique, un **tableau** récapitule les valeurs par axe. Comme les autres onglets, le radar **respecte les filtres actifs** (§16).
 
 **Exporter.** Les boutons **⧉ Copier**, **⭳ PNG** et **⭳ SVG** exportent le radar (titre, graphique et légende), comme les matrices. Le radar peut aussi être ajouté au **rapport** via une section *Radar* configurable (voir *Paramètres › Rapport*, §13).
 
@@ -340,7 +341,7 @@ Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par stat
 
 L'onglet **Rapport** génère un rapport configurable, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **référentiels et légendes des champs** (valeurs des listes/tags accompagnées de leur description), les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
 
-Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §17).
+Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §18).
 
 ### Personnaliser le rapport (Paramètres › Rapport)
 
@@ -375,7 +376,7 @@ Chaque champ possède :
 - un **code** (identifiant technique) et un **libellé** (multilingue) ;
 - un **type** parmi dix : oui/non, entier, décimal, date, texte, texte long, liste déroulante, liste à cocher, **tags colorés** (choix unique ou multiple) et **barre de progression** (0–100 %) ;
 - des attributs optionnels : **obligatoire**, bornes (min/max, longueur, nombre d'items), une **aide** et une **description** ;
-- l'option **Utilisable comme filtre** (pour les types à valeurs fermées rattachés à un risque, une mesure ou un lien — voir §15).
+- l'option **Utilisable comme filtre** (pour les types à valeurs fermées rattachés à un risque, une mesure ou un lien — voir §16).
 
 ![Éditeur d'un champ personnalisé](images/guide-06-champ-editeur.png)
 
@@ -391,13 +392,67 @@ Pour les listes (**liste déroulante**, **liste à cocher**, **tags**), chaque *
 
 ---
 
-## 15. Rechercher, trier, filtrer, personnaliser les colonnes
+## 15. Les objets et les références
+
+Là où un **champ personnalisé** ajoute une simple valeur à un risque, une mesure ou un lien, les **objets** permettent de décrire des **entités à part entière**, réutilisables et partagées par toute l'analyse : biens supports, valeurs métier, parties prenantes, sources de risque, finalités de traitement, sous-traitants… Vous définissez librement leurs **types** et leurs **attributs**, puis vous créez autant d'**instances** que nécessaire. Une **référence** est ensuite un lien vers une ou plusieurs de ces instances — posé sur un risque, une mesure, un lien, l'analyse, ou sur un autre objet.
+
+Ce mécanisme est **agnostique** : rien n'est figé dans l'outil, c'est votre méthode (EBIOS RM, ISO 27005, AIPD/PIA, un référentiel maison…) qui dicte les types, les attributs et les liens.
+
+### Définir un type d'objet
+
+Les types se créent dans *Paramètres › Types d'objets* (bouton **« + Ajouter un type d'objet »**). Un type possède :
+
+- un **libellé** (multilingue) et un **code** (identifiant technique, unique) ;
+- un **préfixe d'id** (obligatoire) — il compose les identifiants des instances : préfixe `BS` → `BS1`, `BS2`, … La numérotation est **propre à chaque type** ;
+- un **attribut servant de libellé** (`name_attr`) — l'attribut affiché pour désigner une instance dans les listes et les pastilles ; à défaut, l'identifiant est utilisé ;
+- une liste d'**attributs**, réordonnables et supprimables.
+
+Chaque **attribut** se décrit exactement comme un champ personnalisé (voir §14) : un **code**, un **libellé**, un **type** parmi les dix disponibles — plus le type **« Référence à un objet »**, qui permet à un objet d'en **référencer un autre** (mono ou multivalué). Un attribut peut même **cibler son propre type** (auto-référence, par ex. un bien support qui en supporte un autre) ; l'outil l'autorise en signalant simplement le risque de **boucles**.
+
+### Créer et gérer les instances
+
+Les **instances** se gèrent dans l'onglet **Objets** (bouton **« + Ajouter une instance »**). Le formulaire de saisie est **généré automatiquement** à partir des attributs du type. À l'enregistrement, l'instance reçoit un **identifiant automatique** (plus petit numéro libre du type) et son **libellé** reflète la valeur de l'attribut désigné. Le badge de l'onglet compte les instances. Un type **sans attribut** reste utilisable : ses instances n'ont qu'un identifiant.
+
+### Poser une référence
+
+Le type de champ **« Référence à un objet »** est disponible partout où l'on définit des champs :
+
+- comme **champ personnalisé** d'une *analyse*, d'un *risque*, d'une *mesure* ou d'un *lien* (voir §14) ;
+- comme **attribut** d'un type d'objet (objet → objet, décrit ci-dessus).
+
+À la définition, on choisit le **type d'objet ciblé** et si la référence est **simple** (une instance) ou **multiple** (plusieurs). À la saisie, un sélecteur propose les instances existantes ; l'option **« ＋ créer »** permet de **créer une instance à la volée** sans quitter la fiche. Les valeurs référencées s'affichent sous forme de **pastilles** portant le libellé de l'instance.
+
+> ℹ️ Une référence pointe toujours vers l'**instance**, pas vers une copie : renommez l'instance dans l'onglet Objets et son libellé se met à jour partout où elle est référencée.
+
+### Intégrité référentielle
+
+L'outil maintient la cohérence automatiquement :
+
+- **Supprimer une instance référencée** : l'outil indique **combien de fois** elle est utilisée (champs perso de toute cible **et** attributs d'autres objets), puis, après confirmation, **retire l'identifiant partout** — de chaque liste multivaluée et de chaque référence simple concernées.
+- **Supprimer un type d'objet** : la suppression est **en cascade** — toutes ses instances sont supprimées, les champs personnalisés et attributs qui le ciblaient sont retirés, et les **valeurs** correspondantes purgées dans toute l'analyse.
+- Une **référence orpheline** (instance disparue par un autre biais) est **ignorée en silence** à l'affichage et à la réouverture, sans jamais casser l'analyse.
+
+### Où les objets et les références apparaissent
+
+Une fois définis, objets et références irriguent tout l'outil :
+
+- **Filtres** — un champ de référence déclaré *filtrable* permet de restreindre les vues (par ex. « Biens = BS1 ») ; le filtre se **propage le long des liens** comme les autres (voir §16) ;
+- **Statistiques** (voir §11) — répartition des **objets par type**, d'un **type par l'un de ses attributs**, des risques **par référence**, et **complétude** (instances référencées vs orphelines) ;
+- **Radars** (voir §10) — une **dimension par référence** (axes = instances référencées) ;
+- **Rapport classique** (voir §13) — une section **« Objets »** (activée par défaut dès qu'un type existe), au choix en **tableau** (un tableau par type, colonnes = attributs) ou en **détail** (une fiche par instance), avec les références **déréférencées** en toutes lettres ;
+- **Exports et modèles Word** — les objets sont restitués dans l'export Word du rapport, et le **moteur de modèles** dispose de mots-clés dédiés (`{{#each objects}}`, `{{ object_notes }}`, boucles réflexives…) permettant à un **modèle générique** de restituer les objets de **n'importe quelle** analyse sans coder son schéma. Voir le catalogue des mots-clés du dossier `word-templates/`.
+
+> Les analyses de démonstration **EBIOS RM** et **AIPD** fournies avec objets (dossier `examples/`) illustrent une mise en œuvre complète : valeurs métier, biens supports, événements redoutés, parties prenantes, sources de risque pour l'une ; finalités, catégories de données, sous-traitants pour l'autre.
+
+---
+
+## 16. Rechercher, trier, filtrer, personnaliser les colonnes
 
 Ces fonctions transversales s'appliquent aux registres Risques, Mesures et au détail des Liens.
 
 - **Rechercher.** Le champ *Rechercher…* filtre les lignes par texte libre.
 - **Trier.** Un clic sur un en-tête de colonne trie ; l'en-tête cycle sur **trois états** : croissant → décroissant → **retour à l'ordre d'origine** (l'ordre du fichier). Les colonnes de champ personnalisé scalaires sont également triables.
-- **Filtrer.** Des filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement », et tout champ personnalisé déclaré *filtrable*) restreignent l'affichage. Les filtres se **combinent (ET)**. **Chaque onglet propose par défaut les filtres de sa famille** — ceux du **risque** (registre Risques, **Matrices**), de la **mesure** (Mesures, Plan d'action), du **risque et de la mesure** (**Statistiques**, qui affiche les deux) ou du **lien** (Liens) ; les filtres d'une autre famille n'apparaissent **que lorsqu'ils sont actifs**. Ceux de **catégorie** (risque), **type** et **statut** (mesure) ainsi que les **champs personnalisés** se **propagent le long des liens** — et donc à **tous les onglets, aux matrices et au rapport** : filtrer sur un risque restreint aussi les mesures et les liens correspondants, et réciproquement. La **recherche texte** et les filtres propres au *Plan d'action* (**responsable**, **« en retard »**) restent **locaux** à leur vue (le filtre *statut* du Plan est le même que celui des mesures). Quand un filtre propagé est actif, sa **valeur** reste **visible et modifiable** dans la barre de **chaque onglet** où il agit — par exemple, un filtre de catégorie posé sur les risques apparaît aussi, avec sa valeur, dans la barre des mesures. Un compteur « n sur N » et un bouton *Réinitialiser* apparaissent dès qu'un filtre ou une recherche restreint la vue (la réinitialisation efface aussi les filtres propagés). Le **filtrage propagé** (catégorie, type, statut et champs personnalisés) est **enregistré dans le fichier** et retrouvé à la réouverture ; le modifier marque le fichier comme *à enregistrer*. Un paramètre d'adresse `?filter=code:valeur;…` permet aussi de l'appliquer au démarrage (voir [§18](#18-gérer-les-fichiers-et-les-modèles)).
+- **Filtrer.** Des filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement », et tout champ personnalisé déclaré *filtrable*) restreignent l'affichage. Les filtres se **combinent (ET)**. **Chaque onglet propose par défaut les filtres de sa famille** — ceux du **risque** (registre Risques, **Matrices**), de la **mesure** (Mesures, Plan d'action), du **risque et de la mesure** (**Statistiques**, qui affiche les deux) ou du **lien** (Liens) ; les filtres d'une autre famille n'apparaissent **que lorsqu'ils sont actifs**. Ceux de **catégorie** (risque), **type** et **statut** (mesure) ainsi que les **champs personnalisés** se **propagent le long des liens** — et donc à **tous les onglets, aux matrices et au rapport** : filtrer sur un risque restreint aussi les mesures et les liens correspondants, et réciproquement. La **recherche texte** et les filtres propres au *Plan d'action* (**responsable**, **« en retard »**) restent **locaux** à leur vue (le filtre *statut* du Plan est le même que celui des mesures). Quand un filtre propagé est actif, sa **valeur** reste **visible et modifiable** dans la barre de **chaque onglet** où il agit — par exemple, un filtre de catégorie posé sur les risques apparaît aussi, avec sa valeur, dans la barre des mesures. Un compteur « n sur N » et un bouton *Réinitialiser* apparaissent dès qu'un filtre ou une recherche restreint la vue (la réinitialisation efface aussi les filtres propagés). Le **filtrage propagé** (catégorie, type, statut et champs personnalisés) est **enregistré dans le fichier** et retrouvé à la réouverture ; le modifier marque le fichier comme *à enregistrer*. Un paramètre d'adresse `?filter=code:valeur;…` permet aussi de l'appliquer au démarrage (voir [§19](#19-gérer-les-fichiers-et-les-modèles)).
 - **Personnaliser les colonnes.** Le bouton **⚙** à droite de l'en-tête ouvre le menu des colonnes.
 
 ![Menu de personnalisation des colonnes](images/guide-19-menu-colonnes.png)
@@ -406,7 +461,7 @@ Vous pouvez y **afficher/masquer** chaque colonne (y compris les champs personna
 
 ---
 
-## 16. Import et export CSV
+## 17. Import et export CSV
 
 Chaque registre (Risques, Mesures, Liens) propose **Importer (CSV)** et **Exporter (CSV)**.
 
@@ -417,7 +472,7 @@ Le CSV est idéal pour préparer ou retravailler les données dans un tableur, p
 
 ---
 
-## 17. Exports Word et Excel
+## 18. Exports Word et Excel
 
 Le menu **Fichier** propose deux exports bureautiques, générés **localement et hors-ligne** (le contenu de l'analyse n'est pas transmis à un service distant) :
 
@@ -434,7 +489,7 @@ Au-delà de l'export Word « clé en main » ci-dessus, RAE peut **remplir votre
 
 ---
 
-## 18. Gérer les fichiers et les modèles
+## 19. Gérer les fichiers et les modèles
 
 ![Menu Fichier](images/guide-20-menu-fichier.png)
 
@@ -445,7 +500,7 @@ Le menu **Fichier** rassemble :
 - **Charger…** (`Ctrl+O`) — ouvre un fichier `.rae.json`. Vous pouvez aussi **glisser-déposer** un fichier `.rae.json` sur la fenêtre ;
 - **Enregistrer** (`Ctrl+S`) et **Enregistrer sous…** (`Ctrl+Maj+S`) ;
 - **Enregistrer comme modèle…** — exporte un squelette (grille + champs personnalisés, sans risques ni mesures) réutilisable comme point de départ ;
-- **Exporter en Word / Excel** (voir §17) ;
+- **Exporter en Word / Excel** (voir §18) ;
 - **À propos** (version de l'application) et **Aide & raccourcis**.
 
 **Modèles méthodologiques.** L'écran d'accueil propose de démarrer d'un modèle (EBIOS RM, AIPD — CNIL PIA, ISO 27005, générique). Ouvrir un modèle démarre une **nouvelle analyse non reliée** : votre travail ne remplace jamais le modèle.
@@ -454,7 +509,7 @@ Le menu **Fichier** rassemble :
 
 ---
 
-## 19. Raccourcis clavier et accessibilité
+## 20. Raccourcis clavier et accessibilité
 
 Un panneau récapitule les gestes et raccourcis : menu **Fichier › Aide & raccourcis**, ou la touche **`?`**.
 
@@ -478,7 +533,7 @@ Principaux raccourcis :
 
 ---
 
-## 20. Compatibilité navigateurs
+## 21. Compatibilité navigateurs
 
 L'application fonctionne dans un navigateur de bureau récent, sans installation ni serveur. Les tests sont réalisés principalement avec **Microsoft Edge (Chromium)** ; tout navigateur basé sur Chromium offre l'expérience complète.
 
@@ -489,9 +544,9 @@ Le détail figure dans le [README](../README.fr.md#compatibilité-navigateurs).
 
 ---
 
-## 21. Format de fichier et interopérabilité
+## 22. Format de fichier et interopérabilité
 
-Une analyse est un unique fichier **`.rae.json`** (JSON lisible) contenant la grille, les risques, les mesures, les liens, les cotations et les champs personnalisés. Les **noms de propriétés sont en anglais** ; les **valeurs** (libellés, descriptions) restent dans la langue de l'analyse. Le format est **ouvert et spécifié**, ce qui permet de le produire ou de le consommer avec d'autres outils.
+Une analyse est un unique fichier **`.rae.json`** (JSON lisible) contenant la grille, les risques, les mesures, les liens, les cotations, les champs personnalisés ainsi que les **types d'objets** (`object_types`) et leurs **instances** (`objects`). Les **noms de propriétés sont en anglais** ; les **valeurs** (libellés, descriptions) restent dans la langue de l'analyse. Le format est **ouvert et spécifié**, ce qui permet de le produire ou de le consommer avec d'autres outils.
 
 La spécification complète et le schéma JSON de validation se trouvent dans le dossier [`specs/`](../specs/) :
 
@@ -500,7 +555,7 @@ La spécification complète et le schéma JSON de validation se trouvent dans le
 
 ---
 
-## 22. Questions fréquentes et astuces
+## 23. Questions fréquentes et astuces
 
 **Où sont enregistrées mes données ?**
 Uniquement dans le fichier `.rae.json` que vous enregistrez, sur votre poste. L'outil fonctionne hors-ligne et ne transmet pas le contenu de vos analyses à un service distant, exports Word/Excel compris.

@@ -10,7 +10,11 @@
 le **filtre actif de l'app n'est pas utilisé** — un rapport définit son propre filtre via la balise de
 configuration **`{{ report filter="…" }}`**. La **v2** ajoute les **statistiques** (compteurs, couverture,
 graphiques anneau/secteur — §4.5), les **conditions `{{#if}}` / `{{#unless}}`** (§6.1) et les **dimensions
-d'images** `width` / `height` (§4.8).
+d'images** `width` / `height` (§4.8). La **v3** ajoute les **objets & références** (collections `objects` /
+`object_types`, champs `object.*` / `type.*`, références déréférencées — §3.7), la **restitution générique
+réflexive** (`{{ object_notes }}`, `{{ cf_notes target=… }}`, boucles `object.attributes` /
+`<entité>.custom_fields` / `attribute.objects`, `group_by="type"` — §3.8, §4.6, §6) et les **statistiques
+d'objets** (`objects`, `object_attr:…`, `object_usage:…` — §4.5).
 
 ---
 
@@ -181,6 +185,58 @@ Tableau clé en main : `{{ table source="custom_fields" }}` (colonnes code, libe
 obligatoire, filtrable), avec `target="…"` optionnel. Tableau des valeurs d'un champ (Valeur /
 Description, badge coloré pour les tags) : `{{ field_values }}` (§4.4).
 
+### 3.7 Objets & références — `object.*`, `type.*` (v3)
+
+Les champs de type **référence** (champ personnalisé d'entité *ou* attribut d'objet) pointent vers des
+**instances d'objet** (`analysis.objects`) typées par `analysis.object_types` (schéma décrit au §15 du
+guide utilisateur / `SPEC-format-analyse-risque.md`). Le référentiel d'objets **n'est jamais restreint**
+par les filtres de risque/mesure (c'est un catalogue partagé).
+
+**Trois usages d'une référence** :
+
+- **a) Rendu simple** (aucune boucle) : `{{ risk.cf.<ref> }}` = libellés des instances pointées (séparés
+  par « , ») ; `| codes` = identifiants bruts ; `| join="…"` = séparateur. Idem `measure.cf.*`,
+  `link.cf.*`, `analysis.cf.*`.
+- **b) Boucle sur les objets référencés** : `{{#each risk.cf.<ref>}} … {{/each}}`, frame **`object`**.
+  Récursif objet→objet via `{{#each object.attr.<ref>}} … {{/each}}` (l'`object` interne masque
+  l'externe).
+- **c) Boucle sur le catalogue** : `{{#each objects type="<code>" sort="id|label" limit=N}}` — toutes
+  les instances (attribut `type=` optionnel : sans lui, itère tous les objets, `{{ object.type }}` les
+  distingue).
+
+Champs d'un objet (frame `object`, résolus par `tmplObjectField`) :
+
+| Balise | Clé | Rendu |
+|---|---|---|
+| `object.id` | `id` | identifiant (ex. `VM1`) |
+| `object.label` | *(dérivé)* | valeur de l'attribut-nom (`name_attr`), repli id (`objectLabel`) |
+| `object.type` · `object.type_code` | *(via `object_types`)* | libellé du type · code du type |
+| `object.attr.<code>` | `values.<code>` | valeur d'un **attribut** — **déréférencée** si référence, libellés pour select/tags, dates formatées |
+
+**Types d'objets (schéma)** — collection `object_types`, frame **`type`** (résolu par `tmplObjTypeField`) :
+`type.code`, `type.label`, `type.id_prefix`, `type.name_attr`, `type.count` (nombre d'instances), et la
+sous-collection `{{#each type.attributes}}` (frame `attribute`, mêmes champs que `field` du §3.6 :
+`attribute.label`, `attribute.code`, `attribute.type`…).
+
+### 3.8 Restitution générique — réflexif, sans coder le schéma (v3)
+
+Permet **un seul modèle** restituant *toutes* les informations de *n'importe quelle* analyse (objets,
+attributs, champs perso, références) **sans coder aucun code** de type/attribut/champ.
+
+**Boucles réflexives** — l'attribut/champ porte **sa valeur** :
+
+| Collection | Frame | Champs |
+|---|---|---|
+| `object.attributes` (dans une boucle d'objets) | `attribute` | `label`, `code`, `type`, **`value`** (rendue, déréférencée), **`is_reference`** |
+| `risk.custom_fields` · `measure.custom_fields` · `link.custom_fields` · `analysis.custom_fields` | `field` | idem (frame `field`) |
+
+Le frame `attribute`/`field` combine ici **définition et valeur** (`tmplValAttrField` sur `{def,value}`).
+Traverser une référence **sans son code** : `{{#each attribute.objects}}` (ou `{{#each field.objects}}`)
+itère les **instances pointées** quand `is_reference` est vrai.
+
+Les **blocs « notes »** `{{ object_notes }}` et `{{ cf_notes }}` (§4.6) couvrent le cas courant
+« Libellé : valeur » sans écrire de boucle. Regroupement par type : `group_by="type"` (§6).
+
 ---
 
 ## 4. Blocs générateurs (tableaux, matrices, radars)
@@ -248,6 +304,12 @@ Statistiques de l'analyse (données de l'onglet Statistiques et du rapport inté
 | `measure_type` · `measure_status` | type · statut (`STATUS_COLORS`) | mesures |
 | `risk_owner` · `measure_owner` | propriétaire · responsable | risques · mesures |
 | `cf.<code>` | champ perso (`statDist`, couleurs de valeurs) | cible du champ |
+| `objects` *(v3)* | **objets par type** (répartition du référentiel) | objets |
+| `object_attr:<type>:<attr>` *(v3)* | un **type d'objet par attribut** (attribut à valeurs fermées **ou** référence, déréférencé) | objets du type |
+| `object_usage:<type>` *(v3)* | **complétude** d'un type : instances **référencées** vs **orphelines** (`objRefUsages`) | objets du type |
+
+> Les types `objects`, `object_attr:…`, `object_usage:…` portent sur **tout le référentiel** — ils
+> **ignorent** les filtres de risque/mesure (catalogue partagé).
 
 Attributs des types à graphique : `display` (`table` · `chart` · `both`, défaut **`table`**), `shape`
 (`donut` · `pie`, défaut **`donut`**), `width` · `height` (§4.8), `filter` (§8).
@@ -262,11 +324,20 @@ Le graphique SVG est **autonome** (couleurs en ligne) puis rasterisé en PNG et 
 matrices/radars (via `tmplImgReqs`, §4.1/§13). Un `type` inconnu, ou un `cf.<code>` introuvable
 (`tw_stat_field`), est signalé.
 
-### 4.6 Notes des champs perso — `{{ cf_notes }}`
+### 4.6 Notes des champs perso / objets — `{{ cf_notes }}`, `{{ object_notes }}`
 
 Dans une boucle `risks` / `measures` / `links` : reproduit `dxCfNotes` pour l'entité courante — un
 paragraphe « **Libellé** : valeur » par champ personnalisé renseigné (cible correspondante). Utilisé dans
 les sections « Détail ». Rend `null` hors d'une entité, ou si aucun champ n'est renseigné.
+
+**Cibles supplémentaires (v3)** : `{{ cf_notes target="analysis" }}` (champs perso de l'**analyse**) et
+`{{ cf_notes target="cotation" phase="initial|residual" }}` (champs de **cotation**, dans une boucle
+`risks` — une valeur distincte par phase). `target` inconnue → avertissement.
+
+**`{{ object_notes }}` (v3)** — dans une boucle d'objets (`objects`, `object.attr.<ref>`, `risk.cf.<ref>`…) :
+**tous les attributs** renseignés de l'objet courant, mêmes règles que `cf_notes` (`dxObjNotes`, miroir de
+`dxCfNotes`, références **déréférencées**). Rend `null` hors d'une boucle d'objets ou si aucun attribut
+n'est renseigné.
 
 ### 4.7 Logo de couverture — `{{ logo }}`
 
@@ -349,13 +420,20 @@ séparées par des virgules : `sort="target,code"` — départage successif), `l
 ci-dessous).
 
 - **Collections** : `risks`, `measures`, `links`, `grid.levels`, `custom_fields`,
-  `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, et les **sous-collections**
-  (`risk.measures`, `measure.risks`, `field.items`, `link.*`…). Imbrication libre.
+  `grid.vertical_axis.levels`, `grid.horizontal_axis.levels`, **`objects`** (attribut `type="<code>"`
+  optionnel — v3), **`object_types`** (v3), et les **sous-collections** (`risk.measures`,
+  `measure.risks`, `field.items`, `link.*`, **`object.attr.<ref>`** objet→objet, **`type.attributes`**,
+  et les **réflexives** du §3.8 : **`object.attributes`**, **`<entité>.custom_fields`**,
+  **`attribute.objects`** / `field.objects` — v3). Imbrication libre. Le tri des objets accepte
+  `sort="id"` / `sort="label"`.
 - **Regroupement** `group_by="field"` → itère des **groupes** ; chaque groupe expose `group.key`
   (valeur brute), `group.label`, `group.count`, `group.measures_count` (groupes de risques), et
   `group.items` (sous-collection à parcourir). Champs risque : `category`, `owner`,
   `criticality_initial/residual`, `cf.<code>`, **`id`** (un chapitre par risque). Champs mesure :
-  `type`, `status`, `responsible`, `cf.<code>`.
+  `type`, `status`, `responsible`, `cf.<code>`. **Objets (v3)** : **`type`** —
+  `{{#each objects group_by="type"}}` produit un chapitre par type (`group.label` = libellé du type,
+  `group.items` = ses instances), pour un inventaire hiérarchisé type (N2) → instance (N3). Les objets
+  ne propageant pas de filtre, un groupe d'objets **n'a pas** de portée implicite (voir ci-dessous).
 - **Portée implicite d'un groupe** : à l'intérieur d'un groupe (`group_by`), les collections, blocs
   (`matrix`, `radar`, `table`) et compteurs **imbriqués** sont **automatiquement restreints** aux éléments
   du groupe (filtre implicite = valeur du groupe, propagé le long des liens). C'est ce qui permet un
@@ -597,7 +675,9 @@ n'est jamais utilisé** : seul compte le filtre déclaré dans le modèle.
 par `{{ report filter="…" }}`, combiné (ET) aux filtres locaux ; (5) **v1** = valeurs + boucles
 (`filter`, `sort`, `group_by`, imbrication, **ligne de tableau**) + blocs **matrix**, **radar**, **table** ;
 **v2** = **statistiques** (compteurs, couverture, graphiques donut/secteur — §4.5), **conditions**
-`{{#if}}` / `{{#unless}}` (§6.1) et **dimensions d'images** `width` / `height` (§4.8) — **livrée**.
+`{{#if}}` / `{{#unless}}` (§6.1) et **dimensions d'images** `width` / `height` (§4.8) — **livrée** ;
+**v3** = **objets & références** + **restitution générique réflexive** (§3.7, §3.8, §4.6, §6) et
+**statistiques d'objets** (§4.5) — **livrée**.
 
 **Arrêtées (complément) :** **propagation des filtres le long des liens confirmée** (alignée sur l'app) ;
 **échappement** des caractères spéciaux à l'intérieur des balises spécifié (§2.2).
@@ -608,7 +688,7 @@ charte restent aussi réalisables via la **boucle de ligne de tableau** (§7.9).
 
 ---
 
-## 13. Périmètre v2 (livré) et hors périmètre
+## 13. Périmètre v2 / v3 (livré) et hors périmètre
 
 **v2 — Statistiques** (§4.5) : compteurs (`analysis.risks_count` / `measures_count` / `links_count` /
 `reduced_count`, plus le bloc `{{ stat type="counters" }}` : Risques · Mesures · Réduits · % traité) ;
@@ -621,6 +701,15 @@ paragraphe et ligne de tableau.
 
 **v2 — Dimensions d'images** (§4.8) : `width` / `height` (cm) sur `matrix`, `radar`, `logo`, `stat` ; les
 deux ensemble = boîte maximale sans déformation.
+
+**v3 — Objets & références** (§3.7, §3.8) : collections `objects` (attr. `type=`) et `object_types`, champs
+`object.*` / `type.*`, références **déréférencées** en rendu simple (`| codes`), en boucle
+(`{{#each risk.cf.<ref>}}`, `{{#each object.attr.<ref>}}`) et sur le catalogue ; **restitution réflexive**
+(`object.attributes` / `<entité>.custom_fields` avec `value` + `is_reference`, `attribute.objects`), blocs
+`{{ object_notes }}` et `{{ cf_notes target="analysis|cotation" }}`, regroupement `group_by="type"` ; **stats
+d'objets** `objects` / `object_attr:<type>:<attr>` / `object_usage:<type>` (§4.5). Un modèle **agnostique**
+restitue ainsi tout objet de toute analyse **sans coder son schéma**. Cinq modèles d'exemple « objets
+agnostiques » livrés (dossier `word-templates/`).
 
 **Hors périmètre** : graphiques Word **natifs éditables** (on insère des **images**) ; styles/thème
 imposés par l'application (c'est le **modèle** qui décide) ; édition du modèle dans l'app.
