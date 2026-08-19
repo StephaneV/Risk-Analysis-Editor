@@ -13,6 +13,9 @@ node_modules/
 # --- Documents de travail (audits, notes, brouillons) : non publiés ----------
 travaux/
 
+# --- Lanceur local (association .rae, chemins machine) : non versionné --------
+launcher/
+
 # --- Fichiers temporaires / système -----------------------------------------
 *.tmp
 *.bak
