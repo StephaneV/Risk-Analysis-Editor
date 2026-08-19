@@ -204,10 +204,13 @@ Traverser une référence **sans son code** : `{{#each attribute.objects}}` (ou 
 itère les **instances pointées** lorsque `is_reference` est vrai.
 
 ```
-{{! Inventaire complet et agnostique — un modèle, toute analyse }}
-{{#each objects sort="id"}}
-  {{ object.type }} — {{ object.id }} : {{ object.label }}
-  {{ object_notes }}
+{{! Inventaire complet et agnostique, groupé par type — un modèle, toute analyse }}
+{{#each objects group_by="type"}}
+  {{ group.label }}                             {{! titre de section = le type d'objet }}
+  {{#each group.items sort="id"}}
+    {{ object.id }} — {{ object.label }}        {{! sous-titre = l'instance }}
+    {{ object_notes }}
+  {{/each}}
 {{/each}}
 
 {{! Variante « boucles » (mise en page libre + traversée des références) }}
@@ -398,6 +401,8 @@ Portées : **globale** = *Style des badges* du rapport (défaut `cell`) ou `{{ r
   `{{ group.measures_count }}` (groupes de risques), et `{{#each group.items}} … {{/each}}`.
   Champs de regroupement des risques : `category`, `owner`, `criticality_initial/residual`, `cf.<code>`,
   et **`id`** (un chapitre par risque). Mesures : `type`, `status`, `responsible`, `cf.<code>`.
+  **Objets** : `type` — `{{#each objects group_by="type"}}` → un chapitre par type (`{{ group.label }}` =
+  libellé du type, `{{#each group.items}}` = ses instances).
 - **Portée implicite du groupe** : dans un `group_by`, les matrices/tableaux/boucles imbriqués sont
   **auto-filtrés** sur la valeur du groupe → base du **rapport éclaté** par catégorie.
 - **Boucle de ligne de tableau** : placez `{{#each …}}` au début de la 1re cellule d'une ligne et

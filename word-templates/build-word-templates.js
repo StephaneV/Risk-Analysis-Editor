@@ -7,6 +7,7 @@ const {
   Document, Packer, Paragraph, TextRun, HeadingLevel,
   Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType, PageBreak,
 } = require("docx");
+const OBJ = require("./sections-objets")(require("docx"));   // sections objets agnostiques (variantes -objets)
 
 const OUT = process.env.OUT || __dirname;
 fs.mkdirSync(OUT, { recursive: true });
@@ -190,7 +191,7 @@ function build(ann) {
     P(blk("{{/each}}")), P(blk("{{/each}}")),
   ].filter(Boolean) }] });
 
-  const referentiels = () => new Document({ styles: STYLES, sections: [{ children: [
+  const referentiels = (withObjets) => new Document({ styles: STYLES, sections: [{ children: [
     ...header("Référentiels de l'analyse"),
     H1("1. Informations sur l'analyse"),
     note("Toutes les métadonnées de l'analyse, y compris la référence méthodologique."),
@@ -251,11 +252,12 @@ function build(ann) {
        + "(sélection / cases / étiquettes) dont au moins une valeur porte une description."),
     P(blk("{{ field_values }}")),
     P(blk("{{/each}}")),
+    ...(withObjets ? [].concat(OBJ.schema(), OBJ.inventory()) : []),   // objets agnostiques : schéma des types + inventaire
   ].filter(Boolean) }] });
 
   // Tableau de bord (v2) : statistiques (compteurs, couverture, graphiques donut/secteur) et sections
   // conditionnelles ({{#if}} / {{#unless}} de niveau bloc, dans et hors boucle).
-  const tableauDeBord = () => new Document({ styles: STYLES, sections: [{ children: [
+  const tableauDeBord = (withObjets) => new Document({ styles: STYLES, sections: [{ children: [
     new Paragraph({ heading: HeadingLevel.TITLE, children: [txt("Tableau de bord des risques")] }),
     P([val("{{ analysis.title }}"), txt(" · "), val("{{ analysis.organization }}"),
        txt(" · mise à jour "), val('{{ analysis.updated | date="long" }}')]),
@@ -317,9 +319,11 @@ function build(ann) {
     P(blk("{{else}}")),
     P(txt("Aucun risque résiduel important ou critique restant.")),
     P(blk("{{/each}}")),
+    ...(withObjets ? OBJ.dashboard() : []),   // objets agnostiques : répartition des objets par type
   ].filter(Boolean) }] });
 
-  return { classique: classique(), eclate: eclate(), referentiels: referentiels(), tableauDeBord: tableauDeBord() };
+  return { classique: classique(), eclate: eclate(), referentiels: referentiels(), tableauDeBord: tableauDeBord(),
+           referentielsObjets: referentiels(true), tableauDeBordObjets: tableauDeBord(true) };
 }
 
 async function write(doc, name) {
@@ -337,4 +341,7 @@ async function write(doc, name) {
   await write(annot.referentiels, "modele-referentiels-annote.docx");
   await write(clean.tableauDeBord, "modele-tableau-de-bord.docx");
   await write(annot.tableauDeBord, "modele-tableau-de-bord-annote.docx");
+  // Variantes « objets agnostiques » (propres) : restituent les objets sans coder le schéma
+  await write(clean.referentielsObjets, "modele-referentiels-objets.docx");
+  await write(clean.tableauDeBordObjets, "modele-tableau-de-bord-objets.docx");
 })();

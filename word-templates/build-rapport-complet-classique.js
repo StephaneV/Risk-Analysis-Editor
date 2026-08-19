@@ -11,10 +11,12 @@ const {
   Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType, PageBreak,
   Header, Footer, PageNumber, Tab, TabStopType, TableOfContents,
 } = require("docx");
+const mkObjets = require("./sections-objets");
 
 const OUT = process.env.OUT || __dirname;
 const CW = 9638;                                  // largeur utile (twips), = DX_CW natif
 const MUTED = "7A8699", LABEL = "3B4A63", ACCENT = "2F5BD0", BORDER = "D0D7E5";
+const OBJ = mkObjets(require("docx"), { CW, MUTED, LABEL });   // sections objets agnostiques (variante -objets)
 const bd = { style: BorderStyle.SINGLE, size: 4, color: BORDER };
 const noBd = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
 const TB = { top: bd, bottom: bd, left: bd, right: bd, insideHorizontal: bd, insideVertical: bd };
@@ -132,6 +134,8 @@ body.push(subTitle([txt("{{ field.label }} — ", { bold: true, color: LABEL, si
 body.push(block("{{ field_values }}"));
 body.push(P(txt("{{/each}}")));
 
+const OBJ_IDX = body.length;                        // point d'insertion de la section « Objets » (variante -objets)
+
 // 8-10. Matrices + trajectoire
 body.push(H1("Matrice initiale seule"));
 body.push(block('{{ matrix type="initial" }}'));
@@ -186,7 +190,7 @@ body.push(P(txt("{{/each}}")));
 body.push(H1("Plan d'action"));
 body.push(block('{{ table source="measures" columns="id,measure,status,resp,due" sort="due_date" }}'));
 
-const doc = new Document({
+const makeDoc = (children) => new Document({
   styles: {
     default: {
       document: { run: { font: "Calibri", size: 21 }, paragraph: { spacing: { after: 140 }, widowControl: true } },
@@ -197,12 +201,21 @@ const doc = new Document({
   sections: [{
     properties: { page: { margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } },
     headers: { default: header }, footers: { default: footer },
-    children: body,
+    children,
   }],
 });
 
+// Corps « objets » : le corps standard + une section « Objets » (inventaire agnostique) insérée après les référentiels.
+const bodyObjets = body.slice();
+bodyObjets.splice(OBJ_IDX, 0, ...OBJ.inventory());
+
 (async () => {
-  const p = path.join(OUT, "modele-rapport-complet-classique.docx");
-  fs.writeFileSync(p, await Packer.toBuffer(doc));
-  console.log("écrit :", p);
+  for (const [children, name] of [
+    [body, "modele-rapport-complet-classique.docx"],
+    [bodyObjets, "modele-rapport-complet-classique-objets.docx"],
+  ]) {
+    const p = path.join(OUT, name);
+    fs.writeFileSync(p, await Packer.toBuffer(makeDoc(children)));
+    console.log("écrit :", p);
+  }
 })();

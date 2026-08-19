@@ -25,12 +25,18 @@ puis ouvrez le document généré dans Word.
 | `modele-rapport-complet-classique.docx` | **Reproduction fidèle** du rapport « Exporter en Word » (mode classique) : page de garde + logo, en-tête/pied, table des matières, métadonnées, présentation, statistiques (synthèse + répartition), grille, niveaux, référentiels/légendes, matrices, radar, registre, détails risques/mesures/liens, plan d'action. |
 | `modele-rapport-complet-par-categorie.docx` | Idem en **rapport éclaté par catégorie** : zone d'introduction, un chapitre par catégorie (sections filtrées), puis annexe. |
 | `modele-rapport-complet-par-risque.docx` | Idem en **rapport éclaté par risque** : un chapitre par risque (détail + trajectoire + mesures), puis annexe. |
+| `modele-rapport-complet-classique-objets.docx` | **Complet classique + objets** : idem classique, avec une section **« Objets »** — inventaire **agnostique** (tous les objets, tous les attributs, références déréférencées), sans coder le schéma. |
+| `modele-rapport-complet-par-categorie-objets.docx` | **Complet par catégorie + objets** : idem éclaté par catégorie, avec l'inventaire des objets en **annexe**. |
+| `modele-rapport-complet-par-risque-objets.docx` | **Complet par risque + objets** : idem éclaté par risque, avec l'inventaire des objets en **annexe**. |
+| `modele-referentiels-objets.docx` | **Référentiels + objets** : idem référentiels, avec le **schéma des types d'objets** (types, attributs) et l'**inventaire** des instances. |
+| `modele-tableau-de-bord-objets.docx` | **Tableau de bord + objets** : idem tableau de bord, avec la **répartition des objets par type** (`{{ stat type="objets" }}`). |
 | `…-annote.docx` | Variantes **annotées** (notes explicatives grises) des modèles de démonstration. ⚠️ Ne pas utiliser telles quelles : les notes apparaîtraient dans le rapport. |
 | [`guide-redaction-modeles.md`](guide-redaction-modeles.md) | **Guide de rédaction** (tutoriel pas à pas) pour créer votre propre modèle. |
 | [`catalogue-mots-cles-rapport.md`](catalogue-mots-cles-rapport.md) | **Référence des mots-clés** (valeurs, blocs, boucles, filtres, échappement). |
-| `build-word-templates.js` | Générateur des modèles de **démonstration** (classique, éclaté, référentiels, tableau de bord) — propres + annotés. |
-| `build-rapport-complet-classique.js` | Générateur de `modele-rapport-complet-classique.docx` (reproduction fidèle du rapport natif). |
-| `build-rapport-complet-eclate.js` | Générateur de `modele-rapport-complet-par-categorie.docx` et `…-par-risque.docx`. |
+| `build-word-templates.js` | Générateur des modèles de **démonstration** (classique, éclaté, référentiels, tableau de bord) — propres + annotés — **et** des variantes `…-objets` de référentiels et tableau de bord. |
+| `build-rapport-complet-classique.js` | Générateur de `modele-rapport-complet-classique.docx` **et** `…-classique-objets.docx`. |
+| `build-rapport-complet-eclate.js` | Générateur de `modele-rapport-complet-par-{categorie,risque}.docx` **et** de leurs variantes `…-objets.docx`. |
+| `sections-objets.js` | Module partagé : sections **objets agnostiques** (schéma des types, inventaire, répartition) insérées dans les variantes `-objets`. |
 
 Spécification complète du langage de gabarit :
 [`specs/SPEC-rapport-modele-word.md`](../specs/SPEC-rapport-modele-word.md).

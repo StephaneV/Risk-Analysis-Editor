@@ -8729,6 +8729,7 @@ function tmplGroupFieldKnown(type,f){
   if(f.indexOf("cf.")===0)return !!(tmplCfField(type,f.slice(3))||tmplCfField("cotation",f.slice(3)));
   if(type==="risk")return ["id","category","owner","criticality_initial","criticality_residual"].indexOf(f)>=0;
   if(type==="measure")return ["type","status","responsible"].indexOf(f)>=0;
+  if(type==="object")return f==="type"||f==="type_code";   // {{#each objects group_by="type"}}
   return false;
 }
 function tmplCheckFormats(mods){for(const k in (mods||{}))if(!TMPL_KNOWN_FMT[k])tmplWarn("tw_unknown_format",k);}
@@ -9232,6 +9233,7 @@ function tmplGroupKeys(item,type,byField){
     if(byField==="status")return item.status?[{key:item.status,label:statusLabel(item.status)}]:[{key:"",label:EMPTY}];
     if(byField==="responsible")return one(item.responsible,item.responsible);
   }
+  if(type==="object"){const ot=objectTypeByCode(item.type);return [{key:item.type,label:ot?otLabel(ot):item.type}];}   // groupé par type
   return one(item[byField],item[byField]);
 }
 function tmplGroupScope(byField,key,type){
@@ -9243,7 +9245,8 @@ function tmplGroupScope(byField,key,type){
 function tmplBuildGroups(list,type,byField){
   const map=new Map();
   list.forEach(item=>tmplGroupKeys(item,type,byField).forEach(k=>{let g=map.get(k.key);if(!g){g={key:k.key,label:k.label,items:[]};map.set(k.key,g);}g.items.push(item);}));
-  const groups=Array.from(map.values()).map(g=>{const o={key:g.key,label:g.label,items:g.items,count:g.items.length,singular:type,itype:type,scope:tmplGroupScope(byField,g.key,type)};
+  const groups=Array.from(map.values()).map(g=>{const o={key:g.key,label:g.label,items:g.items,count:g.items.length,singular:type,itype:type,
+      scope:type==="object"?null:tmplGroupScope(byField,g.key,type)};   // les objets ne propagent pas de filtre (catalogue partagé)
     if(type==="risk"){const s=new Set();g.items.forEach(r=>measuresOfRisk(r.id).forEach(m=>s.add(m)));o.measures_count=s.size;}
     return o;});
   groups.sort((a,b)=>((a.key===""?1:0)-(b.key===""?1:0))||String(a.label).localeCompare(String(b.label)));
@@ -9268,7 +9271,7 @@ function tmplLoopIterations(name,attrs,ctx){
     if(!tmplGroupFieldKnown(col.type,attrs.group_by))tmplWarn("tw_unknown_groupby",attrs.group_by);
     let groups=tmplBuildGroups(list,col.type,attrs.group_by);
     if(attrs.limit!=null){const n=parseInt(attrs.limit,10);if(n>=0)groups=groups.slice(0,n);}
-    return groups.map(g=>({frames:[{name:"group",type:"group",obj:g},{name:"__scope",type:"scope",obj:g.scope}]}));
+    return groups.map(g=>({frames:g.scope?[{name:"group",type:"group",obj:g},{name:"__scope",type:"scope",obj:g.scope}]:[{name:"group",type:"group",obj:g}]}));
   }
   return tmplSortLimit(list,col.type,attrs).map((item,ix)=>({frames:[{name:col.singular,type:col.type,obj:item,index:ix}]}));
 }

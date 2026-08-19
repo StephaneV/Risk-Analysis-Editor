@@ -11,10 +11,12 @@ const {
   Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType, PageBreak,
   Header, Footer, PageNumber, Tab, TabStopType, TableOfContents,
 } = require("docx");
+const mkObjets = require("./sections-objets");
 
 const OUT = process.env.OUT || __dirname;
 const CW = 9638;
 const MUTED = "7A8699", LABEL = "1F2937", ACCENT = "2F5BD0", BORDER = "D0D7E5";
+const OBJ = mkObjets(require("docx"), { CW, MUTED, LABEL });   // sections objets agnostiques (variantes -objets)
 const bd = { style: BorderStyle.SINGLE, size: 4, color: BORDER };
 const TB = { top: bd, bottom: bd, left: bd, right: bd, insideHorizontal: bd, insideVertical: bd };
 
@@ -148,7 +150,7 @@ const chapterBody = (mode) => {
   );
 };
 
-function buildEclate(mode) {
+function buildEclate(mode, withObjets) {
   const groupBy = mode === "risque" ? "id" : "category";
   const body = [];
   // Page de garde
@@ -170,6 +172,8 @@ function buildEclate(mode) {
   body.push(P(txt("{{/each}}")));
   // Annexe
   appendix().forEach(x => body.push(x));
+  // Objets (variante -objets) : inventaire agnostique, en annexe (référentiel partagé, non filtré)
+  if (withObjets) OBJ.inventory().forEach(x => body.push(x));
 
   return new Document({
     styles: {
@@ -190,9 +194,14 @@ function buildEclate(mode) {
 }
 
 (async () => {
-  for (const [mode, name] of [["categorie", "modele-rapport-complet-par-categorie.docx"], ["risque", "modele-rapport-complet-par-risque.docx"]]) {
+  for (const [mode, withObjets, name] of [
+    ["categorie", false, "modele-rapport-complet-par-categorie.docx"],
+    ["categorie", true,  "modele-rapport-complet-par-categorie-objets.docx"],
+    ["risque",    false, "modele-rapport-complet-par-risque.docx"],
+    ["risque",    true,  "modele-rapport-complet-par-risque-objets.docx"],
+  ]) {
     const p = path.join(OUT, name);
-    fs.writeFileSync(p, await Packer.toBuffer(buildEclate(mode)));
+    fs.writeFileSync(p, await Packer.toBuffer(buildEclate(mode, withObjets)));
     console.log("écrit :", p);
   }
 })();
