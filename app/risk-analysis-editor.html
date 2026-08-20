@@ -568,6 +568,12 @@
   .cfp-none{padding:8px;color:var(--muted);font-size:12px}
   .cf-computed-ro{padding:7px 9px;border:1px dashed var(--border);border-radius:8px;background:var(--panel);font-size:13px;min-height:34px;display:flex;align-items:center}
   .cf-calc-err{font-weight:600}
+  .st-calc{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .st-calc>h3{margin:0 0 10px;font-size:14px}
+  .st-kpis{display:flex;flex-wrap:wrap;gap:14px}
+  .st-kpi{flex:1 1 150px;min-width:130px;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--panel)}
+  .st-kpi-val{font-size:20px;font-weight:700;line-height:1.2}
+  .st-kpi-lab{font-size:12px;color:var(--muted);margin-top:3px}
   .cf-progress-edit input[type=range]{flex:1}
   .cf-pal-preview{height:12px;border-radius:20px;border:1px solid var(--border);margin-top:2px}
   .cf-desc{margin-top:4px}
@@ -1671,7 +1677,7 @@ const I18N = {
     stat_size:"Taille", stat_display:"Affichage", stat_shape:"Forme",
     stat_size_full:"Pleine", stat_size_half:"Demi",
     stat_disp_table:"Tableau", stat_disp_chart:"Graphique", stat_disp_both:"Les deux",
-    stat_shape_donut:"Anneau", stat_shape_pie:"Camembert", stat_tiles:"Tuiles", stat_values:"valeurs",
+    stat_shape_donut:"Anneau", stat_shape_pie:"Camembert", stat_tiles:"Tuiles", stat_calc_indicators:"Indicateurs calculés", stat_values:"valeurs",
     tab_radars:"Radars",
     radar_eval_side:"Accolés", radar_eval_over:"Superposés", radar_dim:"Dimension", radar_axis:"Axe", radar_unset:"Non renseigné",
     radar_empty_axes:"Axes vides", radar_empty_axes_help:"Afficher tous les axes possibles — toutes les valeurs connues, y compris celles sans risque dans la vue (item ou instance non utilisé, ou valeur écartée par un filtre). Les axes restent ainsi stables quel que soit le filtre actif.",
@@ -2050,7 +2056,7 @@ const I18N = {
     stat_size:"Size", stat_display:"Display", stat_shape:"Shape",
     stat_size_full:"Full", stat_size_half:"Half",
     stat_disp_table:"Table", stat_disp_chart:"Chart", stat_disp_both:"Both",
-    stat_shape_donut:"Donut", stat_shape_pie:"Pie", stat_tiles:"Tiles", stat_values:"values",
+    stat_shape_donut:"Donut", stat_shape_pie:"Pie", stat_tiles:"Tiles", stat_calc_indicators:"Computed indicators", stat_values:"values",
     tab_radars:"Radars",
     radar_eval_side:"Side by side", radar_eval_over:"Overlaid", radar_dim:"Dimension", radar_axis:"Axis", radar_unset:"Not set",
     radar_empty_axes:"Empty axes", radar_empty_axes_help:"Show every possible axis — all known values, including those with no risk in the current view (unused item or instance, or a value excluded by a filter). Axes then stay stable whatever the active filter.",
@@ -2429,7 +2435,7 @@ const I18N = {
     stat_size:"Dimensione", stat_display:"Visualizzazione", stat_shape:"Forma",
     stat_size_full:"Piena", stat_size_half:"Metà",
     stat_disp_table:"Tabella", stat_disp_chart:"Grafico", stat_disp_both:"Entrambi",
-    stat_shape_donut:"Anello", stat_shape_pie:"Torta", stat_tiles:"Riquadri", stat_values:"valori",
+    stat_shape_donut:"Anello", stat_shape_pie:"Torta", stat_tiles:"Riquadri", stat_calc_indicators:"Indicatori calcolati", stat_values:"valori",
     tab_radars:"Radar",
     radar_eval_side:"Affiancati", radar_eval_over:"Sovrapposti", radar_dim:"Dimensione", radar_axis:"Asse", radar_unset:"Non specificato",
     radar_empty_axes:"Assi vuoti", radar_empty_axes_help:"Mostra tutti gli assi possibili — tutti i valori noti, compresi quelli senza rischio nella vista (voce o istanza non utilizzata, o valore escluso da un filtro). Gli assi restano così stabili qualunque sia il filtro attivo.",
@@ -4457,8 +4463,15 @@ function renderStats(){
   const host=document.getElementById("stats");if(!host)return;
   statReset();
   host.className="st-grid";
-  host.innerHTML=statBlocks().filter(b=>b.on!==false).map(statBlockHTML).join("");
+  host.innerHTML=calcAnalysisStatHTML()+statBlocks().filter(b=>b.on!==false).map(statBlockHTML).join("");
   setFilterCount("stats",visibleRisks().length,analyse.risks.length);
+}
+/* Tuiles « indicateurs calculés » : les champs personnalisés calculés de cible ANALYSE (agrégats). */
+function calcAnalysisStatHTML(){
+  const fs=customFieldsFor("analysis").filter(f=>f.type==="computed");
+  if(!fs.length)return "";
+  const tiles=fs.map(f=>'<div class="st-kpi"><div class="st-kpi-val">'+(cfComputedDisplayHTML(f,"analysis",analyse)||'<span class="muted">—</span>')+'</div><div class="st-kpi-lab">'+esc(cfLabel(f))+'</div></div>').join("");
+  return '<div class="st-calc" style="grid-column:1/-1"><h3>'+esc(t("stat_calc_indicators"))+'</h3><div class="st-kpis">'+tiles+'</div></div>';
 }
 /* ---- Manipulation directe sur la grille (déplacer / redimensionner / retirer) ---- */
 (function(){
@@ -5987,7 +6000,9 @@ function renderReport(){
       const acf=customFieldsFor("analysis"), cust=analyse.custom||{}, rows=[];
       s.items.filter(x=>x.on).forEach(it=>{
         if(it.id==="description"){ if(md.description)body+='<div class="md" style="font-size:13px">'+mdToHTML(md.description)+'</div>'; return; }
-        const f=acf.find(x=>"cf:"+x.code===it.id); if(f&&cfHasVal(cust[f.code]))rows.push('<tr><td>'+esc(cfLabel(f))+'</td><td class="md">'+cfDisplayHTML(f,cust[f.code],true)+'</td></tr>');
+        const f=acf.find(x=>"cf:"+x.code===it.id);if(!f)return;
+        if(f.type==="computed"){const dv=cfComputedDisplayHTML(f,"analysis",analyse);if(dv)rows.push('<tr><td>'+esc(cfLabel(f))+'</td><td>'+dv+'</td></tr>');return;}
+        if(cfHasVal(cust[f.code]))rows.push('<tr><td>'+esc(cfLabel(f))+'</td><td class="md">'+cfDisplayHTML(f,cust[f.code],true)+'</td></tr>');
       });
       if(rows.length)body+=(body?'<div style="height:10px"></div>':'')+'<table class="meta-tbl"><tbody>'+rows.join("")+'</tbody></table>';
       if(!body)return "";
@@ -8552,8 +8567,9 @@ async function buildDocx(){
       const acf=customFieldsFor("analysis"),cust=analyse.custom||{};let out="",any=false;
       s.items.filter(x=>x.on).forEach(it=>{
         if(it.id==="description"){if(md.description){out+=mdDocxBlocks(md.description);any=true;}return;}
-        const f=acf.find(x=>"cf:"+x.code===it.id);
-        if(f&&cfHasVal(cust[f.code])){any=true;
+        const f=acf.find(x=>"cf:"+x.code===it.id);if(!f)return;
+        if(f.type==="computed"){const dv=cfComputedDisplay(f,"analysis",analyse);if(dv&&dv!=="#ERR"){any=true;out+=dxP(dxRun(cfLabel(f)+" : ",{b:true,color:"3B4A63"})+dxRun(dv,{}),{sa:60});}return;}
+        if(cfHasVal(cust[f.code])){any=true;
           if(f.type==="textarea"){out+=dxP(dxRun(cfLabel(f),{b:true,color:"3B4A63"}),{sb:120,sa:40});out+=mdDocxBlocks(String(cust[f.code]||""));}
           else out+=dxP(dxRun(cfLabel(f)+" : ",{b:true,color:"3B4A63"})+dxRun(cfDisplay(f,cust[f.code]),{}),{sa:60});}
       });
@@ -11107,15 +11123,30 @@ function calcResolveField(name,ctx,entity,stack){
       case "risk_id":return txt(entity.risk);case "measure_id":return txt(entity.measure);
       case "comment":return txt(entity.comment);
     }
+  }else if(target==="analysis"){
+    // effectifs
+    if(name==="risks_count")return (analyse.risks||[]).length;
+    if(name==="measures_count")return (analyse.measures||[]).length;
+    if(name==="links_count")return (analyse.treatments||[]).length;
+    // collections : « <coll> » (pour COUNT) ou « <coll>.<champ> » (agrégat d'un champ sur tous les éléments)
+    const COLL={risks:{arr:analyse.risks||[],tg:"risk"},measures:{arr:analyse.measures||[],tg:"measure"},links:{arr:analyse.treatments||[],tg:"link"}};
+    const parts=name.split("."),c=COLL[parts[0]];
+    if(c){
+      if(parts.length===1)return {t:"list",v:c.arr.map(x=>cvText(String(x.id!=null?x.id:((x.risk||"")+"|"+(x.measure||"")))))};
+      const fld=(parts[1]==="cf"&&parts[2]!=null)?("cf."+parts.slice(2).join(".")):parts.slice(1).join(".");
+      return {t:"list",v:c.arr.map(ent=>{try{const rv=calcResolveField(fld,c.tg,ent,stack);return cvOf(rv==null?null:rv);}catch(e){return CV_NIL;}})};
+    }
   }
   throw calcErr("Référence inconnue : "+name);
 }
-/* Évalue un champ computed pour une entité → {ok,type,value} | {ok:false,error}. Détecte les cycles. */
+/* Évalue un champ computed pour une entité → {ok,type,value} | {ok:false,error}. Détecte les cycles
+   (clé par cible+code : un champ « x » d'une cible et un « x » d'une autre ne sont pas confondus). */
 function cfComputedValue(f,target,entity,opts){
   opts=opts||{};const stack=opts.stack||[];
-  if(stack.indexOf(f.code)>=0)return {ok:false,error:t("cf_calc_cycle")};
+  const key=(target&&typeof target==="object"?"obj:"+target.code:target)+":"+f.code;
+  if(stack.indexOf(key)>=0)return {ok:false,error:t("cf_calc_cycle")};
   if(!f.expression||!String(f.expression).trim())return {ok:false,error:t("cf_calc_empty")};
-  const env={get:name=>calcResolveField(name,target,entity,stack.concat(f.code)),today:()=>today()};
+  const env={get:name=>calcResolveField(name,target,entity,stack.concat(key)),today:()=>today()};
   const r=calcEvaluate(f.expression,env);
   if(!r.ok)return r;
   try{const cv={t:r.type,v:r.value};return calcCoerce(cv,f.result_type||"number");}
@@ -12183,6 +12214,14 @@ function calcRefs(target){
   if(target==="cotation")return [
     {k:"probability",n:"P"},{k:"severity",n:"G"},{k:"score",n:t("cf_pick_score")},{k:"criticality",n:t("cf_pick_crit")}];
   if(target==="link")return [{k:"risk_id",n:t("th_risk_id")},{k:"measure_id",n:t("th_measure_id")},{k:"comment",n:t("f_notes")}];
+  if(target==="analysis"){
+    const numT=f=>["integer","float","progress","scale","computed"].indexOf(f.type)>=0;
+    const refs=[{k:"risks_count",n:t("tab_risks")},{k:"measures_count",n:t("tab_measures")},{k:"links_count",n:t("tab_links")},
+      {k:"risks.score_initial",n:t("th_initial")+" · "+t("cf_pick_score")},{k:"risks.score_residual",n:t("th_residual")+" · "+t("cf_pick_score")},{k:"measures.cost",n:t("f_cost")}];
+    customFieldsFor("risk").filter(numT).forEach(f=>refs.push({k:"risks.cf."+f.code,n:t("tab_risks")+" · "+cfLabel(f)}));
+    customFieldsFor("measure").filter(numT).forEach(f=>refs.push({k:"measures.cf."+f.code,n:t("tab_measures")+" · "+cfLabel(f)}));
+    return refs;
+  }
   return [];
 }
 function calcPickFields(target,selfCode){return customFieldsFor(target).filter(f=>f.code!==selfCode).map(f=>({k:"cf."+f.code,n:cfLabel(f)}));}
@@ -12275,7 +12314,19 @@ function renderCFAnalysis(){
   const fields=customFieldsFor("analysis");
   card.style.display=fields.length?"block":"none";
   scope.innerHTML=fields.length?cfFieldsHTML("analysis",analyse.custom||{}):"";
+  cfAnalysisComputedRefresh();
 }
+/* Aperçus lecture seule des champs calculés d'analyse (onglet Présentation), recalculés en direct.
+   Contexte = l'analyse (agrégats de collection lus globalement) ; cf.<code> = saisie en cours du formulaire. */
+function cfAnalysisComputedRefresh(){
+  const scope=document.getElementById("cfAnalysisValues");if(!scope)return;
+  const prv=[...scope.querySelectorAll("[data-cf-computed]")];if(!prv.length)return;
+  const ent={custom:{}};
+  customFieldsFor("analysis").forEach(f=>{if(f.type==="computed")return;const cont=scope.querySelector('[data-cf="'+f.code+'"]');if(!cont)return;let v;try{v=cfReadValue(cont,f);}catch(e){}if(cfPresent(f,v))ent.custom[f.code]=v;});
+  prv.forEach(el=>{const f=customFieldByCode(el.dataset.cfComputed);if(f&&f.target==="analysis")el.innerHTML=cfComputedDisplayHTML(f,"analysis",ent)||'<span class="muted">—</span>';});
+}
+document.addEventListener("input",e=>{if(e.target&&e.target.closest&&e.target.closest("#cfAnalysisValues"))cfAnalysisComputedRefresh();});
+document.addEventListener("change",e=>{if(e.target&&e.target.closest&&e.target.closest("#cfAnalysisValues"))cfAnalysisComputedRefresh();});
 
 function renderAxis(elId,axis,key){
   const el=document.getElementById(elId);

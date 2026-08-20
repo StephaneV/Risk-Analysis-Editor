@@ -357,8 +357,12 @@ computed « alerte », result_type=text :
 4. **Lot D — Dates** ✅ : `TODAY`, `DATE`, `YEAR`/`MONTH`/`DAY`, `EDATE`, `DATEDIF`, arithmétique de dates
    (livré avec le moteur au lot B et la liaison au lot C ; les dates calculées suivent le **format de date
    global** — pas de format propre au champ, cohérent avec tout champ date).
-5. **Lot E — Agrégats de collection** (cible analyse) : `risks.cf.*`, `COUNT(…)`, `AVERAGE`/`MEDIAN`/…,
-   affichage en **Statistiques** et **Rapport**.
+5. **Lot E — Agrégats de collection** ✅ (cible analyse) : références de collection `risks.cf.<code>` /
+   `measures.cf.<code>` / `links.cf.<code>`, champs natifs/dérivés (`measures.cost`, `risks.score_initial`…),
+   collections nues (`COUNT(risks)`) et effectifs directs (`risks_count`/`measures_count`/`links_count`) ;
+   `AVERAGE`/`MEDIAN`/`SUM`/`MIN`/`MAX`/`COUNT` (absents ignorés). Affichage : **tuiles d'indicateurs** en
+   tête de l'onglet **Statistiques** + section **présentation du rapport** (écran/PDF/Word), et aperçu
+   lecture seule dans l'onglet **Présentation** (recalculé en direct). Détection de cycle par cible+code.
 6. **Lot F — Filtre / stats / radar / rapport / Word / CSV** sur valeurs calculées et échelles numériques.
 7. **Lot G — Consolidation** : i18n complète, guide utilisateur, alignement `SPEC-format` + schéma, tests.
 
