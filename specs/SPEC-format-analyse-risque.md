@@ -227,7 +227,7 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `code` | chaîne | O | Identifiant du champ, **unique**, stable. Sert de clé dans les objets `custom` et d'en-tête de colonne à l'export CSV. |
 | `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"cotation"` (évaluation initiale/résiduelle d'un risque), `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
-| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"progress"` (barre de progression 0–100 %), `"reference"` (référence vers une ou plusieurs instances d'objet, §4.7). |
+| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"scale"` (échelle : niveaux à valeur numérique, §4.6.5), `"progress"` (barre de progression 0–100 %), `"reference"` (référence vers une ou plusieurs instances d'objet, §4.7). |
 | `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : `code` du type d'objet ciblé (`object_types[].code`, §4.7). La valeur stockée est alors l'`id` d'une instance (ou un tableau d'`id` si `multiple`). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
 | `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** (`select`, `checklist`, `tags`, `boolean`, `reference`) **et aux cibles `risk`, `measure`, `link`** ; ignoré ailleurs. Cf. § *Filtrage par champ personnalisé*. |
@@ -247,10 +247,11 @@ Objet `items[]` (§4.6.2) :
 
 | Champ | Type | O/F | Description |
 |---|---|---|---|
-| `code` | chaîne | O | Identifiant de l'item, **unique** dans le champ. C'est cette valeur qui est stockée. |
+| `code` | chaîne | Cond. | Identifiant de l'item, **unique** dans le champ (types `select` / `checklist` / `tags`). C'est cette valeur qui est stockée. **Absent pour le type `scale`** (l'identité est alors `value`). |
+| `value` | nombre | Cond. | **Type `scale` uniquement** : valeur numérique du niveau — **identité** (unique dans le champ), stockée dans `custom`, exploitable en calculs/statistiques/radar. Voir §4.6.5. |
 | `label` | objet | O | Libellé multilingue de l'item, même forme que `label` du champ. |
 | `description` | objet | F | Définition multilingue de la valeur (même forme que `label`). Reprise dans la section **« Référentiels et légendes des champs »** du rapport (un tableau valeur → description par champ à valeurs fermées portant au moins une description). |
-| `color` | chaîne | F | Type `tags` : couleur de l'étiquette, hexadécimal `#RRGGBB`. |
+| `color` | chaîne | F | Types `tags` et `scale` : couleur de l'étiquette, hexadécimal `#RRGGBB`. |
 
 #### 4.6.3 Valeurs (`custom`)
 
@@ -266,6 +267,7 @@ Chaque objet `custom` associe un `code` de champ à sa valeur, selon le type :
 | `select` | `code` de l'item choisi |
 | `checklist` | tableau de `code` d'items |
 | `tags` | tableau de `code` d'items (même en sélection unique : un seul élément) |
+| `scale` | **nombre** — la `value` du niveau choisi (§4.6.5) |
 | `progress` | nombre entier `0`–`100` (pourcentage) |
 | `reference` | `id` d'une instance d'objet (`multiple` faux) ou tableau d'`id` d'instances (`multiple` vrai) |
 
@@ -289,6 +291,27 @@ Exemple :
 ```
 
 Un champ dont la définition a été supprimée peut laisser des valeurs orphelines dans `custom` : un lecteur les ignore.
+
+#### 4.6.5 Type `scale` (échelle)
+
+Une **échelle** est une liste de niveaux, chacun décrit par une **valeur numérique** (`items[].value`), un
+`label` et une `color` optionnelle. Contrairement à `select`/`tags`, l'item n'a **pas** de `code` : sa
+**`value` tient lieu d'identité** (donc **unique** dans le champ). C'est cette **valeur numérique** qui est
+**stockée** dans `custom` (un nombre), ce qui la rend **auto-descriptive** (interprétable sans la
+définition) et directement exploitable dans des **calculs**, **statistiques** et **radars**. Une valeur
+orpheline (niveau retiré du barème) reste affichée comme le **nombre brut**. Le rendu est une **pastille
+colorée** (couleur du niveau). Voir la spécification dédiée [`SPEC-champs-calcules.md`](SPEC-champs-calcules.md).
+
+```json
+{ "code": "gravite", "target": "risk", "type": "scale",
+  "label": { "fr": "Gravité" },
+  "items": [
+    { "value": 1, "label": { "fr": "Faible" }, "color": "#2e9e5b" },
+    { "value": 2, "label": { "fr": "Moyen" }, "color": "#e0b93a" },
+    { "value": 3, "label": { "fr": "Élevé" }, "color": "#c0505a" }
+  ] }
+// custom : { "gravite": 2 }   ← le nombre, pas un code
+```
 
 ---
 

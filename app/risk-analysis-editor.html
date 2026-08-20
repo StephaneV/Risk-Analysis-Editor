@@ -1749,7 +1749,7 @@ const I18N = {
     cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées et aux références, sur les champs rattachés aux risques, aux mesures ou aux liens.",
     cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées et aux références, hors champs de l'analyse.",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
-    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.reference":"Référence à un objet",
+    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.scale":"Échelle (valeur numérique)","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.reference":"Référence à un objet",
     cf_object_type:"Type d'objet ciblé", cf_ref_none:"— (aucun)", cf_ref_add:"+ ajouter une instance…", cf_ref_create:"＋ créer", cf_ref_remove:"Retirer",
     cf_ref_notype:"Aucun type d'objet défini (Paramètres › Types d'objets).", cf_err_ref_type:"Choisissez le type d'objet ciblé.",
     cf_ref_self_warn:"Auto-référence : un objet de ce type en référence un autre (attention aux boucles).",
@@ -1763,10 +1763,10 @@ const I18N = {
     "tagpal.vives":"Vives","tagpal.pastel":"Pastel","tagpal.office":"Office","tagpal.daltonien":"Daltonien-friendly","tagpal.chaudes":"Chaudes","tagpal.froides":"Froides","tagpal.gris":"Nuances de gris","tagpal.bleu_vert":"Bleu à Vert","tagpal.jaune_orange":"Jaune à Orange","tagpal.rouge_violet":"Rouge à Violet","tagpalgrp.qualitative":"Qualitatives","tagpalgrp.sequential":"Séquentielles","cf_tagpal_custom_hint":"Couleurs libres (aucune attribution automatique)",
     cf_label:"Libellé", cf_help:"Aide", cf_description:"Description", md_preview:"Aperçu", md_edit:"Éditer", md_supports:"Markdown pris en charge", md_dblclick_edit:"Double-cliquez pour éditer",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
-    cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_label:"Libellé",
+    cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_value:"Valeur", cf_item_label:"Libellé",
     cf_item_desc_ph:"Description (documentation dans le rapport)",
     cf_err_code:"Le code est obligatoire.", cf_err_code_dup:"Ce code de champ existe déjà.", cf_err_label:"Le libellé est obligatoire (au moins une langue).",
-    cf_err_items:"Une liste doit contenir au moins un item.", cf_err_item_code:"Chaque item doit avoir un code unique.", cf_err_minmax:"Le minimum ne peut pas dépasser le maximum.",
+    cf_err_items:"Une liste doit contenir au moins un item.", cf_err_item_code:"Chaque item doit avoir un code unique.", cf_err_scale_dup:"Chaque niveau d'échelle doit avoir une valeur numérique unique.", cf_err_minmax:"Le minimum ne peut pas dépasser le maximum.",
     cf_del_confirm:"Supprimer ce champ personnalisé ?",
     cf_del_confirm_used:"Ce champ contient {0} valeur(s) déjà saisie(s). En le supprimant, ces valeurs ne seront plus affichées ni exploitées (elles subsistent dans le fichier mais deviennent inaccessibles). Supprimer quand même ?",
     cf_target_warn:"Ce champ est rattaché à « {1} » et contient {0} valeur(s) saisie(s). Changer sa cible pour « {2} » rendra ces valeurs inaccessibles. Continuer ?",
@@ -2122,7 +2122,7 @@ const I18N = {
     cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types and references, on risk, measure or link fields.",
     cf_filterable_na:"Not applicable: restricted to closed-value types and references, excluding analysis fields.",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
-    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.reference":"Object reference",
+    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.scale":"Scale (numeric value)","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.reference":"Object reference",
     cf_object_type:"Target object type", cf_ref_none:"— (none)", cf_ref_add:"+ add an instance…", cf_ref_create:"＋ new", cf_ref_remove:"Remove",
     cf_ref_notype:"No object type defined (Settings › Object types).", cf_err_ref_type:"Choose the target object type.",
     cf_ref_self_warn:"Self-reference: an object of this type references another (mind loops).",
@@ -2136,10 +2136,10 @@ const I18N = {
     "tagpal.vives":"Vivid","tagpal.pastel":"Pastel","tagpal.office":"Office","tagpal.daltonien":"Colorblind-friendly","tagpal.chaudes":"Warm","tagpal.froides":"Cool","tagpal.gris":"Grayscale","tagpal.bleu_vert":"Blue to Green","tagpal.jaune_orange":"Yellow to Orange","tagpal.rouge_violet":"Red to Violet","tagpalgrp.qualitative":"Qualitative","tagpalgrp.sequential":"Sequential","cf_tagpal_custom_hint":"Free colours (no automatic assignment)",
     cf_label:"Label", cf_help:"Help", cf_description:"Description", md_preview:"Preview", md_edit:"Edit", md_supports:"Supports Markdown", md_dblclick_edit:"Double-click to edit",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
-    cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_label:"Label",
+    cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_value:"Value", cf_item_label:"Label",
     cf_item_desc_ph:"Description (documentation in the report)",
     cf_err_code:"Code is required.", cf_err_code_dup:"This field code already exists.", cf_err_label:"A label is required (at least one language).",
-    cf_err_items:"A list must contain at least one item.", cf_err_item_code:"Each item must have a unique code.", cf_err_minmax:"Minimum cannot exceed maximum.",
+    cf_err_items:"A list must contain at least one item.", cf_err_item_code:"Each item must have a unique code.", cf_err_scale_dup:"Each scale level must have a unique numeric value.", cf_err_minmax:"Minimum cannot exceed maximum.",
     cf_del_confirm:"Delete this custom field?",
     cf_del_confirm_used:"This field holds {0} entered value(s). Deleting it will hide these values from view and use (they remain in the file but become inaccessible). Delete anyway?",
     cf_target_warn:"This field is attached to “{1}” and holds {0} entered value(s). Changing its target to “{2}” will make those values inaccessible. Continue?",
@@ -2495,7 +2495,7 @@ const I18N = {
     cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi e ai riferimenti, sui campi di rischio, misura o collegamento.",
     cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi e ai riferimenti, esclusi i campi dell'analisi.",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
-    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.reference":"Riferimento a un oggetto",
+    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.scale":"Scala (valore numerico)","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.reference":"Riferimento a un oggetto",
     cf_object_type:"Tipo di oggetto di destinazione", cf_ref_none:"— (nessuno)", cf_ref_add:"+ aggiungi un'istanza…", cf_ref_create:"＋ crea", cf_ref_remove:"Rimuovi",
     cf_ref_notype:"Nessun tipo di oggetto definito (Impostazioni › Tipi di oggetto).", cf_err_ref_type:"Scegli il tipo di oggetto di destinazione.",
     cf_ref_self_warn:"Auto-riferimento: un oggetto di questo tipo ne riferisce un altro (attenzione ai cicli).",
@@ -2509,10 +2509,10 @@ const I18N = {
     "tagpal.vives":"Vivaci","tagpal.pastel":"Pastello","tagpal.office":"Office","tagpal.daltonien":"Adatta ai daltonici","tagpal.chaudes":"Calde","tagpal.froides":"Fredde","tagpal.gris":"Scala di grigi","tagpal.bleu_vert":"Blu a Verde","tagpal.jaune_orange":"Giallo ad Arancione","tagpal.rouge_violet":"Rosso a Viola","tagpalgrp.qualitative":"Qualitative","tagpalgrp.sequential":"Sequenziali","cf_tagpal_custom_hint":"Colori liberi (nessuna assegnazione automatica)",
     cf_label:"Etichetta", cf_help:"Aiuto", cf_description:"Descrizione", md_preview:"Anteprima", md_edit:"Modifica", md_supports:"Markdown supportato", md_dblclick_edit:"Doppio clic per modificare",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
-    cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_label:"Etichetta",
+    cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_value:"Valore", cf_item_label:"Etichetta",
     cf_item_desc_ph:"Descrizione (documentazione nel rapporto)",
     cf_err_code:"Il codice è obbligatorio.", cf_err_code_dup:"Questo codice di campo esiste già.", cf_err_label:"È richiesta un'etichetta (almeno una lingua).",
-    cf_err_items:"Un elenco deve contenere almeno un elemento.", cf_err_item_code:"Ogni elemento deve avere un codice univoco.", cf_err_minmax:"Il minimo non può superare il massimo.",
+    cf_err_items:"Un elenco deve contenere almeno un elemento.", cf_err_item_code:"Ogni elemento deve avere un codice univoco.", cf_err_scale_dup:"Ogni livello della scala deve avere un valore numerico univoco.", cf_err_minmax:"Il minimo non può superare il massimo.",
     cf_del_confirm:"Eliminare questo campo personalizzato?",
     cf_del_confirm_used:"Questo campo contiene {0} valore/i già inserito/i. Eliminandolo, questi valori non saranno più visualizzati né utilizzati (restano nel file ma diventano inaccessibili). Eliminare comunque?",
     cf_target_warn:"Questo campo è associato a « {1} » e contiene {0} valore/i inserito/i. Cambiare la sua destinazione in « {2} » renderà tali valori inaccessibili. Continuare?",
@@ -3951,6 +3951,7 @@ function statValueKeys(v,f){
   return [String(v)];}
 function statValueLabel(f,k){if(f.type==="boolean")return k==="true"?t("cf_yes"):t("cf_no");
   if(f.type==="reference"){const o=objectById(k);return o?objectLabel(o):k;}   // libellé d'instance, repli id
+  if(f.type==="scale"){const it=(f.items||[]).find(x=>String(x.value)===k);return it?cfItemLabel(it):k;}
   const it=(f.items||[]).find(x=>x.code===k);return it?cfItemLabel(it):k;}
 function statCustomKeys(it,f){return statValueKeys((it.custom||{})[f.code],f);}
 function statCustomLabel(f,k){return statValueLabel(f,k);}
@@ -4077,7 +4078,7 @@ function radarMetricLabel(metric){return t({avg:"radar_metric_avg",max:"radar_me
 
 function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
 function critBands(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>a.score_max-b.score_max);}
-function radarDimFields(){return customFieldsFor("risk").filter(f=>["select","checklist","tags","reference"].indexOf(f.type)>=0);}
+function radarDimFields(){return customFieldsFor("risk").filter(f=>["select","checklist","tags","reference","scale"].indexOf(f.type)>=0);}
 /* Dimension produisant le plus d'axes (pour l'aperçu des paramètres) : catégorie ou champ perso. */
 function radarBestDim(){
   const R=visibleRisks();let best="cat",n=radarAxes(R,"cat").length;
@@ -4090,7 +4091,7 @@ function radarKeysOf(r,dim){
   if(dim==="cat"){const c=(r.category||"").trim();return [c||"__unset__"];}
   const f=radarFieldOf(dim);if(!f)return ["__unset__"];
   const v=(r.custom||{})[f.code];
-  if(f.type==="select"||(f.type==="reference"&&!f.multiple))return [(v!=null&&v!=="")?String(v):"__unset__"];
+  if(f.type==="select"||f.type==="scale"||(f.type==="reference"&&!f.multiple))return [(v!=null&&v!=="")?String(v):"__unset__"];
   const arr=Array.isArray(v)?v.filter(x=>x!=null&&x!==""):[];
   return arr.length?arr.map(String):["__unset__"];
 }
@@ -4099,6 +4100,7 @@ function radarAxisLabel(dim,key){
   if(dim==="cat")return key;
   const f=radarFieldOf(dim);if(!f)return key;
   if(f.type==="reference"){const o=objectById(key);return o?objectLabel(o):key;}
+  if(f.type==="scale"){const it=(f.items||[]).find(i=>String(i.value)===key);return it?cfItemLabel(it):key;}
   const it=(f.items||[]).find(i=>i.code===key);return it?cfItemLabel(it):key;
 }
 /* Axes du radar. `includeEmpty` (défaut) affiche TOUS les axes possibles — toutes les valeurs
@@ -4146,7 +4148,7 @@ function radarAxisRisks(risks,dim,axes){
 function radarAxisDesc(dim,key){
   if(dim==="cat"||key==="__unset__")return "";
   const f=radarFieldOf(dim);if(!f)return "";
-  const it=(f.items||[]).find(i=>i.code===key);
+  const it=(f.items||[]).find(i=>f.type==="scale"?String(i.value)===key:i.code===key);
   return it?cfItemDesc(it):"";
 }
 function radarDescTipHTML(label,desc){return '<b>'+esc(label)+'</b><div style="white-space:normal;max-width:260px;margin-top:2px">'+esc(desc)+'</div>';}
@@ -6366,7 +6368,7 @@ const listState={
    fois le registre, les matrices et les liens. Le filtrage propagé (base + champs perso) est
    enregistré dans le fichier (extensions.display.filters) et restauré à la réouverture.
    ============================================================ */
-const CF_CLOSED=["select","checklist","tags","boolean"];   // types à valeurs énumérables
+const CF_CLOSED=["select","checklist","tags","boolean","scale"];   // types à valeurs énumérables
 function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
 /* L'option « utilisable comme filtre » a-t-elle un sens pour ce champ ?
    - le type doit être à valeurs fermées, seul à pouvoir alimenter une liste de choix ;
@@ -6435,6 +6437,7 @@ function filtersApplyFromFile(){
 function cfFilterChoices(f){
   if(f.type==="boolean")return [["true",t("cf_yes")],["false",t("cf_no")]];
   if(f.type==="reference")return objectsOfType(f.object_type).map(o=>[o.id,objectLabel(o)]);
+  if(f.type==="scale")return (f.items||[]).map(it=>[String(it.value),cfItemLabel(it)]);
   return (f.items||[]).map(it=>[it.code,cfItemLabel(it)]);
 }
 /* Une entité passe-t-elle les filtres de sa cible ?
@@ -10773,7 +10776,7 @@ function renderSettings(){
 /* ============================================================
    CHAMPS PERSONNALISÉS — éditeur de définitions
    ============================================================ */
-const CF_TYPES=["boolean","integer","float","date","text","textarea","url","email","tel","regexp","select","checklist","tags","progress","reference"];
+const CF_TYPES=["boolean","integer","float","date","text","textarea","url","email","tel","regexp","select","checklist","tags","scale","progress","reference"];
 /* Formats des types contrôlés. Le téléphone reste permissif (usages FR et internationaux). */
 const CF_RE_URL=/^https?:\/\/[^\s]+$/i, CF_RE_EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, CF_RE_TEL=/^\+?[0-9][0-9\s().\-]{5,}$/;
 /* Motif d'un champ « regexp » : correspondance sur la totalité de la valeur.
@@ -10791,10 +10794,12 @@ const CF_TARGETS=["analysis","risk","cotation","measure","link"];
 function cfLabel(f){const L=f&&f.label||{};return L[lang]||(f&&f.code)||"";}
 function cfTypeLabel(ty){return t("cft."+ty);}
 function cfTargetLabel(tg){return t("cf_t."+tg);}
-function cfItemLabel(it){const L=it&&it.label||{};return L[lang]||(it&&it.code)||"";}
+function cfItemLabel(it){const L=it&&it.label||{};return L[lang]||(it&&it.code)||(it&&it.value!=null?String(it.value):"")||"";}
 /* Description d'un item (langue courante, sinon vide) — pour la documentation du rapport. */
 function cfItemDesc(it){const D=it&&it.description||{};return D[lang]||"";}
-function cfNeedsItems(ty){return ty==="select"||ty==="checklist"||ty==="tags";}
+function cfNeedsItems(ty){return ty==="select"||ty==="checklist"||ty==="tags"||ty==="scale";}
+/* Échelle : items dont l'identité est la valeur numérique (pas de code), avec couleur. */
+function cfIsScale(ty){return ty==="scale";}
 function cfBoundKind(ty){ // 'num' | 'date' | 'len' | 'items' | null
   if(ty==="integer"||ty==="float")return "num";
   if(ty==="date")return "date";
@@ -10854,17 +10859,21 @@ function cfBoundsHTML(f){
   return '<div class="grid2"><label class="field"><span class="lab">'+esc(lo)+'</span>'+inp("cfMin",f.min)+'</label>'+
     '<label class="field"><span class="lab">'+esc(hi)+'</span>'+inp("cfMax",f.max)+'</label></div>';
 }
-function cfItemsRowsHTML(items,withColor){
+function cfItemsRowsHTML(items,withColor,isScale){
   return items.map((it,i)=>'<div class="cf-item" data-cfi="'+i+'">'+
     '<div class="inline">'+
-      '<input placeholder="'+esc(t("cf_item_code"))+'" data-if="code" value="'+esc(it.code||"")+'" style="max-width:120px">'+
+      (isScale
+        ? '<input type="number" step="any" placeholder="'+esc(t("cf_item_value"))+'" data-if="val" value="'+esc(it.value!=null?it.value:"")+'" style="max-width:90px">'
+        : '<input placeholder="'+esc(t("cf_item_code"))+'" data-if="code" value="'+esc(it.code||"")+'" style="max-width:120px">')+
       '<input placeholder="'+esc(t("cf_item_label"))+'" data-if="lab" value="'+esc((it.label&&it.label[lang])||"")+'">'+
       (withColor?'<input type="color" data-if="color" title="'+esc(t("cf_item_color"))+'" value="'+esc(it.color||"#4c7dff")+'" style="width:42px;flex:none;padding:2px;height:34px">':'')+
-      '<button class="btn icon sm" style="flex:none" data-cfi-del="'+i+'" type="button"'+a11y("a11y_del_item",(it.label&&it.label[lang])||it.code||(i+1))+'>🗑</button>'+
+      '<button class="btn icon sm" style="flex:none" data-cfi-del="'+i+'" type="button"'+a11y("a11y_del_item",(it.label&&it.label[lang])||it.code||(it.value!=null?it.value:i+1))+'>🗑</button>'+
     '</div>'+
     '<input class="cf-item-desc" placeholder="'+esc(t("cf_item_desc_ph"))+'" data-if="desc" value="'+esc((it.description&&it.description[lang])||"")+'">'+
     '</div>').join("");
 }
+/* Rendu des lignes d'items adapté au type courant (couleur pour tags/échelle, valeur pour échelle). */
+function cfItemsRows(f){return cfItemsRowsHTML(f.items||[],f.type==="tags"||f.type==="scale",f.type==="scale");}
 // Options spécifiques à un type dans la modale de définition (multiple pour tags, couleur pour progress).
 function cfTypeOptsHTML(f){
   if(f.type==="regexp")return '<label class="field full"><span class="lab">'+esc(t("cf_pattern"))+'</span>'+
@@ -10912,13 +10921,15 @@ function openCustomFieldModal(idx){
     '<div id="cfBounds">'+cfBoundsHTML(f)+'</div>'+
     '<div class="grid2" id="cfTypeOpts">'+cfTypeOptsHTML(f)+'</div>'+
     '<div id="cfItemsWrap" style="display:'+(cfNeedsItems(f.type)?"block":"none")+'">'+
-      '<h3>'+esc(t("cf_items"))+'</h3><div id="cfItems">'+cfItemsRowsHTML(f.items,f.type==="tags")+'</div>'+
+      '<h3>'+esc(t("cf_items"))+'</h3><div id="cfItems">'+cfItemsRows(f)+'</div>'+
       '<button class="btn ghost sm" id="cfItemAdd" type="button">'+esc(t("cf_item_add"))+'</button>'+
     '</div>';
   // lecture des items depuis le DOM (pour ne pas perdre les saisies au re-render)
   const syncItems=()=>{[...document.querySelectorAll('#cfItems [data-cfi]')].forEach(r=>{
-    const i=+r.dataset.cfi, it=f.items[i]||(f.items[i]={code:"",label:{}});
-    it.code=r.querySelector('[data-if=code]').value.trim();it.label=it.label||{};
+    const i=+r.dataset.cfi, it=f.items[i]||(f.items[i]={label:{}});
+    it.label=it.label||{};
+    if(f.type==="scale"){const ve=r.querySelector('[data-if=val]'),raw=ve?ve.value.trim():"";it.value=(raw===""?null:Number(raw));}
+    else{it.code=r.querySelector('[data-if=code]').value.trim();}
     const v=r.querySelector('[data-if=lab]').value.trim();
     if(v)it.label[lang]=v;else delete it.label[lang];
     const cv=r.querySelector('[data-if=color]');if(cv)it.color=cv.value;
@@ -10956,7 +10967,14 @@ function openCustomFieldModal(idx){
       if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){modalMsg(t("cf_err_colors"));return false;}obj.colors=cols;}
       const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
     if(type==="reference"){const oty=val("cfObjectType");if(!oty){modalMsg(t("cf_err_ref_type"));return false;}obj.object_type=oty;const m=document.getElementById("cfMultiple");obj.multiple=!!(m&&m.checked);}
-    if(cfNeedsItems(type)){
+    if(type==="scale"){
+      syncItems();const items=f.items.filter(it=>it.value!=null&&!isNaN(it.value));
+      if(!items.length){modalMsg(t("cf_err_items"));return false;}
+      const vals=new Set();
+      for(const it of items){if(vals.has(it.value)){modalMsg(t("cf_err_scale_dup"));return false;}vals.add(it.value);}
+      obj.items=items.map(it=>{const o={value:it.value,label:Object.assign({},it.label),color:it.color||"#4c7dff"};
+        if(it.description&&Object.keys(it.description).length)o.description=Object.assign({},it.description);return o;});
+    }else if(cfNeedsItems(type)){
       syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
       if(!items.length){modalMsg(t("cf_err_items"));return false;}
       const codes=new Set();
@@ -10995,7 +11013,7 @@ function openCustomFieldModal(idx){
     document.getElementById("cfBounds").innerHTML=cfBoundsHTML(f);
     document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
     const w=document.getElementById("cfItemsWrap");w.style.display=cfNeedsItems(f.type)?"block":"none";
-    document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");
+    document.getElementById("cfItems").innerHTML=cfItemsRows(f);
     cfSyncFilterOption();};
   /* L'option de filtrage suit le type ET la cible : on la masque et on la décoche dès
      qu'elle perd son sens, pour ne pas enregistrer un réglage sans effet. */
@@ -11015,8 +11033,8 @@ function openCustomFieldModal(idx){
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
   document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};
     if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}
-    f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
-  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
+    f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
+  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
 }
 
 /* ============================================================
@@ -11117,12 +11135,14 @@ function openAttrModal(idx,list,onSave,selfType){
     '<div id="cfBounds">'+cfBoundsHTML(f)+'</div>'+
     '<div class="grid2" id="cfTypeOpts">'+cfTypeOptsHTML(f)+'</div>'+
     '<div id="cfItemsWrap" style="display:'+(cfNeedsItems(f.type)?"block":"none")+'">'+
-      '<h3>'+esc(t("cf_items"))+'</h3><div id="cfItems">'+cfItemsRowsHTML(f.items,f.type==="tags")+'</div>'+
+      '<h3>'+esc(t("cf_items"))+'</h3><div id="cfItems">'+cfItemsRows(f)+'</div>'+
       '<button class="btn ghost sm" id="cfItemAdd" type="button">'+esc(t("cf_item_add"))+'</button>'+
     '</div>';
   const syncItems=()=>{[...document.querySelectorAll('#cfItems [data-cfi]')].forEach(r=>{
-    const i=+r.dataset.cfi, it=f.items[i]||(f.items[i]={code:"",label:{}});
-    it.code=r.querySelector('[data-if=code]').value.trim();it.label=it.label||{};
+    const i=+r.dataset.cfi, it=f.items[i]||(f.items[i]={label:{}});
+    it.label=it.label||{};
+    if(f.type==="scale"){const ve=r.querySelector('[data-if=val]'),raw=ve?ve.value.trim():"";it.value=(raw===""?null:Number(raw));}
+    else{it.code=r.querySelector('[data-if=code]').value.trim();}
     const v=r.querySelector('[data-if=lab]').value.trim();if(v)it.label[lang]=v;else delete it.label[lang];
     const cv=r.querySelector('[data-if=color]');if(cv)it.color=cv.value;
     const dv=r.querySelector('[data-if=desc]');if(dv){it.description=it.description||{};const d=dv.value.trim();if(d)it.description[lang]=d;else delete it.description[lang];}});};
@@ -11145,7 +11165,11 @@ function openAttrModal(idx,list,onSave,selfType){
       if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
       if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){showMsg(t("cf_err_colors"));return;}obj.colors=cols;}const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
       if(type==="reference"){const oty=val("cfObjectType");if(!oty){showMsg(t("cf_err_ref_type"));return;}obj.object_type=oty;const m=document.getElementById("cfMultiple");obj.multiple=!!(m&&m.checked);if(selfType&&oty===selfType)toast(t("cf_ref_self_warn"));}
-      if(cfNeedsItems(type)){syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
+      if(type==="scale"){syncItems();const items=f.items.filter(it=>it.value!=null&&!isNaN(it.value));
+        if(!items.length){showMsg(t("cf_err_items"));return;}const vals=new Set();
+        for(const it of items){if(vals.has(it.value)){showMsg(t("cf_err_scale_dup"));return;}vals.add(it.value);}
+        obj.items=items.map(it=>{const o={value:it.value,label:Object.assign({},it.label),color:it.color||"#4c7dff"};if(it.description&&Object.keys(it.description).length)o.description=Object.assign({},it.description);return o;});}
+      else if(cfNeedsItems(type)){syncItems();const items=f.items.filter(it=>it.code||Object.keys(it.label||{}).length);
         if(!items.length){showMsg(t("cf_err_items"));return;}const codes=new Set();
         for(const it of items){if(!it.code||codes.has(it.code)){showMsg(t("cf_err_item_code"));return;}codes.add(it.code);}
         obj.items=items.map(it=>{const o={code:it.code,label:Object.assign({},it.label)};if(type==="tags")o.color=it.color||"#4c7dff";if(it.description&&Object.keys(it.description).length)o.description=Object.assign({},it.description);return o;});}
@@ -11159,11 +11183,11 @@ function openAttrModal(idx,list,onSave,selfType){
     document.getElementById("cfBounds").innerHTML=cfBoundsHTML(f);
     document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
     document.getElementById("cfItemsWrap").style.display=cfNeedsItems(f.type)?"block":"none";
-    document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");};
+    document.getElementById("cfItems").innerHTML=cfItemsRows(f);};
   typeSel.addEventListener("change",refreshType);
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
-  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
-  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRowsHTML(f.items,f.type==="tags");});
+  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
+  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
 }
 document.getElementById("btnAddOT").addEventListener("click",()=>openObjectTypeModal(null));
 document.getElementById("otTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const list=objectTypes();
@@ -11255,6 +11279,7 @@ function cfDisplay(f,v){
   if(v===undefined||v===null||v==="")return "";
   if(f.type==="boolean")return v?t("cf_yes"):t("cf_no");
   if(f.type==="select"){const it=(f.items||[]).find(x=>x.code===v);return it?cfItemLabel(it):String(v);}
+  if(f.type==="scale"){const it=(f.items||[]).find(x=>String(x.value)===String(v));return it?cfItemLabel(it):String(v);}
   if(f.type==="checklist"||f.type==="tags"){const arr=Array.isArray(v)?v:[];return arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code);return it?cfItemLabel(it):code;}).join(", ");}
   if(f.type==="progress")return Math.max(0,Math.min(100,Math.round(+v||0)))+" %";
   if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];return arr.map(id=>{const o=objectById(id);return o?objectLabel(o):id;}).join(", ");}
@@ -11408,6 +11433,9 @@ function cfDisplayHTML(f,v,rich){
   if(f.type==="tags"){const arr=Array.isArray(v)?v:[];
     return '<span class="cf-chips">'+arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code),col=(it&&it.color)||"#888",dsc=it?cfItemDesc(it):"";
       return '<span class="cf-chip" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'"'+(dsc?' data-cfdesc="'+esc(dsc)+'"':'')+'>'+esc(it?cfItemLabel(it):code)+'</span>';}).join("")+'</span>';}
+  if(f.type==="scale"){const it=(f.items||[]).find(x=>String(x.value)===String(v)),lbl=it?cfItemLabel(it):String(v),dsc=it?cfItemDesc(it):"";
+    if(it&&it.color){const col=it.color;return '<span class="cf-chips"><span class="cf-chip" style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'"'+(dsc?' data-cfdesc="'+esc(dsc)+'"':'')+'>'+esc(lbl)+'</span></span>';}
+    return esc(lbl);}
   if(f.type==="progress"){const pv=Math.max(0,Math.min(100,Math.round(+v||0)));
     return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
   if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];
@@ -11498,6 +11526,7 @@ function cfControlHTML(f,value){
     case "regexp": c='<input type="text" data-cfv value="'+esc(value||"")+'"'+(f.pattern?' title="'+esc(f.pattern)+'"':"")+'>';break;
     case "textarea": full=true;c='<textarea data-cfv'+(f.max!=null?' maxlength="'+f.max+'"':"")+'>'+esc(value||"")+'</textarea>';break;
     case "select": c='<select data-cfv><option value="">—</option>'+(f.items||[]).map(it=>'<option value="'+esc(it.code)+'"'+(value===it.code?" selected":"")+'>'+esc(cfItemLabel(it))+'</option>').join("")+'</select>';break;
+    case "scale": c='<select data-cfv><option value="">—</option>'+(f.items||[]).map(it=>'<option value="'+esc(it.value)+'"'+(String(value)===String(it.value)?" selected":"")+'>'+esc(cfItemLabel(it))+(it.value!=null?' ('+esc(it.value)+')':'')+'</option>').join("")+'</select>';break;
     case "checklist":{full=true;const vals=Array.isArray(value)?value:[];
       c='<div style="display:flex;flex-direction:column;gap:4px;padding-top:4px">'+(f.items||[]).map(it=>'<label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" data-cfchk value="'+esc(it.code)+'" style="width:15px;height:15px;flex:none"'+(vals.includes(it.code)?" checked":"")+'> '+esc(cfItemLabel(it))+'</label>').join("")+'</div>';break;}
     case "tags":{full=true;const vals=Array.isArray(value)?value:[];
@@ -11629,6 +11658,7 @@ function cfReadValue(cont,f){
   if(v==="")return undefined;
   if(f.type==="integer"||f.type==="progress")return parseInt(v,10);
   if(f.type==="float")return parseFloat(v);
+  if(f.type==="scale")return Number(v);   // échelle : on stocke la valeur numérique du niveau
   return v;
 }
 function cfPresent(f,v){

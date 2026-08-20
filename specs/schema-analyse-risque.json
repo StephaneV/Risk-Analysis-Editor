@@ -301,7 +301,7 @@
         "label": { "$ref": "#/$defs/i18nText" },
         "help": { "$ref": "#/$defs/i18nText", "description": "Aide courte multilingue, affichée en infobulle sur le libellé." },
         "description": { "$ref": "#/$defs/i18nText", "description": "Description longue multilingue du champ, affichée sous le contrôle de saisie." },
-        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "progress", "reference"] },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "scale", "progress", "reference"] },
         "object_type": { "type": "string", "description": "Type reference uniquement : code du type d'objet ciblé (object_types[].code). La valeur du champ (dans « custom ») est alors l'identifiant d'une instance (objects[].id), ou un tableau d'identifiants si « multiple »." },
         "pattern": { "type": "string", "description": "Type regexp : expression régulière que la valeur doit respecter en totalité." },
         "required": { "type": "boolean" },
@@ -319,20 +319,21 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["code", "label"],
+            "required": ["label"],
             "additionalProperties": true,
             "properties": {
-              "code": { "type": "string", "minLength": 1 },
+              "code": { "type": "string", "minLength": 1, "description": "Identité de l'item (types select / checklist / tags). Absent pour le type scale (l'identité est alors « value »)." },
+              "value": { "type": "number", "description": "Type scale uniquement : valeur numérique du niveau — identité (unique dans le champ), stockée dans « custom », exploitée en calculs/stats/radar." },
               "label": { "$ref": "#/$defs/i18nText" },
               "description": { "$ref": "#/$defs/i18nText", "description": "Définition de la valeur (multilingue), reprise dans la section « Référentiels » du rapport." },
-              "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "description": "Type tags : couleur de la puce." }
+              "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "description": "Types tags et scale : couleur de la puce." }
             }
           }
         }
       },
       "allOf": [
         {
-          "if": { "properties": { "type": { "enum": ["select", "checklist", "tags"] } }, "required": ["type"] },
+          "if": { "properties": { "type": { "enum": ["select", "checklist", "tags", "scale"] } }, "required": ["type"] },
           "then": { "required": ["items"] }
         },
         {
@@ -458,7 +459,7 @@
         "label": { "$ref": "#/$defs/i18nText" },
         "help": { "$ref": "#/$defs/i18nText" },
         "description": { "$ref": "#/$defs/i18nText" },
-        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "progress", "reference"] },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "scale", "progress", "reference"] },
         "object_type": { "type": "string", "description": "Type reference uniquement : code du type d'objet ciblé (peut être le type courant — auto-référence). La valeur (dans objects[].values) est un identifiant d'instance, ou un tableau si « multiple »." },
         "pattern": { "type": "string" },
         "required": { "type": "boolean" },
@@ -475,10 +476,11 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["code", "label"],
+            "required": ["label"],
             "additionalProperties": true,
             "properties": {
               "code": { "type": "string", "minLength": 1 },
+              "value": { "type": "number", "description": "Type scale uniquement : valeur numérique du niveau (identité, unique)." },
               "label": { "$ref": "#/$defs/i18nText" },
               "description": { "$ref": "#/$defs/i18nText" },
               "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }
@@ -488,7 +490,7 @@
       },
       "allOf": [
         {
-          "if": { "properties": { "type": { "enum": ["select", "checklist", "tags"] } }, "required": ["type"] },
+          "if": { "properties": { "type": { "enum": ["select", "checklist", "tags", "scale"] } }, "required": ["type"] },
           "then": { "required": ["items"] }
         },
         {
