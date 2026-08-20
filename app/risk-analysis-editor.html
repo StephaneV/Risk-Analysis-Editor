@@ -566,6 +566,8 @@
   .cfp-chip.field .k{color:#2b4b9e} .cfp-chip.der .k{color:#0b7a5b} .cfp-chip.fn .k{color:#7a3ea6}
   .cfp-chip.op{font-family:ui-monospace,Consolas,monospace;min-width:28px;justify-content:center}
   .cfp-none{padding:8px;color:var(--muted);font-size:12px}
+  .cf-computed-ro{padding:7px 9px;border:1px dashed var(--border);border-radius:8px;background:var(--panel);font-size:13px;min-height:34px;display:flex;align-items:center}
+  .cf-calc-err{font-weight:600}
   .cf-progress-edit input[type=range]{flex:1}
   .cf-pal-preview{height:12px;border-radius:20px;border:1px solid var(--border);margin-top:2px}
   .cf-desc{margin-top:4px}
@@ -1787,7 +1789,7 @@ const I18N = {
     cf_calc_decimals:"Décimales", cf_calc_unit:"Unité (suffixe)", cf_calc_derived_hint:"Champ dérivé, non saisissable : recalculé à l'affichage.",
     cf_calc_alert:"Alerte (hors plage)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Colore la valeur si elle sort de [min, max] (une seule borne suffit).",
     cf_calc_empty:"L'expression est obligatoire.", cf_calc_bad:"Expression invalide : {0}", cf_calc_ok:"Expression valide.", cf_calc_cycle:"Référence circulaire entre champs calculés.",
-    cf_pick_fields:"Champs", cf_pick_derived:"Dérivées", cf_pick_funcs:"Fonctions", cf_pick_ops:"Opérateurs", cf_pick_filter:"filtrer…", cf_pick_no_field:"Aucun autre champ sur cette cible.",
+    cf_pick_fields:"Champs perso", cf_pick_derived:"Champs de base", cf_pick_funcs:"Fonctions", cf_pick_ops:"Opérateurs", cf_pick_filter:"filtrer…", cf_pick_no_field:"Aucun autre champ sur cette cible.", cf_pick_score:"Score", cf_pick_crit:"Criticité",
     cf_del_confirm:"Supprimer ce champ personnalisé ?",
     cf_del_confirm_used:"Ce champ contient {0} valeur(s) déjà saisie(s). En le supprimant, ces valeurs ne seront plus affichées ni exploitées (elles subsistent dans le fichier mais deviennent inaccessibles). Supprimer quand même ?",
     cf_target_warn:"Ce champ est rattaché à « {1} » et contient {0} valeur(s) saisie(s). Changer sa cible pour « {2} » rendra ces valeurs inaccessibles. Continuer ?",
@@ -2166,7 +2168,7 @@ const I18N = {
     cf_calc_decimals:"Decimals", cf_calc_unit:"Unit (suffix)", cf_calc_derived_hint:"Derived field, not editable: recomputed on display.",
     cf_calc_alert:"Alert (out of range)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Highlights the value when it falls outside [min, max] (one bound is enough).",
     cf_calc_empty:"The expression is required.", cf_calc_bad:"Invalid expression: {0}", cf_calc_ok:"Valid expression.", cf_calc_cycle:"Circular reference between computed fields.",
-    cf_pick_fields:"Fields", cf_pick_derived:"Derived", cf_pick_funcs:"Functions", cf_pick_ops:"Operators", cf_pick_filter:"filter…", cf_pick_no_field:"No other field on this target.",
+    cf_pick_fields:"Custom fields", cf_pick_derived:"Base fields", cf_pick_funcs:"Functions", cf_pick_ops:"Operators", cf_pick_filter:"filter…", cf_pick_no_field:"No other field on this target.", cf_pick_score:"Score", cf_pick_crit:"Criticality",
     cf_del_confirm:"Delete this custom field?",
     cf_del_confirm_used:"This field holds {0} entered value(s). Deleting it will hide these values from view and use (they remain in the file but become inaccessible). Delete anyway?",
     cf_target_warn:"This field is attached to “{1}” and holds {0} entered value(s). Changing its target to “{2}” will make those values inaccessible. Continue?",
@@ -2545,7 +2547,7 @@ const I18N = {
     cf_calc_decimals:"Decimali", cf_calc_unit:"Unità (suffisso)", cf_calc_derived_hint:"Campo derivato, non modificabile: ricalcolato alla visualizzazione.",
     cf_calc_alert:"Avviso (fuori intervallo)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Evidenzia il valore quando esce da [min, max] (basta un limite).",
     cf_calc_empty:"L'espressione è obbligatoria.", cf_calc_bad:"Espressione non valida: {0}", cf_calc_ok:"Espressione valida.", cf_calc_cycle:"Riferimento circolare tra campi calcolati.",
-    cf_pick_fields:"Campi", cf_pick_derived:"Derivate", cf_pick_funcs:"Funzioni", cf_pick_ops:"Operatori", cf_pick_filter:"filtra…", cf_pick_no_field:"Nessun altro campo su questa destinazione.",
+    cf_pick_fields:"Campi pers.", cf_pick_derived:"Campi di base", cf_pick_funcs:"Funzioni", cf_pick_ops:"Operatori", cf_pick_filter:"filtra…", cf_pick_no_field:"Nessun altro campo su questa destinazione.", cf_pick_score:"Punteggio", cf_pick_crit:"Criticità",
     cf_del_confirm:"Eliminare questo campo personalizzato?",
     cf_del_confirm_used:"Questo campo contiene {0} valore/i già inserito/i. Eliminandolo, questi valori non saranno più visualizzati né utilizzati (restano nel file ma diventano inaccessibili). Eliminare comunque?",
     cf_target_warn:"Questo campo è associato a « {1} » e contiene {0} valore/i inserito/i. Cambiare la sua destinazione in « {2} » renderà tali valori inaccessibili. Continuare?",
@@ -11047,18 +11049,32 @@ function calcTypeCf(f,raw){
     default:return String(raw);   // text, select (code), url, email, tel, regexp
   }
 }
-/* Résout un identifiant d'expression dans le contexte (target, entité). Jette pour un nom inconnu. */
-function calcResolveField(name,target,entity,stack){
+/* Résout un identifiant d'expression dans le contexte. `ctx` = chaîne (cible d'entité : risk/measure/
+   link/analysis) OU un type d'objet (attribut calculé : cf.<code> = autres attributs de l'instance,
+   pas de dérivées). Jette pour un nom inconnu. */
+function calcResolveField(name,ctx,entity,stack){
+  const isObj=ctx&&typeof ctx==="object";
   if(name.indexOf("cf.")===0){
-    const code=name.slice(3),f=customFieldByCode(code);
-    if(!f||f.target!==target)throw calcErr("Champ inconnu : cf."+code);
-    if(f.type==="computed"){const sub=cfComputedValue(f,target,entity,{stack});if(!sub.ok)throw calcErr("cf."+code+" : "+sub.error);return sub.type==="nil"?null:{t:sub.type,v:sub.value};}
+    const code=name.slice(3);
+    if(isObj){
+      const a=(ctx.attributes||[]).find(x=>x.code===code);
+      if(!a)throw calcErr("Champ inconnu : cf."+code);
+      if(a.type==="computed"){const sub=cfComputedValue(a,ctx,entity,{stack});if(!sub.ok)throw calcErr("cf."+code+" : "+sub.error);return sub.type==="nil"?null:{t:sub.type,v:sub.value};}
+      return calcTypeCf(a,(entity&&entity.values||{})[code]);
+    }
+    const f=customFieldByCode(code);
+    if(!f||f.target!==ctx)throw calcErr("Champ inconnu : cf."+code);
+    if(f.type==="computed"){const sub=cfComputedValue(f,ctx,entity,{stack});if(!sub.ok)throw calcErr("cf."+code+" : "+sub.error);return sub.type==="nil"?null:{t:sub.type,v:sub.value};}
     return calcTypeCf(f,(entity&&entity.custom||{})[code]);
   }
-  const num=v=>(v==null?null:v);
+  if(isObj){if(name==="id")return entity&&entity.id?String(entity.id):null;throw calcErr("Référence inconnue : "+name);}
+  const target=ctx,num=v=>(v==null?null:v),txt=v=>(v?String(v):null);
   if(target==="risk"){
     const ia=entity.initial_assessment||{},ra=residual(entity);
     switch(name){
+      case "id":return txt(entity.id);case "label":return txt(entity.label);
+      case "category":return txt(entity.category);case "owner":return txt(entity.owner);
+      case "description":return txt(entity.description);case "comment":return txt(entity.comment);
       case "probability_initial":return num(ia.probability);
       case "severity_initial":return num(ia.severity);
       case "probability_residual":return num(ra.probability);
@@ -11067,22 +11083,29 @@ function calcResolveField(name,target,entity,stack){
       case "score_residual":return scoreOf(ra.probability,ra.severity);
       case "criticality_initial":return critOfEval(ia).label;
       case "criticality_residual":return critOfEval(ra).label;
-      case "category":return entity.category?String(entity.category):null;
-      case "owner":return entity.owner?String(entity.owner):null;
     }
   }else if(target==="measure"){
     switch(name){
+      case "id":return txt(entity.id);case "label":return txt(entity.label);
+      case "description":return txt(entity.description);case "comment":return txt(entity.comment);
       case "due_date":return entity.due_date?{date:String(entity.due_date)}:null;
       case "cost":{const n=parseFloat(entity.cost);return isNaN(n)?(entity.cost?String(entity.cost):null):n;}
-      case "status":return entity.status?String(entity.status):null;
-      case "type":return entity.type?String(entity.type):null;
-      case "responsible":return entity.responsible?String(entity.responsible):null;
+      case "status":return txt(entity.status);
+      case "type":return txt(entity.type);
+      case "responsible":return txt(entity.responsible);
       case "overdue":return !!isOverdue(entity);
+    }
+  }else if(target==="cotation"){
+    const p=entity&&entity.probability,s=entity&&entity.severity;
+    switch(name){
+      case "probability":return num(p);case "severity":return num(s);
+      case "score":return (p!=null&&s!=null)?scoreOf(p,s):null;
+      case "criticality":return (p!=null&&s!=null)?critFor(scoreOf(p,s)).label:null;
     }
   }else if(target==="link"){
     switch(name){
-      case "risk_id":return entity.risk?String(entity.risk):null;
-      case "measure_id":return entity.measure?String(entity.measure):null;
+      case "risk_id":return txt(entity.risk);case "measure_id":return txt(entity.measure);
+      case "comment":return txt(entity.comment);
     }
   }
   throw calcErr("Référence inconnue : "+name);
@@ -11132,6 +11155,49 @@ function cfComputedDisplayHTML(f,target,entity){
   return col?'<span style="color:'+esc(col)+';font-weight:600">'+esc(txt)+'</span>':esc(txt);
 }
 function cfComputedDisplay(f,target,entity){const r=cfComputedValue(f,target,entity);return r.ok?cfComputedText(f,r):"#ERR";}
+
+/* ---- Aperçus lecture seule des champs calculés dans les formulaires (mis à jour en direct) ---- */
+/* Construit une entité « en cours d'édition » à partir des saisies de la modale (risque/mesure/lien). */
+function cfFormEntity(target){
+  const mb=document.getElementById("modalBody"),ent={custom:{}};
+  customFieldsFor(target).forEach(f=>{if(f.type==="computed")return;const cont=mb.querySelector('[data-cf="'+f.code+'"]');
+    if(!cont||cont.closest("#f_icustom")||cont.closest("#f_rcustom"))return;   // pas les cf de cotation
+    let v;try{v=cfReadValue(cont,f);}catch(e){}if(cfPresent(f,v))ent.custom[f.code]=v;});
+  const g=id=>{const el=document.getElementById(id);return el?el.value:null;};
+  if(target==="risk"){ent.id=g("f_id");ent.label=g("f_label");ent.description=g("f_desc");ent.comment=g("f_comment");
+    ent.initial_assessment={probability:+g("f_ip"),severity:+g("f_ig")};ent.residual_assessment={probability:+g("f_rp"),severity:+g("f_rg")};
+    const c=g("f_cat"),o=g("f_prop");if(c)ent.category=c;if(o)ent.owner=o;}
+  else if(target==="measure"){ent.id=g("f_id");ent.label=g("f_label");ent.description=g("f_desc");ent.comment=g("f_comment");
+    ent.status=g("f_status");ent.type=g("f_type");ent.responsible=g("f_resp");ent.due_date=g("f_due");ent.cost=g("f_cost");}
+  else if(target==="link"){ent.comment=g("l_comment");}
+  return ent;
+}
+/* Rafraîchit tous les aperçus [data-cf-computed] d'un formulaire d'entité + les blocs de cotation. */
+function cfComputedFormRefresh(){
+  const mb=document.getElementById("modalBody");if(!mb)return;
+  const previews=[...mb.querySelectorAll("[data-cf-computed]")].filter(el=>!el.closest("#f_icustom")&&!el.closest("#f_rcustom"));
+  if(previews.length){const first=customFieldByCode(previews[0].dataset.cfComputed);
+    if(first){const target=first.target,ent=cfFormEntity(target);
+      previews.forEach(el=>{const f=customFieldByCode(el.dataset.cfComputed);if(f&&f.target===target)el.innerHTML=cfComputedDisplayHTML(f,target,ent)||'<span class="muted">—</span>';});}}
+  // Cotation : chaque bloc (initial / résiduel) avec sa propre évaluation.
+  const gi=id=>{const el=document.getElementById(id);return el?+el.value:null;};
+  [["f_icustom","f_ip","f_ig"],["f_rcustom","f_rp","f_rg"]].forEach(([scope,pid,sid])=>{
+    const sc=document.getElementById(scope);if(!sc)return;
+    const prv=[...sc.querySelectorAll("[data-cf-computed]")];if(!prv.length)return;
+    const ent={probability:gi(pid),severity:gi(sid),custom:{}};
+    customFieldsFor("cotation").forEach(f=>{if(f.type==="computed")return;const cont=sc.querySelector('[data-cf="'+f.code+'"]');if(!cont)return;let v;try{v=cfReadValue(cont,f);}catch(e){}if(cfPresent(f,v))ent.custom[f.code]=v;});
+    prv.forEach(el=>{const f=customFieldsFor("cotation").find(x=>x.code===el.dataset.cfComputed);if(f)el.innerHTML=cfComputedDisplayHTML(f,"cotation",ent)||'<span class="muted">—</span>';});
+  });
+}
+/* Aperçus des attributs calculés dans la modale d'instance d'objet (contexte pushModal). */
+function cfObjComputedRefresh(root,ot){
+  if(!root)return;const prv=[...root.querySelectorAll("[data-cf-computed]")];if(!prv.length)return;
+  const inst={type:ot.code,values:{}};
+  (ot.attributes||[]).forEach(a=>{if(a.type==="computed")return;const cont=root.querySelector('[data-cf="'+a.code+'"]');if(!cont)return;let v;try{v=cfReadValue(cont,a);}catch(e){}if(cfPresent(a,v))inst.values[a.code]=v;});
+  prv.forEach(el=>{const a=(ot.attributes||[]).find(x=>x.code===el.dataset.cfComputed);if(a)el.innerHTML=cfComputedDisplayHTML(a,ot,inst)||'<span class="muted">—</span>';});
+}
+document.addEventListener("input",e=>{if(e.target&&e.target.closest&&e.target.closest("#modalBody"))cfComputedFormRefresh();});
+document.addEventListener("change",e=>{if(e.target&&e.target.closest&&e.target.closest("#modalBody"))cfComputedFormRefresh();});
 
 function renderCustomFields(){
   /* Toute modification de la liste des champs (ajout, édition, suppression, réordonnancement)
@@ -11233,10 +11299,10 @@ function cfTypeOptsHTML(f){
       '</div>'+
       '<label class="field full"><span class="hint">'+esc(t("cf_calc_expr_help"))+'</span></label>'+
       '<label class="field"><span class="lab">'+esc(t("cf_calc_result"))+'</span><select id="cfResultType">'+rts.map(r=>'<option value="'+r+'"'+((f.result_type||"number")===r?" selected":"")+'>'+esc(t("cf_calc_rt_"+r))+'</option>').join("")+'</select></label>'+
-      '<label class="field"><span class="lab">'+esc(t("cf_calc_decimals"))+'</span><input type="number" id="cfDecimals" min="0" max="10" step="1" value="'+(f.decimals!=null?esc(f.decimals):"")+'"></label>'+
-      '<label class="field"><span class="lab">'+esc(t("cf_calc_unit"))+'</span><input type="text" id="cfUnit" value="'+esc(f.unit||"")+'"></label>'+
+      '<label class="field" id="cfDecimalsWrap"><span class="lab">'+esc(t("cf_calc_decimals"))+'</span><input type="number" id="cfDecimals" min="0" max="10" step="1" value="'+(f.decimals!=null?esc(f.decimals):"")+'"></label>'+
+      '<label class="field" id="cfUnitWrap"><span class="lab">'+esc(t("cf_calc_unit"))+'</span><input type="text" id="cfUnit" value="'+esc(f.unit||"")+'"></label>'+
       '<label class="field"><span class="lab">&nbsp;</span><span class="hint">'+esc(t("cf_calc_derived_hint"))+'</span></label>'+
-      '<div class="field full"><span class="lab">'+esc(t("cf_calc_alert"))+'</span><div class="inline">'+
+      '<div class="field full" id="cfAlertWrap"><span class="lab">'+esc(t("cf_calc_alert"))+'</span><div class="inline">'+
           '<input type="text" id="cfAlertMin" placeholder="'+esc(t("cf_calc_alert_min"))+'" value="'+esc(al.min!=null?al.min:"")+'" style="max-width:130px">'+
           '<input type="text" id="cfAlertMax" placeholder="'+esc(t("cf_calc_alert_max"))+'" value="'+esc(al.max!=null?al.max:"")+'" style="max-width:130px">'+
           '<input type="color" id="cfAlertColor" title="'+esc(t("cf_item_color"))+'" value="'+esc(al.color||"#c0505a")+'" style="width:42px;flex:none;padding:2px;height:34px">'+
@@ -11254,7 +11320,7 @@ function openCustomFieldModal(idx){
       '<label class="field"><span class="lab">'+esc(t("cf_target"))+'</span><select id="cfTarget">'+opt(CF_TARGETS,f.target,cfTargetLabel)+'</select></label>'+
       '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="cfCode" aria-required="true" value="'+esc(f.code)+'"></label>'+
       '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="cfType">'+opt(CF_TYPES,f.type,cfTypeLabel)+'</select></label>'+
-      '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
+      '<label class="field" id="cfReqWrap"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
       /* Filtrable : réservé aux types à valeurs fermées, seuls à pouvoir alimenter une liste
          de choix. La ligne disparaît pour les autres types plutôt que d'être grisée sans
          explication (cf. cfSyncFilterable). */
@@ -11374,7 +11440,7 @@ function openCustomFieldModal(idx){
     document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
     const w=document.getElementById("cfItemsWrap");w.style.display=cfNeedsItems(f.type)?"block":"none";
     document.getElementById("cfItems").innerHTML=cfItemsRows(f);
-    cfSyncFilterOption();if(document.getElementById("cfCalcChips"))cfCalcPickerFill();};
+    cfSyncFilterOption();if(document.getElementById("cfCalcChips"))cfCalcPickerFill();cfCalcSyncEditor();};
   /* L'option de filtrage suit le type ET la cible : on la masque et on la décoche dès
      qu'elle perd son sens, pour ne pas enregistrer un réglage sans effet. */
   const cfSyncFilterOption=()=>{
@@ -11383,6 +11449,7 @@ function openCustomFieldModal(idx){
     if(fw)fw.style.display=ok?"block":"none";
     if(fc&&!ok)fc.checked=false;
     if(document.getElementById("cfCalcChips"))cfCalcPickerFill();   // picker : liste des champs suit la cible
+    cfCalcSyncEditor();
   };
   document.getElementById("cfTarget").addEventListener("change",cfSyncFilterOption);
   /* À l'ouverture aussi : un fichier peut porter filterable=true sur un champ où l'option
@@ -11487,8 +11554,8 @@ function openAttrModal(idx,list,onSave,selfType){
     '<div id="attrMsg" style="color:var(--danger);font-size:12.5px;min-height:1em"></div>'+
     '<div class="grid2">'+
       '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="cfCode" value="'+esc(f.code)+'"></label>'+
-      '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="cfType">'+opt(CF_TYPES.filter(x=>x!=="computed"),f.type,cfTypeLabel)+'</select></label>'+
-      '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
+      '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="cfType">'+opt(CF_TYPES,f.type,cfTypeLabel)+'</select></label>'+
+      '<label class="field" id="cfReqWrap"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="cfLab" value="'+esc(f.label[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_help"))+'</span><input id="cfHelpTxt" value="'+esc(f.help[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_description"))+'</span><textarea id="cfDescTxt">'+esc((f.description&&f.description[lang])||"")+'</textarea></label>'+
@@ -11526,6 +11593,16 @@ function openAttrModal(idx,list,onSave,selfType){
       if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
       if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){showMsg(t("cf_err_colors"));return;}obj.colors=cols;}const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
       if(type==="reference"){const oty=val("cfObjectType");if(!oty){showMsg(t("cf_err_ref_type"));return;}obj.object_type=oty;const m=document.getElementById("cfMultiple");obj.multiple=!!(m&&m.checked);if(selfType&&oty===selfType)toast(t("cf_ref_self_warn"));}
+      if(type==="computed"){
+        const expr=val("cfExpr").trim();if(!expr){showMsg(t("cf_calc_empty"));return;}
+        const chk=calcCheck(expr);if(!chk.ok){showMsg(t("cf_calc_bad",chk.error));return;}
+        obj.expression=expr;const rt=val("cfResultType");obj.result_type=["number","integer","date","text","boolean"].indexOf(rt)>=0?rt:"number";
+        const dc=val("cfDecimals").trim();if(dc!==""&&!isNaN(+dc))obj.decimals=Math.max(0,Math.min(10,parseInt(dc,10)));
+        const un=val("cfUnit").trim();if(un)obj.unit=un;
+        const amin=val("cfAlertMin").trim(),amax=val("cfAlertMax").trim(),acol=val("cfAlertColor");
+        if(amin!==""||amax!==""){const al={};if(amin!=="")al.min=isNaN(+amin)?amin:+amin;if(amax!=="")al.max=isNaN(+amax)?amax:+amax;if(acol)al.color=acol;obj.alert=al;}
+        obj.required=false;
+      }
       if(type==="scale"){syncItems();const items=f.items.filter(it=>it.value!=null&&!isNaN(it.value));
         if(!items.length){showMsg(t("cf_err_items"));return;}const vals=new Set();
         for(const it of items){if(vals.has(it.value)){showMsg(t("cf_err_scale_dup"));return;}vals.add(it.value);}
@@ -11539,13 +11616,17 @@ function openAttrModal(idx,list,onSave,selfType){
     }}
   ]);
   const typeSel=document.getElementById("cfType");
+  calcAttrCtx=list;   // picker : les jetons « Champs » = les autres attributs du type
   const refreshType=()=>{syncItems();f.type=typeSel.value;
     if(f.type==="tags"&&f.palette!=="custom"&&!TAG_PALETTES.hasOwnProperty(f.palette)){f.palette="vives";applyTagPalette(f);}
     document.getElementById("cfBounds").innerHTML=cfBoundsHTML(f);
     document.getElementById("cfTypeOpts").innerHTML=cfTypeOptsHTML(f);
     document.getElementById("cfItemsWrap").style.display=cfNeedsItems(f.type)?"block":"none";
-    document.getElementById("cfItems").innerHTML=cfItemsRows(f);};
+    document.getElementById("cfItems").innerHTML=cfItemsRows(f);
+    if(document.getElementById("cfCalcChips"))cfCalcPickerFill();cfCalcSyncEditor();};
   typeSel.addEventListener("change",refreshType);
+  if(document.getElementById("cfCalcChips"))cfCalcPickerFill();   // à l'ouverture (édition d'un attribut calculé)
+  cfCalcSyncEditor();
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
   document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
   document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
@@ -11579,7 +11660,7 @@ function renderObjects(){
         attrs.map(a=>'<th>'+esc(cfLabel(a))+'</th>').join("")+'<th></th></tr></thead><tbody>';
       insts.forEach(inst=>{
         h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
-          attrs.map(a=>'<td data-col="cf:'+esc(a.code)+'">'+cfDisplayHTML(a,(inst.values||{})[a.code],true)+'</td>').join("")+
+          attrs.map(a=>'<td data-col="cf:'+esc(a.code)+'">'+(a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):cfDisplayHTML(a,(inst.values||{})[a.code],true))+'</td>').join("")+
           '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
           '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
       });
@@ -11595,6 +11676,7 @@ function openObjectModal(typeCode,id,onSaved,focusCol){
   const isNew=id==null, existing=isNew?null:objectById(id);
   const inst=isNew?{type:typeCode,values:{}}:JSON.parse(JSON.stringify(existing||{type:typeCode,values:{}}));
   inst.values=inst.values||{}; const attrs=ot.attributes||[];
+  const editAttrs=attrs.filter(a=>a.type!=="computed");   // attributs saisissables (les calculés sont en lecture seule)
   const body='<div id="objMsg" style="color:var(--danger);font-size:12.5px;min-height:1em"></div>'+
     (attrs.length?attrs.map(a=>cfControlHTML(a,inst.values[a.code])).join(""):'<div class="muted">'+esc(t("obj_no_attr"))+'</div>');
   let root;
@@ -11602,7 +11684,7 @@ function openObjectModal(typeCode,id,onSaved,focusCol){
     {label:t("btn_cancel"),cls:"ghost",onClick:a=>a.close()},
     {label:isNew?t("btn_create"):t("btn_save_modal"),onClick:a=>{
       const values={};
-      for(const at of attrs){const cont=root.querySelector('[data-cf="'+at.code+'"]');const v=cfReadValue(cont,at);const err=cfValidate(at,v);if(err){root.querySelector("#objMsg").textContent=err;return;}if(cfPresent(at,v))values[at.code]=v;}
+      for(const at of editAttrs){const cont=root.querySelector('[data-cf="'+at.code+'"]');const v=cfReadValue(cont,at);const err=cfValidate(at,v);if(err){root.querySelector("#objMsg").textContent=err;return;}if(cfPresent(at,v))values[at.code]=v;}
       let savedId=id;
       if(isNew){savedId=newObjectId(typeCode);objectsAll().push({id:savedId,type:typeCode,values});}
       else{const o=objectById(id);if(o)o.values=values;}
@@ -11611,6 +11693,10 @@ function openObjectModal(typeCode,id,onSaved,focusCol){
     }}
   ]);
   root=[...document.querySelectorAll('body > .modal-bg')].pop();
+  // Aperçus des attributs calculés (lecture seule), mis à jour à chaque saisie.
+  root.addEventListener("input",()=>cfObjComputedRefresh(root,ot));
+  root.addEventListener("change",()=>cfObjComputedRefresh(root,ot));
+  cfObjComputedRefresh(root,ot);
   // Focus sur le contrôle de l'attribut correspondant à la cellule cliquée (col « cf:<code> »).
   if(focusCol)modalFocusCol(root,focusCol,{});
 }
@@ -11873,6 +11959,9 @@ function cfControlHTML(f,value){
   const lab='<span class="lab"'+(help?' title="'+esc(help)+'" style="cursor:help"':'')+'>'+esc(cfLabel(f))+req+'</span>';
   const minA=(f.min!=null?' min="'+esc(f.min)+'"':""), maxA=(f.max!=null?' max="'+esc(f.max)+'"':"");
   const data='data-cf="'+esc(f.code)+'" data-cft="'+f.type+'"';
+  if(f.type==="computed"){const dsc=cfDescription(f);   // dérivé : aperçu lecture seule (rempli par le rafraîchissement)
+    return '<div class="cf-field full" '+data+'>'+lab+'<div class="cf-computed-ro" data-cf-computed="'+esc(f.code)+'"><span class="muted">—</span></div>'+
+      (dsc?'<div class="hint cf-desc">'+esc(dsc)+'</div>':'')+'</div>';}
   if(f.type==="boolean")
     return '<div class="cf-field" '+data+'><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:18px"'+(help?' title="'+esc(help)+'"':'')+'><input type="checkbox" data-cfv'+(f.required?' aria-required="true"':'')+' style="width:16px;height:16px;flex:none"'+(value===true?" checked":"")+'> '+esc(cfLabel(f))+req+'</label></div>';
   let c="", full=false;
@@ -12003,9 +12092,9 @@ function modalSection(titre,contenu,open,compte,idCompte){
     '</summary>'+contenu+'</details>';
 }
 function cfFieldsHTML(target,values){
-  // Les champs calculés sont dérivés (non saisissables) : exclus des formulaires.
-  const fields=customFieldsFor(target).filter(f=>f.type!=="computed");if(!fields.length)return "";
+  const fields=customFieldsFor(target);if(!fields.length)return "";
   values=values||{};
+  // Les champs calculés sont affichés en lecture seule (dérivés, non saisis).
   return fields.map(f=>cfControlHTML(f,values[f.code])).join("");
 }
 function cfReadValue(cont,f){
@@ -12078,13 +12167,26 @@ document.addEventListener("input",e=>{if(!e.target||e.target.id!=="cfExpr")retur
 /* ---- Picker de l'éditeur de formule : jetons cliquables insérés au curseur ---- */
 const CALC_PICK_FUNCS=["SUM","AVERAGE","MEDIAN","MIN","MAX","COUNT","ROUND","ROUNDUP","ROUNDDOWN","INT","ABS","MOD","POWER","SQRT","IF","AND","OR","NOT","TODAY","DATE","YEAR","MONTH","DAY","EDATE","DATEDIF","CONCAT","LEN"];
 const CALC_PICK_OPS=["+","-","*","/","^","&","(",")",",","=","<>","<","<=",">",">="];
-function calcPickDerived(target){
-  if(target==="risk")return ["score_initial","score_residual","criticality_initial","criticality_residual","probability_initial","severity_initial","probability_residual","severity_residual","category","owner"];
-  if(target==="measure")return ["due_date","cost","status","type","responsible","overdue"];
-  if(target==="link")return ["risk_id","measure_id"];
+/* Champs de base + grandeurs dérivées d'une cible, pour le picker (mêmes noms que le résolveur). */
+function calcRefs(target){
+  if(target==="risk")return [
+    {k:"id",n:t("f_identifier")},{k:"label",n:t("th_risk")},{k:"category",n:t("th_category")},{k:"owner",n:t("f_owner")},
+    {k:"description",n:t("f_description")},{k:"comment",n:t("f_notes")},
+    {k:"probability_initial",n:t("th_initial")+" · P"},{k:"severity_initial",n:t("th_initial")+" · G"},
+    {k:"score_initial",n:t("th_initial")+" · "+t("cf_pick_score")},{k:"criticality_initial",n:t("th_initial")+" · "+t("cf_pick_crit")},
+    {k:"probability_residual",n:t("th_residual")+" · P"},{k:"severity_residual",n:t("th_residual")+" · G"},
+    {k:"score_residual",n:t("th_residual")+" · "+t("cf_pick_score")},{k:"criticality_residual",n:t("th_residual")+" · "+t("cf_pick_crit")}];
+  if(target==="measure")return [
+    {k:"id",n:t("f_identifier")},{k:"label",n:t("th_measure")},{k:"type",n:t("th_type")},{k:"status",n:t("th_status")},
+    {k:"responsible",n:t("th_responsible")},{k:"due_date",n:t("f_due_date")},{k:"cost",n:t("f_cost")},
+    {k:"description",n:t("f_description")},{k:"comment",n:t("f_notes")},{k:"overdue",n:t("plan_overdue")}];
+  if(target==="cotation")return [
+    {k:"probability",n:"P"},{k:"severity",n:"G"},{k:"score",n:t("cf_pick_score")},{k:"criticality",n:t("cf_pick_crit")}];
+  if(target==="link")return [{k:"risk_id",n:t("th_risk_id")},{k:"measure_id",n:t("th_measure_id")},{k:"comment",n:t("f_notes")}];
   return [];
 }
 function calcPickFields(target,selfCode){return customFieldsFor(target).filter(f=>f.code!==selfCode).map(f=>({k:"cf."+f.code,n:cfLabel(f)}));}
+let calcAttrCtx=null;   // en contexte « attribut d'objet » : liste des attributs frères (pour le picker)
 /* Insertion dans #cfExpr au curseur, avec espacement intelligent. */
 function calcExprInsert(text,caretBack){
   const ta=document.getElementById("cfExpr");if(!ta)return;
@@ -12105,15 +12207,20 @@ function calcExprFunc(name){
 }
 function cfCalcPickerFill(){
   const box=document.getElementById("cfCalcChips");if(!box)return;
-  const cat=box.dataset.cat||"fields",target=(document.getElementById("cfTarget")||{}).value||"risk";
+  const cat=box.dataset.cat||"fields";
+  const tgtEl=document.getElementById("cfTarget");         // présent = éditeur de champ (entité) ; absent = attribut d'objet
   const selfCode=(document.getElementById("cfCode")||{}).value||"";
   const filt=((document.getElementById("cfCalcSearch")||{}).value||"").trim().toLowerCase();
   let html="";
   const match=s=>!filt||s.toLowerCase().indexOf(filt)>=0;
-  if(cat==="fields"){const fs=calcPickFields(target,selfCode).filter(f=>match(f.k+" "+f.n));
+  if(cat==="fields"){
+    const src=tgtEl?calcPickFields(tgtEl.value,selfCode)
+      :(calcAttrCtx||[]).filter(a=>a.code&&a.code!==selfCode).map(a=>({k:"cf."+a.code,n:cfLabel(a)}));
+    const fs=src.filter(f=>match(f.k+" "+f.n));
     html=fs.length?fs.map(f=>'<button type="button" class="cfp-chip field" data-ins="'+esc(f.k)+'" title="'+esc(f.n)+'"><span class="k">'+esc(f.k)+'</span> '+esc(f.n)+'</button>').join(""):'<div class="cfp-none">'+esc(t("cf_pick_no_field"))+'</div>';
-  }else if(cat==="derived"){const ds=calcPickDerived(target).filter(match);
-    html=ds.length?ds.map(k=>'<button type="button" class="cfp-chip der" data-ins="'+esc(k)+'"><span class="k">'+esc(k)+'</span></button>').join(""):'<div class="cfp-none">—</div>';
+  }else if(cat==="derived"){
+    const refs=(tgtEl?calcRefs(tgtEl.value):[{k:"id",n:t("f_identifier")}]).filter(r=>match(r.k+" "+(r.n||"")));
+    html=refs.length?refs.map(r=>'<button type="button" class="cfp-chip der" data-ins="'+esc(r.k)+'" title="'+esc(r.n||"")+'"><span class="k">'+esc(r.k)+'</span>'+(r.n?" "+esc(r.n):"")+'</button>').join(""):'<div class="cfp-none">—</div>';
   }else if(cat==="funcs"){const fs=CALC_PICK_FUNCS.filter(match);
     html=fs.map(k=>'<button type="button" class="cfp-chip fn" data-fn="'+esc(k)+'"><span class="k">'+esc(k)+'</span></button>').join("");
   }else{html=CALC_PICK_OPS.filter(match).map(o=>'<button type="button" class="cfp-chip op" data-ins="'+esc(o)+'">'+esc(o)+'</button>').join("");}
@@ -12126,6 +12233,19 @@ document.addEventListener("click",e=>{
   if(chip){e.preventDefault();if(chip.dataset.fn)calcExprFunc(chip.dataset.fn);else calcExprInsert(chip.dataset.ins);}
 });
 document.addEventListener("input",e=>{if(e.target&&e.target.id==="cfCalcSearch")cfCalcPickerFill();});
+/* Éditeur d'un champ calculé : masque « obligatoire » (sans objet) et les options non pertinentes
+   selon le type de résultat (décimales : nombre ; unité : nombre/entier ; alerte : nombre/entier/date). */
+function cfCalcSyncEditor(){
+  const ty=(document.getElementById("cfType")||{}).value;
+  const rw=document.getElementById("cfReqWrap");if(rw)rw.style.display=(ty==="computed")?"none":"";
+  if(ty!=="computed")return;
+  const rt=(document.getElementById("cfResultType")||{}).value||"number";
+  const show=(id,ok)=>{const el=document.getElementById(id);if(el)el.style.display=ok?"":"none";};
+  show("cfDecimalsWrap",rt==="number");
+  show("cfUnitWrap",rt==="number"||rt==="integer");
+  show("cfAlertWrap",rt==="number"||rt==="integer"||rt==="date");
+}
+document.addEventListener("change",e=>{if(e.target&&e.target.id==="cfResultType")cfCalcSyncEditor();});
 /* Interactions des champs perso « tags » (bascule des puces) et « progress » (valeur du curseur).
    Écouteurs délégués globaux : valables dans toutes les modales et l'onglet Présentation. */
 document.addEventListener("click",e=>{const b=e.target.closest(".cf-tag");if(!b)return;
@@ -12733,6 +12853,7 @@ function openModal(title,bodyHtml,onConfirm,okLabel){
     d.addEventListener("toggle",()=>{if(d.open)d.querySelectorAll("textarea").forEach(autoGrow);});
   });
   refreshInert();focusFirstIn(bg);
+  try{cfComputedFormRefresh();}catch(e){}   // aperçus des champs calculés (lecture seule)
 }
 let modalReturnFocus=null;
 function closeModal(){

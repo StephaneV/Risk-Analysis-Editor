@@ -474,8 +474,14 @@
         "label": { "$ref": "#/$defs/i18nText" },
         "help": { "$ref": "#/$defs/i18nText" },
         "description": { "$ref": "#/$defs/i18nText" },
-        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "scale", "progress", "reference"] },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "scale", "progress", "reference", "computed"] },
         "object_type": { "type": "string", "description": "Type reference uniquement : code du type d'objet ciblé (peut être le type courant — auto-référence). La valeur (dans objects[].values) est un identifiant d'instance, ou un tableau si « multiple »." },
+        "expression": { "type": "string", "description": "Type computed uniquement : expression (style Excel) évaluée à l'affichage ; réfère aux autres attributs de l'instance (cf.<code>). Voir SPEC-champs-calcules.md." },
+        "result_type": { "enum": ["number", "integer", "date", "text", "boolean"] },
+        "decimals": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "unit": { "type": "string" },
+        "date_format": { "enum": ["iso", "eu", "us", "long"] },
+        "alert": { "type": "object", "additionalProperties": true, "properties": { "min": { "type": ["number", "string"] }, "max": { "type": ["number", "string"] }, "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" } } },
         "pattern": { "type": "string" },
         "required": { "type": "boolean" },
         "multiple": { "type": "boolean", "description": "Type tags ou reference : autorise plusieurs valeurs." },
@@ -511,6 +517,10 @@
         {
           "if": { "properties": { "type": { "const": "reference" } }, "required": ["type"] },
           "then": { "required": ["object_type"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "computed" } }, "required": ["type"] },
+          "then": { "required": ["expression"] }
         }
       ]
     },

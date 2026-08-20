@@ -103,12 +103,20 @@ l'expression ou les sources ont changé est ignorée puis rafraîchie. Emplaceme
 
 Une expression est évaluée **dans le contexte d'une entité** (celle de la `target` du champ) :
 
-- **`cf.<code>`** — un autre champ personnalisé **de la même entité**. Résolution par type :
+- **`cf.<code>`** — un autre champ personnalisé **de la même entité** (ou un autre **attribut** de la même
+  instance, pour un attribut d'objet). Résolution par type :
   - `boolean` → `true`/`false` ; `integer`/`float`/`progress`/`scale` → nombre ; `date` → date ;
     `text`/`select`/`tags`/… → texte (ou liste) ; `computed` → sa valeur (récursif, cf. §3.7).
-- **Champs dérivés de l'entité** (pratique, cible `risk`) : `score_initial`, `score_residual`,
-  `criticality_initial`, `criticality_residual` — les mêmes grandeurs que le rapport.
-- **`today()`** — date du jour (§3.6).
+- **Champs de base et dérivés de l'entité** — accessibles par leur nom (mêmes grandeurs que le rapport) :
+  - **risque** : `id`, `label`, `category`, `owner`, `description`, `comment` ; `probability_initial`,
+    `severity_initial`, `score_initial`, `criticality_initial` ; `probability_residual`, `severity_residual`,
+    `score_residual`, `criticality_residual` ;
+  - **mesure** : `id`, `label`, `type`, `status`, `responsible`, `due_date`, `cost`, `description`,
+    `comment`, `overdue` ;
+  - **cotation** : `probability`, `severity`, `score`, `criticality` ;
+  - **lien** : `risk_id`, `measure_id`, `comment` ;
+  - **objet** (attribut calculé) : `id`, et les autres attributs via `cf.<code>`.
+- **`TODAY()`** — date du jour (§3.6).
 - **Agrégats de collection** (surtout cible `analysis`) : une **collection** suivie d'un champ, réduite par
   une fonction d'agrégation :
   - `risks.cf.<code>`, `measures.cf.<code>`, `links.cf.<code>` — la valeur d'un champ sur **tous** les
@@ -234,14 +242,17 @@ la date locale est légitime.)*
 
 | Point | Comportement |
 |---|---|
-| **Saisie** | Aucune — champ **lecture seule**, exclu des formulaires et de l'**import CSV**. |
-| **Affichage** | Fiche, registre (colonne `cf:<code>`), rapport, exports — via `result_type`/`decimals`/`unit`/`date_format`. |
+| **Saisie** | Aucune — non collecté, exclu de l'**import CSV**. |
+| **Affichage en fiche** | **Aperçu lecture seule** dans la liste des champs personnalisés de la modale (risque, mesure, lien, cotation, instance d'objet), **recalculé en direct** au fil des saisies des autres champs. |
+| **Affichage ailleurs** | Registre (colonne `cf:<code>`), rapport, exports — via `result_type`/`decimals`/`unit`/`date_format`. |
 | **Tri** | Par valeur calculée (numérique/date/texte). |
 | **Filtre** | Si `filterable` : **comparaison** (`>=`, `<=`, `=`) sur la valeur — pas une liste de choix. (Distinct des types à valeurs fermées.) |
 | **Statistiques** | Métrique **numérique** (moyenne/somme/min/max) ; répartition par tranches (option). |
 | **Rapport / Word / CSV** | Valeur **matérialisée** au moment de l'export (colonne, cartouche, `field_values`…). |
 | **Modèles Word** | `{{ risk.cf.<code> }}` rend la valeur calculée ; utilisable en `{{#if}}` et tri. |
-| **Schéma / i18n / éditeur** | `computed` ajouté à `CF_TYPES`, au schéma JSON, au dictionnaire FR/EN/IT, et à l'éditeur de champ (zone *expression* + choix *result_type* + aide/validation). |
+| **Éditeur** | Zone *expression* (sans Markdown) avec **validation en direct**, choix *result_type*, et **pickers** d'insertion des jetons au curseur (champs perso, **champs de base/dérivés** de la cible, fonctions, opérateurs ; une fonction entoure la sélection). Les options **non pertinentes selon le `result_type` sont masquées** (décimales → `number` ; unité → `number`/`integer` ; alerte → `number`/`integer`/`date`) ; la case **« obligatoire » est masquée** (sans objet). |
+| **Disponibilité** | Comme **champ personnalisé** (cibles `analysis`/`risk`/`cotation`/`measure`/`link`) **et** comme **attribut d'un type d'objet** (l'expression réfère alors aux autres attributs de l'instance). |
+| **Schéma / i18n** | `computed` ajouté à `CF_TYPES` et à `objectAttribute`, au schéma JSON (contrainte `computed ⇒ expression`), au dictionnaire FR/EN/IT. |
 
 ### 3.10 Sécurité et robustesse
 
@@ -252,11 +263,34 @@ la date locale est légitime.)*
 
 ### 3.11 Bornes d'alerte (v1)
 
-Le champ `alert = { min?, max?, color? }` **met en évidence** la valeur affichée lorsqu'elle sort de la
-plage `[min, max]` (fournir une seule borne suffit) : pastille/texte en `color` (défaut *danger*). Purement
-visuel — n'affecte ni le tri, ni les filtres, ni les calculs. `min`/`max` sont des nombres (ou des dates si
-`result_type = date`). S'applique en fiche, registre et rapport. Exemple : « jours restants » avec
-`alert = { min: 0 }` colore en rouge toute mesure en retard (valeur négative).
+Le champ `alert = { min?, max?, color? }` **met en évidence** la valeur affichée lorsqu'elle est **hors de
+la plage attendue** : elle s'affiche alors en `color` (défaut *danger*, `#c0505a`). Purement **visuel** —
+n'affecte ni le tri, ni les filtres, ni les calculs. `min`/`max` sont des **nombres** (ou des **dates**
+`AAAA-MM-JJ` si `result_type = date`). L'alerte ne joue que si la valeur est **présente** (une valeur
+absente / `#ERR` n'est jamais colorée). Les deux bornes sont **incluses** : la valeur est mise en évidence
+**strictement** sous `min` ou **strictement** au-dessus de `max`.
+
+Les deux bornes sont **indépendantes et facultatives** ; on combine ainsi quatre comportements :
+
+| `alert` | Colorée quand… | Lecture |
+|---|---|---|
+| *(absent)* | jamais | pas d'alerte. |
+| `{ min: a }` | `valeur < a` | **plancher** : alerter en dessous de `a`. |
+| `{ max: b }` | `valeur > b` | **plafond** : alerter au-dessus de `b`. |
+| `{ min: a, max: b }` | `valeur < a` **ou** `valeur > b` | **plage tolérée** `[a, b]` : alerter en dehors. |
+
+S'applique en fiche (aperçu lecture seule), en colonne de registre et dans le rapport.
+
+**Exemples :**
+
+- *Jours avant échéance* — `= due_date - TODAY()`, `alert = { min: 0 }` : coloré dès que la valeur est
+  **négative** (mesure **en retard**). *(Plancher : rien à `0`, `3` ; alerté à `-1`.)*
+- *Taux de couverture (%)* — `alert = { min: 80 }` : coloré si **< 80 %** (couverture insuffisante).
+- *Budget consommé* — `alert = { max: 100 }` : coloré si **> 100** (dépassement).
+- *Score maison attendu entre 2 et 4* — `alert = { min: 2, max: 4 }` : coloré si **< 2** ou **> 4**
+  (hors de la plage cible). *(Ni `2`, ni `3`, ni `4` ne sont colorés ; `1` et `5` le sont.)*
+- *Échéance limite* — `result_type = date`, `alert = { max: "2026-12-31" }` : coloré si la date calculée
+  **dépasse** le 31/12/2026.
 
 ---
 
