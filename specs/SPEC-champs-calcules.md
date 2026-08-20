@@ -1,0 +1,339 @@
+# Spécification (brouillon) — Champs « échelle » et « valeur calculée »
+
+> **Statut : proposition de conception, non implémentée.** À valider avant développement.
+> Cible : `app/risk-analysis-editor.html` (champs personnalisés, `custom_fields` / `custom`).
+> Vocabulaire aligné sur l'existant (`SPEC-format-analyse-risque.md`, §4.6).
+
+---
+
+## 1. Objectifs
+
+1. Des champs personnalisés porteurs d'une **valeur numérique de sens métier**, réutilisable dans des calculs :
+   - **échelle** (`scale`) : une liste de niveaux, chacun avec une **valeur numérique** et un **libellé** ;
+   - **échelle colorée** : idem avec une **couleur** par niveau.
+2. Un champ **valeur calculée** (`computed`) : une **expression** portant sur d'autres champs (arithmétique,
+   fonctions d'agrégation `min` / `max` / `moyenne` / `médiane`…), avec un **type de résultat** défini
+   (nombre, date…), la **date courante** disponible et des **fonctions de manipulation de dates**.
+
+Principe directeur : **aucun `eval` JavaScript**. L'évaluation passe par un **moteur d'expression maison**
+(analyseur → arbre syntaxique → évaluateur), pour la sécurité, le déterminisme et la portabilité du format.
+
+---
+
+## 2. Type `scale` (échelle) — prérequis numérique
+
+### 2.1 Définition (`custom_fields[]`)
+
+Une échelle est une liste de niveaux ; **la `value` numérique tient lieu d'identité** (pas de `code`
+séparé — décision, cf. plus bas) :
+
+| Champ | Type | O/F | Description |
+|---|---|---|---|
+| `type` | `"scale"` | O | Nouveau type. |
+| `items[]` | tableau | O | Niveaux de l'échelle (au moins un). |
+| `items[].value` | nombre | O | **Valeur numérique** du niveau — **identité** (unique dans le champ), stockée, utilisée en calculs/stats/radar. |
+| `items[].label` | i18n | O | Libellé affiché. |
+| `items[].color` | `#RRGGBB` | F | Couleur du niveau → rendu en pastille (« échelle colorée »). |
+| `items[].description` | i18n | F | Définition (infobulle, référentiels du rapport). |
+
+> **Décidé** : un **seul** type `scale`. « Échelle colorée » = une échelle dont les items portent une
+> `color`. Rendu en pastille colorée si des couleurs sont définies, sinon libellé texte.
+>
+> **Décidé — pas de `code` :** contrairement à `select`/`tags`, l'item n'a **pas** de `code` ; sa `value`
+> numérique **est** son identité (donc **unique** dans le champ). La donnée devient **auto-descriptive**
+> (un `3` stocké est interprétable seul) et directement exploitable en calcul, sans déréférencement.
+> Contrepartie assumée : modifier la `value` d'un niveau est une **rebase délibérée** — les
+> enregistrements existants conservent leur nombre (pas de réécriture silencieuse).
+
+### 2.2 Saisie, stockage, affichage
+
+- **Saisie** : liste déroulante (comme `select`) ; si les items ont des couleurs, pastilles colorées
+  (comme `tags` en choix unique).
+- **Stockage** : la **`value`** (nombre) du niveau choisi, directement dans `custom.<code>`.
+- **Affichage** : `label` du niveau dont la `value` correspond (option : `label` + `(value)`). Une valeur
+  **orpheline** (niveau retiré du barème) reste lisible : on affiche le **nombre** brut.
+
+### 2.3 Intégration
+
+- **Filtrable** (valeurs fermées) : la liste de choix propose les niveaux (libellé → `value`).
+- **Statistiques** : dimension de répartition **et** — nouveauté — métrique **numérique**
+  (moyenne / somme / min / max de la `value` sur une population).
+- **Radar** : dimension (répartition) et/ou métrique numérique.
+- **Calculs** : `cf.<code>` d'une échelle s'évalue **directement en nombre** (la `value` stockée) — c'est le
+  pont vers les champs calculés (§3).
+
+---
+
+## 3. Type `computed` (valeur calculée)
+
+### 3.1 Définition (`custom_fields[]`)
+
+| Champ | Type | O/F | Description |
+|---|---|---|---|
+| `type` | `"computed"` | O | Champ dérivé, **non saisissable**. |
+| `expression` | chaîne | O | Expression à évaluer (§3.4). |
+| `result_type` | enum | O | `number` · `integer` · `date` · `text` · `boolean` (défaut `number`). |
+| `decimals` | entier | F | `number` : nombre de décimales à l'affichage (défaut : brut). |
+| `unit` | chaîne | F | Suffixe d'affichage (`€`, `j`, `%`…), purement cosmétique. |
+| `date_format` | enum | F | `date` : format d'affichage (sinon réglage global). |
+| `filterable` | booléen | F | Autorise le filtrage par comparaison sur la valeur calculée (§3.9). |
+| `alert` | objet | F | **Bornes d'alerte (v1)** — colore la valeur hors plage (§3.11). |
+
+Pas de `required` ni de bornes de saisie (rien à saisir).
+
+**Bornes d'alerte `alert`** (v1, §3.11) : `{ min?, max?, color? }` — la valeur affichée est **mise en
+évidence** (couleur `color`, défaut *danger*) lorsqu'elle sort de `[min, max]` (l'une des deux bornes
+suffit). Pour un `result_type` `date`, `min`/`max` sont des dates.
+
+### 3.2 Modèle de valeurs — **dérivé, avec cache**
+
+Comme le **score** et la **criticité** d'un risque, une valeur calculée n'est **pas saisie** ni faisant
+foi : elle est **recalculée** à partir de l'expression (affichage, tri, filtre, stats, rapport, CSV, Word).
+Avantages : cohérence garantie, jamais de valeur périmée vis-à-vis des champs sources.
+
+**Cache (décidé, Q4)** : la dernière valeur calculée est **mémorisée dans `extensions`** (jamais dans
+`custom`, qui reste réservé aux saisies), afin qu'un **consommateur tiers** (script, tableur, autre outil)
+lise une valeur sans réimplémenter le moteur. Le cache est **informatif, jamais faisant foi** : l'app le
+**recalcule et le réécrit** à l'ouverture et à chaque changement de source ; une entrée de cache dont
+l'expression ou les sources ont changé est ignorée puis rafraîchie. Emplacement proposé :
+`extensions.display.computed` = `{ "<entité>:<id>:<code>": <valeur>, "analysis:<code>": <valeur>, … }`
+(clé stable par entité + code de champ). *(Détail d'emplacement à confirmer à l'implémentation.)*
+
+### 3.3 Contexte et références
+
+Une expression est évaluée **dans le contexte d'une entité** (celle de la `target` du champ) :
+
+- **`cf.<code>`** — un autre champ personnalisé **de la même entité**. Résolution par type :
+  - `boolean` → `true`/`false` ; `integer`/`float`/`progress`/`scale` → nombre ; `date` → date ;
+    `text`/`select`/`tags`/… → texte (ou liste) ; `computed` → sa valeur (récursif, cf. §3.7).
+- **Champs dérivés de l'entité** (pratique, cible `risk`) : `score_initial`, `score_residual`,
+  `criticality_initial`, `criticality_residual` — les mêmes grandeurs que le rapport.
+- **`today()`** — date du jour (§3.6).
+- **Agrégats de collection** (surtout cible `analysis`) : une **collection** suivie d'un champ, réduite par
+  une fonction d'agrégation :
+  - `risks.cf.<code>`, `measures.cf.<code>`, `links.cf.<code>` — la valeur d'un champ sur **tous** les
+    éléments ; `measures.cost`, `risks.score_initial`… pour les champs natifs/dérivés ;
+  - `count(risks)`, `count(measures)` — effectifs.
+  Exemple : `MEDIAN(risks.cf.gravite)`, `AVERAGE(measures.cost)`.
+
+> **Portée par cible — décidé (Q2, séparation conservée) :**
+> - `risk` / `measure` / `link` / `cotation` → expression **par entité** (ses propres champs + dérivés + `TODAY()`).
+> - `analysis` → expression **globale** (agrégats de collections + `TODAY()`).
+> Les agrégats de collection ne sont **pas** autorisés dans un champ par entité en v1 (évite l'ambiguïté
+> « la moyenne de quoi, relativement à ce risque ? »). Les références **inter-entités** (un risque lisant
+> une valeur de *ses* mesures liées) sont **hors périmètre v1** (Q6).
+>
+> **Affichage d'un champ calculé de cible `analysis` — décidé (Q3) : Statistiques et Rapport.** Il
+> apparaît comme un **indicateur** (tuile / ligne) dans l'onglet **Statistiques** et dans la **synthèse du
+> rapport** (écran/PDF/Word). Les champs calculés **par entité** s'affichent, eux, comme les autres champs
+> de l'entité (fiche, colonne de registre `cf:<code>`, rapport, CSV, Word).
+
+### 3.4 Grammaire — inspirée des formules Excel
+
+Le langage s'inspire des **formules Excel** : mêmes fonctions et opérateurs usuels, syntaxe familière. La
+**seule différence assumée** : les **références** ne sont pas des adresses de cellules (`A1`) mais des
+**codes de champ** (`cf.<code>`, `risks.cf.<code>`, `score_initial`…), le tableur n'ayant pas de grille.
+
+Conventions Excel reprises :
+- Un **`=` initial est optionnel** (`=(cf.a+cf.b)/2` ≡ `(cf.a+cf.b)/2`).
+- Opérateurs : `+ - * /`, **`^`** (puissance), **`&`** (concaténation de texte), comparaisons `=`, **`<>`**
+  (aussi `!=`), `<`, `<=`, `>`, `>=`. Séparateur d'arguments : **`,`**. Décimale : **`.`**.
+- Noms de fonctions **insensibles à la casse**, **canoniques en anglais** (stockés ainsi dans le fichier,
+  comme le reste du format — cf. Q8 sur l'affichage localisé).
+
+Notation EBNF simplifiée (chaînes entre `"…"` ou `'…'`) :
+
+```
+formula     := "="? expr
+expr        := orExpr
+orExpr      := andExpr ( "OR" andExpr )*
+andExpr     := notExpr ( "AND" notExpr )*
+notExpr     := "NOT" notExpr | comparison
+comparison  := concat ( ( "=" | "<>" | "!=" | "<" | "<=" | ">" | ">=" ) concat )?
+concat      := sum ( "&" sum )*                 // concaténation de texte (Excel)
+sum         := product ( ( "+" | "-" ) product )*
+product     := power  ( ( "*" | "/" ) power )*
+power       := unary ( "^" power )?             // puissance, associative à droite
+unary       := ( "-" | "+" ) unary | primary
+primary     := number | string | boolean
+             | funcName "(" argList? ")"
+             | reference
+             | "(" expr ")"
+argList     := expr ( "," expr )*
+reference   := ident ( "." ident )*             // cf.<code>, risks.cf.<code>, score_initial, …
+```
+
+Précédence (du plus fort au plus faible) : unaire → `^` → `* /` → `+ -` → `&` → comparaisons → `NOT` →
+`AND` → `OR` (ordre Excel).
+
+### 3.5 Catalogue de fonctions (noms Excel)
+
+Chaque argument d'agrégation est **soit une liste** de valeurs (`AVERAGE(cf.a, cf.b, cf.c)`), **soit une
+collection** (`AVERAGE(risks.cf.score)`) — l'équivalent d'une **plage** Excel.
+
+**Numériques / agrégation :**
+
+| Fonction | Rôle |
+|---|---|
+| `MIN(…)`, `MAX(…)` | minimum, maximum |
+| `SUM(…)` | somme |
+| `AVERAGE(…)` | moyenne arithmétique |
+| `MEDIAN(…)` | médiane |
+| `COUNT(…)` | nombre de valeurs **présentes** (non vides) |
+| `ROUND(x, n)`, `ROUNDUP(x, n)`, `ROUNDDOWN(x, n)` | arrondis (comme Excel) |
+| `INT(x)`, `ABS(x)` | partie entière (plancher), valeur absolue |
+| `MOD(a, b)`, `POWER(a, b)` (≡ `a^b`), `SQRT(x)` | modulo, puissance, racine |
+
+**Logique / conditionnel :** `IF(cond, siVrai, siFaux)`, `AND(…)`, `OR(…)`, `NOT(x)`, comparateurs
+`=`, `<>`, `<`, `<=`, `>`, `>=`. *(Idiome de bornage à la Excel : `MEDIAN(lo, x, hi)`.)*
+
+**Dates** (les dates sont des grandeurs comparables et soustractibles, façon Excel — §3.8) :
+
+| Fonction | Rôle |
+|---|---|
+| `TODAY()` | date du jour (§3.6) |
+| `DATE(a, m, j)` | construit une date |
+| `YEAR(d)`, `MONTH(d)`, `DAY(d)` | composantes |
+| `EDATE(d, n)` | d + n **mois** (calendaire, comme Excel) |
+| `DATEDIF(début, fin, unité)` | écart ; `unité` ∈ `"D"` (jours) · `"M"` (mois) · `"Y"` (ans) — sémantique Excel |
+
+**Texte :** opérateur `&` et `CONCAT(…)` ; `LEN(x)`. (Extensible : `UPPER`, `LOWER`, `LEFT`, `RIGHT`…)
+
+### 3.6 Déterminisme et `today()`
+
+`today()` est évaluée **au moment du rendu/export**, dans le **fuseau local**. Conséquence assumée : une
+valeur calculée dépendant de `today()` **change au fil du temps** — c'est l'objectif (« jours avant
+échéance »). Le fichier ne fige donc pas ces valeurs (cohérent avec §3.2). *(Note technique : l'app évite
+`Date.now()` dans certains contextes — l'évaluation des champs calculés se fait à l'affichage, où l'accès à
+la date locale est légitime.)*
+
+### 3.7 Évaluation : dépendances, ordre, cycles, erreurs
+
+- **Graphe de dépendances** entre champs calculés (un `computed` peut référencer un autre `computed`).
+  Résolution en **ordre topologique** ; **cycle détecté → erreur** sur les champs impliqués (pas de boucle
+  infinie).
+- **Erreurs non bloquantes** : référence inconnue, type incompatible (ex. `date + texte`), division par
+  zéro, cycle → la valeur affichée est un **marqueur d'erreur** (`—` ou `#ERR`) avec **infobulle**
+  explicative ; le reste de l'analyse n'est pas affecté. Un avertissement peut être remonté dans l'éditeur
+  du champ (validation de l'expression à l'enregistrement).
+- **Valeurs manquantes** : un `cf.<code>` vide vaut « absent » ; les agrégats **ignorent** les absents
+  (`avg` sur les présents) ; une opération arithmétique sur un absent donne « absent » (propagation), sauf
+  via `if(... , ...)` explicite.
+
+### 3.8 Système de types et coercition
+
+- Types internes : `number`, `date`, `text`, `boolean`, `absent`.
+- **Dates façon Excel** : une date se compare et se soustrait comme un nombre de jours —
+  `TODAY() - due_date` → **nombre de jours** ; `due_date + 30` → **date** (30 jours après). Les mois/ans
+  calendaires passent par `EDATE` / `DATEDIF` (Excel ne les fait pas au `+` brut).
+- Comparaisons : numériques si possible, sinon `localeCompare` ; dates comparées chronologiquement.
+- Le **`result_type`** déclaré **coerce** le résultat final (ex. `integer` arrondit ; `date` attend une
+  date ; incompatibilité → erreur §3.7).
+
+### 3.9 Intégration transverse
+
+| Point | Comportement |
+|---|---|
+| **Saisie** | Aucune — champ **lecture seule**, exclu des formulaires et de l'**import CSV**. |
+| **Affichage** | Fiche, registre (colonne `cf:<code>`), rapport, exports — via `result_type`/`decimals`/`unit`/`date_format`. |
+| **Tri** | Par valeur calculée (numérique/date/texte). |
+| **Filtre** | Si `filterable` : **comparaison** (`>=`, `<=`, `=`) sur la valeur — pas une liste de choix. (Distinct des types à valeurs fermées.) |
+| **Statistiques** | Métrique **numérique** (moyenne/somme/min/max) ; répartition par tranches (option). |
+| **Rapport / Word / CSV** | Valeur **matérialisée** au moment de l'export (colonne, cartouche, `field_values`…). |
+| **Modèles Word** | `{{ risk.cf.<code> }}` rend la valeur calculée ; utilisable en `{{#if}}` et tri. |
+| **Schéma / i18n / éditeur** | `computed` ajouté à `CF_TYPES`, au schéma JSON, au dictionnaire FR/EN/IT, et à l'éditeur de champ (zone *expression* + choix *result_type* + aide/validation). |
+
+### 3.10 Sécurité et robustesse
+
+- **Aucun `eval`** ni accès au DOM/réseau : évaluateur pur sur l'AST.
+- Bornes : longueur d'expression (ex. 2 000 car.), profondeur d'AST, nombre de nœuds — pour éviter les
+  expressions pathologiques.
+- Fonctions **en liste blanche** ; tout identifiant/fonction inconnu → erreur de compilation signalée.
+
+### 3.11 Bornes d'alerte (v1)
+
+Le champ `alert = { min?, max?, color? }` **met en évidence** la valeur affichée lorsqu'elle sort de la
+plage `[min, max]` (fournir une seule borne suffit) : pastille/texte en `color` (défaut *danger*). Purement
+visuel — n'affecte ni le tri, ni les filtres, ni les calculs. `min`/`max` sont des nombres (ou des dates si
+`result_type = date`). S'applique en fiche, registre et rapport. Exemple : « jours restants » avec
+`alert = { min: 0 }` colore en rouge toute mesure en retard (valeur négative).
+
+---
+
+## 4. Ajouts au format `.rae.json` (schéma)
+
+Dans `customField` :
+- `type` : ajouter `"scale"` et `"computed"` à l'énumération.
+- **`scale`** : `items[].value` (**nombre, requis, unique** — tient lieu d'identité, pas de `code`) ;
+  `items[].label` (requis) ; `items[].color`, `items[].description` (optionnels).
+- **`computed`** : `expression` (chaîne, requis), `result_type` (enum `number`/`integer`/`date`/`text`/
+  `boolean`), `decimals` (entier), `unit` (chaîne), `date_format` (enum), `filterable` (booléen),
+  `alert` (objet `{ min?, max?, color? }`).
+- Contraintes conditionnelles : `scale` ⇒ `items` (chaque item avec `value`) ; `computed` ⇒ `expression`.
+
+**`custom`** : une échelle stocke la **`value`** (nombre) du niveau choisi ; un champ **calculé n'écrit
+rien** dans `custom`. Le **cache** des valeurs calculées vit dans **`extensions`** (§3.2), séparé des
+saisies et jamais faisant foi.
+
+---
+
+## 5. Exemples
+
+```
+# Échelle (cible risque) : niveau d'exposition, valeurs 1..4
+scale « exposition » : { faible:1, moyen:2, eleve:3, critique:4 }
+
+# Valeur calculée (cible risque) : criticité pondérée maison
+computed « score_maison », result_type=number, decimals=1 :
+    =(cf.exposition * 2 + cf.impact) / 3
+
+# Valeur calculée (cible mesure) : jours restants avant échéance (dates façon Excel)
+computed « jours_restants », result_type=integer :
+    =due_date - TODAY()
+
+# Valeur calculée (cible analyse) : médiane des scores maison du portefeuille
+computed « mediane_score », result_type=number, decimals=1 :
+    =MEDIAN(risks.cf.score_maison)
+
+# Conditionnel (style Excel)
+computed « alerte », result_type=text :
+    =IF(due_date - TODAY() < 0, "En retard", IF(due_date - TODAY() <= 7, "Bientôt", "OK"))
+```
+
+---
+
+## 6. Plan d'implémentation (par lots)
+
+1. **Lot A — Échelle** : type `scale` (éditeur d'items `value`/`label`/`color`, saisie liste déroulante,
+   lecture, affichage, filtre, stats numériques, schéma, i18n). La `value` stockée est directement le
+   nombre exploité en calcul.
+2. **Lot B — Moteur d'expression** : lexer + parseur + AST + évaluateur (arithmétique, `^`, `&`,
+   comparaisons, `AND`/`OR`/`NOT`, `IF`), liste blanche de fonctions, gestion d'erreurs. Testable isolément.
+3. **Lot C — Champ `computed` par entité** : `cf.<code>` même entité + dérivés (`score_*`, `criticality_*`),
+   `result_type`/formatage, **bornes d'alerte**, affichage/tri, cache, éditeur (expression + validation),
+   schéma, i18n.
+4. **Lot D — Dates** : `TODAY`, `DATE`, `YEAR`/`MONTH`/`DAY`, `EDATE`, `DATEDIF`, arithmétique de dates.
+5. **Lot E — Agrégats de collection** (cible analyse) : `risks.cf.*`, `COUNT(…)`, `AVERAGE`/`MEDIAN`/…,
+   affichage en **Statistiques** et **Rapport**.
+6. **Lot F — Filtre / stats / radar / rapport / Word / CSV** sur valeurs calculées et échelles numériques.
+7. **Lot G — Consolidation** : i18n complète, guide utilisateur, alignement `SPEC-format` + schéma, tests.
+
+---
+
+## 7. Décisions (arrêtées avec l'utilisateur)
+
+- **Q1** — Échelle : **un seul** type `scale`, couleur optionnelle par item (§2.1). *(La `value` numérique
+  tient lieu d'identité — pas de `code`.)*
+- **Q2** — **Séparation conservée** : agrégats de collection réservés à la cible **analyse** ; les champs
+  calculés **par entité** ne voient que leurs propres champs + dérivés + `TODAY()` (§3.3).
+- **Q3** — Champ calculé de cible `analysis` : affiché dans les **Statistiques** et le **Rapport** (§3.3).
+- **Q4** — **Cache** des valeurs calculées dans `extensions` (informatif, recalculé à l'ouverture), pour les
+  outils tiers (§3.2).
+- **Q5** — **Fonctions dates comme proposées** : `TODAY`, `DATE`, `YEAR`/`MONTH`/`DAY`, `EDATE` (mois
+  calendaires), `DATEDIF` (`D`/`M`/`Y`), et arithmétique de dates façon Excel (§3.5, §3.8).
+- **Q6** — Références **inter-entités** : **hors v1** (§3.3).
+- **Q7** — **Bornes d'alerte** : **en v1** (§3.11).
+- **Q8** — Noms de fonctions : **anglais seuls** (§3.4).
+
+*Reste à préciser à l'implémentation :* l'emplacement exact du cache dans `extensions` (§3.2), et le rendu
+précis d'un indicateur calculé « analyse » dans les Statistiques et la synthèse du rapport (§3.3).
