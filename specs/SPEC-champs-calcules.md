@@ -264,10 +264,19 @@ la date locale est légitime.)*
 
 Le champ `alert = { min?, max?, color? }` **met en évidence** la valeur affichée lorsqu'elle est **hors de
 la plage attendue** : elle s'affiche alors en `color` (défaut *danger*, `#c0505a`). Purement **visuel** —
-n'affecte ni le tri, ni les filtres, ni les calculs. `min`/`max` sont des **nombres** (ou des **dates**
-`AAAA-MM-JJ` si `result_type = date`). L'alerte ne joue que si la valeur est **présente** (une valeur
-absente / `#ERR` n'est jamais colorée). Les deux bornes sont **incluses** : la valeur est mise en évidence
-**strictement** sous `min` ou **strictement** au-dessus de `max`.
+n'affecte ni le tri, ni les filtres, ni les calculs. L'alerte ne joue que si la valeur est **présente**
+(une valeur absente / `#ERR` n'est jamais colorée). Les deux bornes sont **incluses** : la valeur est mise
+en évidence **strictement** sous `min` ou **strictement** au-dessus de `max`.
+
+**Format des bornes `min`/`max` :**
+
+- Résultat **numérique** (`number` / `integer`) → `min`/`max` sont des **nombres** (décimale `.`), ex.
+  `0`, `80`, `2.5`.
+- Résultat **date** (`result_type = date`) → `min`/`max` sont des **dates au format ISO `AAAA-MM-JJ`**
+  (ex. `2026-12-31`), la seule forme comparable de façon chronologique. Dans l'éditeur, ces deux champs
+  deviennent des **sélecteurs de date** (qui produisent automatiquement une valeur ISO) ; dans le fichier,
+  la borne est stockée telle quelle (`"2026-12-31"`).
+- Les résultats `text` / `boolean` n'ont pas d'alerte de plage.
 
 Les deux bornes sont **indépendantes et facultatives** ; on combine ainsi quatre comportements :
 

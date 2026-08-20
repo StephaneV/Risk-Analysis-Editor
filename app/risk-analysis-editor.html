@@ -1787,7 +1787,7 @@ const I18N = {
     cf_calc_expr:"Expression", cf_calc_expr_ph:"ex. (cf.exposition * 2 + cf.impact) / 3", cf_calc_expr_help:"Style Excel : + - * / ^ &, fonctions SUM/AVERAGE/MEDIAN/MIN/MAX/IF/ROUND/TODAY/DATEDIF… ; références par code : cf.<code> (même entité) et dérivés (score_initial, score_residual, criticality_initial/residual pour un risque ; due_date, cost, status, overdue pour une mesure).",
     cf_calc_result:"Type du résultat", cf_calc_rt_number:"Nombre", cf_calc_rt_integer:"Entier", cf_calc_rt_date:"Date", cf_calc_rt_text:"Texte", cf_calc_rt_boolean:"Oui / Non",
     cf_calc_decimals:"Décimales", cf_calc_unit:"Unité (suffixe)", cf_calc_derived_hint:"Champ dérivé, non saisissable : recalculé à l'affichage.",
-    cf_calc_alert:"Alerte (hors plage)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Colore la valeur si elle sort de [min, max] (une seule borne suffit).",
+    cf_calc_alert:"Alerte (hors plage)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Colore la valeur si elle sort de [min, max] (une seule borne suffit). Résultat date : bornes au format AAAA-MM-JJ (sélecteur de date).",
     cf_calc_empty:"L'expression est obligatoire.", cf_calc_bad:"Expression invalide : {0}", cf_calc_ok:"Expression valide.", cf_calc_cycle:"Référence circulaire entre champs calculés.",
     cf_pick_fields:"Champs perso", cf_pick_derived:"Champs de base", cf_pick_funcs:"Fonctions", cf_pick_ops:"Opérateurs", cf_pick_filter:"filtrer…", cf_pick_no_field:"Aucun autre champ sur cette cible.", cf_pick_score:"Score", cf_pick_crit:"Criticité",
     cf_del_confirm:"Supprimer ce champ personnalisé ?",
@@ -2166,7 +2166,7 @@ const I18N = {
     cf_calc_expr:"Expression", cf_calc_expr_ph:"e.g. (cf.exposure * 2 + cf.impact) / 3", cf_calc_expr_help:"Excel-style: + - * / ^ &, functions SUM/AVERAGE/MEDIAN/MIN/MAX/IF/ROUND/TODAY/DATEDIF… ; references by code: cf.<code> (same entity) and derived values (score_initial, score_residual, criticality_initial/residual for a risk ; due_date, cost, status, overdue for a measure).",
     cf_calc_result:"Result type", cf_calc_rt_number:"Number", cf_calc_rt_integer:"Integer", cf_calc_rt_date:"Date", cf_calc_rt_text:"Text", cf_calc_rt_boolean:"Yes / No",
     cf_calc_decimals:"Decimals", cf_calc_unit:"Unit (suffix)", cf_calc_derived_hint:"Derived field, not editable: recomputed on display.",
-    cf_calc_alert:"Alert (out of range)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Highlights the value when it falls outside [min, max] (one bound is enough).",
+    cf_calc_alert:"Alert (out of range)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Highlights the value when it falls outside [min, max] (one bound is enough). Date result: bounds in YYYY-MM-DD format (date picker).",
     cf_calc_empty:"The expression is required.", cf_calc_bad:"Invalid expression: {0}", cf_calc_ok:"Valid expression.", cf_calc_cycle:"Circular reference between computed fields.",
     cf_pick_fields:"Custom fields", cf_pick_derived:"Base fields", cf_pick_funcs:"Functions", cf_pick_ops:"Operators", cf_pick_filter:"filter…", cf_pick_no_field:"No other field on this target.", cf_pick_score:"Score", cf_pick_crit:"Criticality",
     cf_del_confirm:"Delete this custom field?",
@@ -2545,7 +2545,7 @@ const I18N = {
     cf_calc_expr:"Espressione", cf_calc_expr_ph:"es. (cf.esposizione * 2 + cf.impatto) / 3", cf_calc_expr_help:"Stile Excel: + - * / ^ &, funzioni SUM/AVERAGE/MEDIAN/MIN/MAX/IF/ROUND/TODAY/DATEDIF… ; riferimenti per codice: cf.<code> (stessa entità) e valori derivati (score_initial, score_residual, criticality_initial/residual per un rischio ; due_date, cost, status, overdue per una misura).",
     cf_calc_result:"Tipo di risultato", cf_calc_rt_number:"Numero", cf_calc_rt_integer:"Intero", cf_calc_rt_date:"Data", cf_calc_rt_text:"Testo", cf_calc_rt_boolean:"Sì / No",
     cf_calc_decimals:"Decimali", cf_calc_unit:"Unità (suffisso)", cf_calc_derived_hint:"Campo derivato, non modificabile: ricalcolato alla visualizzazione.",
-    cf_calc_alert:"Avviso (fuori intervallo)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Evidenzia il valore quando esce da [min, max] (basta un limite).",
+    cf_calc_alert:"Avviso (fuori intervallo)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Evidenzia il valore quando esce da [min, max] (basta un limite). Risultato data: limiti in formato AAAA-MM-GG (selettore di data).",
     cf_calc_empty:"L'espressione è obbligatoria.", cf_calc_bad:"Espressione non valida: {0}", cf_calc_ok:"Espressione valida.", cf_calc_cycle:"Riferimento circolare tra campi calcolati.",
     cf_pick_fields:"Campi pers.", cf_pick_derived:"Campi di base", cf_pick_funcs:"Funzioni", cf_pick_ops:"Operatori", cf_pick_filter:"filtra…", cf_pick_no_field:"Nessun altro campo su questa destinazione.", cf_pick_score:"Punteggio", cf_pick_crit:"Criticità",
     cf_del_confirm:"Eliminare questo campo personalizzato?",
@@ -12244,6 +12244,9 @@ function cfCalcSyncEditor(){
   show("cfDecimalsWrap",rt==="number");
   show("cfUnitWrap",rt==="number"||rt==="integer");
   show("cfAlertWrap",rt==="number"||rt==="integer"||rt==="date");
+  // Résultat date : bornes d'alerte saisies via un sélecteur de date (valeur ISO garantie).
+  const dateRes=rt==="date";
+  ["cfAlertMin","cfAlertMax"].forEach(id=>{const el=document.getElementById(id);if(el){if(el.type==="date"&&!dateRes&&!/^\d{4}-\d{2}-\d{2}$/.test(el.value))el.value="";el.type=dateRes?"date":"text";}});
 }
 document.addEventListener("change",e=>{if(e.target&&e.target.id==="cfResultType")cfCalcSyncEditor();});
 /* Interactions des champs perso « tags » (bascule des puces) et « progress » (valeur du curseur).
