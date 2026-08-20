@@ -152,6 +152,43 @@
                 }
               }
             },
+            "radar": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Personnalisation des radars propre à l'analyse. Absent : réglages par défaut.",
+              "properties": {
+                "view": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Vue courante de l'onglet Radars, restaurée à la réouverture (comme les filtres). Une valeur périmée est ramenée à son défaut.",
+                  "properties": {
+                    "dim": { "type": "string", "description": "Dimension des axes : « cat » (catégorie de risque) ou le code d'un champ personnalisé de risque à valeurs fermées (select / checklist / tags / reference). Défaut : « cat »." },
+                    "metric": { "enum": ["avg", "max", "sum", "weighted", "count"], "description": "Métrique mesurée sur chaque axe. Défaut : « avg »." },
+                    "eval": { "enum": ["initial", "residual", "both-side", "both-over"], "description": "Évaluation affichée : initiale, résiduelle, accolées ou superposées. Défaut : « both-over »." },
+                    "empty_axes": { "type": "boolean", "description": "Afficher tous les axes possibles, y compris ceux sans risque dans la vue (item/instance non utilisé, ou valeur écartée par un filtre). Défaut : true ; false = seulement les axes présents." }
+                  }
+                },
+                "render": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Paramètres de rendu (teinte des bandes, contour, pas des anneaux, couleurs des séries initiale/résiduelle, réticule).",
+                  "properties": {
+                    "hslL": { "type": "number" },
+                    "hslS": { "type": "number" },
+                    "outline": { "type": "number" },
+                    "ringStep": { "type": "number" },
+                    "spoke": { "type": "string" },
+                    "colorInit": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+                    "colorRes": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }
+                  }
+                },
+                "weights": {
+                  "type": "object",
+                  "additionalProperties": { "type": "number" },
+                  "description": "Poids par code de niveau de criticité pour la métrique « pondérée » (clé = criticality_levels[].code)."
+                }
+              }
+            },
             "report": {
               "type": "object",
               "additionalProperties": true,

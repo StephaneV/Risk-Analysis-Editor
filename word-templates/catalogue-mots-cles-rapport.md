@@ -242,11 +242,19 @@ Tous acceptent `filter="…"` (§7) et `report_filter="none"`.
 | `filter` | filtre (§7) |
 
 ### 4.2 `{{ radar … }}`
-`dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`, `cumulative`, `weighted`, `count`),
-`evaluation` (`initial`, `residual`, `side`, `overlay`), `title`, `width` · `height` (§4.8), `filter`.
+`dimension` (`category`, `cf.<code>`), `metric` (`average`, `max`, `cumulative`, `weighted`, `count`),
+`evaluation` (`initial`, `residual`, `side`, `overlay`), `empty_axes` (`show` **défaut** / `hide`),
+`title`, `width` · `height` (§4.8), `filter`.
 Le champ de `dimension` d'un `cf.<code>` doit être un **champ personnalisé de risque** de type
-*sélection* / *cases* / *étiquettes* ; s'il est introuvable, un **avertissement** est émis (le radar n'est
-pas produit).
+*sélection* / *cases* / *étiquettes* / *référence* ; s'il est introuvable, un **avertissement** est émis
+(le radar n'est pas produit).
+
+> **`empty_axes`** — par défaut le radar affiche **tous les axes possibles** (toutes les valeurs
+> connues), y compris ceux **sans risque** : item/instance non utilisé, ou valeur écartée par le
+> `filter`. Les axes restent ainsi **stables** quel que soit le filtre (un axe concerné vaut 0 au
+> lieu de disparaître). `empty_axes="hide"` ne garde que les axes présents. S'applique à **toutes les
+> dimensions**, `category` comprise (univers = toutes les catégories des risques). Valeur non
+> reconnue : avertissement, défaut conservé.
 
 ### 4.3 `{{ table … }}`
 | Attribut | Valeurs (défaut) |

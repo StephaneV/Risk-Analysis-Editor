@@ -1002,6 +1002,10 @@
           <span data-i18n="radar_metric">Métrique</span>
           <select id="radarMetric"></select>
         </label>
+        <label id="radarEmptyWrap" style="display:inline-flex;align-items:center;gap:6px;font-size:13px" title="" data-i18n-title="radar_empty_axes_help">
+          <input type="checkbox" id="radarEmptyAxes" checked>
+          <span data-i18n="radar_empty_axes">Axes vides</span>
+        </label>
         <span style="flex:1"></span>
         <span id="radarExportBar" style="display:flex;gap:6px"></span>
       </div>
@@ -1445,7 +1449,7 @@ const I18N = {
     tw_loop_row_unclosed:"Boucle de ligne de tableau non fermée : each {0}", tw_unknown_groupby:"Champ de regroupement inconnu : {0}",
     tw_filter_invalid:"Expression de filtre invalide : {0}", tw_filter_op:"Opérateur de filtre inconnu : {0}", tw_filter_field:"Champ de filtre inconnu : {0}",
     tw_table_source:"Source de tableau inconnue : {0}", tw_table_nosource:"Bloc « table » sans attribut « source »", tw_table_column:"Colonne inconnue ignorée : {0}",
-    tw_matrix_type:"Type de matrice inconnu : {0} (repli sur « initial »)", tw_radar_metric:"Métrique de radar inconnue : {0} (repli sur « moyenne »)", tw_radar_eval:"Évaluation de radar inconnue : {0}", tw_radar_dim:"Dimension de radar inconnue : {0} (champ personnalisé de risque introuvable)",
+    tw_matrix_type:"Type de matrice inconnu : {0} (repli sur « initial »)", tw_radar_metric:"Métrique de radar inconnue : {0} (repli sur « moyenne »)", tw_radar_eval:"Évaluation de radar inconnue : {0}", tw_radar_dim:"Dimension de radar inconnue : {0} (champ personnalisé de risque introuvable)", tw_radar_empty:"Valeur empty_axes inconnue : {0} (attendu « show » ou « hide »)",
     tw_radar_fewaxes:"Radar impossible : moins de 3 axes ({0})", tw_unknown_block:"Bloc inconnu : {0}", tw_xml_unreadable:"Contenu Word illisible : une partie du document a été laissée telle quelle",
     tw_unresolved:"Accolades non résolues (balise incomplète ou scindée) : {0}", tw_block_in_hf:"Bloc « {0} » non permis en en-tête/pied (laissé tel quel)", tw_field_target:"Cible de champ perso inconnue : {0}", tw_fieldvalues_ctx:"Bloc « field_values » hors d'une boucle « custom_fields » (ignoré)", tw_stat_type:"Type de statistique inconnu : {0} (attendu : counters, summary, coverage, criticality, category, measure_type, measure_status, risk_owner, measure_owner, cf.<code>, objects, object_attr:<type>:<attr>, object_usage:<type>)", tw_stat_field:"Champ de statistique inconnu : {0}", tw_if_invalid:"Condition invalide : {0}", tw_if_unclosed:"Condition « if » non fermée : {0}", tw_if_orphan:"« else »/« /if » sans « if » correspondant", tw_if_field:"Champ de condition inconnu : {0}", menu_export_xlsx:"Exporter en Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"Fichier exporté : {0}", toast_export_fail:"Export impossible : {0}", xl_score:"Score", xl_crit:"Criticité",
@@ -1653,6 +1657,7 @@ const I18N = {
     stat_shape_donut:"Anneau", stat_shape_pie:"Camembert", stat_tiles:"Tuiles", stat_values:"valeurs",
     tab_radars:"Radars",
     radar_eval_side:"Accolés", radar_eval_over:"Superposés", radar_dim:"Dimension", radar_axis:"Axe", radar_unset:"Non renseigné",
+    radar_empty_axes:"Axes vides", radar_empty_axes_help:"Afficher tous les axes possibles — toutes les valeurs connues, y compris celles sans risque dans la vue (item ou instance non utilisé, ou valeur écartée par un filtre). Les axes restent ainsi stables quel que soit le filtre actif.",
     radar_metric_avg:"Criticité moyenne", radar_metric_max:"Criticité max", radar_metric_count:"Nombre de risques",
     radar_need_axes:"Au moins 3 axes sont nécessaires pour afficher un radar (dimension actuelle : {0}).",
     radar_count_note:"Le nombre de risques ne dépend pas de l'évaluation.",
@@ -1822,7 +1827,7 @@ const I18N = {
     tw_loop_row_unclosed:"Unclosed table-row loop: each {0}", tw_unknown_groupby:"Unknown group-by field: {0}",
     tw_filter_invalid:"Invalid filter expression: {0}", tw_filter_op:"Unknown filter operator: {0}", tw_filter_field:"Unknown filter field: {0}",
     tw_table_source:"Unknown table source: {0}", tw_table_nosource:"“table” block without a “source” attribute", tw_table_column:"Unknown column ignored: {0}",
-    tw_matrix_type:"Unknown matrix type: {0} (falling back to “initial”)", tw_radar_metric:"Unknown radar metric: {0} (falling back to “average”)", tw_radar_eval:"Unknown radar evaluation: {0}", tw_radar_dim:"Unknown radar dimension: {0} (risk custom field not found)",
+    tw_matrix_type:"Unknown matrix type: {0} (falling back to “initial”)", tw_radar_metric:"Unknown radar metric: {0} (falling back to “average”)", tw_radar_eval:"Unknown radar evaluation: {0}", tw_radar_dim:"Unknown radar dimension: {0} (risk custom field not found)", tw_radar_empty:"Unknown empty_axes value: {0} (expected “show” or “hide”)",
     tw_radar_fewaxes:"Radar not possible: fewer than 3 axes ({0})", tw_unknown_block:"Unknown block: {0}", tw_xml_unreadable:"Unreadable Word content: part of the document was left as-is",
     tw_unresolved:"Unresolved braces (incomplete or split tag): {0}", tw_block_in_hf:"Block “{0}” not allowed in header/footer (left as-is)", tw_field_target:"Unknown custom-field target: {0}", tw_fieldvalues_ctx:"“field_values” block outside a “custom_fields” loop (ignored)", tw_stat_type:"Unknown statistic type: {0} (expected: counters, summary, coverage, criticality, category, measure_type, measure_status, risk_owner, measure_owner, cf.<code>, objects, object_attr:<type>:<attr>, object_usage:<type>)", tw_stat_field:"Unknown statistic field: {0}", tw_if_invalid:"Invalid condition: {0}", tw_if_unclosed:"Unclosed “if” condition: {0}", tw_if_orphan:"“else”/“/if” without a matching “if”", tw_if_field:"Unknown condition field: {0}", menu_export_xlsx:"Export to Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File exported: {0}", toast_export_fail:"Export failed: {0}", xl_score:"Score", xl_crit:"Criticality",
@@ -2025,6 +2030,7 @@ const I18N = {
     stat_shape_donut:"Donut", stat_shape_pie:"Pie", stat_tiles:"Tiles", stat_values:"values",
     tab_radars:"Radars",
     radar_eval_side:"Side by side", radar_eval_over:"Overlaid", radar_dim:"Dimension", radar_axis:"Axis", radar_unset:"Not set",
+    radar_empty_axes:"Empty axes", radar_empty_axes_help:"Show every possible axis — all known values, including those with no risk in the current view (unused item or instance, or a value excluded by a filter). Axes then stay stable whatever the active filter.",
     radar_metric_avg:"Average criticality", radar_metric_max:"Max criticality", radar_metric_count:"Number of risks",
     radar_need_axes:"At least 3 axes are required to draw a radar (current dimension: {0}).",
     radar_count_note:"The number of risks does not depend on the assessment.",
@@ -2194,7 +2200,7 @@ const I18N = {
     tw_loop_row_unclosed:"Ciclo di riga di tabella non chiuso: each {0}", tw_unknown_groupby:"Campo di raggruppamento sconosciuto: {0}",
     tw_filter_invalid:"Espressione di filtro non valida: {0}", tw_filter_op:"Operatore di filtro sconosciuto: {0}", tw_filter_field:"Campo di filtro sconosciuto: {0}",
     tw_table_source:"Sorgente di tabella sconosciuta: {0}", tw_table_nosource:"Blocco « table » senza attributo « source »", tw_table_column:"Colonna sconosciuta ignorata: {0}",
-    tw_matrix_type:"Tipo di matrice sconosciuto: {0} (ripiego su « iniziale »)", tw_radar_metric:"Metrica radar sconosciuta: {0} (ripiego su « media »)", tw_radar_eval:"Valutazione radar sconosciuta: {0}", tw_radar_dim:"Dimensione radar sconosciuta: {0} (campo personalizzato di rischio non trovato)",
+    tw_matrix_type:"Tipo di matrice sconosciuto: {0} (ripiego su « iniziale »)", tw_radar_metric:"Metrica radar sconosciuta: {0} (ripiego su « media »)", tw_radar_eval:"Valutazione radar sconosciuta: {0}", tw_radar_dim:"Dimensione radar sconosciuta: {0} (campo personalizzato di rischio non trovato)", tw_radar_empty:"Valore empty_axes sconosciuto: {0} (atteso « show » o « hide »)",
     tw_radar_fewaxes:"Radar impossibile: meno di 3 assi ({0})", tw_unknown_block:"Blocco sconosciuto: {0}", tw_xml_unreadable:"Contenuto Word illeggibile: una parte del documento è stata lasciata invariata",
     tw_unresolved:"Parentesi graffe non risolte (tag incompleto o spezzato): {0}", tw_block_in_hf:"Blocco « {0} » non consentito in intestazione/piè di pagina (lasciato invariato)", tw_field_target:"Destinazione di campo personalizzato sconosciuta: {0}", tw_fieldvalues_ctx:"Blocco « field_values » fuori da un ciclo « custom_fields » (ignorato)", tw_stat_type:"Tipo di statistica sconosciuto: {0} (atteso: counters, summary, coverage, criticality, category, measure_type, measure_status, risk_owner, measure_owner, cf.<code>, objects, object_attr:<type>:<attr>, object_usage:<type>)", tw_stat_field:"Campo di statistica sconosciuto: {0}", tw_if_invalid:"Condizione non valida: {0}", tw_if_unclosed:"Condizione « if » non chiusa: {0}", tw_if_orphan:"« else »/« /if » senza « if » corrispondente", tw_if_field:"Campo di condizione sconosciuto: {0}", menu_export_xlsx:"Esporta in Excel (.xlsx)", report_word:"⭳ Word (.docx)",
     toast_export:"File esportato: {0}", toast_export_fail:"Esportazione non riuscita: {0}", xl_score:"Punteggio", xl_crit:"Criticità",
@@ -2397,6 +2403,7 @@ const I18N = {
     stat_shape_donut:"Anello", stat_shape_pie:"Torta", stat_tiles:"Riquadri", stat_values:"valori",
     tab_radars:"Radar",
     radar_eval_side:"Affiancati", radar_eval_over:"Sovrapposti", radar_dim:"Dimensione", radar_axis:"Asse", radar_unset:"Non specificato",
+    radar_empty_axes:"Assi vuoti", radar_empty_axes_help:"Mostra tutti gli assi possibili — tutti i valori noti, compresi quelli senza rischio nella vista (voce o istanza non utilizzata, o valore escluso da un filtro). Gli assi restano così stabili qualunque sia il filtro attivo.",
     radar_metric_avg:"Criticità media", radar_metric_max:"Criticità massima", radar_metric_count:"Numero di rischi",
     radar_need_axes:"Sono necessari almeno 3 assi per visualizzare un radar (dimensione attuale: {0}).",
     radar_count_note:"Il numero di rischi non dipende dalla valutazione.",
@@ -4029,7 +4036,7 @@ function statBlockHTML(block){
    Échelle et bandes de fond dérivées de la grille de cotation.
    ============================================================ */
 const RADAR_C1="#3a63d6", RADAR_C2="#8a3ffc"; // couleurs initial / résiduel
-let radarState={eval:"both-over",dim:"cat",metric:"avg"}, radarWired=false, RADAR_HOVER=[], RADAR_AXIS_TIP=[], RADAR_CRIT_TIP=[];
+let radarState={eval:"both-over",dim:"cat",metric:"avg",emptyAxes:true}, radarViewFor=null, radarWired=false, RADAR_HOVER=[], RADAR_AXIS_TIP=[], RADAR_CRIT_TIP=[];
 /* Configuration des radars (poids de la métrique pondérée + paramètres de rendu),
    enregistrée avec l'analyse dans extensions.display.radar. Poids par défaut : exponentiels
    selon l'ordre de criticité (1, 2, 4, 8…). */
@@ -4050,6 +4057,21 @@ function radarCfg(){
   const rw=(raw.weights&&typeof raw.weights==="object")?raw.weights:{},weights={};
   critBands().forEach((c,i)=>{const v=+rw[c.code];weights[c.code]=(isFinite(v)&&v>=0)?v:Math.pow(2,i);});
   return {render,weights};
+}
+/* Vue de l'onglet Radars (dimension, métrique, évaluation, axes vides) persistée avec l'analyse
+   dans extensions.display.radar.view — comme les filtres et la section radar du rapport. */
+function radarViewLoad(){
+  const raw=radarCfgRaw(),v=(raw&&raw.view&&typeof raw.view==="object")?raw.view:{};
+  const fields=radarDimFields();
+  radarState.dim=(v.dim==="cat"||fields.some(f=>f.code===v.dim))?v.dim:"cat";
+  radarState.metric=["avg","max","sum","weighted","count"].indexOf(v.metric)>=0?v.metric:"avg";
+  radarState.eval=["initial","residual","both-side","both-over"].indexOf(v.eval)>=0?v.eval:"both-over";
+  radarState.emptyAxes=v.empty_axes!==false;   // défaut : afficher tous les axes
+}
+function radarViewSave(){
+  const store=radarCfgStore(),v=store.view=(store.view&&typeof store.view==="object")?store.view:{};
+  v.dim=radarState.dim;v.metric=radarState.metric;v.eval=radarState.eval;v.empty_axes=radarState.emptyAxes!==false;
+  markDirty();
 }
 function radarMetricLabel(metric){return t({avg:"radar_metric_avg",max:"radar_metric_max",sum:"radar_metric_sum",weighted:"radar_metric_weighted",count:"radar_metric_count"}[metric]||"radar_metric_avg");}
 
@@ -4079,20 +4101,28 @@ function radarAxisLabel(dim,key){
   if(f.type==="reference"){const o=objectById(key);return o?objectLabel(o):key;}
   const it=(f.items||[]).find(i=>i.code===key);return it?cfItemLabel(it):key;
 }
-/* Axes = valeurs utilisées (ordre des items pour un champ, ordre d'apparition pour la catégorie),
-   « Non renseigné » en dernier lorsqu'au moins un risque n'a pas de valeur. */
-function radarAxes(risks,dim){
-  const used={};risks.forEach(r=>radarKeysOf(r,dim).forEach(k=>{used[k]=(used[k]||0)+1;}));
+/* Axes du radar. `includeEmpty` (défaut) affiche TOUS les axes possibles — toutes les valeurs
+   connues, y compris celles sans risque dans la vue courante (item/instance non utilisé, ou valeur
+   écartée par un filtre actif) : les axes restent alors stables quel que soit le filtre. Sans
+   `includeEmpty`, seuls les axes présents dans la vue (risques visibles) sont tracés. L'univers des
+   valeurs = items du champ / instances du type (champs à valeurs fermées) ou catégories de TOUS les
+   risques (dimension catégorie). « Non renseigné » en dernier si au moins un risque de l'univers
+   considéré n'a pas de valeur. Les valeurs (radarValues) restent, elles, calculées sur les risques
+   passés : un axe hors vue vaut donc 0. */
+function radarAxes(risks,dim,includeEmpty){
+  const count=list=>{const u={};(list||[]).forEach(r=>radarKeysOf(r,dim).forEach(k=>{u[k]=(u[k]||0)+1;}));return u;};
+  const used=count(risks);                             // valeurs présentes dans la vue (filtrée)
+  const uni=includeEmpty?count(analyse.risks):used;    // univers complet (hors filtre) en mode « tous les axes »
   let keys=[];
   const f=(dim==="cat")?null:radarFieldOf(dim);
-  if(dim==="cat"){risks.forEach(r=>radarKeysOf(r,dim).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);}));}
+  if(dim==="cat"){(includeEmpty?(analyse.risks||[]):risks).forEach(r=>radarKeysOf(r,dim).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);}));}
   else if(f&&f.type==="reference"){
-    // axes = instances effectivement référencées, dans l'ordre du référentiel ; ids orphelins ensuite
-    objectsOfType(f.object_type).forEach(o=>{if(used[o.id])keys.push(o.id);});
-    Object.keys(used).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);});
+    // instances du référentiel (toutes si includeEmpty, sinon celles référencées), puis ids orphelins de l'univers
+    objectsOfType(f.object_type).forEach(o=>{if(includeEmpty||used[o.id])keys.push(o.id);});
+    Object.keys(uni).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);});
   }
-  else{keys=f?(f.items||[]).map(i=>i.code).filter(c=>used[c]):[];}
-  if(used["__unset__"])keys.push("__unset__");
+  else{keys=f?(f.items||[]).map(i=>i.code).filter(c=>includeEmpty||used[c]):[];}
+  if(uni["__unset__"])keys.push("__unset__");
   return keys;
 }
 function radarValues(risks,dim,axes,metric,phase){
@@ -4215,7 +4245,7 @@ function radarSyncSeg(){
 }
 /* Modèle courant du radar (partagé écran ↔ export) : axes, séries, échelle. */
 function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRisks();
-  const dim=cfg.dim,metric=cfg.metric,axes=radarAxes(risks,dim);
+  const dim=cfg.dim,metric=cfg.metric,axes=radarAxes(risks,dim,cfg.emptyAxes!==false);
   if(axes.length<3)return {axes,tooFew:true};
   const labels=axes.map(k=>radarAxisLabel(dim,k));
   const perRisk=(metric==="avg"||metric==="max");   // échelle par-risque + bandes de criticité
@@ -4305,11 +4335,14 @@ async function exportRadar(mode){
   }catch(e){toast(t("toast_export_err",e.message));}
 }
 function renderRadars(){
+  // À chaque changement d'analyse (chargement, nouvelle, restauration), restaurer la vue persistée une fois.
+  if(radarViewFor!==analyse){radarViewLoad();radarViewFor=analyse;}
   if(!radarWired){
     const ev=document.getElementById("radarEvalSeg");
-    ev.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||ev.style.pointerEvents==="none")return;radarState.eval=b.dataset.v;renderRadars();});
-    document.getElementById("radarMetric").addEventListener("change",function(){radarState.metric=this.value;renderRadars();});
-    document.getElementById("radarDim").addEventListener("change",function(){radarState.dim=this.value;renderRadars();});
+    ev.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||ev.style.pointerEvents==="none")return;radarState.eval=b.dataset.v;radarViewSave();renderRadars();});
+    document.getElementById("radarMetric").addEventListener("change",function(){radarState.metric=this.value;radarViewSave();renderRadars();});
+    document.getElementById("radarDim").addEventListener("change",function(){radarState.dim=this.value;radarViewSave();renderRadars();});
+    document.getElementById("radarEmptyAxes").addEventListener("change",function(){radarState.emptyAxes=this.checked;radarViewSave();renderRadars();});
     // Infobulles : liste des risques au survol d'un point ; description au survol d'un libellé
     // d'axe ou d'un niveau de criticité de la légende (comme les secteurs des Statistiques).
     const rarea=document.getElementById("radarArea"),rleg=document.getElementById("radarLegend");
@@ -4336,6 +4369,10 @@ function renderRadars(){
   const msel=document.getElementById("radarMetric");
   msel.innerHTML=["avg","max","sum","weighted","count"].map(mv=>'<option value="'+mv+'">'+esc(radarMetricLabel(mv))+'</option>').join("");
   msel.value=radarState.metric;
+  // Bascule « axes vides » : disponible pour toutes les dimensions (garde des axes stables sous filtre).
+  const emptyChk=document.getElementById("radarEmptyAxes");
+  emptyChk.checked=radarState.emptyAxes!==false;emptyChk.disabled=false;
+  document.getElementById("radarEmptyWrap").style.display="inline-flex";
   radarSyncSeg();
   const evalIndep=radarState.metric==="count",evSeg=document.getElementById("radarEvalSeg");
   evSeg.style.opacity=evalIndep?"0.45":"";evSeg.style.pointerEvents=evalIndep?"none":"";
@@ -9983,6 +10020,8 @@ function tmplMatrixBlockXml(attrs,ctx){
 // Bloc {{ radar … }} : SVG autonome (buildRadarExportSVG) -> requête d'image + drawing.
 const TMPL_RADAR_METRIC={average:"avg",avg:"avg",max:"max",maximum:"max",cumulative:"sum",sum:"sum",weighted:"weighted",count:"count",number:"count"};
 const TMPL_RADAR_EVAL={initial:"initial",residual:"residual",side:"both-side",accolees:"both-side","both-side":"both-side",overlay:"both-over",superposees:"both-over","both-over":"both-over",both:"both-over"};
+// empty_axes : show/all/true → tous les axes définis ; hide/used/false → seulement les axes utilisés.
+const TMPL_RADAR_EMPTY={show:true,all:true,"true":true,yes:true,"1":true,on:true,hide:false,used:false,"false":false,no:false,"0":false,off:false};
 function tmplRadarBlockXml(attrs,ctx){
   const dim=(!attrs.dimension||attrs.dimension==="category")?"cat":(attrs.dimension.indexOf("cf.")===0?attrs.dimension.slice(3):attrs.dimension);
   if(dim!=="cat"&&!radarDimFields().some(f=>f.code===dim))tmplWarn("tw_radar_dim",attrs.dimension);   // dimension (cf.<code>) inconnue : champ perso de risque select/checklist/tags absent
@@ -9990,7 +10029,10 @@ function tmplRadarBlockXml(attrs,ctx){
   if(attrs.evaluation&&!TMPL_RADAR_EVAL[String(attrs.evaluation).toLowerCase()])tmplWarn("tw_radar_eval",attrs.evaluation);
   const metric=TMPL_RADAR_METRIC[String(attrs.metric||"avg").toLowerCase()]||"avg";
   const evl=TMPL_RADAR_EVAL[String(attrs.evaluation||"overlay").toLowerCase()]||"both-over";
-  const cfg={dim,metric,eval:evl,title:attrs.title||""};
+  let emptyAxes=true;   // défaut : afficher tous les axes définis (même à 0 risque)
+  if(attrs.empty_axes!=null){const b=TMPL_RADAR_EMPTY[String(attrs.empty_axes).toLowerCase()];
+    if(b==null)tmplWarn("tw_radar_empty",attrs.empty_axes);else emptyAxes=b;}   // valeur non reconnue : signalée, défaut conservé
+  const cfg={dim,metric,eval:evl,title:attrs.title||"",emptyAxes};
   const ast=tmplCombinedFilter(attrs,ctx);
   const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
   const rm=radarComputeModel(cfg,risks);

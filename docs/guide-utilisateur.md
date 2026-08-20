@@ -274,7 +274,8 @@ L'onglet **Radars** propose une lecture synthétique du **profil de risque** sou
 Une **barre d'outils** pilote l'affichage :
 
 - **Évaluation** — *Initial*, *Résiduel*, *Accolés* (deux radars côte à côte) ou *Superposés* (deux polygones sur le même radar, pour visualiser la réduction du risque).
-- **Dimension** — ce que représentent les axes : la **catégorie** de risque, ou un **champ personnalisé à valeurs fermées** rattaché au risque (liste déroulante, tags, liste à cocher).
+- **Dimension** — ce que représentent les axes : la **catégorie** de risque, ou un **champ personnalisé à valeurs fermées** rattaché au risque (liste déroulante, tags, liste à cocher, **référence** à un objet).
+- **Axes vides** — case à cocher (**cochée par défaut**) : affiche **tous les axes possibles** (toutes les valeurs connues), y compris ceux **sans risque** dans la vue — item ou instance non utilisé, **ou valeur écartée par un filtre actif**. Les axes restent ainsi **stables** quand vous filtrez : un axe concerné tombe à **0** au lieu de **disparaître** (ce qui déformait le radar). Décochez la case pour ne conserver que les axes **présents dans la vue**. Disponible pour **toutes les dimensions**, catégorie comprise (dont l'univers d'axes est l'ensemble des catégories de tous les risques).
 - **Métrique** — la valeur mesurée sur chaque axe :
   - **Criticité moyenne** / **Criticité maximale** — sur l'échelle **par risque** de la grille ; le fond est teinté en **bandes de criticité** (mêmes couleurs que la grille).
   - **Criticité cumulée** — la **somme** des scores de l'axe : tient compte à la fois de la gravité **et** du nombre de risques.
@@ -286,6 +287,8 @@ Une **barre d'outils** pilote l'affichage :
 **Infobulles au survol** (comme sur les secteurs des Statistiques) : un **point** affiche la **liste des risques** de l'axe ; un **libellé d'axe** affiche la **description** de la valeur (pour un champ personnalisé dont l'item porte une description) ; un **niveau** dans la légende affiche la **description du niveau de criticité**.
 
 Sous le graphique, un **tableau** récapitule les valeurs par axe. Comme les autres onglets, le radar **respecte les filtres actifs** (§16).
+
+> Les réglages de la barre d'outils (**dimension**, **métrique**, **évaluation** et **axes vides**) sont **enregistrés avec l'analyse** et **retrouvés à la réouverture** du fichier.
 
 **Exporter.** Les boutons **⧉ Copier**, **⭳ PNG** et **⭳ SVG** exportent le radar (titre, graphique et légende), comme les matrices. Le radar peut aussi être ajouté au **rapport** via une section *Radar* configurable (voir *Paramètres › Rapport*, §13).
 

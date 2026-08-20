@@ -256,8 +256,17 @@ Ex. : `{{ matrix type="initial" }}` · `{{ matrix type="initial" filter="categor
 
 ### 4.2 Radar — `{{ radar … }}`
 Attributs : `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`, `cumulative`,
-`weighted`, `count`), `evaluation` (`initial`, `residual`, `side`, `overlay`), `filter`, `title`,
-`width` · `height` (§4.8).
+`weighted`, `count`), `evaluation` (`initial`, `residual`, `side`, `overlay`), `empty_axes`
+(`show`/`all`/`true` — **défaut** — vs `hide`/`used`/`false`), `filter`, `title`, `width` · `height` (§4.8).
+
+**`empty_axes`** — par défaut le radar affiche **tous les axes possibles** (toutes les valeurs connues),
+y compris ceux **sans risque** : items d'un champ à valeurs fermées ou instances d'un champ `reference`
+non utilisés, **et** valeurs écartées par le `filter`. Les axes restent donc **stables** quel que soit le
+filtre — un axe hors périmètre vaut 0 au lieu de disparaître. `empty_axes="hide"` restreint aux axes
+effectivement présents. S'applique à **toutes les dimensions**, `category` comprise (l'univers d'axes est
+alors l'ensemble des catégories de **tous** les risques, indépendamment du `filter`). Valeur non reconnue →
+avertissement `tw_radar_empty`, défaut conservé. Comportement aligné sur l'onglet Radars de l'application
+(bascule « Axes vides », cochée par défaut).
 
 ### 4.3 Tableau — `{{ table … }}`
 | Attribut | Valeurs | Défaut |
