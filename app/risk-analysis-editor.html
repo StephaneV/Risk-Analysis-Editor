@@ -10807,6 +10807,173 @@ function cfBoundKind(ty){ // 'num' | 'date' | 'len' | 'items' | null
   if(ty==="checklist")return "items";
   return null;
 }
+
+/* ============================================================
+   MOTEUR D'EXPRESSION — champs calculés (style Excel) — Lot B
+   Analyseur (lexer + descente récursive) → arbre → évaluateur PUR (aucun eval JS).
+   Valeurs typées : num · date ("AAAA-MM-JJ") · text · bool · nil (absent) · list (collections, lot E).
+   env = { get(nom) → valeur brute/typée ou null(absent), today() → "AAAA-MM-JJ" }.
+   Public : calcParse(src)→AST (jette CalcError), calcEvaluate(src,env)→{ok,type,value}|{ok:false,error},
+            calcCheck(src)→{ok}|{ok:false,error}, calcEnv(vars,todayISO).
+   ============================================================ */
+function calcErr(m){const e=new Error(m);e.calc=true;return e;}
+const CV_NIL={t:"nil",v:null};
+function cvNum(v){return {t:"num",v:+v};}
+function cvDate(v){return {t:"date",v:v};}
+function cvText(v){return {t:"text",v:String(v)};}
+function cvBool(v){return {t:"bool",v:!!v};}
+/* Valeur brute JS → valeur typée (références, tests). {date:"…"} force une date ; {t,v} passe tel quel. */
+function cvOf(raw){
+  if(raw==null)return CV_NIL;
+  if(typeof raw==="object"&&raw.t)return raw;
+  if(typeof raw==="number")return isNaN(raw)?CV_NIL:cvNum(raw);
+  if(typeof raw==="boolean")return cvBool(raw);
+  if(typeof raw==="object"&&typeof raw.date==="string")return cvDate(raw.date);
+  if(Array.isArray(raw))return {t:"list",v:raw.map(cvOf)};
+  return cvText(raw);
+}
+const CALC_DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+function calcDays(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso).trim());if(!m)throw calcErr("Date invalide : "+iso);return Math.round(Date.UTC(+m[1],+m[2]-1,+m[3])/864e5);}
+function calcFromDays(n){const d=new Date(Math.round(n)*864e5),p=x=>String(x).padStart(2,"0");return d.getUTCFullYear()+"-"+p(d.getUTCMonth()+1)+"-"+p(d.getUTCDate());}
+function calcToNum(cv){if(cv.t==="num")return cv.v;if(cv.t==="bool")return cv.v?1:0;if(cv.t==="date")return calcDays(cv.v);
+  if(cv.t==="text"){const s=cv.v.trim();if(s!==""&&!isNaN(+s))return +s;if(CALC_DATE_RE.test(s))return calcDays(s);throw calcErr("Nombre attendu : « "+cv.v+" »");}
+  throw calcErr("Nombre attendu");}
+function calcToDate(cv){if(cv.t==="date")return cv.v;if(cv.t==="num")return calcFromDays(cv.v);if(cv.t==="text"&&CALC_DATE_RE.test(cv.v.trim()))return cv.v.trim();throw calcErr("Date attendue");}
+function calcToBool(cv){if(cv.t==="bool")return cv.v;if(cv.t==="num")return cv.v!==0;if(cv.t==="nil")return false;
+  if(cv.t==="text"){const s=cv.v.trim().toLowerCase();if(s==="true"||s==="vrai")return true;if(s===""||s==="false"||s==="faux")return false;}throw calcErr("Booléen attendu");}
+function calcToText(cv){if(cv.t==="text")return cv.v;if(cv.t==="nil")return "";if(cv.t==="bool")return cv.v?"TRUE":"FALSE";if(cv.t==="date")return cv.v;if(cv.t==="num")return String(cv.v);return "";}
+function calcFlat(v,out){if(v&&v.t==="list")v.v.forEach(x=>calcFlat(x,out));else out.push(v);}
+function calcNums(args,env){const out=[];args.forEach(node=>calcFlat(calcEval(node,env),out));return out.filter(x=>x.t!=="nil").map(calcToNum);}
+function calcTokenize(src){
+  const s=String(src),n=s.length,out=[];let i=0;
+  const isD=c=>c>="0"&&c<="9",isA=c=>/[A-Za-z_]/.test(c),isAN=c=>/[A-Za-z0-9_.]/.test(c);
+  while(i<n){const c=s[i];
+    if(c===" "||c==="\t"||c==="\n"||c==="\r"){i++;continue;}
+    if(isD(c)||(c==="."&&isD(s[i+1]))){let j=i+1;while(j<n&&(isD(s[j])||s[j]==="."))j++;out.push({k:"num",v:parseFloat(s.slice(i,j))});i=j;continue;}
+    if(c==='"'||c==="'"){const q=c;let j=i+1,str="";while(j<n&&s[j]!==q){if(s[j]==="\\"&&j+1<n){str+=s[j+1];j+=2;}else{str+=s[j];j++;}}if(j>=n)throw calcErr("Chaîne non terminée");out.push({k:"str",v:str});i=j+1;continue;}
+    if(isA(c)){let j=i+1;while(j<n&&isAN(s[j]))j++;out.push({k:"id",v:s.slice(i,j)});i=j;continue;}
+    const two=s.substr(i,2);
+    if(two==="<>"||two==="<="||two===">="||two==="!="){out.push({k:"op",v:two==="!="?"<>":two});i+=2;continue;}
+    if("+-*/^&=<>(),".indexOf(c)>=0){out.push({k:"op",v:c});i++;continue;}
+    throw calcErr("Caractère inattendu : « "+c+" »");}
+  out.push({k:"end"});return out;
+}
+function calcParse(src){
+  let s=String(src==null?"":src).trim();if(s[0]==="=")s=s.slice(1);
+  const tk=calcTokenize(s);let p=0;
+  const peek=()=>tk[p],next=()=>tk[p++];
+  const isOp=v=>tk[p].k==="op"&&tk[p].v===v,isKw=v=>tk[p].k==="id"&&tk[p].v.toUpperCase()===v;
+  const eat=v=>{if(!isOp(v))throw calcErr("« "+v+" » attendu");p++;};
+  function pExpr(){return pOr();}
+  function pOr(){let a=pAnd();while(isKw("OR")){p++;a={n:"bin",op:"or",a,b:pAnd()};}return a;}
+  function pAnd(){let a=pNot();while(isKw("AND")){p++;a={n:"bin",op:"and",a,b:pNot()};}return a;}
+  function pNot(){if(isKw("NOT")){p++;return {n:"not",a:pNot()};}return pCmp();}
+  function pCmp(){let a=pConcat();if(peek().k==="op"&&["=","<>","<","<=",">",">="].indexOf(peek().v)>=0){const op=next().v;a={n:"cmp",op,a,b:pConcat()};}return a;}
+  function pConcat(){let a=pSum();while(isOp("&")){p++;a={n:"concat",a,b:pSum()};}return a;}
+  function pSum(){let a=pProd();while(peek().k==="op"&&(peek().v==="+"||peek().v==="-")){const op=next().v;a={n:"bin",op,a,b:pProd()};}return a;}
+  function pProd(){let a=pPow();while(peek().k==="op"&&(peek().v==="*"||peek().v==="/")){const op=next().v;a={n:"bin",op,a,b:pPow()};}return a;}
+  function pPow(){let a=pUnary();if(isOp("^")){p++;a={n:"bin",op:"^",a,b:pPow()};}return a;}
+  function pUnary(){if(peek().k==="op"&&(peek().v==="-"||peek().v==="+")){const op=next().v;return {n:"unary",op,a:pUnary()};}return pPrim();}
+  function pPrim(){const t=peek();
+    if(t.k==="num"){p++;return {n:"num",v:t.v};}
+    if(t.k==="str"){p++;return {n:"str",v:t.v};}
+    if(isOp("(")){p++;const e=pExpr();eat(")");return e;}
+    if(t.k==="id"){const up=t.v.toUpperCase();
+      if(up==="TRUE"||up==="VRAI"){p++;return {n:"bool",v:true};}
+      if(up==="FALSE"||up==="FAUX"){p++;return {n:"bool",v:false};}
+      if(tk[p+1]&&tk[p+1].k==="op"&&tk[p+1].v==="("){p+=2;const args=[];if(!isOp(")")){args.push(pExpr());while(isOp(",")){p++;args.push(pExpr());}}eat(")");return {n:"func",name:up,args};}
+      p++;return {n:"ref",name:t.v};}
+    throw calcErr("Expression attendue");}
+  const ast=pExpr();if(peek().k!=="end")throw calcErr("Fin d'expression attendue");return ast;
+}
+function calcEval(node,env){
+  switch(node.n){
+    case "num":return cvNum(node.v);
+    case "str":return cvText(node.v);
+    case "bool":return cvBool(node.v);
+    case "ref":{const r=env&&env.get?env.get(node.name):null;return r==null?CV_NIL:cvOf(r);}
+    case "unary":{const a=calcEval(node.a,env);if(a.t==="nil")return CV_NIL;const v=calcToNum(a);return cvNum(node.op==="-"?-v:v);}
+    case "concat":return cvText(calcToText(calcEval(node.a,env))+calcToText(calcEval(node.b,env)));
+    case "not":return cvBool(!calcToBool(calcEval(node.a,env)));
+    case "bin":return calcBin(node,env);
+    case "cmp":return calcCmp(node,env);
+    case "func":return calcFunc(node,env);
+  }
+  throw calcErr("Nœud inconnu");
+}
+function calcBin(node,env){
+  const op=node.op;
+  if(op==="and"){return cvBool(calcToBool(calcEval(node.a,env))&&calcToBool(calcEval(node.b,env)));}
+  if(op==="or"){return cvBool(calcToBool(calcEval(node.a,env))||calcToBool(calcEval(node.b,env)));}
+  const A=calcEval(node.a,env),B=calcEval(node.b,env);
+  if(A.t==="nil"||B.t==="nil")return CV_NIL;   // propagation de l'absent
+  if(op==="+"||op==="-"){
+    if(A.t==="date"&&B.t==="date"){if(op==="-")return cvNum(calcDays(A.v)-calcDays(B.v));throw calcErr("Addition de deux dates");}
+    if(A.t==="date")return cvDate(calcFromDays(calcDays(A.v)+(op==="-"?-1:1)*calcToNum(B)));
+    if(B.t==="date"&&op==="+")return cvDate(calcFromDays(calcDays(B.v)+calcToNum(A)));
+  }
+  const a=calcToNum(A),b=calcToNum(B);
+  switch(op){case "+":return cvNum(a+b);case "-":return cvNum(a-b);case "*":return cvNum(a*b);
+    case "/":if(b===0)throw calcErr("Division par zéro");return cvNum(a/b);
+    case "^":return cvNum(Math.pow(a,b));}
+  throw calcErr("Opérateur "+op);
+}
+function calcCmp(node,env){
+  const A=calcEval(node.a,env),B=calcEval(node.b,env),op=node.op;
+  if(A.t==="nil"||B.t==="nil"){const both=A.t==="nil"&&B.t==="nil";if(op==="=")return cvBool(both);if(op==="<>")return cvBool(!both);return cvBool(false);}
+  let cmp;
+  if(A.t==="date"&&B.t==="date"){cmp=A.v<B.v?-1:A.v>B.v?1:0;}
+  else if((A.t==="num"||A.t==="bool"||A.t==="date")&&(B.t==="num"||B.t==="bool"||B.t==="date")){const a=calcToNum(A),b=calcToNum(B);cmp=a<b?-1:a>b?1:0;}
+  else{const c=calcToText(A).localeCompare(calcToText(B),undefined,{numeric:true});cmp=c<0?-1:c>0?1:0;}
+  switch(op){case "=":return cvBool(cmp===0);case "<>":return cvBool(cmp!==0);case "<":return cvBool(cmp<0);case "<=":return cvBool(cmp<=0);case ">":return cvBool(cmp>0);case ">=":return cvBool(cmp>=0);}
+}
+function calcFunc(node,env){
+  const name=node.name,args=node.args,arg=i=>calcEval(args[i],env);
+  const need=n=>{if(args.length!==n)throw calcErr(name+" attend "+n+" argument(s)");};
+  switch(name){
+    case "IF":need(3);return calcEval(calcToBool(arg(0))?args[1]:args[2],env);
+    case "AND":return cvBool(args.length>0&&args.every(a=>calcToBool(calcEval(a,env))));
+    case "OR":return cvBool(args.some(a=>calcToBool(calcEval(a,env))));
+    case "NOT":need(1);return cvBool(!calcToBool(arg(0)));
+    case "SUM":return cvNum(calcNums(args,env).reduce((x,y)=>x+y,0));
+    case "AVERAGE":case "MEAN":{const ns=calcNums(args,env);return ns.length?cvNum(ns.reduce((x,y)=>x+y,0)/ns.length):CV_NIL;}
+    case "MEDIAN":{const ns=calcNums(args,env).slice().sort((x,y)=>x-y);if(!ns.length)return CV_NIL;const m=ns.length>>1;return cvNum(ns.length%2?ns[m]:(ns[m-1]+ns[m])/2);}
+    case "MIN":{const ns=calcNums(args,env);return ns.length?cvNum(Math.min.apply(null,ns)):CV_NIL;}
+    case "MAX":{const ns=calcNums(args,env);return ns.length?cvNum(Math.max.apply(null,ns)):CV_NIL;}
+    case "COUNT":{const out=[];args.forEach(a=>calcFlat(calcEval(a,env),out));return cvNum(out.filter(x=>x.t!=="nil").length);}
+    case "ROUND":{need(2);const x=calcToNum(arg(0)),f=Math.pow(10,calcToNum(arg(1)));return cvNum(Math.round(x*f)/f);}
+    case "ROUNDUP":{need(2);const x=calcToNum(arg(0)),f=Math.pow(10,calcToNum(arg(1)));return cvNum((x<0?-1:1)*Math.ceil(Math.abs(x)*f)/f);}
+    case "ROUNDDOWN":{need(2);const x=calcToNum(arg(0)),f=Math.pow(10,calcToNum(arg(1)));return cvNum((x<0?-1:1)*Math.floor(Math.abs(x)*f)/f);}
+    case "INT":need(1);return cvNum(Math.floor(calcToNum(arg(0))));
+    case "ABS":need(1);return cvNum(Math.abs(calcToNum(arg(0))));
+    case "MOD":{need(2);const a=calcToNum(arg(0)),b=calcToNum(arg(1));if(b===0)throw calcErr("MOD : division par zéro");return cvNum(a-b*Math.floor(a/b));}
+    case "POWER":need(2);return cvNum(Math.pow(calcToNum(arg(0)),calcToNum(arg(1))));
+    case "SQRT":{need(1);const x=calcToNum(arg(0));if(x<0)throw calcErr("SQRT d'un nombre négatif");return cvNum(Math.sqrt(x));}
+    case "CONCAT":return cvText(args.map(a=>calcToText(calcEval(a,env))).join(""));
+    case "LEN":need(1);return cvNum(calcToText(arg(0)).length);
+    case "TODAY":need(0);if(!(env&&env.today))throw calcErr("TODAY() indisponible");return cvDate(env.today());
+    case "DATE":{need(3);return cvDate(calcFromDays(Math.round(Date.UTC(calcToNum(arg(0)),calcToNum(arg(1))-1,calcToNum(arg(2)))/864e5)));}
+    case "YEAR":need(1);return cvNum(+calcToDate(arg(0)).slice(0,4));
+    case "MONTH":need(1);return cvNum(+calcToDate(arg(0)).slice(5,7));
+    case "DAY":need(1);return cvNum(+calcToDate(arg(0)).slice(8,10));
+    case "EDATE":{need(2);const iso=calcToDate(arg(0)),n=Math.round(calcToNum(arg(1)));
+      const y=+iso.slice(0,4),mo=+iso.slice(5,7),d=+iso.slice(8,10),tot=y*12+(mo-1)+n,ny=Math.floor(tot/12),nm=(tot%12+12)%12+1;
+      const last=new Date(Date.UTC(ny,nm,0)).getUTCDate();return cvDate(calcFromDays(Math.round(Date.UTC(ny,nm-1,Math.min(d,last))/864e5)));}
+    case "DATEDIF":{need(3);const a=calcToDate(arg(0)),b=calcToDate(arg(1)),u=calcToText(arg(2)).toUpperCase();
+      if(u==="D")return cvNum(calcDays(b)-calcDays(a));
+      const ay=+a.slice(0,4),am=+a.slice(5,7),ad=+a.slice(8,10),by=+b.slice(0,4),bm=+b.slice(5,7),bd=+b.slice(8,10);
+      if(u==="Y")return cvNum((by-ay)-((bm<am||(bm===am&&bd<ad))?1:0));
+      if(u==="M")return cvNum((by-ay)*12+(bm-am)-((bd<ad)?1:0));
+      throw calcErr("DATEDIF : unité inconnue « "+u+" » (D, M ou Y)");}
+  }
+  throw calcErr("Fonction inconnue : "+name);
+}
+function calcEvaluate(src,env){try{const v=calcEval(calcParse(src),env);return {ok:true,type:v.t,value:v.v};}catch(e){return {ok:false,error:(e&&e.message)||String(e)};}}
+function calcCheck(src){try{calcParse(src);return {ok:true};}catch(e){return {ok:false,error:(e&&e.message)||String(e)};}}
+/* Environnement d'évaluation : vars = { nom → valeur brute/typée }, today = "AAAA-MM-JJ". */
+function calcEnv(vars,todayISO){vars=vars||{};return {
+  get:name=>Object.prototype.hasOwnProperty.call(vars,name)?vars[name]:null,
+  today:()=>{if(!todayISO)throw calcErr("TODAY() indisponible (aucune date fournie)");return todayISO;}};}
 function renderCustomFields(){
   /* Toute modification de la liste des champs (ajout, édition, suppression, réordonnancement)
      passe par ici : c'est le point unique où reconstruire les barres de filtres, qui en
