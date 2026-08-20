@@ -1785,133 +1785,149 @@
         },
         {
           "code": "besoin_d",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Disponibilité"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Élevé"
-              }
+                "fr": "Élevé"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Critique"
-              }
+                "fr": "Critique"
+              },
+              "color": "#d64545"
             }
           ]
         },
         {
           "code": "besoin_i",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Intégrité"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Élevé"
-              }
+                "fr": "Élevé"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Critique"
-              }
+                "fr": "Critique"
+              },
+              "color": "#d64545"
             }
           ]
         },
         {
           "code": "besoin_c",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Confidentialité"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Élevé"
-              }
+                "fr": "Élevé"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Critique"
-              }
+                "fr": "Critique"
+              },
+              "color": "#d64545"
             }
           ]
         },
         {
           "code": "besoin_p",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Preuve / Traçabilité"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Élevé"
-              }
+                "fr": "Élevé"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Critique"
-              }
+                "fr": "Critique"
+              },
+              "color": "#d64545"
             }
           ]
         }
@@ -2066,34 +2082,38 @@
         },
         {
           "code": "gravite",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Gravité"
           },
           "items": [
             {
-              "code": "g1",
+              "value": 1,
               "label": {
-                "fr": "G1 — Mineure"
-              }
+                "fr": "Mineure"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "g2",
+              "value": 2,
               "label": {
-                "fr": "G2 — Significative"
-              }
+                "fr": "Significative"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "g3",
+              "value": 3,
               "label": {
-                "fr": "G3 — Grave"
-              }
+                "fr": "Grave"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "g4",
+              "value": 4,
               "label": {
-                "fr": "G4 — Critique"
-              }
+                "fr": "Critique"
+              },
+              "color": "#d64545"
             }
           ]
         },
@@ -2168,133 +2188,149 @@
         },
         {
           "code": "dependance",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Dépendance"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Fort"
-              }
+                "fr": "Fort"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Maximal"
-              }
+                "fr": "Maximal"
+              },
+              "color": "#d64545"
             }
           ]
         },
         {
           "code": "penetration",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Pénétration"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Fort"
-              }
+                "fr": "Fort"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Maximal"
-              }
+                "fr": "Maximal"
+              },
+              "color": "#d64545"
             }
           ]
         },
         {
           "code": "maturite",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Maturité cyber"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Fort"
-              }
+                "fr": "Fort"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Maximal"
-              }
+                "fr": "Maximal"
+              },
+              "color": "#d64545"
             }
           ]
         },
         {
           "code": "confiance",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Confiance"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Fort"
-              }
+                "fr": "Fort"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Maximal"
-              }
+                "fr": "Maximal"
+              },
+              "color": "#d64545"
             }
           ]
         },
@@ -2468,34 +2504,38 @@
         },
         {
           "code": "pertinence",
-          "type": "select",
+          "type": "scale",
           "label": {
             "fr": "Pertinence (SR/OV)"
           },
           "items": [
             {
-              "code": "1",
+              "value": 1,
               "label": {
-                "fr": "1 — Faible"
-              }
+                "fr": "Faible"
+              },
+              "color": "#2e9e5b"
             },
             {
-              "code": "2",
+              "value": 2,
               "label": {
-                "fr": "2 — Modéré"
-              }
+                "fr": "Modéré"
+              },
+              "color": "#e0b93a"
             },
             {
-              "code": "3",
+              "value": 3,
               "label": {
-                "fr": "3 — Fort"
-              }
+                "fr": "Fort"
+              },
+              "color": "#e6862e"
             },
             {
-              "code": "4",
+              "value": 4,
               "label": {
-                "fr": "4 — Maximal"
-              }
+                "fr": "Maximal"
+              },
+              "color": "#d64545"
             }
           ]
         },
@@ -2517,10 +2557,10 @@
         "nom": "Gestion de la relation client",
         "nature": "processus",
         "responsable": "Direction commerciale",
-        "besoin_d": "3",
-        "besoin_i": "3",
-        "besoin_c": "4",
-        "besoin_p": "2"
+        "besoin_d": 3,
+        "besoin_i": 3,
+        "besoin_c": 4,
+        "besoin_p": 2
       }
     },
     {
@@ -2530,10 +2570,10 @@
         "nom": "Base de données clients",
         "nature": "information",
         "responsable": "DPO / Marketing",
-        "besoin_d": "3",
-        "besoin_i": "3",
-        "besoin_c": "4",
-        "besoin_p": "3"
+        "besoin_d": 3,
+        "besoin_i": 3,
+        "besoin_c": 4,
+        "besoin_p": 3
       }
     },
     {
@@ -2543,10 +2583,10 @@
         "nom": "Facturation et comptabilité",
         "nature": "processus",
         "responsable": "Direction administrative et financière",
-        "besoin_d": "3",
-        "besoin_i": "4",
-        "besoin_c": "3",
-        "besoin_p": "4"
+        "besoin_d": 3,
+        "besoin_i": 4,
+        "besoin_c": 3,
+        "besoin_p": 4
       }
     },
     {
@@ -2556,10 +2596,10 @@
         "nom": "Gestion des ressources humaines",
         "nature": "processus",
         "responsable": "Direction des ressources humaines",
-        "besoin_d": "2",
-        "besoin_i": "3",
-        "besoin_c": "4",
-        "besoin_p": "3"
+        "besoin_d": 2,
+        "besoin_i": 3,
+        "besoin_c": 4,
+        "besoin_p": 3
       }
     },
     {
@@ -2569,10 +2609,10 @@
         "nom": "Production applicative (logiciel métier)",
         "nature": "processus",
         "responsable": "Direction des systèmes d'information",
-        "besoin_d": "4",
-        "besoin_i": "3",
-        "besoin_c": "2",
-        "besoin_p": "2"
+        "besoin_d": 4,
+        "besoin_i": 3,
+        "besoin_c": 2,
+        "besoin_p": 2
       }
     },
     {
@@ -2582,10 +2622,10 @@
         "nom": "Messagerie et collaboration",
         "nature": "information",
         "responsable": "Direction des systèmes d'information",
-        "besoin_d": "3",
-        "besoin_i": "2",
-        "besoin_c": "3",
-        "besoin_p": "2"
+        "besoin_d": 3,
+        "besoin_i": 2,
+        "besoin_c": 3,
+        "besoin_p": 2
       }
     },
     {
@@ -2721,7 +2761,7 @@
         "criteres": [
           "C"
         ],
-        "gravite": "g4",
+        "gravite": 4,
         "impacts": "Sanction RGPD, atteinte à la réputation, perte de confiance des clients."
       }
     },
@@ -2734,7 +2774,7 @@
         "criteres": [
           "D"
         ],
-        "gravite": "g3",
+        "gravite": 3,
         "impacts": "Arrêt de la production, pertes financières, retards de livraison."
       }
     },
@@ -2748,7 +2788,7 @@
           "I",
           "P"
         ],
-        "gravite": "g3",
+        "gravite": 3,
         "impacts": "Erreurs comptables, litiges, non-conformité fiscale."
       }
     },
@@ -2761,7 +2801,7 @@
         "criteres": [
           "C"
         ],
-        "gravite": "g3",
+        "gravite": 3,
         "impacts": "Atteinte à la vie privée des salariés, sanction RGPD."
       }
     },
@@ -2775,7 +2815,7 @@
           "I",
           "P"
         ],
-        "gravite": "g2",
+        "gravite": 2,
         "impacts": "Fraude au virement, usurpation, décisions erronées."
       }
     },
@@ -2788,7 +2828,7 @@
         "criteres": [
           "D"
         ],
-        "gravite": "g2",
+        "gravite": 2,
         "impacts": "Perte de chiffre d'affaires, insatisfaction des clients."
       }
     },
@@ -2798,10 +2838,10 @@
       "values": {
         "nom": "Hébergeur cloud (IaaS)",
         "categorie": "fournisseur",
-        "dependance": "4",
-        "penetration": "3",
-        "maturite": "3",
-        "confiance": "3",
+        "dependance": 4,
+        "penetration": 3,
+        "maturite": 3,
+        "confiance": 3,
         "menace": "elevee"
       }
     },
@@ -2811,10 +2851,10 @@
       "values": {
         "nom": "Éditeur du logiciel métier (ERP)",
         "categorie": "fournisseur",
-        "dependance": "4",
-        "penetration": "4",
-        "maturite": "2",
-        "confiance": "2",
+        "dependance": 4,
+        "penetration": 4,
+        "maturite": 2,
+        "confiance": 2,
         "menace": "critique"
       }
     },
@@ -2824,10 +2864,10 @@
       "values": {
         "nom": "Prestataire d'infogérance",
         "categorie": "prestataire",
-        "dependance": "3",
-        "penetration": "4",
-        "maturite": "3",
-        "confiance": "3",
+        "dependance": 3,
+        "penetration": 4,
+        "maturite": 3,
+        "confiance": 3,
         "menace": "elevee"
       }
     },
@@ -2837,10 +2877,10 @@
       "values": {
         "nom": "Sous-traitant de la paie",
         "categorie": "prestataire",
-        "dependance": "2",
-        "penetration": "2",
-        "maturite": "2",
-        "confiance": "3",
+        "dependance": 2,
+        "penetration": 2,
+        "maturite": 2,
+        "confiance": 3,
         "menace": "moyenne"
       }
     },
@@ -2850,10 +2890,10 @@
       "values": {
         "nom": "Client grand compte",
         "categorie": "client",
-        "dependance": "2",
-        "penetration": "1",
-        "maturite": "3",
-        "confiance": "3",
+        "dependance": 2,
+        "penetration": 1,
+        "maturite": 3,
+        "confiance": 3,
         "menace": "faible"
       }
     },
@@ -2863,10 +2903,10 @@
       "values": {
         "nom": "Autorité de contrôle (CNIL)",
         "categorie": "autorite",
-        "dependance": "1",
-        "penetration": "1",
-        "maturite": "4",
-        "confiance": "4",
+        "dependance": 1,
+        "penetration": 1,
+        "maturite": 4,
+        "confiance": 4,
         "menace": "faible"
       }
     },
@@ -2879,7 +2919,7 @@
         "motivation": "Gain financier par extorsion (chiffrement et menace de divulgation).",
         "ressources": "importantes",
         "activite": "elevee",
-        "pertinence": "4",
+        "pertinence": 4,
         "objectif_vise": "Chiffrer le SI et exiger une rançon."
       }
     },
@@ -2892,7 +2932,7 @@
         "motivation": "Espionnage stratégique et positionnement durable.",
         "ressources": "illimitees",
         "activite": "moderee",
-        "pertinence": "2",
+        "pertinence": 2,
         "objectif_vise": "Exfiltrer des informations sensibles sur la durée."
       }
     },
@@ -2905,7 +2945,7 @@
         "motivation": "Vengeance ou gain personnel.",
         "ressources": "limitees",
         "activite": "faible",
-        "pertinence": "3",
+        "pertinence": 3,
         "objectif_vise": "Détourner ou divulguer des données internes."
       }
     },
@@ -2918,7 +2958,7 @@
         "motivation": "Avantage économique.",
         "ressources": "significatives",
         "activite": "faible",
-        "pertinence": "2",
+        "pertinence": 2,
         "objectif_vise": "Obtenir des informations commerciales."
       }
     },
@@ -2931,7 +2971,7 @@
         "motivation": "Défense d'une cause idéologique.",
         "ressources": "limitees",
         "activite": "moderee",
-        "pertinence": "2",
+        "pertinence": 2,
         "objectif_vise": "Perturber les services (DDoS) et dégrader l'image."
       }
     }
