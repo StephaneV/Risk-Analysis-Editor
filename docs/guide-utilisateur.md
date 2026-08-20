@@ -173,7 +173,7 @@ L'onglet **Risques** liste tous les risques de l'analyse. Chaque ligne montre :
 
 ### Créer ou modifier un risque
 
-Cliquez sur une ligne (ou sur l'icône ✎) pour ouvrir la **fiche du risque**.
+Cliquez sur une ligne (ou sur l'icône ✎) pour ouvrir la **fiche du risque**. Un clic sur une **cellule précise** ouvre la fiche **directement sur le champ correspondant** : cliquez la *catégorie* pour éditer la catégorie, une pastille de *cotation* pour vous placer sur ce bloc d'évaluation, la colonne *mesures* pour ouvrir la section des liens, etc. Ce confort de saisie vaut aussi pour les onglets **Mesures**, **Liens** (vue *Détails*), **Objets** et **Plan d'action** (échéancier, statut, par responsable).
 
 ![Fiche d'un risque](images/guide-08-fiche-risque.png)
 

@@ -6199,12 +6199,12 @@ function planSortByDate(list){
 function planRow(m){
   const ov=isOverdue(m);
   return '<tr'+(ov?' class="overdue-row"':'')+' data-mid="'+esc(m.id)+'">'+
-    '<td><span class="id-badge">'+esc(m.id)+'</span></td>'+
-    '<td><b>'+esc(m.label)+'</b></td>'+
-    '<td class="muted">'+esc(m.responsible||"—")+'</td>'+
-    '<td>'+(m.due_date?esc(fmtDate(m.due_date))+(ov?' <span class="plan-late">'+esc(t("plan_overdue"))+'</span>':''):'<span class="muted">—</span>')+'</td>'+
-    '<td>'+statusBadge(m.status)+'</td>'+
-    '<td>'+planCovered(m.id)+'</td></tr>';
+    '<td data-col="id"><span class="id-badge">'+esc(m.id)+'</span></td>'+
+    '<td data-col="measure"><b>'+esc(m.label)+'</b></td>'+
+    '<td class="muted" data-col="resp">'+esc(m.responsible||"—")+'</td>'+
+    '<td data-col="due">'+(m.due_date?esc(fmtDate(m.due_date))+(ov?' <span class="plan-late">'+esc(t("plan_overdue"))+'</span>':''):'<span class="muted">—</span>')+'</td>'+
+    '<td data-col="status">'+statusBadge(m.status)+'</td>'+
+    '<td data-col="covered">'+planCovered(m.id)+'</td></tr>';
 }
 function planTable(list){
   // Conteneur à défilement : sur écran étroit le tableau défile au lieu de pousser la page.
@@ -6218,13 +6218,13 @@ function planCard(m){
      d'une colonne de statut à l'autre — le glisser-déposer n'est plus le seul moyen. */
   const nom=t("a11y_plan_card",m.id,m.label,statusLabel(m.status||"proposed"));
   return '<div class="plan-card'+(ov?" overdue":"")+'" data-mid="'+esc(m.id)+'" draggable="true" style="cursor:pointer"'+
-    ' tabindex="0" role="button" aria-label="'+esc(nom)+'"><div><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
+    ' tabindex="0" role="button" aria-label="'+esc(nom)+'"><div data-col="measure"><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
     ((m.due_date||m.responsible)?'<div class="muted" style="margin-top:4px;font-size:11px">'+
-      (m.due_date?'<span'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(fmtDate(m.due_date))+(ov?' ⚠':'')+'</span>':'')+
-      (m.due_date&&m.responsible?' · ':'')+(m.responsible?esc(m.responsible):'')+'</div>':'')+
-    (risks.length?'<div class="pill-list" style="margin-top:5px">'+risks.map(id=>'<span class="pill" data-tip-r="'+esc(id)+'">'+esc(id)+'</span>').join("")+'</div>':'')+
+      (m.due_date?'<span data-col="due"'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(fmtDate(m.due_date))+(ov?' ⚠':'')+'</span>':'')+
+      (m.due_date&&m.responsible?' · ':'')+(m.responsible?'<span data-col="resp">'+esc(m.responsible)+'</span>':'')+'</div>':'')+
+    (risks.length?'<div class="pill-list" style="margin-top:5px" data-col="covered">'+risks.map(id=>'<span class="pill" data-tip-r="'+esc(id)+'">'+esc(id)+'</span>').join("")+'</div>':'')+
     customFieldsFor("measure").filter(f=>(f.type==="tags"||f.type==="progress")&&cfHasVal((m.custom||{})[f.code]))
-      .map(f=>'<div style="margin-top:5px">'+cfDisplayHTML(f,(m.custom||{})[f.code])+'</div>').join("")+
+      .map(f=>'<div style="margin-top:5px" data-col="cf:'+esc(f.code)+'">'+cfDisplayHTML(f,(m.custom||{})[f.code])+'</div>').join("")+
   '</div>';
 }
 function renderPlanSummary(){
@@ -6311,7 +6311,8 @@ function renderPlan(){
   let dragId=null;
   area.addEventListener("click",e=>{
     if(e.target.closest("[data-open-r],[data-open-m]"))return; // les pastilles ouvrent leur propre fiche
-    const el=e.target.closest("[data-mid]");if(el)openMeasureModal(el.dataset.mid);});
+    const el=e.target.closest("[data-mid]");if(!el)return;
+    const cc=e.target.closest("[data-col]");openMeasureModal(el.dataset.mid,null,cc&&cc.dataset.col);});
   /* Alternative clavier au glisser-déposer (vue Par statut) :
      Entrée/Espace ouvre la mesure, Ctrl+←/→ la fait changer de colonne. */
   area.addEventListener("keydown",e=>{
@@ -7061,7 +7062,7 @@ function renderColHead(table,trEl,tableElId,stKey){
 function renderColRow(table,row){
   return effectiveCols(table).map(c=>{
     if(c.pinned==="last")return actionCell(table,row);
-    return '<td>'+c.cell(row)+'</td>';
+    return '<td data-col="'+esc(c.key)+'">'+c.cell(row)+'</td>';
   }).join("");
 }
 function actionCell(table,row){
@@ -7325,7 +7326,7 @@ function renderRisks(){
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.dataset.rid=r.id;
     tr.innerHTML=renderColRow("risks",r);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,.row-grip,[data-open-m],[data-open-r]"))return;openRiskModal(r.id);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
     tb.appendChild(tr);
   });
 }
@@ -7355,7 +7356,7 @@ function levelSelect(axis,val){
 }
 /* dup (duplication) : {prefill, linked} — la modale s'ouvre en CRÉATION pré-remplie ;
    rien n'existe tant que l'utilisateur ne valide pas (Annuler = aucune trace). */
-function openRiskModal(id,dup){
+function openRiskModal(id,dup,focusCol){
   const isNew=!id;
   const r=isNew?(dup&&dup.prefill?dup.prefill:{id:nextId(analyse.risks,"R"),label:"",category:"",description:"",owner:"",
     initial_assessment:{probability:probabilityLevels()[0].value,severity:severityLevels()[0].value},
@@ -7449,6 +7450,9 @@ function openRiskModal(id,dup){
   /* Compteur « liées / total » de la section des mesures, tenu à jour à chaque case cochée
      — il reste ainsi lisible lorsque la section est repliée. */
   refreshLinkCount();   // le suivi est assuré par l'écouteur global sur #linkList
+  // Focus du champ correspondant à la cellule cliquée (mesures liées → section des liens ; évolution → bloc résiduel).
+  if(focusCol)modalFocusCol(document.getElementById("modalBody"),focusCol,
+    {id:"#f_id",risk:"#f_label",cat:"#f_cat",owner:"#f_prop",initial:"#f_ip",residual:"#f_rp",evolution:"#f_rp",measures:"#linkList"});
 }
 
 /* ============================================================
@@ -7497,7 +7501,7 @@ function renderMeasures(){
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.dataset.rid=m.id;
     tr.innerHTML=renderColRow("measures",m);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,.row-grip,[data-open-m],[data-open-r]"))return;openMeasureModal(m.id);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
     tb.appendChild(tr);
   });
 }
@@ -7540,7 +7544,7 @@ document.getElementById("measuresTable").addEventListener("click",e=>{
 });
 /* dup (duplication) : {prefill, linked} — la modale s'ouvre en CRÉATION pré-remplie ;
    rien n'existe tant que l'utilisateur ne valide pas (Annuler = aucune trace). */
-function openMeasureModal(id,dup){
+function openMeasureModal(id,dup,focusCol){
   const isNew=!id;
   const m=isNew?(dup&&dup.prefill?dup.prefill:{id:nextId(analyse.measures,"M"),label:"",type:"technical",status:"proposed"})
     :JSON.parse(JSON.stringify(measureById(id)));
@@ -7590,6 +7594,9 @@ function openMeasureModal(id,dup){
   if(isNew)addModalSaveAndNew(()=>openMeasureModal(null));   // saisie en série
   // Même vivier que le propriétaire d'un risque : c'est la même population.
   attachCompletion(document.getElementById("f_resp"),"people",t("cbx_people"));
+  // Focus du champ correspondant à la cellule cliquée (risques couverts → section des liens).
+  if(focusCol)modalFocusCol(document.getElementById("modalBody"),focusCol,
+    {id:"#f_id",measure:"#f_label",type:"#f_type",status:"#f_status",resp:"#f_resp",due:"#f_due",cost:"#f_cost",covered:"#linkList"});
 }
 
 /* ============================================================
@@ -7869,11 +7876,12 @@ document.getElementById("linkDetailsArea").addEventListener("click",e=>{
       });
     },{danger:true});return;}
   const row=e.target.closest(".linkrow");if(!row)return;
-  openLinkModal(row.dataset.r,row.dataset.m);
+  const td=e.target.closest("td[data-col]");
+  openLinkModal(row.dataset.r,row.dataset.m,td&&td.dataset.col);
 });
 
 // Modale d'édition d'un lien : Notes (comment) + champs personnalisés de cible « link ».
-function openLinkModal(rid,mid){
+function openLinkModal(rid,mid,focusCol){
   const tr=treatmentOf(rid,mid);if(!tr)return;
   const r=riskById(rid),m=measureById(mid),cf=customFieldsFor("link");
   const body=
@@ -7891,6 +7899,8 @@ function openLinkModal(rid,mid){
     if(Object.keys(cc.custom).length)tr.custom=cc.custom;else delete tr.custom;
     markDirty();renderLinks();return true;
   });
+  // Colonnes rid/risk/mid/measure : non éditables ici (en-tête) → focus par défaut (notes).
+  if(focusCol)modalFocusCol(document.getElementById("modalBody"),focusCol,{notes:"#l_comment"});
 }
 document.getElementById("btnImportLinks").addEventListener("click",()=>openImportModal("links"));
 document.getElementById("btnExportLinks").addEventListener("click",exportLinksCSV);
@@ -11183,8 +11193,8 @@ function renderObjects(){
       h+='<div class="table-scroll"><table><thead><tr><th class="muted">'+esc(t("obj_id"))+'</th>'+
         attrs.map(a=>'<th>'+esc(cfLabel(a))+'</th>').join("")+'<th></th></tr></thead><tbody>';
       insts.forEach(inst=>{
-        h+='<tr><td class="muted">'+esc(inst.id)+'</td>'+
-          attrs.map(a=>'<td>'+cfDisplayHTML(a,(inst.values||{})[a.code],true)+'</td>').join("")+
+        h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
+          attrs.map(a=>'<td data-col="cf:'+esc(a.code)+'">'+cfDisplayHTML(a,(inst.values||{})[a.code],true)+'</td>').join("")+
           '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
           '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
       });
@@ -11195,7 +11205,7 @@ function renderObjects(){
   });
 }
 /* Modale d'une INSTANCE. onSaved(id) : rappelé après enregistrement (création à la volée, Lot 4). */
-function openObjectModal(typeCode,id,onSaved){
+function openObjectModal(typeCode,id,onSaved,focusCol){
   const ot=objectTypeByCode(typeCode); if(!ot)return;
   const isNew=id==null, existing=isNew?null:objectById(id);
   const inst=isNew?{type:typeCode,values:{}}:JSON.parse(JSON.stringify(existing||{type:typeCode,values:{}}));
@@ -11216,13 +11226,23 @@ function openObjectModal(typeCode,id,onSaved){
     }}
   ]);
   root=[...document.querySelectorAll('body > .modal-bg')].pop();
+  // Focus sur le contrôle de l'attribut correspondant à la cellule cliquée (col « cf:<code> »).
+  if(focusCol)modalFocusCol(root,focusCol,{});
 }
-document.getElementById("view-objects").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.objAdd!=null)return openObjectModal(b.dataset.objAdd,null);
-  if(b.dataset.objEdit!=null){const inst=objectById(b.dataset.objEdit);if(inst)openObjectModal(inst.type,inst.id);return;}
-  if(b.dataset.objDel!=null){const inst=objectById(b.dataset.objDel);if(!inst)return;
-    const uses=objRefUsages(inst.id),msg=uses.length?t("obj_del_used",uses.length):t("obj_del_confirm");
-    confirmModal(msg,()=>{objRemoveRefId(inst.id);const arr=objectsAll(),i=arr.findIndex(o=>o.id===inst.id);if(i>=0)arr.splice(i,1);markDirty();renderAll();},{danger:true});return;}
+document.getElementById("view-objects").addEventListener("click",e=>{const b=e.target.closest("button");
+  if(b){
+    if(b.dataset.objAdd!=null)return openObjectModal(b.dataset.objAdd,null);
+    if(b.dataset.objEdit!=null){const inst=objectById(b.dataset.objEdit);if(inst)openObjectModal(inst.type,inst.id);return;}
+    if(b.dataset.objDel!=null){const inst=objectById(b.dataset.objDel);if(!inst)return;
+      const uses=objRefUsages(inst.id),msg=uses.length?t("obj_del_used",uses.length):t("obj_del_confirm");
+      confirmModal(msg,()=>{objRemoveRefId(inst.id);const arr=objectsAll(),i=arr.findIndex(o=>o.id===inst.id);if(i>=0)arr.splice(i,1);markDirty();renderAll();},{danger:true});return;}
+    return;
+  }
+  // Clic sur une ligne d'instance → édition, focus sur l'attribut de la cellule cliquée.
+  const row=e.target.closest("tr[data-obj-row]");if(!row)return;
+  const inst=objectById(row.dataset.objRow);if(!inst)return;
+  const td=e.target.closest("td[data-col]");
+  openObjectModal(inst.type,inst.id,null,td&&td.dataset.col);
 });
 
 /* ----- Champs personnalisés : contrôles de saisie, lecture, validation ----- */
@@ -12207,6 +12227,34 @@ function focusFirstIn(root){
     if(list.length){list[0].focus();return;}
   }
 }
+/* Ergonomie : clic sur une cellule d'un registre → ouvre la modale ET donne le focus au
+   champ correspondant à la colonne cliquée. Résout la clé de colonne (« col ») vers un
+   élément de la modale via un mappage { col: sélecteur } ; une colonne de champ perso
+   « cf:<code> » cible le contrôle [data-cf="<code>"] (le dernier trouvé = section de
+   l'entité, pas un éventuel homonyme de cotation). Le focus déplie les sections repliées
+   ancêtres, fait défiler jusqu'au champ et sélectionne le texte d'une saisie courte. */
+function modalColTarget(root,col,map){
+  if(!root||!col)return null;
+  if(col.indexOf("cf:")===0){const code=col.slice(3);
+    const list=[...root.querySelectorAll("[data-cf]")].filter(n=>n.dataset.cf===code);
+    return list.length?list[list.length-1]:null;}
+  const sel=map&&map[col];return sel?root.querySelector(sel):null;
+}
+function modalFocusEl(el,root){
+  if(!el)return false;
+  for(let p=el.parentElement;p&&p!==root;p=p.parentElement){if(p.tagName==="DETAILS"&&!p.open)p.open=true;}
+  const inner=el.matches("input,select,textarea,button,[tabindex]")?el:el.querySelector("input,select,textarea,button,[tabindex]");
+  const tgt=inner||el;
+  // Zone Markdown affichée en aperçu : basculer en édition, sinon le textarea est masqué (focus sans effet).
+  if(tgt.tagName==="TEXTAREA"&&tgt._mdSetMode&&tgt._mdPreview&&tgt._mdPreview())tgt._mdSetMode(false);
+  try{tgt.focus({preventScroll:true});}catch(_){try{tgt.focus();}catch(__){}}
+  if(tgt.scrollIntoView)try{tgt.scrollIntoView({block:"center"});}catch(_){}
+  // Curseur en FIN de valeur (et non sélection totale) : évite d'écraser la valeur si l'utilisateur
+  // se met à taper. setSelectionRange lève sur certains types (nombre, date) → ignoré.
+  if(tgt.tagName==="INPUT"||tgt.tagName==="TEXTAREA"){try{const n=(tgt.value||"").length;tgt.setSelectionRange(n,n);}catch(_){}}
+  return true;
+}
+function modalFocusCol(root,col,map){const el=modalColTarget(root,col,map);return el?modalFocusEl(el,root):false;}
 document.addEventListener("keydown",e=>{
   if(e.key!=="Tab")return;
   const top=topLayer();if(!top)return;
