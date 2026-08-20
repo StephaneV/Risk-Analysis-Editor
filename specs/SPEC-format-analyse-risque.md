@@ -227,7 +227,7 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `code` | chaîne | O | Identifiant du champ, **unique**, stable. Sert de clé dans les objets `custom` et d'en-tête de colonne à l'export CSV. |
 | `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"cotation"` (évaluation initiale/résiduelle d'un risque), `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
-| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"scale"` (échelle : niveaux à valeur numérique, §4.6.5), `"progress"` (barre de progression 0–100 %), `"reference"` (référence vers une ou plusieurs instances d'objet, §4.7). |
+| `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"scale"` (échelle : niveaux à valeur numérique, §4.6.5), `"progress"` (barre de progression 0–100 %), `"reference"` (référence vers une ou plusieurs instances d'objet, §4.7), `"computed"` (valeur calculée par une expression, §4.6.6). |
 | `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : `code` du type d'objet ciblé (`object_types[].code`, §4.7). La valeur stockée est alors l'`id` d'une instance (ou un tableau d'`id` si `multiple`). |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
 | `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** (`select`, `checklist`, `tags`, `boolean`, `reference`) **et aux cibles `risk`, `measure`, `link`** ; ignoré ailleurs. Cf. § *Filtrage par champ personnalisé*. |
@@ -270,6 +270,7 @@ Chaque objet `custom` associe un `code` de champ à sa valeur, selon le type :
 | `scale` | **nombre** — la `value` du niveau choisi (§4.6.5) |
 | `progress` | nombre entier `0`–`100` (pourcentage) |
 | `reference` | `id` d'une instance d'objet (`multiple` faux) ou tableau d'`id` d'instances (`multiple` vrai) |
+| `computed` | **rien** — champ dérivé, non stocké dans `custom` (§4.6.6) |
 
 Exemple :
 
@@ -314,6 +315,21 @@ colorée** (couleur du niveau). Voir la spécification dédiée [`SPEC-champs-ca
 ```
 
 ---
+
+#### 4.6.6 Type `computed` (valeur calculée)
+
+Un champ **calculé** porte une **`expression`** (chaîne, obligatoire) — un langage **inspiré d'Excel** — et
+un **`result_type`** (`number` / `integer` / `date` / `text` / `boolean`, défaut `number`). Il est
+**dérivé** : sa valeur n'est **pas** écrite dans `custom`, elle est **recalculée à l'affichage**. Options :
+`decimals` (résultat numérique), `unit` (suffixe), `date_format` (résultat date), `alert` (`{ min?, max?,
+color? }` — met la valeur en évidence hors plage). Non saisissable (exclu des formulaires et de l'import CSV).
+
+L'expression réfère aux champs de la **même entité** (`cf.<code>`) et à des grandeurs **dérivées**
+(`score_initial`, `score_residual`, `criticality_initial`/`residual` pour un risque ; `due_date`, `cost`,
+`status`, `overdue` pour une mesure), et à `TODAY()`. Aucun `eval` : moteur d'expression maison. La
+spécification complète (grammaire, fonctions, portée) est dans
+[`SPEC-champs-calcules.md`](SPEC-champs-calcules.md). Un **cache** informatif des valeurs peut être écrit dans
+`extensions.display.computed` (jamais faisant foi, recalculé à l'ouverture).
 
 #### 4.6.4 Filtrage par champ personnalisé
 

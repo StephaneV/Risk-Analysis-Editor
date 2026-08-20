@@ -152,6 +152,11 @@
                 }
               }
             },
+            "computed": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Cache des valeurs des champs calculés (type computed), écrit à l'enregistrement. Informatif, jamais faisant foi : l'application recalcule et réécrit ces valeurs. Clé = « <entité>:<id>:<code> » (ex. « risk:R1:score_maison », « measure:M1:jours », « analysis:<code> »), valeur = valeur calculée (nombre, date ISO, texte ou booléen)."
+            },
             "radar": {
               "type": "object",
               "additionalProperties": true,
@@ -301,8 +306,14 @@
         "label": { "$ref": "#/$defs/i18nText" },
         "help": { "$ref": "#/$defs/i18nText", "description": "Aide courte multilingue, affichée en infobulle sur le libellé." },
         "description": { "$ref": "#/$defs/i18nText", "description": "Description longue multilingue du champ, affichée sous le contrôle de saisie." },
-        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "scale", "progress", "reference"] },
+        "type": { "enum": ["boolean", "integer", "float", "date", "text", "textarea", "url", "email", "tel", "regexp", "select", "checklist", "tags", "scale", "progress", "reference", "computed"] },
         "object_type": { "type": "string", "description": "Type reference uniquement : code du type d'objet ciblé (object_types[].code). La valeur du champ (dans « custom ») est alors l'identifiant d'une instance (objects[].id), ou un tableau d'identifiants si « multiple »." },
+        "expression": { "type": "string", "description": "Type computed uniquement : expression (style Excel) évaluée à l'affichage. Réfère aux champs de la même entité (cf.<code>) et à des grandeurs dérivées ; aucun eval JS. Voir SPEC-champs-calcules.md." },
+        "result_type": { "enum": ["number", "integer", "date", "text", "boolean"], "description": "Type computed : type du résultat (défaut number)." },
+        "decimals": { "type": "integer", "minimum": 0, "maximum": 10, "description": "Type computed, résultat numérique : nombre de décimales à l'affichage." },
+        "unit": { "type": "string", "description": "Type computed : suffixe d'affichage (unité), purement cosmétique." },
+        "date_format": { "enum": ["iso", "eu", "us", "long"], "description": "Type computed, résultat date : format d'affichage (sinon réglage global)." },
+        "alert": { "type": "object", "additionalProperties": true, "description": "Type computed : met en évidence la valeur hors de [min, max].", "properties": { "min": { "type": ["number", "string"] }, "max": { "type": ["number", "string"] }, "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" } } },
         "pattern": { "type": "string", "description": "Type regexp : expression régulière que la valeur doit respecter en totalité." },
         "required": { "type": "boolean" },
         "filterable": { "type": "boolean", "description": "Si true, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé (risques, mesures, liens, matrices, plan d'action). Réservé aux types à valeurs fermées (select, checklist, tags, boolean, reference) et aux cibles risk, measure, link : un champ rattaché à l'analyse ou à une cotation ne peut pas être filtrable. Sans effet ailleurs." },
@@ -339,6 +350,10 @@
         {
           "if": { "properties": { "type": { "const": "reference" } }, "required": ["type"] },
           "then": { "required": ["object_type"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "computed" } }, "required": ["type"] },
+          "then": { "required": ["expression"] }
         }
       ]
     },
