@@ -321,7 +321,7 @@ colorée** (couleur du niveau). Voir la spécification dédiée [`SPEC-champs-ca
 Un champ **calculé** porte une **`expression`** (chaîne, obligatoire) — un langage **inspiré d'Excel** — et
 un **`result_type`** (`number` / `integer` / `date` / `text` / `boolean`, défaut `number`). Il est
 **dérivé** : sa valeur n'est **pas** écrite dans `custom`, elle est **recalculée à l'affichage**. Options :
-`decimals` (résultat numérique), `unit` (suffixe), `date_format` (résultat date), `alert` (`{ min?, max?,
+`decimals` (résultat numérique), `unit` (suffixe), `alert` (`{ min?, max?,
 color? }` — met la valeur en évidence hors plage). Non saisissable (exclu des formulaires et de l'import CSV).
 
 L'expression réfère aux champs de la **même entité** (`cf.<code>`) et à des grandeurs **dérivées**

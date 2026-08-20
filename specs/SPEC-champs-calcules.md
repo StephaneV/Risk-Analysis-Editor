@@ -75,7 +75,6 @@ séparé — décision, cf. plus bas) :
 | `result_type` | enum | O | `number` · `integer` · `date` · `text` · `boolean` (défaut `number`). |
 | `decimals` | entier | F | `number` : nombre de décimales à l'affichage (défaut : brut). |
 | `unit` | chaîne | F | Suffixe d'affichage (`€`, `j`, `%`…), purement cosmétique. |
-| `date_format` | enum | F | `date` : format d'affichage (sinon réglage global). |
 | `filterable` | booléen | F | Autorise le filtrage par comparaison sur la valeur calculée (§3.9). |
 | `alert` | objet | F | **Bornes d'alerte (v1)** — colore la valeur hors plage (§3.11). |
 
@@ -244,7 +243,7 @@ la date locale est légitime.)*
 |---|---|
 | **Saisie** | Aucune — non collecté, exclu de l'**import CSV**. |
 | **Affichage en fiche** | **Aperçu lecture seule** dans la liste des champs personnalisés de la modale (risque, mesure, lien, cotation, instance d'objet), **recalculé en direct** au fil des saisies des autres champs. |
-| **Affichage ailleurs** | Registre (colonne `cf:<code>`), rapport, exports — via `result_type`/`decimals`/`unit`/`date_format`. |
+| **Affichage ailleurs** | Registre (colonne `cf:<code>`), rapport, exports — mis en forme selon `result_type`, `decimals` et `unit`. Un résultat **date** suit le **format de date global** de l'analyse (comme tout champ date), pas de format propre au champ. |
 | **Tri** | Par valeur calculée (numérique/date/texte). |
 | **Filtre** | Si `filterable` : **comparaison** (`>=`, `<=`, `=`) sur la valeur — pas une liste de choix. (Distinct des types à valeurs fermées.) |
 | **Statistiques** | Métrique **numérique** (moyenne/somme/min/max) ; répartition par tranches (option). |
@@ -301,7 +300,7 @@ Dans `customField` :
 - **`scale`** : `items[].value` (**nombre, requis, unique** — tient lieu d'identité, pas de `code`) ;
   `items[].label` (requis) ; `items[].color`, `items[].description` (optionnels).
 - **`computed`** : `expression` (chaîne, requis), `result_type` (enum `number`/`integer`/`date`/`text`/
-  `boolean`), `decimals` (entier), `unit` (chaîne), `date_format` (enum), `filterable` (booléen),
+  `boolean`), `decimals` (entier), `unit` (chaîne), `filterable` (booléen),
   `alert` (objet `{ min?, max?, color? }`).
 - Contraintes conditionnelles : `scale` ⇒ `items` (chaque item avec `value`) ; `computed` ⇒ `expression`.
 
@@ -338,15 +337,17 @@ computed « alerte », result_type=text :
 
 ## 6. Plan d'implémentation (par lots)
 
-1. **Lot A — Échelle** : type `scale` (éditeur d'items `value`/`label`/`color`, saisie liste déroulante,
+1. **Lot A — Échelle** ✅ : type `scale` (éditeur d'items `value`/`label`/`color`, saisie liste déroulante,
    lecture, affichage, filtre, stats numériques, schéma, i18n). La `value` stockée est directement le
    nombre exploité en calcul.
-2. **Lot B — Moteur d'expression** : lexer + parseur + AST + évaluateur (arithmétique, `^`, `&`,
+2. **Lot B — Moteur d'expression** ✅ : lexer + parseur + AST + évaluateur (arithmétique, `^`, `&`,
    comparaisons, `AND`/`OR`/`NOT`, `IF`), liste blanche de fonctions, gestion d'erreurs. Testable isolément.
-3. **Lot C — Champ `computed` par entité** : `cf.<code>` même entité + dérivés (`score_*`, `criticality_*`),
-   `result_type`/formatage, **bornes d'alerte**, affichage/tri, cache, éditeur (expression + validation),
-   schéma, i18n.
-4. **Lot D — Dates** : `TODAY`, `DATE`, `YEAR`/`MONTH`/`DAY`, `EDATE`, `DATEDIF`, arithmétique de dates.
+3. **Lot C — Champ `computed` par entité** ✅ : `cf.<code>` même entité + **champs de base et dérivés**,
+   `result_type`/formatage, **bornes d'alerte**, affichage lecture seule en fiche (live) + registre + tri,
+   cache, éditeur (expression + validation + **pickers**), aussi disponible en **attribut d'objet**, schéma, i18n.
+4. **Lot D — Dates** ✅ : `TODAY`, `DATE`, `YEAR`/`MONTH`/`DAY`, `EDATE`, `DATEDIF`, arithmétique de dates
+   (livré avec le moteur au lot B et la liaison au lot C ; les dates calculées suivent le **format de date
+   global** — pas de format propre au champ, cohérent avec tout champ date).
 5. **Lot E — Agrégats de collection** (cible analyse) : `risks.cf.*`, `COUNT(…)`, `AVERAGE`/`MEDIAN`/…,
    affichage en **Statistiques** et **Rapport**.
 6. **Lot F — Filtre / stats / radar / rapport / Word / CSV** sur valeurs calculées et échelles numériques.
