@@ -374,8 +374,8 @@ computed « alerte », result_type=text :
      lorsqu'il produit des valeurs discrètes — résultat **booléen** (Oui/Non) ou **alerte** définie
      (« En alerte » / « Hors alerte »). Les résultats continus (numérique/date sans alerte) ne sont pas
      proposés comme filtre de sélection.
-   - **Radar** : nouvelle **métrique « champ numérique »** — moyenne ou somme de la valeur d'un champ de
-     risque *échelle* ou *calculé numérique* par axe (indépendante de l'évaluation initiale/résiduelle,
+   - **Radar** : nouvelle **métrique « champ numérique »** — moyenne, max ou somme de la valeur d'un champ
+     de risque *échelle* ou *calculé numérique* par axe (indépendante de l'évaluation initiale/résiduelle,
      comme le nombre de risques).
    - **Statistiques** : nouveau bloc **« agrégat numérique »** (tuiles : effectif renseigné, moyenne, somme,
      min, max) pour un champ *échelle* ou *calculé numérique* de risque/mesure/lien. Les échelles restent

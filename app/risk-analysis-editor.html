@@ -1695,7 +1695,7 @@ const I18N = {
     radar_count_note:"Le nombre de risques ne dépend pas de l'évaluation.",
     rp_radar:"Radar", radar_metric:"Métrique", radar_eval:"Évaluation",
     radar_metric_sum:"Criticité cumulée", radar_metric_weighted:"Criticité pondérée",
-    radar_agg_avg:"moyenne", radar_agg_sum:"somme", radar_metric_field_grp:"Champ numérique",
+    radar_agg_avg:"moyenne", radar_agg_max:"max", radar_agg_sum:"somme", radar_metric_field_grp:"Champ numérique",
     radar_cfg_weights:"Poids par niveau de criticité", radar_cfg_weights_cap:"Utilisés par la métrique « Criticité pondérée » : chaque risque compte pour le poids de son niveau.",
     radar_cfg_render:"Rendu des radars", radar_cfg_lum:"Luminosité (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Épaisseur du contour", radar_cfg_step:"Pas des graduations (0 = auto)", radar_cfg_spoke:"Couleur des rayons", radar_cfg_color_init:"Couleur (initial)", radar_cfg_color_res:"Couleur (résiduel)",
     radar_cfg_saved:"Préférences enregistrées avec l'analyse (rubrique extensions.display.radar).", radar_cfg_reset:"Réinitialiser les valeurs par défaut",
@@ -2078,7 +2078,7 @@ const I18N = {
     radar_count_note:"The number of risks does not depend on the assessment.",
     rp_radar:"Radar", radar_metric:"Metric", radar_eval:"Assessment",
     radar_metric_sum:"Cumulative criticality", radar_metric_weighted:"Weighted criticality",
-    radar_agg_avg:"average", radar_agg_sum:"sum", radar_metric_field_grp:"Numeric field",
+    radar_agg_avg:"average", radar_agg_max:"max", radar_agg_sum:"sum", radar_metric_field_grp:"Numeric field",
     radar_cfg_weights:"Weights by criticality level", radar_cfg_weights_cap:"Used by the “Weighted criticality” metric: each risk counts for the weight of its level.",
     radar_cfg_render:"Radar rendering", radar_cfg_lum:"Lightness (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Outline width", radar_cfg_step:"Grid step (0 = auto)", radar_cfg_spoke:"Spokes colour", radar_cfg_color_init:"Colour (initial)", radar_cfg_color_res:"Colour (residual)",
     radar_cfg_saved:"Preferences saved with the analysis (extensions.display.radar).", radar_cfg_reset:"Reset to defaults",
@@ -2461,7 +2461,7 @@ const I18N = {
     radar_count_note:"Il numero di rischi non dipende dalla valutazione.",
     rp_radar:"Radar", radar_metric:"Metrica", radar_eval:"Valutazione",
     radar_metric_sum:"Criticità cumulata", radar_metric_weighted:"Criticità ponderata",
-    radar_agg_avg:"media", radar_agg_sum:"somma", radar_metric_field_grp:"Campo numerico",
+    radar_agg_avg:"media", radar_agg_max:"max", radar_agg_sum:"somma", radar_metric_field_grp:"Campo numerico",
     radar_cfg_weights:"Pesi per livello di criticità", radar_cfg_weights_cap:"Usati dalla metrica « Criticità ponderata »: ogni rischio conta per il peso del suo livello.",
     radar_cfg_render:"Resa dei radar", radar_cfg_lum:"Luminosità (HSL)", radar_cfg_sat:"Saturazione", radar_cfg_outline:"Spessore del contorno", radar_cfg_step:"Passo delle griglie (0 = auto)", radar_cfg_spoke:"Colore dei raggi", radar_cfg_color_init:"Colore (iniziale)", radar_cfg_color_res:"Colore (residuo)",
     radar_cfg_saved:"Preferenze salvate con l'analisi (sezione extensions.display.radar).", radar_cfg_reset:"Ripristina i valori predefiniti",
@@ -4188,19 +4188,19 @@ function radarViewSave(){
 }
 function radarMetricLabel(metric){
   const fm=radarFieldMetric(metric);
-  if(fm){const f=customFieldsFor("risk").find(x=>x.code===fm.code);return (f?cfLabel(f):fm.code)+" ("+t(fm.agg==="sum"?"radar_agg_sum":"radar_agg_avg")+")";}
+  if(fm){const f=customFieldsFor("risk").find(x=>x.code===fm.code);return (f?cfLabel(f):fm.code)+" ("+t("radar_agg_"+fm.agg)+")";}
   return t({avg:"radar_metric_avg",max:"radar_metric_max",sum:"radar_metric_sum",weighted:"radar_metric_weighted",count:"radar_metric_count"}[metric]||"radar_metric_avg");}
 /* Champs de risque servant de métrique numérique agrégeable : échelle, ou calculé de résultat numérique. */
 function radarMetricFields(){return customFieldsFor("risk").filter(f=>f.type==="scale"||(f.type==="computed"&&["number","integer"].indexOf(f.result_type||"number")>=0));}
-/* Décode une métrique « champ » : « cf:<code>:avg|sum » → {code,agg}, sinon null. */
-function radarFieldMetric(metric){const m=/^cf:(.+):(avg|sum)$/.exec(metric||"");if(!m)return null;const code=m[1];return radarMetricFields().some(f=>f.code===code)?{code:code,agg:m[2]}:null;}
+/* Décode une métrique « champ » : « cf:<code>:avg|max|sum » → {code,agg}, sinon null. */
+function radarFieldMetric(metric){const m=/^cf:(.+):(avg|max|sum)$/.exec(metric||"");if(!m)return null;const code=m[1];return radarMetricFields().some(f=>f.code===code)?{code:code,agg:m[2]}:null;}
 /* Valeurs d'un radar à métrique « champ » : agrégat (moyenne/somme) de la valeur numérique du
    champ sur les risques de chaque axe. Indépendant de l'évaluation initiale/résiduelle. */
 function radarFieldValues(risks,dim,axes,fm){
   const f=customFieldsFor("risk").find(x=>x.code===fm.code);
   const g={};axes.forEach(k=>g[k]=[]);
   risks.forEach(r=>{const v=f?cfNumericValue(f,r,"risk"):null;if(v==null)return;radarKeysOf(r,dim).forEach(k=>{if(g[k])g[k].push(v);});});
-  return axes.map(k=>{const a=g[k];if(!a.length)return 0;if(fm.agg==="sum")return a.reduce((x,y)=>x+y,0);let s=0;a.forEach(x=>s+=x);return s/a.length;});
+  return axes.map(k=>{const a=g[k];if(!a.length)return 0;if(fm.agg==="sum")return a.reduce((x,y)=>x+y,0);if(fm.agg==="max")return Math.max.apply(null,a);let s=0;a.forEach(x=>s+=x);return s/a.length;});
 }
 
 function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
@@ -4502,7 +4502,7 @@ function renderRadars(){
   const critOpts=["avg","max","sum","weighted","count"].map(mv=>'<option value="'+mv+'">'+esc(radarMetricLabel(mv))+'</option>').join("");
   const fmFields=radarMetricFields();
   const fmOpts=fmFields.length?('<optgroup label="'+esc(t("radar_metric_field_grp"))+'">'+fmFields.map(f=>
-    ["avg","sum"].map(ag=>{const mv="cf:"+f.code+":"+ag;return '<option value="'+esc(mv)+'">'+esc(radarMetricLabel(mv))+'</option>';}).join("")).join("")+'</optgroup>'):"";
+    ["avg","max","sum"].map(ag=>{const mv="cf:"+f.code+":"+ag;return '<option value="'+esc(mv)+'">'+esc(radarMetricLabel(mv))+'</option>';}).join("")).join("")+'</optgroup>'):"";
   msel.innerHTML=critOpts+fmOpts;
   msel.value=radarState.metric;
   // Bascule « axes vides » : disponible pour toutes les dimensions (garde des axes stables sous filtre).
