@@ -109,6 +109,11 @@ Une expression est évaluée **dans le contexte d'une entité** (celle de la `ta
   - Un champ **multivalué** (`tags`, `checklist`, `reference`) résout en **liste** de ses valeurs : `COUNT(cf.<code>)`
     en donne le **nombre** (0 si vide ou absent), et les autres agrégats parcourent chaque valeur. En contexte
     **texte** (`&`, `CONCAT`), la liste est rendue par ses valeurs jointes par `, `.
+  - **Traversée de référence (un seul saut)** : `cf.<champ_référence>.cf.<attribut>` (ou `.id`) résout en
+    **liste** de la valeur de cet attribut sur **tous les objets référencés** par le champ — donc agrégeable
+    (`SUM` / `AVERAGE` / `COUNT` / `MIN` / `MAX`). L'attribut visé peut être une **échelle**, un **numérique**
+    ou un attribut **calculé** de l'objet ; références cassées et attributs absents sont **ignorés** (nil).
+    Limité à **un saut** (pas de `cf.a.cf.b.cf.c`). Exemple : `AVERAGE(cf.valeurs_metier.cf.niveau_risque)`.
 - **Champs de base et dérivés de l'entité** — accessibles par leur nom (mêmes grandeurs que le rapport) :
   - **risque** : `id`, `label`, `category`, `owner`, `description`, `comment` ; `probability_initial`,
     `severity_initial`, `score_initial`, `criticality_initial` ; `probability_residual`, `severity_residual`,
@@ -130,8 +135,10 @@ Une expression est évaluée **dans le contexte d'une entité** (celle de la `ta
 > - `risk` / `measure` / `link` / `cotation` → expression **par entité** (ses propres champs + dérivés + `TODAY()`).
 > - `analysis` → expression **globale** (agrégats de collections + `TODAY()`).
 > Les agrégats de collection ne sont **pas** autorisés dans un champ par entité en v1 (évite l'ambiguïté
-> « la moyenne de quoi, relativement à ce risque ? »). Les références **inter-entités** (un risque lisant
-> une valeur de *ses* mesures liées) sont **hors périmètre v1** (Q6).
+> « la moyenne de quoi, relativement à ce risque ? »). Les références **inter-entités** au sens
+> *un risque lisant une valeur de ses mesures liées* restent **hors périmètre** (Q6). En revanche, la
+> **traversée d'un champ de type référence vers les attributs des objets pointés** (un seul saut) est
+> **prise en charge** — voir le §3.3 ci-dessus.
 >
 > **Affichage d'un champ calculé de cible `analysis` — décidé (Q3) : Statistiques et Rapport.** Il
 > apparaît comme un **indicateur** (tuile / ligne) dans l'onglet **Statistiques** et dans la **synthèse du

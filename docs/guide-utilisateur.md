@@ -406,17 +406,20 @@ Une **échelle** est une liste de **niveaux**, chacun défini par une **valeur n
 
 Une **valeur calculée** est un champ **dérivé** : au lieu d'être saisie, elle est obtenue par une **formule** que l'outil **recalcule en direct** à l'affichage (fiche, registre, rapport…). La syntaxe s'inspire des **formules Excel**.
 
-**La formule et le picker.** L'éditeur de formule est accompagné d'un **picker** (sélecteur) à quatre onglets pour insérer les éléments au curseur, sans faute de frappe :
+**La formule et le picker.** L'éditeur de formule est accompagné d'un **picker** (sélecteur) organisé en onglets pour insérer les éléments au curseur, sans faute de frappe :
 
 - **Champs** — les autres champs personnalisés de la même fiche, insérés sous la forme `cf.<code>` ;
 - **Base** — les champs de base et **grandeurs dérivées** de l'élément : pour un risque `score_initial`, `criticality_residual`, `category`… ; pour une mesure `due_date`, `cost`, `overdue`… ; pour l'analyse, des **agrégats de collection** (`risks_count`, `AVERAGE(risks.cf.<code>)`, `SUM(measures.cost)`…) ;
+- **Objets liés** — *n'apparaît que si la fiche possède au moins un champ **référence*** : les jetons de **traversée** groupés par champ référence (le champ lui-même, puis les attributs numériques des objets pointés — voir plus bas) ;
 - **Fonctions** et **Opérateurs** — voir ci-dessous.
 
-Dans les onglets *Champs* et *Base*, une **petite icône** rappelle le **type** de chaque champ (nombre, texte, date, échelle, calcul…) pour composer la formule d'un coup d'œil. Une fonction insérée **entoure** le texte sélectionné le cas échéant : sélectionner `cf.cout` puis cliquer *ROUND* donne `ROUND(cf.cout)`.
+Dans les onglets *Champs*, *Base* et *Objets liés*, une **petite icône** rappelle le **type** de chaque champ (nombre, texte, date, échelle, calcul…) pour composer la formule d'un coup d'œil. Une fonction insérée **entoure** le texte sélectionné le cas échéant : sélectionner `cf.cout` puis cliquer *ROUND* donne `ROUND(cf.cout)`.
 
 **Les fonctions disponibles** (liste blanche) : agrégats **SUM, AVERAGE, MEDIAN, MIN, MAX, COUNT** ; arithmétique **ROUND, ROUNDUP, ROUNDDOWN, INT, ABS, MOD, POWER, SQRT** ; logique **IF, AND, OR, NOT** ; texte **CONCAT, LEN** (et l'opérateur `&`) ; dates **TODAY, DATE, YEAR, MONTH, DAY, EDATE, DATEDIF**. Opérateurs `+ − * / ^` et comparaisons `= <> < <= > >=`. Toute référence ou fonction inconnue est signalée à la saisie.
 
 > **Compter les valeurs d'un champ multivalué.** Un champ *liste à cocher*, *étiquettes* ou *référence* multiple est vu comme une **liste** : `COUNT(cf.<code>)` en donne le **nombre de valeurs** (0 s'il est vide). En contexte texte, la liste s'écrit valeurs jointes par « , ».
+
+> **Agréger les attributs des objets référencés.** Si un champ **référence** pointe vers des objets, la notation `cf.<champ_référence>.cf.<attribut>` donne la **liste** de cet attribut sur **tous les objets référencés** — donc directement agrégeable. Exemple : un risque référence des *Valeurs métier* dotées d'une échelle *Niveau de risque* ; on obtient alors la moyenne, la somme, le pire cas ou le nombre par `AVERAGE(cf.valeurs_metier.cf.niveau_risque)`, `SUM(…)`, `MAX(…)`, `COUNT(…)`. L'attribut visé peut être une **échelle**, un **numérique** ou un attribut **calculé** de l'objet ; les jetons correspondants sont proposés dans l'onglet **Objets liés** du picker, groupés sous leur champ référence. La traversée est limitée à **un seul saut** (risque → objet référencé).
 
 **Le type du résultat.** Vous choisissez le **type de résultat** — *nombre*, *entier*, *date*, *texte* ou *oui/non* — qui détermine la mise en forme. Pour un *nombre*, vous pouvez fixer un nombre de **décimales** et une **unité** (suffixe, par ex. « pts », « € »). Une **date** calculée suit le **format de date global** de l'analyse. Le caractère *obligatoire* n'a pas de sens ici et n'est pas proposé.
 

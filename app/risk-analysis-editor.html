@@ -554,8 +554,8 @@
   /* Picker de l'éditeur de formule (champ calculé) */
   .cf-picker{border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow:hidden;margin-top:2px}
   .cfp-top{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--border)}
-  .cfp-tabs{display:flex;gap:4px;flex-wrap:wrap}
-  .cfp-tab{border:1px solid transparent;background:transparent;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--muted)}
+  .cfp-tabs{display:flex;gap:2px;flex-wrap:wrap}
+  .cfp-tab{border:1px solid transparent;background:transparent;border-radius:20px;padding:3px 8px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
   .cfp-tab.on{background:var(--bg);border-color:var(--border);color:var(--ink);font-weight:600}
   .cfp-search{margin-left:auto;padding:4px 9px;border:1px solid var(--border);border-radius:20px;font-size:12px;max-width:150px}
   .cfp-chips{display:flex;flex-wrap:wrap;gap:6px;padding:9px;max-height:150px;overflow:auto}
@@ -574,6 +574,11 @@
   .cfp-fam-num{--fam:#3d82c4}.cfp-fam-text{--fam:#7f8ea0}.cfp-fam-date{--fam:#1fa898}
   .cfp-fam-choice{--fam:#cf8a2b}.cfp-fam-ref{--fam:#7b73e6}.cfp-fam-bool{--fam:#2fa866}.cfp-fam-calc{--fam:#a96fce}
   .cfp-none{padding:8px;color:var(--muted);font-size:12px}
+  /* Onglet « Objets liés » : un groupe par champ référence (le champ, puis ses attributs indentés). */
+  .cfp-group{flex:1 1 100%;min-width:0}
+  .cfp-group+.cfp-group{margin-top:3px}
+  .cfp-chip.cfp-lead{font-weight:600}
+  .cfp-subs{display:flex;flex-wrap:wrap;gap:6px;margin:5px 0 2px 18px}
   .cf-computed-ro{padding:7px 9px;border:1px dashed var(--border);border-radius:8px;background:var(--panel);font-size:13px;min-height:34px;display:flex;align-items:center}
   .cf-calc-err{font-weight:600}
   .st-calc{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
@@ -1807,7 +1812,7 @@ const I18N = {
     cf_calc_decimals:"Décimales", cf_calc_unit:"Unité (suffixe)", cf_calc_derived_hint:"Champ dérivé, non saisissable : recalculé à l'affichage.",
     cf_calc_alert:"Alerte (hors plage)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Colore la valeur si elle sort de [min, max] (une seule borne suffit). Résultat date : bornes au format AAAA-MM-JJ (sélecteur de date).",
     cf_calc_empty:"L'expression est obligatoire.", cf_calc_bad:"Expression invalide : {0}", cf_calc_ok:"Expression valide.", cf_calc_cycle:"Référence circulaire entre champs calculés.",
-    cf_pick_fields:"Champs perso", cf_pick_derived:"Champs de base", cf_pick_funcs:"Fonctions", cf_pick_ops:"Opérateurs", cf_pick_filter:"filtrer…", cf_pick_no_field:"Aucun autre champ sur cette cible.", cf_pick_score:"Score", cf_pick_crit:"Criticité",
+    cf_pick_fields:"Champs perso", cf_pick_derived:"Champs de base", cf_pick_linked:"Objets liés", cf_pick_funcs:"Fonctions", cf_pick_ops:"Opérateurs", cf_pick_filter:"filtrer…", cf_pick_no_field:"Aucun autre champ sur cette cible.", cf_pick_score:"Score", cf_pick_crit:"Criticité",
     cf_del_confirm:"Supprimer ce champ personnalisé ?",
     cf_del_confirm_used:"Ce champ contient {0} valeur(s) déjà saisie(s). En le supprimant, ces valeurs ne seront plus affichées ni exploitées (elles subsistent dans le fichier mais deviennent inaccessibles). Supprimer quand même ?",
     cf_target_warn:"Ce champ est rattaché à « {1} » et contient {0} valeur(s) saisie(s). Changer sa cible pour « {2} » rendra ces valeurs inaccessibles. Continuer ?",
@@ -2190,7 +2195,7 @@ const I18N = {
     cf_calc_decimals:"Decimals", cf_calc_unit:"Unit (suffix)", cf_calc_derived_hint:"Derived field, not editable: recomputed on display.",
     cf_calc_alert:"Alert (out of range)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Highlights the value when it falls outside [min, max] (one bound is enough). Date result: bounds in YYYY-MM-DD format (date picker).",
     cf_calc_empty:"The expression is required.", cf_calc_bad:"Invalid expression: {0}", cf_calc_ok:"Valid expression.", cf_calc_cycle:"Circular reference between computed fields.",
-    cf_pick_fields:"Custom fields", cf_pick_derived:"Base fields", cf_pick_funcs:"Functions", cf_pick_ops:"Operators", cf_pick_filter:"filter…", cf_pick_no_field:"No other field on this target.", cf_pick_score:"Score", cf_pick_crit:"Criticality",
+    cf_pick_fields:"Custom fields", cf_pick_derived:"Base fields", cf_pick_linked:"Linked objects", cf_pick_funcs:"Functions", cf_pick_ops:"Operators", cf_pick_filter:"filter…", cf_pick_no_field:"No other field on this target.", cf_pick_score:"Score", cf_pick_crit:"Criticality",
     cf_del_confirm:"Delete this custom field?",
     cf_del_confirm_used:"This field holds {0} entered value(s). Deleting it will hide these values from view and use (they remain in the file but become inaccessible). Delete anyway?",
     cf_target_warn:"This field is attached to “{1}” and holds {0} entered value(s). Changing its target to “{2}” will make those values inaccessible. Continue?",
@@ -2573,7 +2578,7 @@ const I18N = {
     cf_calc_decimals:"Decimali", cf_calc_unit:"Unità (suffisso)", cf_calc_derived_hint:"Campo derivato, non modificabile: ricalcolato alla visualizzazione.",
     cf_calc_alert:"Avviso (fuori intervallo)", cf_calc_alert_min:"min", cf_calc_alert_max:"max", cf_calc_alert_help:"Evidenzia il valore quando esce da [min, max] (basta un limite). Risultato data: limiti in formato AAAA-MM-GG (selettore di data).",
     cf_calc_empty:"L'espressione è obbligatoria.", cf_calc_bad:"Espressione non valida: {0}", cf_calc_ok:"Espressione valida.", cf_calc_cycle:"Riferimento circolare tra campi calcolati.",
-    cf_pick_fields:"Campi pers.", cf_pick_derived:"Campi di base", cf_pick_funcs:"Funzioni", cf_pick_ops:"Operatori", cf_pick_filter:"filtra…", cf_pick_no_field:"Nessun altro campo su questa destinazione.", cf_pick_score:"Punteggio", cf_pick_crit:"Criticità",
+    cf_pick_fields:"Campi pers.", cf_pick_derived:"Campi di base", cf_pick_linked:"Oggetti collegati", cf_pick_funcs:"Funzioni", cf_pick_ops:"Operatori", cf_pick_filter:"filtra…", cf_pick_no_field:"Nessun altro campo su questa destinazione.", cf_pick_score:"Punteggio", cf_pick_crit:"Criticità",
     cf_del_confirm:"Eliminare questo campo personalizzato?",
     cf_del_confirm_used:"Questo campo contiene {0} valore/i già inserito/i. Eliminandolo, questi valori non saranno più visualizzati né utilizzati (restano nel file ma diventano inaccessibili). Eliminare comunque?",
     cf_target_warn:"Questo campo è associato a « {1} » e contiene {0} valore/i inserito/i. Cambiare la sua destinazione in « {2} » renderà tali valori inaccessibili. Continuare?",
@@ -11187,6 +11192,22 @@ function calcResolveField(name,ctx,entity,stack){
   const isObj=ctx&&typeof ctx==="object";
   if(name.indexOf("cf.")===0){
     const code=name.slice(3);
+    const dot=code.indexOf(".");
+    if(dot>0){
+      // Traversée de référence (un seul saut) : « cf.<champ_référence>.<reste> » → LISTE des <reste>
+      // des objets référencés, agrégeable (SUM/AVERAGE/COUNT/MIN/MAX). <reste> résolu dans le type
+      // d'objet cible (cf.<attribut> ou id). Absents / références cassées → nil (ignorés par les agrégats).
+      const refCode=code.slice(0,dot), rest=code.slice(dot+1);
+      const rf=isObj?(ctx.attributes||[]).find(x=>x.code===refCode):customFieldByCode(refCode);
+      if(rf&&rf.type==="reference"&&(isObj||rf.target===ctx)){
+        const otDef=objectTypeByCode(rf.object_type);
+        const raw=isObj?(entity&&entity.values||{})[refCode]:(entity&&entity.custom||{})[refCode];
+        const ids=(raw==null||raw==="")?[]:(Array.isArray(raw)?raw:[raw]);
+        return {t:"list",v:ids.map(id=>{const o=objectById(id);if(!o||!otDef)return CV_NIL;
+          try{const rv=calcResolveField(rest,otDef,o,stack);return cvOf(rv==null?null:rv);}catch(e){return CV_NIL;}})};
+      }
+      // sinon : chemin non reconnu → on laisse la suite lever « Champ inconnu ».
+    }
     if(isObj){
       const a=(ctx.attributes||[]).find(x=>x.code===code);
       if(!a)throw calcErr("Champ inconnu : cf."+code);
@@ -11463,6 +11484,7 @@ function cfTypeOptsHTML(f){
         '<div class="cfp-top"><div class="cfp-tabs">'+
           '<button type="button" class="cfp-tab on" data-cat="fields">'+esc(t("cf_pick_fields"))+'</button>'+
           '<button type="button" class="cfp-tab" data-cat="derived">'+esc(t("cf_pick_derived"))+'</button>'+
+          '<button type="button" class="cfp-tab" data-cat="linked" id="cfpTabLinked" style="display:none">'+esc(t("cf_pick_linked"))+'</button>'+
           '<button type="button" class="cfp-tab" data-cat="funcs">'+esc(t("cf_pick_funcs"))+'</button>'+
           '<button type="button" class="cfp-tab" data-cat="ops">'+esc(t("cf_pick_ops"))+'</button>'+
         '</div><input type="text" id="cfCalcSearch" class="cfp-search" placeholder="'+esc(t("cf_pick_filter"))+'"></div>'+
@@ -12338,6 +12360,17 @@ document.addEventListener("input",e=>{if(!e.target||e.target.id!=="cfExpr")retur
 /* ---- Picker de l'éditeur de formule : jetons cliquables insérés au curseur ---- */
 const CALC_PICK_FUNCS=["SUM","AVERAGE","MEDIAN","MIN","MAX","COUNT","ROUND","ROUNDUP","ROUNDDOWN","INT","ABS","MOD","POWER","SQRT","IF","AND","OR","NOT","TODAY","DATE","YEAR","MONTH","DAY","EDATE","DATEDIF","CONCAT","LEN"];
 const CALC_PICK_OPS=["+","-","*","/","^","&","(",")",",","=","<>","<","<=",">",">="];
+/* Groupes « Objets liés » du picker : pour chaque champ RÉFÉRENCE fourni, le champ lui-même (point
+   d'entrée, pour COUNT…) et les attributs NUMÉRIQUES du type d'objet visé sous la forme
+   « cf.<ref>.cf.<attr> » (agrégeables via SUM/AVERAGE/COUNT/MIN/MAX). */
+function calcLinkedGroupsFrom(refFields){
+  const numT=a=>["integer","float","progress","scale","computed"].indexOf(a.type)>=0;
+  return (refFields||[]).filter(f=>f.object_type&&objectTypeByCode(f.object_type)).map(f=>{
+    const ot=objectTypeByCode(f.object_type);
+    return {ref:{k:"cf."+f.code,n:cfLabel(f),ty:"reference"},
+      attrs:(ot.attributes||[]).filter(numT).map(a=>({k:"cf."+f.code+".cf."+a.code,n:cfLabel(a),ty:a.type}))};
+  });
+}
 /* Champs de base + grandeurs dérivées d'une cible, pour le picker (mêmes noms que le résolveur). */
 function calcRefs(target){
   // `ty` = type implicite du champ de base, pour l'icône du picker (mêmes familles que les champs perso).
@@ -12420,15 +12453,35 @@ function cfCalcPickerFill(){
   const filt=((document.getElementById("cfCalcSearch")||{}).value||"").trim().toLowerCase();
   let html="";
   const match=s=>!filt||s.toLowerCase().indexOf(filt)>=0;
-  if(cat==="fields"){
+  // Onglet « Objets liés » : présent seulement si la cible porte au moins un champ référence exploitable.
+  const refFields=tgtEl?customFieldsFor(tgtEl.value).filter(f=>f.type==="reference")
+    :(calcAttrCtx||[]).filter(a=>a.type==="reference"&&a.code!==selfCode);
+  const groups=calcLinkedGroupsFrom(refFields);
+  const tabLinked=document.getElementById("cfpTabLinked");
+  if(tabLinked)tabLinked.style.display=groups.length?"":"none";
+  let curCat=cat;
+  if(curCat==="linked"&&!groups.length){curCat="fields";box.dataset.cat="fields";
+    [...document.querySelectorAll(".cfp-tab")].forEach(x=>x.classList.toggle("on",x.dataset.cat==="fields"));}
+  if(curCat==="fields"){
     const src=tgtEl?calcPickFields(tgtEl.value,selfCode)
       :(calcAttrCtx||[]).filter(a=>a.code&&a.code!==selfCode).map(a=>({k:"cf."+a.code,n:cfLabel(a),ty:a.type}));
     const fs=src.filter(f=>match(f.k+" "+f.n));
     html=fs.length?fs.map(f=>'<button type="button" class="cfp-chip field" data-ins="'+esc(f.k)+'" title="'+esc(f.n)+'">'+cfpTypeIcon(f.ty)+'<span class="k">'+esc(f.k)+'</span> '+esc(f.n)+'</button>').join(""):'<div class="cfp-none">'+esc(t("cf_pick_no_field"))+'</div>';
-  }else if(cat==="derived"){
+  }else if(curCat==="derived"){
     const refs=(tgtEl?calcRefs(tgtEl.value):[{k:"id",n:t("f_identifier"),ty:"text"}]).filter(r=>match(r.k+" "+(r.n||"")));
     html=refs.length?refs.map(r=>'<button type="button" class="cfp-chip der" data-ins="'+esc(r.k)+'" title="'+esc(r.n||"")+'">'+cfpTypeIcon(r.ty)+'<span class="k">'+esc(r.k)+'</span>'+(r.n?" "+esc(r.n):"")+'</button>').join(""):'<div class="cfp-none">—</div>';
-  }else if(cat==="funcs"){const fs=CALC_PICK_FUNCS.filter(match);
+  }else if(curCat==="linked"){
+    // Groupé par champ référence : le champ (point d'entrée) puis ses attributs numériques (traversée).
+    const gs=groups.map(g=>{
+      const attrs=g.attrs.filter(a=>match(a.k+" "+a.n));
+      if(filt&&!match(g.ref.k+" "+g.ref.n)&&!attrs.length)return "";
+      const head='<button type="button" class="cfp-chip field cfp-lead" data-ins="'+esc(g.ref.k)+'" title="'+esc(g.ref.n)+'">'+cfpTypeIcon("reference")+'<span class="k">'+esc(g.ref.k)+'</span> '+esc(g.ref.n)+'</button>';
+      // Sous le champ (indenté), on n'affiche que le suffixe : « […]<reste> » ; l'insertion et l'infobulle gardent le chemin complet.
+      const subs=attrs.map(a=>'<button type="button" class="cfp-chip field" data-ins="'+esc(a.k)+'" title="'+esc(a.k)+'">'+cfpTypeIcon(a.ty)+'<span class="k">'+esc("[…]"+a.k.slice(g.ref.k.length))+'</span> '+esc(a.n)+'</button>').join("");
+      return '<div class="cfp-group">'+head+(subs?'<div class="cfp-subs">'+subs+'</div>':'')+'</div>';
+    }).filter(Boolean).join("");
+    html=gs||'<div class="cfp-none">—</div>';
+  }else if(curCat==="funcs"){const fs=CALC_PICK_FUNCS.filter(match);
     html=fs.map(k=>'<button type="button" class="cfp-chip fn" data-fn="'+esc(k)+'"><span class="k">'+esc(k)+'</span></button>').join("");
   }else{html=CALC_PICK_OPS.filter(match).map(o=>'<button type="button" class="cfp-chip op" data-ins="'+esc(o)+'">'+esc(o)+'</button>').join("");}
   box.innerHTML=html;
