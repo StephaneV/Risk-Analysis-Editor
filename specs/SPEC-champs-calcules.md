@@ -381,7 +381,11 @@ computed « alerte », result_type=text :
      min, max) pour un champ *échelle* ou *calculé numérique* de risque/mesure/lien. Les échelles restent
      par ailleurs disponibles en répartition catégorielle ; les calculés d'analyse restent en tuiles
      d'indicateurs (lot E).
-7. **Lot G — Consolidation** : i18n complète, guide utilisateur, alignement `SPEC-format` + schéma, tests.
+7. **Lot G — Consolidation** ✅ : i18n complète (FR/EN/IT), **guide utilisateur** — §14 sous-sections
+   « Le type échelle » et « La valeur calculée » (formule & picker, fonctions, `COUNT` des multivalués,
+   type du résultat, aperçu en direct, **alerte hors plage** avec les 4 cas et le format des bornes,
+   surfaces d'exploitation), plus les mentions radar/statistiques/filtre —, alignement `SPEC-format`
+   + schéma, banc de tests reproductible (lots B–F, 111/111).
 
 ---
 

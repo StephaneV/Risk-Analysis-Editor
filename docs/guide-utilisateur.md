@@ -274,15 +274,16 @@ L'onglet **Radars** propose une lecture synthétique du **profil de risque** sou
 Une **barre d'outils** pilote l'affichage :
 
 - **Évaluation** — *Initial*, *Résiduel*, *Accolés* (deux radars côte à côte) ou *Superposés* (deux polygones sur le même radar, pour visualiser la réduction du risque).
-- **Dimension** — ce que représentent les axes : la **catégorie** de risque, ou un **champ personnalisé à valeurs fermées** rattaché au risque (liste déroulante, tags, liste à cocher, **référence** à un objet).
+- **Dimension** — ce que représentent les axes : la **catégorie** de risque, ou un **champ personnalisé à valeurs fermées** rattaché au risque (liste déroulante, tags, liste à cocher, **échelle**, **référence** à un objet).
 - **Axes vides** — case à cocher (**cochée par défaut**) : affiche **tous les axes possibles** (toutes les valeurs connues), y compris ceux **sans risque** dans la vue — item ou instance non utilisé, **ou valeur écartée par un filtre actif**. Les axes restent ainsi **stables** quand vous filtrez : un axe concerné tombe à **0** au lieu de **disparaître** (ce qui déformait le radar). Décochez la case pour ne conserver que les axes **présents dans la vue**. Disponible pour **toutes les dimensions**, catégorie comprise (dont l'univers d'axes est l'ensemble des catégories de tous les risques).
 - **Métrique** — la valeur mesurée sur chaque axe :
   - **Criticité moyenne** / **Criticité maximale** — sur l'échelle **par risque** de la grille ; le fond est teinté en **bandes de criticité** (mêmes couleurs que la grille).
   - **Criticité cumulée** — la **somme** des scores de l'axe : tient compte à la fois de la gravité **et** du nombre de risques.
   - **Criticité pondérée** — la somme des **poids** de niveau (voir *Paramètres › Radars* ci-dessous) : permet de faire dominer les risques les plus graves.
   - **Nombre de risques** — l'effectif de l'axe (indépendant de l'évaluation).
+  - **Champ numérique** (*moyenne* / *max* / *somme*) — agrège la valeur d'un **champ de risque** de type **échelle** ou **calculé numérique** sur les risques de l'axe ; indépendant de l'évaluation. Les champs éligibles apparaissent dans un sous-groupe du menu **Métrique**.
 
-> Les métriques **cumulée**, **pondérée** et **nombre** sont *extensives* : leur valeur croît avec le nombre de risques. Le fond est alors **neutre** et l'**échelle automatique**, sans bandes de criticité.
+> Les métriques **cumulée**, **pondérée**, **nombre** et **champ numérique** sont affichées sur fond **neutre** avec **échelle automatique**, sans bandes de criticité. (*Cumulée*, *pondérée*, *nombre* et *champ (somme)* sont en outre *extensives* : leur valeur croît avec le nombre de risques.)
 
 **Infobulles au survol** (comme sur les secteurs des Statistiques) : un **point** affiche la **liste des risques** de l'axe ; un **libellé d'axe** affiche la **description** de la valeur (pour un champ personnalisé dont l'item porte une description) ; un **niveau** dans la légende affiche la **description du niveau de criticité**.
 
@@ -314,11 +315,11 @@ Les données sont présentées en **blocs**, chacun sous forme de **tableau**, d
 - **Compteurs clés** — nombre de risques, de mesures, de risques réduits, et pourcentage de risques traités.
 - **Répartition par criticité** — la distribution *initiale → résiduelle* (deux anneaux), qui montre le glissement du risque après mesures.
 - **Risques par catégorie**, **Mesures par type**, **Mesures par statut**.
-- **En option** : *Risques* / *Mesures par responsable*, **Couverture** (risques sans mesure, mesures orphelines), et une **répartition par champ personnalisé** (autant de blocs que voulu). Pour un champ **multi-valeur** (liste à cocher, étiquettes), le centre de l'anneau compte des **valeurs**, pas des entités.
+- **En option** : *Risques* / *Mesures par responsable*, **Couverture** (risques sans mesure, mesures orphelines), une **répartition par champ personnalisé** et un **agrégat numérique** (autant de blocs que voulu). Pour un champ **multi-valeur** (liste à cocher, étiquettes), le centre de l'anneau compte des **valeurs**, pas des entités. Un **agrégat numérique** résume un champ *échelle* ou *calculé numérique* de risque, mesure ou lien sous forme de **tuiles** : effectif renseigné, **moyenne**, **somme**, **min**, **max**.
 
 **Manipuler la grille.** Chaque bloc se **déplace** (glisser la poignée **⠿** ou son titre), se **redimensionne** (bouton **⤢** : pleine ↔ demi-largeur) et se **retire** (**✕**) directement sur la grille ; les blocs d'une même rangée gardent la même hauteur. Toute action est **répercutée dans les options** et enregistrée dans le fichier.
 
-**Personnaliser (Paramètres › Statistiques).** Le sous-onglet reprend tous les blocs dans une liste ordonnable : cochez ceux à afficher, **glissez la poignée ⠿** pour les réordonner, et réglez pour chacun la **taille** (pleine / demi-largeur), l'**affichage** (tableau / graphique / les deux) et la **forme** du graphique (anneau / camembert). Le bouton **+ Ajouter un bloc « champ personnalisé »** crée une répartition sur le champ de votre choix ; **↺ Réinitialiser par défaut** rétablit la configuration standard. Les réglages sont **enregistrés dans le fichier** (`extensions.display.stats`).
+**Personnaliser (Paramètres › Statistiques).** Le sous-onglet reprend tous les blocs dans une liste ordonnable : cochez ceux à afficher, **glissez la poignée ⠿** pour les réordonner, et réglez pour chacun la **taille** (pleine / demi-largeur), l'**affichage** (tableau / graphique / les deux) et la **forme** du graphique (anneau / camembert). Le bouton **+ Ajouter un bloc « champ personnalisé »** crée une répartition sur le champ de votre choix, **+ Ajouter un agrégat numérique** un bloc de tuiles pour un champ *échelle* ou *calculé numérique* ; **↺ Réinitialiser par défaut** rétablit la configuration standard. Les réglages sont **enregistrés dans le fichier** (`extensions.display.stats`).
 
 ---
 
@@ -379,7 +380,7 @@ Chaque champ possède :
 - un **code** (identifiant technique) et un **libellé** (multilingue) ;
 - un **type** : oui/non, entier, décimal, date, texte, texte long, URL, e-mail, téléphone, texte contrôlé (regexp), liste déroulante, liste à cocher, **tags colorés** (choix unique ou multiple), **échelle** (niveaux à valeur numérique, exploitable dans des calculs — pastille colorée optionnelle), **barre de progression** (0–100 %) et **valeur calculée** (une formule, style Excel, sur les autres champs de la fiche et des grandeurs dérivées comme le score ou l'échéance ; champ dérivé, non saisi, recalculé à l'affichage). Un champ peut aussi être une **référence à un objet** (voir §15) ;
 - des attributs optionnels : **obligatoire**, bornes (min/max, longueur, nombre d'items), une **aide** et une **description** ;
-- l'option **Utilisable comme filtre** (pour les types à valeurs fermées rattachés à un risque, une mesure ou un lien — voir §16).
+- l'option **Utilisable comme filtre** (pour les types à valeurs fermées — et les **valeurs calculées** à résultat *oui/non* ou dotées d'une *alerte* — rattachés à un risque, une mesure ou un lien ; voir §16).
 
 ![Éditeur d'un champ personnalisé](images/guide-06-champ-editeur.png)
 
@@ -392,6 +393,49 @@ Pour les listes (**liste déroulante**, **liste à cocher**, **tags**), chaque *
 > Les libellés et l'aide se saisissent dans la langue de l'interface active ; à défaut de traduction, le code du champ est affiché.
 
 > ⚠️ **Champ déjà utilisé.** Si vous **supprimez** un champ qui contient déjà des valeurs, si vous **changez sa cible** (par ex. de *risque* à *mesure*) ou si vous **changez son type** de façon incompatible (par ex. de *tags* à *texte*), l'outil indique combien de valeurs sont concernées et avertit qu'elles deviendront inaccessibles ou inexploitables, avant d'appliquer.
+
+### Le type « échelle »
+
+Une **échelle** est une liste de **niveaux**, chacun défini par une **valeur numérique** et un **libellé** (par exemple *1 = Faible, 2 = Moyen, 3 = Fort, 4 = Critique*). La valeur numérique **tient lieu d'identité** du niveau : c'est elle qui est **stockée** et qui est **exploitée dans les calculs, les statistiques et les radars**. Chaque niveau peut recevoir une **couleur** (pastille) et une **description**, toutes deux optionnelles.
+
+- **Saisie** : une liste déroulante propose les niveaux (avec leur pastille de couleur s'il y en a).
+- **Valeurs fermées** : une échelle peut servir de **filtre** (par niveau), de **répartition** dans les statistiques et de **dimension** de radar.
+- **Dans une formule** : `cf.<code>` d'une échelle vaut **directement le nombre** (sa valeur), donc réutilisable tel quel dans une *valeur calculée*.
+
+### Le type « valeur calculée »
+
+Une **valeur calculée** est un champ **dérivé** : au lieu d'être saisie, elle est obtenue par une **formule** que l'outil **recalcule en direct** à l'affichage (fiche, registre, rapport…). La syntaxe s'inspire des **formules Excel**.
+
+**La formule et le picker.** L'éditeur de formule est accompagné d'un **picker** (sélecteur) à quatre onglets pour insérer les éléments au curseur, sans faute de frappe :
+
+- **Champs** — les autres champs personnalisés de la même fiche, insérés sous la forme `cf.<code>` ;
+- **Base** — les champs de base et **grandeurs dérivées** de l'élément : pour un risque `score_initial`, `criticality_residual`, `category`… ; pour une mesure `due_date`, `cost`, `overdue`… ; pour l'analyse, des **agrégats de collection** (`risks_count`, `AVERAGE(risks.cf.<code>)`, `SUM(measures.cost)`…) ;
+- **Fonctions** et **Opérateurs** — voir ci-dessous.
+
+Dans les onglets *Champs* et *Base*, une **petite icône** rappelle le **type** de chaque champ (nombre, texte, date, échelle, calcul…) pour composer la formule d'un coup d'œil. Une fonction insérée **entoure** le texte sélectionné le cas échéant : sélectionner `cf.cout` puis cliquer *ROUND* donne `ROUND(cf.cout)`.
+
+**Les fonctions disponibles** (liste blanche) : agrégats **SUM, AVERAGE, MEDIAN, MIN, MAX, COUNT** ; arithmétique **ROUND, ROUNDUP, ROUNDDOWN, INT, ABS, MOD, POWER, SQRT** ; logique **IF, AND, OR, NOT** ; texte **CONCAT, LEN** (et l'opérateur `&`) ; dates **TODAY, DATE, YEAR, MONTH, DAY, EDATE, DATEDIF**. Opérateurs `+ − * / ^` et comparaisons `= <> < <= > >=`. Toute référence ou fonction inconnue est signalée à la saisie.
+
+> **Compter les valeurs d'un champ multivalué.** Un champ *liste à cocher*, *étiquettes* ou *référence* multiple est vu comme une **liste** : `COUNT(cf.<code>)` en donne le **nombre de valeurs** (0 s'il est vide). En contexte texte, la liste s'écrit valeurs jointes par « , ».
+
+**Le type du résultat.** Vous choisissez le **type de résultat** — *nombre*, *entier*, *date*, *texte* ou *oui/non* — qui détermine la mise en forme. Pour un *nombre*, vous pouvez fixer un nombre de **décimales** et une **unité** (suffixe, par ex. « pts », « € »). Une **date** calculée suit le **format de date global** de l'analyse. Le caractère *obligatoire* n'a pas de sens ici et n'est pas proposé.
+
+**Aperçu en direct.** Une valeur calculée ne se **saisit pas** : dans les fiches, elle apparaît en **lecture seule** dans la liste des champs personnalisés et se **recalcule au fil** de la saisie des autres champs. Si la formule est en erreur, elle affiche **#ERR** (survolez pour le détail).
+
+**L'alerte hors plage.** Vous pouvez définir une **alerte** qui **colore** la valeur (couleur au choix) lorsqu'elle sort d'une plage attendue. Quatre cas selon les bornes renseignées :
+
+- **aucune borne** — pas d'alerte, la valeur reste neutre ;
+- **borne minimale seule** — coloration si la valeur est **inférieure** au minimum (par ex. `min = 0` signale une valeur négative) ;
+- **borne maximale seule** — coloration si la valeur **dépasse** le maximum (par ex. `max = 100` signale un dépassement) ;
+- **les deux bornes** — coloration **hors de l'intervalle** [min, max].
+
+Le **format des bornes** dépend du type de résultat : un **nombre** pour un résultat numérique ; une **date au format `AAAA-MM-JJ`** pour un résultat *date* (l'éditeur propose alors un sélecteur de date). Pour une date, `min` est la **date plancher** (avant → alerte) et `max` la **date plafond** (après → alerte).
+
+**Où la valeur calculée est exploitée.** Comme les autres champs, elle devient une **colonne** de registre, figure dans le **rapport** et les **exports Word/CSV**, et se **trie**. Elle est en outre :
+
+- **filtrable** (si *Utilisable comme filtre*) lorsqu'elle produit une valeur **discrète** — résultat **oui/non**, ou champ **doté d'une alerte** : le filtre propose alors *Oui / Non* ou *En alerte / Hors alerte* (un résultat numérique/date continu, sans alerte, n'est pas proposé au filtre) ;
+- exploitable en **statistiques** via un bloc **« agrégat numérique »** (effectif renseigné, moyenne, somme, min, max) ; pour la cible *analyse*, les valeurs calculées s'affichent en **tuiles d'indicateurs** en tête de l'onglet ;
+- utilisable comme **métrique de radar** (*Champ numérique* : moyenne / max / somme).
 
 ---
 
@@ -455,7 +499,7 @@ Ces fonctions transversales s'appliquent aux registres Risques, Mesures et au d�
 
 - **Rechercher.** Le champ *Rechercher…* filtre les lignes par texte libre.
 - **Trier.** Un clic sur un en-tête de colonne trie ; l'en-tête cycle sur **trois états** : croissant → décroissant → **retour à l'ordre d'origine** (l'ordre du fichier). Les colonnes de champ personnalisé scalaires sont également triables.
-- **Filtrer.** Des filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement », et tout champ personnalisé déclaré *filtrable*) restreignent l'affichage. Les filtres se **combinent (ET)**. **Chaque onglet propose par défaut les filtres de sa famille** — ceux du **risque** (registre Risques, **Matrices**), de la **mesure** (Mesures, Plan d'action), du **risque et de la mesure** (**Statistiques**, qui affiche les deux) ou du **lien** (Liens) ; les filtres d'une autre famille n'apparaissent **que lorsqu'ils sont actifs**. Ceux de **catégorie** (risque), **type** et **statut** (mesure) ainsi que les **champs personnalisés** se **propagent le long des liens** — et donc à **tous les onglets, aux matrices et au rapport** : filtrer sur un risque restreint aussi les mesures et les liens correspondants, et réciproquement. La **recherche texte** et les filtres propres au *Plan d'action* (**responsable**, **« en retard »**) restent **locaux** à leur vue (le filtre *statut* du Plan est le même que celui des mesures). Quand un filtre propagé est actif, sa **valeur** reste **visible et modifiable** dans la barre de **chaque onglet** où il agit — par exemple, un filtre de catégorie posé sur les risques apparaît aussi, avec sa valeur, dans la barre des mesures. Un compteur « n sur N » et un bouton *Réinitialiser* apparaissent dès qu'un filtre ou une recherche restreint la vue (la réinitialisation efface aussi les filtres propagés). Le **filtrage propagé** (catégorie, type, statut et champs personnalisés) est **enregistré dans le fichier** et retrouvé à la réouverture ; le modifier marque le fichier comme *à enregistrer*. Un paramètre d'adresse `?filter=code:valeur;…` permet aussi de l'appliquer au démarrage (voir [§19](#19-gérer-les-fichiers-et-les-modèles)).
+- **Filtrer.** Des filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement », et tout champ personnalisé déclaré *filtrable* — y compris une **valeur calculée** à résultat *oui/non* ou dotée d'une **alerte**, proposée alors comme *En alerte / Hors alerte*) restreignent l'affichage. Les filtres se **combinent (ET)**. **Chaque onglet propose par défaut les filtres de sa famille** — ceux du **risque** (registre Risques, **Matrices**), de la **mesure** (Mesures, Plan d'action), du **risque et de la mesure** (**Statistiques**, qui affiche les deux) ou du **lien** (Liens) ; les filtres d'une autre famille n'apparaissent **que lorsqu'ils sont actifs**. Ceux de **catégorie** (risque), **type** et **statut** (mesure) ainsi que les **champs personnalisés** se **propagent le long des liens** — et donc à **tous les onglets, aux matrices et au rapport** : filtrer sur un risque restreint aussi les mesures et les liens correspondants, et réciproquement. La **recherche texte** et les filtres propres au *Plan d'action* (**responsable**, **« en retard »**) restent **locaux** à leur vue (le filtre *statut* du Plan est le même que celui des mesures). Quand un filtre propagé est actif, sa **valeur** reste **visible et modifiable** dans la barre de **chaque onglet** où il agit — par exemple, un filtre de catégorie posé sur les risques apparaît aussi, avec sa valeur, dans la barre des mesures. Un compteur « n sur N » et un bouton *Réinitialiser* apparaissent dès qu'un filtre ou une recherche restreint la vue (la réinitialisation efface aussi les filtres propagés). Le **filtrage propagé** (catégorie, type, statut et champs personnalisés) est **enregistré dans le fichier** et retrouvé à la réouverture ; le modifier marque le fichier comme *à enregistrer*. Un paramètre d'adresse `?filter=code:valeur;…` permet aussi de l'appliquer au démarrage (voir [§19](#19-gérer-les-fichiers-et-les-modèles)).
 - **Personnaliser les colonnes.** Le bouton **⚙** à droite de l'en-tête ouvre le menu des colonnes.
 
 ![Menu de personnalisation des colonnes](images/guide-19-menu-colonnes.png)
