@@ -130,7 +130,7 @@
             "stats": {
               "type": "object",
               "additionalProperties": true,
-              "description": "Personnalisation de l'onglet Statistiques : liste ordonnée de blocs (compteurs, répartitions, couverture, champ personnalisé) affichés en grille. Absent : blocs par défaut. Un bloc de type inconnu est ignoré ; un bloc « champ personnalisé » dont le champ a disparu est retiré.",
+              "description": "Personnalisation de l'onglet Statistiques : liste ordonnée de blocs (compteurs, répartitions, couverture, champ personnalisé, agrégat numérique, attribut/usage d'objet) affichés en grille. Absent : blocs par défaut. Un bloc de type inconnu est ignoré ; un bloc « champ personnalisé »/« agrégat numérique » dont le champ a disparu est retiré.",
               "properties": {
                 "blocks": {
                   "type": "array",
@@ -139,14 +139,14 @@
                     "type": "object",
                     "additionalProperties": true,
                     "properties": {
-                      "id": { "type": "string", "description": "Identifiant du bloc. Types standard : « counters », « criticality », « risk_category », « measure_type », « measure_status », « risk_owner », « measure_owner », « coverage ». Bloc champ personnalisé : « custom:<cible>:<code> »." },
-                      "type": { "type": "string", "description": "Type de bloc (voir id) ; « custom » pour une répartition par champ personnalisé." },
+                      "id": { "type": "string", "description": "Identifiant du bloc. Types standard : « counters », « criticality », « risk_category », « measure_type », « measure_status », « risk_owner », « measure_owner », « coverage ». Bloc champ personnalisé : « custom:<cible>:<code> ». Agrégat numérique : « num_agg:<cible>:<code> »." },
+                      "type": { "type": "string", "description": "Type de bloc (voir id) ; « custom » pour une répartition par champ personnalisé, « num_agg » pour un agrégat numérique (effectif/moyenne/somme/min/max) d'un champ échelle ou calculé numérique." },
                       "on": { "type": "boolean", "description": "Bloc affiché. Défaut : true." },
                       "size": { "enum": ["full", "half"], "description": "Largeur dans la grille : pleine (« full ») ou demie (« half »). Les compteurs sont toujours en pleine largeur." },
                       "display": { "enum": ["table", "chart", "both"], "description": "Rendu : tableau seul, graphique seul ou les deux. Sans objet pour les compteurs (tuiles) et la couverture (tableau)." },
                       "shape": { "enum": ["donut", "pie"], "description": "Forme du graphique : anneau (« donut ») ou camembert (« pie »)." },
-                      "target": { "enum": ["risk", "measure", "link"], "description": "Bloc « custom » uniquement : entité ciblée." },
-                      "field": { "type": "string", "description": "Bloc « custom » uniquement : code du champ personnalisé (type à valeurs fermées)." }
+                      "target": { "enum": ["risk", "measure", "link"], "description": "Blocs « custom » / « num_agg » : entité ciblée." },
+                      "field": { "type": "string", "description": "Blocs « custom » / « num_agg » : code du champ personnalisé (valeurs fermées pour « custom » ; échelle ou calculé numérique pour « num_agg »)." }
                     }
                   }
                 }
@@ -167,8 +167,8 @@
                   "additionalProperties": true,
                   "description": "Vue courante de l'onglet Radars, restaurée à la réouverture (comme les filtres). Une valeur périmée est ramenée à son défaut.",
                   "properties": {
-                    "dim": { "type": "string", "description": "Dimension des axes : « cat » (catégorie de risque) ou le code d'un champ personnalisé de risque à valeurs fermées (select / checklist / tags / reference). Défaut : « cat »." },
-                    "metric": { "enum": ["avg", "max", "sum", "weighted", "count"], "description": "Métrique mesurée sur chaque axe. Défaut : « avg »." },
+                    "dim": { "type": "string", "description": "Dimension des axes : « cat » (catégorie de risque) ou le code d'un champ personnalisé de risque à valeurs fermées (select / checklist / tags / scale / reference). Défaut : « cat »." },
+                    "metric": { "description": "Métrique mesurée sur chaque axe : une valeur standard (« avg », « max », « sum », « weighted », « count »), ou une métrique « champ numérique » de la forme « cf:<code>:avg » / « cf:<code>:sum » — moyenne ou somme d'un champ de risque de type échelle ou calculé numérique par axe (indépendante de l'évaluation). Défaut : « avg ».", "anyOf": [ { "enum": ["avg", "max", "sum", "weighted", "count"] }, { "type": "string", "pattern": "^cf:.+:(avg|sum)$" } ] },
                     "eval": { "enum": ["initial", "residual", "both-side", "both-over"], "description": "Évaluation affichée : initiale, résiduelle, accolées ou superposées. Défaut : « both-over »." },
                     "empty_axes": { "type": "boolean", "description": "Afficher tous les axes possibles, y compris ceux sans risque dans la vue (item/instance non utilisé, ou valeur écartée par un filtre). Défaut : true ; false = seulement les axes présents." }
                   }

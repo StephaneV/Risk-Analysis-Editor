@@ -1671,6 +1671,7 @@ const I18N = {
     stat_count:"Nombre", stat_share:"Part", stat_total:"Total", stat_unset:"Non renseigné",
     stat_by_owner_risk:"Risques par responsable", stat_by_owner_measure:"Mesures par responsable",
     stat_by_field:"Répartition par « {0} »", stat_coverage:"Couverture",
+    stat_num_agg:"Agrégat : « {0} »", stat_num_n:"Renseignés", stat_num_avg:"Moyenne", stat_num_sum:"Somme", stat_num_min:"Minimum", stat_num_max:"Maximum",
     stat_cov_risks:"Risques sans mesure", stat_cov_measures:"Mesures orphelines",
     stat_tg_risk:"risques", stat_tg_measure:"mesures", stat_tg_link:"liens",
     stat_move:"Déplacer", stat_resize:"Redimensionner", stat_remove:"Retirer",
@@ -1686,11 +1687,13 @@ const I18N = {
     radar_count_note:"Le nombre de risques ne dépend pas de l'évaluation.",
     rp_radar:"Radar", radar_metric:"Métrique", radar_eval:"Évaluation",
     radar_metric_sum:"Criticité cumulée", radar_metric_weighted:"Criticité pondérée",
+    radar_agg_avg:"moyenne", radar_agg_sum:"somme", radar_metric_field_grp:"Champ numérique",
     radar_cfg_weights:"Poids par niveau de criticité", radar_cfg_weights_cap:"Utilisés par la métrique « Criticité pondérée » : chaque risque compte pour le poids de son niveau.",
     radar_cfg_render:"Rendu des radars", radar_cfg_lum:"Luminosité (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Épaisseur du contour", radar_cfg_step:"Pas des graduations (0 = auto)", radar_cfg_spoke:"Couleur des rayons", radar_cfg_color_init:"Couleur (initial)", radar_cfg_color_res:"Couleur (résiduel)",
     radar_cfg_saved:"Préférences enregistrées avec l'analyse (rubrique extensions.display.radar).", radar_cfg_reset:"Réinitialiser les valeurs par défaut",
     stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
     stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
+    stats_add_num:"Ajouter un agrégat numérique",
     stats_add_object:"Ajouter un bloc « objet »", stats_add_object_usage:"Ajouter un bloc « complétude »",
     stat_by_object_type:"Objets par type", stat_object_dist:"{0} par « {1} »",
     stat_object_usage:"Complétude — {0}", stat_object_usage_short:"Complétude",
@@ -1769,8 +1772,9 @@ const I18N = {
     cf_add:"+ Ajouter un champ", cf_none:"Aucun champ personnalisé défini.", cf_new:"Nouveau champ personnalisé", cf_edit:"Modifier le champ personnalisé",
     cf_target:"Cible", cf_code:"Code", cf_required:"Obligatoire",
     cf_filterable:"Utilisable comme filtre",
-    cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées et aux références, sur les champs rattachés aux risques, aux mesures ou aux liens.",
+    cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées, aux références, et aux valeurs calculées booléennes ou dotées d'une alerte — sur les champs rattachés aux risques, aux mesures ou aux liens.",
     cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées et aux références, hors champs de l'analyse.",
+    cf_filt_alert_on:"En alerte", cf_filt_alert_off:"Hors alerte",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.scale":"Échelle (valeur numérique)","cft.computed":"Valeur calculée","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.reference":"Référence à un objet",
     cf_object_type:"Type d'objet ciblé", cf_ref_none:"— (aucun)", cf_ref_add:"+ ajouter une instance…", cf_ref_create:"＋ créer", cf_ref_remove:"Retirer",
@@ -2050,6 +2054,7 @@ const I18N = {
     stat_count:"Count", stat_share:"Share", stat_total:"Total", stat_unset:"Not set",
     stat_by_owner_risk:"Risks by owner", stat_by_owner_measure:"Measures by owner",
     stat_by_field:"Distribution by « {0} »", stat_coverage:"Coverage",
+    stat_num_agg:"Aggregate: « {0} »", stat_num_n:"Provided", stat_num_avg:"Average", stat_num_sum:"Sum", stat_num_min:"Minimum", stat_num_max:"Maximum",
     stat_cov_risks:"Risks without a control", stat_cov_measures:"Orphan controls",
     stat_tg_risk:"risks", stat_tg_measure:"measures", stat_tg_link:"links",
     stat_move:"Move", stat_resize:"Resize", stat_remove:"Remove",
@@ -2065,11 +2070,13 @@ const I18N = {
     radar_count_note:"The number of risks does not depend on the assessment.",
     rp_radar:"Radar", radar_metric:"Metric", radar_eval:"Assessment",
     radar_metric_sum:"Cumulative criticality", radar_metric_weighted:"Weighted criticality",
+    radar_agg_avg:"average", radar_agg_sum:"sum", radar_metric_field_grp:"Numeric field",
     radar_cfg_weights:"Weights by criticality level", radar_cfg_weights_cap:"Used by the “Weighted criticality” metric: each risk counts for the weight of its level.",
     radar_cfg_render:"Radar rendering", radar_cfg_lum:"Lightness (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Outline width", radar_cfg_step:"Grid step (0 = auto)", radar_cfg_spoke:"Spokes colour", radar_cfg_color_init:"Colour (initial)", radar_cfg_color_res:"Colour (residual)",
     radar_cfg_saved:"Preferences saved with the analysis (extensions.display.radar).", radar_cfg_reset:"Reset to defaults",
     stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
     stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
+    stats_add_num:"Add a numeric aggregate",
     stats_add_object:"Add an « object » block", stats_add_object_usage:"Add a « completeness » block",
     stat_by_object_type:"Objects by type", stat_object_dist:"{0} by « {1} »",
     stat_object_usage:"Completeness — {0}", stat_object_usage_short:"Completeness",
@@ -2148,8 +2155,9 @@ const I18N = {
     cf_add:"+ Add a field", cf_none:"No custom field defined.", cf_new:"New custom field", cf_edit:"Edit custom field",
     cf_target:"Target", cf_code:"Code", cf_required:"Required",
     cf_filterable:"Usable as a filter",
-    cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types and references, on risk, measure or link fields.",
+    cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types, references, and computed values that are boolean or have an alert — on risk, measure or link fields.",
     cf_filterable_na:"Not applicable: restricted to closed-value types and references, excluding analysis fields.",
+    cf_filt_alert_on:"In alert", cf_filt_alert_off:"Not in alert",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.scale":"Scale (numeric value)","cft.computed":"Computed value","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.reference":"Object reference",
     cf_object_type:"Target object type", cf_ref_none:"— (none)", cf_ref_add:"+ add an instance…", cf_ref_create:"＋ new", cf_ref_remove:"Remove",
@@ -2429,6 +2437,7 @@ const I18N = {
     stat_count:"Numero", stat_share:"Quota", stat_total:"Totale", stat_unset:"Non indicato",
     stat_by_owner_risk:"Rischi per responsabile", stat_by_owner_measure:"Misure per responsabile",
     stat_by_field:"Distribuzione per « {0} »", stat_coverage:"Copertura",
+    stat_num_agg:"Aggregato: « {0} »", stat_num_n:"Valorizzati", stat_num_avg:"Media", stat_num_sum:"Somma", stat_num_min:"Minimo", stat_num_max:"Massimo",
     stat_cov_risks:"Rischi senza misura", stat_cov_measures:"Misure orfane",
     stat_tg_risk:"rischi", stat_tg_measure:"misure", stat_tg_link:"collegamenti",
     stat_move:"Sposta", stat_resize:"Ridimensiona", stat_remove:"Rimuovi",
@@ -2444,11 +2453,13 @@ const I18N = {
     radar_count_note:"Il numero di rischi non dipende dalla valutazione.",
     rp_radar:"Radar", radar_metric:"Metrica", radar_eval:"Valutazione",
     radar_metric_sum:"Criticità cumulata", radar_metric_weighted:"Criticità ponderata",
+    radar_agg_avg:"media", radar_agg_sum:"somma", radar_metric_field_grp:"Campo numerico",
     radar_cfg_weights:"Pesi per livello di criticità", radar_cfg_weights_cap:"Usati dalla metrica « Criticità ponderata »: ogni rischio conta per il peso del suo livello.",
     radar_cfg_render:"Resa dei radar", radar_cfg_lum:"Luminosità (HSL)", radar_cfg_sat:"Saturazione", radar_cfg_outline:"Spessore del contorno", radar_cfg_step:"Passo delle griglie (0 = auto)", radar_cfg_spoke:"Colore dei raggi", radar_cfg_color_init:"Colore (iniziale)", radar_cfg_color_res:"Colore (residuo)",
     radar_cfg_saved:"Preferenze salvate con l'analisi (sezione extensions.display.radar).", radar_cfg_reset:"Ripristina i valori predefiniti",
     stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
     stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
+    stats_add_num:"Aggiungi un aggregato numerico",
     stats_add_object:"Aggiungi un blocco « oggetto »", stats_add_object_usage:"Aggiungi un blocco « completezza »",
     stat_by_object_type:"Oggetti per tipo", stat_object_dist:"{0} per « {1} »",
     stat_object_usage:"Completezza — {0}", stat_object_usage_short:"Completezza",
@@ -2527,8 +2538,9 @@ const I18N = {
     cf_add:"+ Aggiungi un campo", cf_none:"Nessun campo personalizzato definito.", cf_new:"Nuovo campo personalizzato", cf_edit:"Modifica campo personalizzato",
     cf_target:"Destinazione", cf_code:"Codice", cf_required:"Obbligatorio",
     cf_filterable:"Utilizzabile come filtro",
-    cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi e ai riferimenti, sui campi di rischio, misura o collegamento.",
+    cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi, ai riferimenti e ai valori calcolati booleani o dotati di un avviso — sui campi di rischio, misura o collegamento.",
     cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi e ai riferimenti, esclusi i campi dell'analisi.",
+    cf_filt_alert_on:"In avviso", cf_filt_alert_off:"Non in avviso",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.scale":"Scala (valore numerico)","cft.computed":"Valore calcolato","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.reference":"Riferimento a un oggetto",
     cf_object_type:"Tipo di oggetto di destinazione", cf_ref_none:"— (nessuno)", cf_ref_add:"+ aggiungi un'istanza…", cf_ref_create:"＋ crea", cf_ref_remove:"Rimuovi",
@@ -3780,13 +3792,14 @@ const STAT_STD=[
   {id:"object_by_type",type:"object_by_type",defOn:false,size:"half",cond:()=>objectTypes().length>0}
 ];
 const STAT_STD_BYID={};STAT_STD.forEach(s=>STAT_STD_BYID[s.id]=s);
-function statNoChart(type){return type==="counters"||type==="coverage";}   // pas de graphique
+function statNoChart(type){return type==="counters"||type==="coverage"||type==="num_agg";}   // pas de graphique
 function normStatBlock(b){
   const o={id:b.id,type:b.type,on:b.on!==false,
     size:(b.size==="full")?"full":"half",
     display:["table","chart","both"].indexOf(b.display)>=0?b.display:"both",
     shape:(b.shape==="pie")?"pie":"donut"};
   if(b.type==="custom"){o.target=b.target;o.field=b.field;}
+  if(b.type==="num_agg"){o.target=b.target;o.field=b.field;o.display="table";}   // tuiles d'agrégat
   if(b.type==="object_attr"){o.object_type=b.object_type;o.attr=b.attr;}
   if(b.type==="object_usage")o.object_type=b.object_type;
   if(b.type==="counters")o.size="full";            // les tuiles occupent toujours la largeur
@@ -3806,6 +3819,9 @@ function statsCfg(){
       const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);
       if(!f)return;
       out.push(normStatBlock(b));seen[b.id]=1;
+    }else if(b.type==="num_agg"){
+      if(!statNumField((customFieldsFor(b.target)||[]).find(x=>x.code===b.field)))return;   // champ numérique disparu -> retiré
+      out.push(normStatBlock(b));seen[b.id]=1;
     }else if(b.type==="object_attr"){
       if(!statObjAttrClosed(statObjAttr(b.object_type,b.attr)))return;   // type/attribut disparu -> retiré
       out.push(normStatBlock(b));seen[b.id]=1;
@@ -3821,7 +3837,7 @@ function statsCfg(){
   return out;
 }
 function statBlocks(){return statsCfg();}
-function cleanStatBlock(b){const o={id:b.id,type:b.type,on:b.on!==false,size:b.size,display:b.display,shape:b.shape};if(b.type==="custom"){o.target=b.target;o.field=b.field;}if(b.type==="object_attr"){o.object_type=b.object_type;o.attr=b.attr;}if(b.type==="object_usage")o.object_type=b.object_type;return o;}
+function cleanStatBlock(b){const o={id:b.id,type:b.type,on:b.on!==false,size:b.size,display:b.display,shape:b.shape};if(b.type==="custom"||b.type==="num_agg"){o.target=b.target;o.field=b.field;}if(b.type==="object_attr"){o.object_type=b.object_type;o.attr=b.attr;}if(b.type==="object_usage")o.object_type=b.object_type;return o;}
 /* Écrit la config, marque à sauver, redessine l'onglet ET les options. */
 function statsSetBlocks(blocks){
   analyse.extensions=analyse.extensions||{};analyse.extensions.display=analyse.extensions.display||{};
@@ -3849,6 +3865,26 @@ function statsAddCustom(){
 function statsSetCustomField(oldId,tg,code){
   const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
   bl[i]=normStatBlock(Object.assign({},bl[i],{id:statCustomId(tg,code),target:tg,field:code}));
+  statsSetBlocks(bl);
+}
+/* Bloc « agrégat numérique » : champ perso à valeur numérique (échelle, ou calculé numérique). */
+function statNumField(f){return !!f&&(f.type==="scale"||(f.type==="computed"&&["number","integer"].indexOf(f.result_type||"number")>=0));}
+function statNumCandidates(){const out=[];["risk","measure","link"].forEach(tg=>(customFieldsFor(tg)||[]).forEach(f=>{if(statNumField(f))out.push({target:tg,field:f.code,label:cfLabel(f)});}));return out;}
+function statNumId(tg,code){return "num_agg:"+tg+":"+code;}
+/* Format d'un agrégat : décimales/unité du champ calculé, sinon 2 décimales max, unité échelle absente. */
+function statNumFmt(f,x){if(!isFinite(x))return "—";
+  let s;if(f&&f.type==="computed"&&f.decimals!=null)s=(+x).toFixed(f.decimals);else s=String(Math.round(x*100)/100);
+  return s+((f&&f.type==="computed"&&f.unit)?(" "+f.unit):"");}
+function statsAddNum(){
+  const cand=statNumCandidates();if(!cand.length)return;
+  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="num_agg")used[b.id]=1;});
+  const pick=cand.find(c=>!used[statNumId(c.target,c.field)])||cand[0];
+  bl.push(normStatBlock({id:statNumId(pick.target,pick.field),type:"num_agg",on:true,size:"half",target:pick.target,field:pick.field}));
+  statsSetBlocks(bl);
+}
+function statsSetNumField(oldId,tg,code){
+  const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
+  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statNumId(tg,code),target:tg,field:code}));
   statsSetBlocks(bl);
 }
 /* Attributs d'objet à valeurs fermées ou de référence, candidats à un bloc « type par attribut ». */
@@ -3993,6 +4029,7 @@ function statTitle(b){
     case "measure_owner":return t("stat_by_owner_measure");
     case "coverage":return t("stat_coverage");
     case "custom":{const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);return t("stat_by_field",f?cfLabel(f):"?");}
+    case "num_agg":{const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);return t("stat_num_agg",f?cfLabel(f):"?");}
     case "object_by_type":return t("stat_by_object_type");
     case "object_attr":{const ot=objectTypeByCode(b.object_type),a=statObjAttr(b.object_type,b.attr);return t("stat_object_dist",ot?otLabel(ot):"?",a?cfLabel(a):"?");}
     case "object_usage":{const ot=objectTypeByCode(b.object_type);return t("stat_object_usage",ot?otLabel(ot):"?");}
@@ -4044,6 +4081,16 @@ function statBlockBody(block){
       const sub=(f.type==="checklist"||f.type==="tags")?t("stat_values")
         :(block.target==="risk"?t("stat_risks"):block.target==="measure"?t("stat_measures"):t("tab_links"));
       return statDistCard(block,cfLabel(f),data,sub,block.target);}
+    case "num_agg":{const f=(customFieldsFor(block.target)||[]).find(x=>x.code===block.field);
+      if(!statNumField(f))return '<div class="st-content"><p class="muted">—</p></div>';
+      const list=block.target==="risk"?visibleRisks():block.target==="measure"?visibleMeasures():visibleTreatments();
+      const vals=[];list.forEach(it=>{const v=cfNumericValue(f,it,block.target);if(v!=null)vals.push(v);});
+      const n=vals.length,sum=vals.reduce((a,b)=>a+b,0),avg=n?sum/n:0,mn=n?Math.min.apply(null,vals):0,mx=n?Math.max.apply(null,vals):0;
+      const tile=(val,lab)=>'<div class="st-tile"><div class="n">'+esc(val)+'</div><div class="l">'+esc(lab)+'</div></div>';
+      return '<div class="st-content"><div class="st-tiles">'+
+        tile(String(n),t("stat_num_n"))+tile(statNumFmt(f,avg),t("stat_num_avg"))+tile(statNumFmt(f,sum),t("stat_num_sum"))+
+        tile(n?statNumFmt(f,mn):"—",t("stat_num_min"))+tile(n?statNumFmt(f,mx):"—",t("stat_num_max"))+
+      '</div></div>';}
     case "object_by_type":{
       const data=statDist(objectsAll(),o=>o.type,{labelFn:code=>{const ot=objectTypeByCode(code);return ot?otLabel(ot):code;}});
       return statDistCard(block,t("th_type"),data,t("stat_objects"),"object");}
@@ -4122,7 +4169,7 @@ function radarViewLoad(){
   const raw=radarCfgRaw(),v=(raw&&raw.view&&typeof raw.view==="object")?raw.view:{};
   const fields=radarDimFields();
   radarState.dim=(v.dim==="cat"||fields.some(f=>f.code===v.dim))?v.dim:"cat";
-  radarState.metric=["avg","max","sum","weighted","count"].indexOf(v.metric)>=0?v.metric:"avg";
+  radarState.metric=(["avg","max","sum","weighted","count"].indexOf(v.metric)>=0||radarFieldMetric(v.metric))?v.metric:"avg";
   radarState.eval=["initial","residual","both-side","both-over"].indexOf(v.eval)>=0?v.eval:"both-over";
   radarState.emptyAxes=v.empty_axes!==false;   // défaut : afficher tous les axes
 }
@@ -4131,7 +4178,22 @@ function radarViewSave(){
   v.dim=radarState.dim;v.metric=radarState.metric;v.eval=radarState.eval;v.empty_axes=radarState.emptyAxes!==false;
   markDirty();
 }
-function radarMetricLabel(metric){return t({avg:"radar_metric_avg",max:"radar_metric_max",sum:"radar_metric_sum",weighted:"radar_metric_weighted",count:"radar_metric_count"}[metric]||"radar_metric_avg");}
+function radarMetricLabel(metric){
+  const fm=radarFieldMetric(metric);
+  if(fm){const f=customFieldsFor("risk").find(x=>x.code===fm.code);return (f?cfLabel(f):fm.code)+" ("+t(fm.agg==="sum"?"radar_agg_sum":"radar_agg_avg")+")";}
+  return t({avg:"radar_metric_avg",max:"radar_metric_max",sum:"radar_metric_sum",weighted:"radar_metric_weighted",count:"radar_metric_count"}[metric]||"radar_metric_avg");}
+/* Champs de risque servant de métrique numérique agrégeable : échelle, ou calculé de résultat numérique. */
+function radarMetricFields(){return customFieldsFor("risk").filter(f=>f.type==="scale"||(f.type==="computed"&&["number","integer"].indexOf(f.result_type||"number")>=0));}
+/* Décode une métrique « champ » : « cf:<code>:avg|sum » → {code,agg}, sinon null. */
+function radarFieldMetric(metric){const m=/^cf:(.+):(avg|sum)$/.exec(metric||"");if(!m)return null;const code=m[1];return radarMetricFields().some(f=>f.code===code)?{code:code,agg:m[2]}:null;}
+/* Valeurs d'un radar à métrique « champ » : agrégat (moyenne/somme) de la valeur numérique du
+   champ sur les risques de chaque axe. Indépendant de l'évaluation initiale/résiduelle. */
+function radarFieldValues(risks,dim,axes,fm){
+  const f=customFieldsFor("risk").find(x=>x.code===fm.code);
+  const g={};axes.forEach(k=>g[k]=[]);
+  risks.forEach(r=>{const v=f?cfNumericValue(f,r,"risk"):null;if(v==null)return;radarKeysOf(r,dim).forEach(k=>{if(g[k])g[k].push(v);});});
+  return axes.map(k=>{const a=g[k];if(!a.length)return 0;if(fm.agg==="sum")return a.reduce((x,y)=>x+y,0);let s=0;a.forEach(x=>s+=x);return s/a.length;});
+}
 
 function gridMaxScore(){let mx=0;probabilityLevels().forEach(p=>severityLevels().forEach(g=>{mx=Math.max(mx,scoreOf(p.value,g.value));}));return mx||1;}
 function critBands(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>a.score_max-b.score_max);}
@@ -4294,7 +4356,7 @@ function radarTableHTML(labels,series,metric){
 function radarTitleText(cfg){cfg=cfg||radarState;
   const metricLabel=radarMetricLabel(cfg.metric);
   const f=radarFieldOf(cfg.dim),dimLabel=cfg.dim==="cat"?t("th_category"):(f?cfLabel(f):cfg.dim);
-  if(cfg.metric==="count")return metricLabel+" — "+dimLabel;
+  if(cfg.metric==="count"||radarFieldMetric(cfg.metric))return metricLabel+" — "+dimLabel;
   const evL=cfg.eval==="initial"?t("th_initial"):cfg.eval==="residual"?t("th_residual"):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
   return metricLabel+" — "+dimLabel+" · "+evL;
 }
@@ -4307,12 +4369,15 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
   const dim=cfg.dim,metric=cfg.metric,axes=radarAxes(risks,dim,cfg.emptyAxes!==false);
   if(axes.length<3)return {axes,tooFew:true};
   const labels=axes.map(k=>radarAxisLabel(dim,k));
+  const fm=radarFieldMetric(metric);
   const perRisk=(metric==="avg"||metric==="max");   // échelle par-risque + bandes de criticité
-  const evalIndep=(metric==="count");               // indépendant de l'évaluation initiale/résiduelle
+  const evalIndep=(metric==="count")||!!fm;          // indépendant de l'évaluation initiale/résiduelle
   const rc=radarCfg().render;
   let series,vmax,bands;
   if(evalIndep){
-    series=[{name:t("radar_metric_count"),color:rc.colorInit,values:radarValues(risks,dim,axes,"count","initial")}];
+    series=fm
+      ? [{name:radarMetricLabel(metric),color:rc.colorInit,values:radarFieldValues(risks,dim,axes,fm)}]
+      : [{name:t("radar_metric_count"),color:rc.colorInit,values:radarValues(risks,dim,axes,"count","initial")}];
     vmax=radarExtVmax(radarNiceMax(series[0].values));bands=false;
   } else {
     const sI={name:t("th_initial"),color:rc.colorInit,values:radarValues(risks,dim,axes,metric,"initial")};
@@ -4426,14 +4491,18 @@ function renderRadars(){
   sel.innerHTML='<option value="cat">'+esc(t("th_category"))+'</option>'+fields.map(f=>'<option value="'+esc(f.code)+'">'+esc(cfLabel(f))+'</option>').join("");
   sel.value=radarState.dim;
   const msel=document.getElementById("radarMetric");
-  msel.innerHTML=["avg","max","sum","weighted","count"].map(mv=>'<option value="'+mv+'">'+esc(radarMetricLabel(mv))+'</option>').join("");
+  const critOpts=["avg","max","sum","weighted","count"].map(mv=>'<option value="'+mv+'">'+esc(radarMetricLabel(mv))+'</option>').join("");
+  const fmFields=radarMetricFields();
+  const fmOpts=fmFields.length?('<optgroup label="'+esc(t("radar_metric_field_grp"))+'">'+fmFields.map(f=>
+    ["avg","sum"].map(ag=>{const mv="cf:"+f.code+":"+ag;return '<option value="'+esc(mv)+'">'+esc(radarMetricLabel(mv))+'</option>';}).join("")).join("")+'</optgroup>'):"";
+  msel.innerHTML=critOpts+fmOpts;
   msel.value=radarState.metric;
   // Bascule « axes vides » : disponible pour toutes les dimensions (garde des axes stables sous filtre).
   const emptyChk=document.getElementById("radarEmptyAxes");
   emptyChk.checked=radarState.emptyAxes!==false;emptyChk.disabled=false;
   document.getElementById("radarEmptyWrap").style.display="inline-flex";
   radarSyncSeg();
-  const evalIndep=radarState.metric==="count",evSeg=document.getElementById("radarEvalSeg");
+  const evalIndep=(radarState.metric==="count")||!!radarFieldMetric(radarState.metric),evSeg=document.getElementById("radarEvalSeg");
   evSeg.style.opacity=evalIndep?"0.45":"";evSeg.style.pointerEvents=evalIndep?"none":"";
   document.getElementById("radarTitle").textContent=radarTitleText();
   setRadarExport();
@@ -4524,7 +4593,7 @@ function statRowCtrls(b){
   let h="";
   if(b.type==="counters")h+=statFixed(t("stat_size"),t("stat_size_full"));
   else h+=statSeg("size",t("stat_size"),[["full",t("stat_size_full")],["half",t("stat_size_half")]],b.size);
-  if(b.type==="counters")h+=statFixed(t("stat_display"),t("stat_tiles"));
+  if(b.type==="counters"||b.type==="num_agg")h+=statFixed(t("stat_display"),t("stat_tiles"));
   else if(b.type==="coverage")h+=statFixed(t("stat_display"),t("stat_disp_table"));
   else h+=statSeg("display",t("stat_display"),[["table",t("stat_disp_table")],["chart",t("stat_disp_chart")],["both",t("stat_disp_both")]],b.display);
   if(!statNoChart(b.type))h+=statSeg("shape",t("stat_shape"),[["donut",t("stat_shape_donut")],["pie",t("stat_shape_pie")]],b.shape,b.display==="table");
@@ -4533,6 +4602,11 @@ function statRowCtrls(b){
 function statCustomSelectHTML(b){
   const cur=b.target+"|"+b.field;
   return '<select class="st2-field" data-act="field">'+statCustomCandidates().map(c=>{const v=c.target+"|"+c.field;
+    return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(c.label)+' ('+esc(t("stat_tg_"+c.target))+')</option>';}).join("")+'</select>';
+}
+function statNumSelectHTML(b){
+  const cur=b.target+"|"+b.field;
+  return '<select class="st2-numfield" data-act="numfield">'+statNumCandidates().map(c=>{const v=c.target+"|"+c.field;
     return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(c.label)+' ('+esc(t("stat_tg_"+c.target))+')</option>';}).join("")+'</select>';
 }
 function statObjSelectHTML(b){
@@ -4548,6 +4622,8 @@ function statSettingsRowHTML(b){
   const delBtn='<button type="button" class="st2-del" data-act="del" title="'+esc(t("stat_remove"))+'" aria-label="'+esc(t("stat_remove"))+'">🗑</button>';
   const name=b.type==="custom"
     ? statCustomSelectHTML(b)+delBtn
+    : b.type==="num_agg"
+    ? statNumSelectHTML(b)+delBtn
     : b.type==="object_attr"
     ? statObjSelectHTML(b)+delBtn
     : b.type==="object_usage"
@@ -4562,11 +4638,12 @@ function statSettingsRowHTML(b){
 }
 function renderStatsSettings(){
   const panel=document.getElementById("statsCfgPanel");if(!panel)return;
-  const canAdd=statCustomCandidates().length>0, canAddObj=statObjCandidates().length>0, canAddUsage=statUsageCandidates().length>0;
+  const canAdd=statCustomCandidates().length>0, canAddNum=statNumCandidates().length>0, canAddObj=statObjCandidates().length>0, canAddUsage=statUsageCandidates().length>0;
   panel.innerHTML='<p class="muted" style="margin:0 0 12px">'+esc(t("stats_cfg_intro"))+'</p>'+
     '<div class="st2-list">'+statsCfg().map(statSettingsRowHTML).join("")+'</div>'+
     '<div class="st2-actions">'+
       (canAdd?'<button type="button" class="btn ghost sm" data-act="add">+ '+esc(t("stats_add_custom"))+'</button>':'')+
+      (canAddNum?'<button type="button" class="btn ghost sm" data-act="addnum">+ '+esc(t("stats_add_num"))+'</button>':'')+
       (canAddObj?'<button type="button" class="btn ghost sm" data-act="addobj">+ '+esc(t("stats_add_object"))+'</button>':'')+
       (canAddUsage?'<button type="button" class="btn ghost sm" data-act="addusage">+ '+esc(t("stats_add_object_usage"))+'</button>':'')+
       '<button type="button" class="btn ghost sm" data-act="reset">↺ '+esc(t("stats_reset"))+'</button>'+
@@ -4584,6 +4661,7 @@ function renderStatsSettings(){
     if(opt){const seg=opt.closest(".st2-seg");if(!seg.classList.contains("off")&&id)statsUpdate(id,{[seg.dataset.act]:opt.dataset.val});return;}
     if(!act)return;const kind=act.dataset.act;
     if(kind==="add"){statsAddCustom();return;}
+    if(kind==="addnum"){statsAddNum();return;}
     if(kind==="addobj"){statsAddObject();return;}
     if(kind==="addusage"){statsAddObjectUsage();return;}
     if(kind==="reset"){statsReset();return;}
@@ -4595,6 +4673,8 @@ function renderStatsSettings(){
     const row=e.target.closest(".st2-row"),id=row?row.dataset.sid:null;if(!id)return;
     const cf=e.target.closest(".st2-field");
     if(cf){const p=cf.value.split("|");statsSetCustomField(id,p[0],p[1]);return;}
+    const nf=e.target.closest(".st2-numfield");
+    if(nf){const p=nf.value.split("|");statsSetNumField(id,p[0],p[1]);return;}
     const of=e.target.closest(".st2-objfield");
     if(of){const p=of.value.split("|");statsSetObjectField(id,p[0],p[1]);return;}
     const uf=e.target.closest(".st2-usagefield");
@@ -6058,14 +6138,14 @@ function renderReport(){
         if(mode==="detail"){
           insts.forEach(inst=>{
             body+='<div class="rp-item"><div><b>'+esc(inst.id)+' — '+esc(objectLabel(inst))+'</b></div>';
-            attrs.forEach(a=>{const v=(inst.values||{})[a.code];
-              if(cfHasVal(v))body+='<div class="rp-note md"><b>'+esc(cfLabel(a))+' :</b> '+cfDisplayHTML(a,v,true)+'</div>';});
+            attrs.forEach(a=>{const dv=cfObjAttrHTML(a,ot,inst);
+              if(dv)body+='<div class="rp-note md"><b>'+esc(cfLabel(a))+' :</b> '+dv+'</div>';});
             body+='</div>';
           });
         }else{
           let tb='<table><thead><tr><th>'+esc(t("rp_obj_id"))+'</th>'+attrs.map(a=>'<th>'+esc(cfLabel(a))+'</th>').join("")+'</tr></thead><tbody>';
           insts.forEach(inst=>{ tb+='<tr><td><b>'+esc(inst.id)+'</b></td>'+
-            attrs.map(a=>{const v=(inst.values||{})[a.code];return '<td class="md">'+(cfHasVal(v)?cfDisplayHTML(a,v,true):'')+'</td>';}).join("")+'</tr>'; });
+            attrs.map(a=>'<td class="md">'+cfObjAttrHTML(a,ot,inst)+'</td>').join("")+'</tr>'; });
           body+=tb+'</tbody></table>';
         }
       });
@@ -6441,8 +6521,11 @@ function cfIsClosed(ty){return CF_CLOSED.indexOf(ty)>=0;}
    - la cible ne peut pas être l'analyse : il n'y en a qu'une, il n'y a rien à trier.
    Condition unique, partagée par la modale, le tableau des paramètres et le filtrage. */
 function cfFilterOptionApplies(target,type){return (cfIsClosed(type)||type==="reference")&&target!=="analysis"&&target!=="cotation";}
+/* Le drapeau « filtrable » est-il proposé pour ce champ ? Comme cfFilterOptionApplies, plus les
+   valeurs calculées (dont le filtre se limite aux résultats discrets — cf. cfComputedFilterKind). */
+function cfFilterFlagApplies(target,type){return (cfIsClosed(type)||type==="reference"||type==="computed")&&target!=="analysis"&&target!=="cotation";}
 function cfFilterableFields(target){
-  return customFieldsFor(target).filter(f=>f.filterable&&cfFilterOptionApplies(f.target,f.type));
+  return customFieldsFor(target).filter(f=>f.filterable&&cfFilterFlagApplies(f.target,f.type)&&(f.type!=="computed"||cfComputedFilterKind(f)));
 }
 /* Valeur retenue par champ ; une seule à la fois, comme les autres filtres de l'application. */
 let cfFilters={};
@@ -6504,6 +6587,10 @@ function cfFilterChoices(f){
   if(f.type==="boolean")return [["true",t("cf_yes")],["false",t("cf_no")]];
   if(f.type==="reference")return objectsOfType(f.object_type).map(o=>[o.id,objectLabel(o)]);
   if(f.type==="scale")return (f.items||[]).map(it=>[String(it.value),cfItemLabel(it)]);
+  if(f.type==="computed"){const k=cfComputedFilterKind(f);
+    if(k==="bool")return [["true",t("cf_yes")],["false",t("cf_no")]];
+    if(k==="alert")return [["alert",t("cf_filt_alert_on")],["ok",t("cf_filt_alert_off")]];
+    return [];}
   return (f.items||[]).map(it=>[it.code,cfItemLabel(it)]);
 }
 /* Une entité passe-t-elle les filtres de sa cible ?
@@ -6517,6 +6604,10 @@ function cfEntityMatches(obj,target){
   for(let i=0;i<fs.length;i++){
     const f=fs[i], want=cfFilters[f.code];
     if(!want)continue;
+    if(f.type==="computed"){const r=cfComputedValue(f,target,obj),k=cfComputedFilterKind(f);
+      if(k==="bool"){if(String(!!(r.ok&&r.type==="bool"&&r.value))!==want)return false;}
+      else if(k==="alert"){if((r.ok&&cfComputedAlertColor(f,r)?"alert":"ok")!==want)return false;}
+      continue;}
     const v=obj&&obj.custom?obj.custom[f.code]:undefined;
     if(f.type==="boolean"){if(String(v===true)!==want)return false;continue;}
     if(Array.isArray(v)){if(v.indexOf(want)<0)return false;continue;}
@@ -6648,6 +6739,7 @@ function filterBarDef(cle){return FILTER_BARS.filter(b=>b.cle===cle)[0];}
    chacun est décrit par un « descripteur » — value()/set()/options()/color() — et enregistré
    dans CHIP_REG, que les gestionnaires d'évènements consultent au moment du clic. */
 function cfChoiceColor(f,v){
+  if(f.type==="computed")return v==="alert"?((f.alert&&f.alert.color)||"#c0505a"):null;
   if(f.type!=="tags")return null;
   const it=(f.items||[]).find(x=>x.code===v);
   return (it&&it.color)||null;
@@ -8366,6 +8458,7 @@ function dxCellFor(tbl,key,row,bstyle){
   if(key.indexOf("cf:")===0){
     const f=customFieldsFor(cfTargetOf(tbl)).find(x=>"cf:"+x.code===key);
     if(f){
+      if(f.type==="computed"){const v=cfComputedDisplay(f,cfTargetOf(tbl),row);return {txt:(v&&v!=="#ERR")?v:"—"};}
       if(f.type==="tags"&&(bstyle==="pill"||bstyle==="chip"||bstyle==="flat")){const runs=dxTagsBadgeRuns(f,(row.custom||{})[f.code],bstyle);if(runs)return {runs};}
       const v=cfDisplayTxt(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
   }
@@ -8397,7 +8490,7 @@ function dxObjNotes(inst){
   const ot=objectTypeByCode(inst&&inst.type); if(!ot)return "";
   let out="";
   (ot.attributes||[]).forEach(a=>{
-    const raw=(inst.values||{})[a.code],v=cfDisplayTxt(a,raw);if(!v)return;
+    const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v)return;
     if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
     else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
   });
@@ -8617,13 +8710,13 @@ async function buildDocx(){
         if(mode==="detail"){
           insts.forEach(inst=>{
             out+=dxP(dxRun(inst.id+" — "+objectLabel(inst),{b:true}),{sb:120,sa:40});
-            attrs.forEach(a=>{const raw=(inst.values||{})[a.code],v=cfDisplayTxt(a,raw);if(!v)return;
+            attrs.forEach(a=>{const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v)return;
               if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
               else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});});
           });
         }else{
           const head=[{txt:t("rp_obj_id"),b:true,fill:"EEF2F8"}].concat(attrs.map(a=>({txt:cfLabel(a),b:true,fill:"EEF2F8"})));
-          const rows=insts.map(inst=>[{txt:inst.id,b:true}].concat(attrs.map(a=>({txt:cfDisplayTxt(a,(inst.values||{})[a.code])||""}))));
+          const rows=insts.map(inst=>[{txt:inst.id,b:true}].concat(attrs.map(a=>({txt:cfObjAttrText(a,ot,inst)||""}))));
           const n=attrs.length, idW=1400, rest=Math.max(900, n?Math.round((CW-idW)/n):(CW-idW));
           out+=dxTbl([head].concat(rows),[idW].concat(attrs.map(()=>rest)));
         }
@@ -8973,7 +9066,9 @@ function tmplRiskField(risk,rest){switch(rest[0]){
   case "initial": case "gross":return tmplAssess(risk,"initial",rest[1]);
   case "residual": case "net":return tmplAssess(risk,"residual",rest[1]);
   case "evolution":return {kind:"text",value:tmplEvolution(risk)};
-  case "cf":{const f=tmplCfField("risk",rest[1])||tmplCfField("cotation",rest[1]);return f?{kind:"cf",value:(risk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
+  case "cf":{const f=tmplCfField("risk",rest[1])||tmplCfField("cotation",rest[1]);
+    if(f&&f.type==="computed"&&f.target==="risk")return {kind:"text",value:cfComputedDisplay(f,"risk",risk)};
+    return f?{kind:"cf",value:(risk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   default:return {unknown:true};}}
 function tmplMeasureField(m,rest){switch(rest[0]){
   case "id":return {kind:"text",value:m.id};
@@ -8986,13 +9081,17 @@ function tmplMeasureField(m,rest){switch(rest[0]){
   case "description":return {kind:"md",value:m.description};
   case "comment":return {kind:"md",value:m.comment};
   case "overdue":return {kind:"bool",value:isOverdue(m)};
-  case "cf":{const f=tmplCfField("measure",rest[1]);return f?{kind:"cf",value:(m.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
+  case "cf":{const f=tmplCfField("measure",rest[1]);
+    if(f&&f.type==="computed")return {kind:"text",value:cfComputedDisplay(f,"measure",m)};
+    return f?{kind:"cf",value:(m.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   default:return {unknown:true};}}
 function tmplLinkField(lk,rest){switch(rest[0]){
   case "comment":return {kind:"md",value:lk.comment};
   case "risk_id":return {kind:"text",value:lk.risk};
   case "measure_id":return {kind:"text",value:lk.measure};
-  case "cf":{const f=tmplCfField("link",rest[1]);return f?{kind:"cf",value:(lk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
+  case "cf":{const f=tmplCfField("link",rest[1]);
+    if(f&&f.type==="computed")return {kind:"text",value:cfComputedDisplay(f,"link",lk)};
+    return f?{kind:"cf",value:(lk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   case "risk":return tmplRiskField(riskById(lk.risk)||{},rest.slice(1));
   case "measure":return tmplMeasureField(measureById(lk.measure)||{},rest.slice(1));
   default:return {unknown:true};}}
@@ -9094,7 +9193,9 @@ function tmplResolveValue(path,ctx){
   if(["risk","measure","link","group","level","item","this","field","option","step","object","type","attribute"].indexOf(head)>=0)return {unknown:true,reason:"outside_loop",detail:path};
   const md=analyse.metadata||{};
   if(head==="analysis"){
-    if(p[1]==="cf"){const code=p.slice(2).join("."),f=tmplCfField("analysis",code);return f?{kind:"cf",value:(analyse.custom||{})[code],field:f}:{unknown:true,reason:"cf",detail:"analysis.cf."+code};}
+    if(p[1]==="cf"){const code=p.slice(2).join("."),f=tmplCfField("analysis",code);
+      if(f&&f.type==="computed")return {kind:"text",value:cfComputedDisplay(f,"analysis",analyse)};
+      return f?{kind:"cf",value:(analyse.custom||{})[code],field:f}:{unknown:true,reason:"cf",detail:"analysis.cf."+code};}
     switch(p[1]){
       case "title":return {kind:"text",value:md.title};
       case "description":return {kind:"md",value:md.description};
@@ -9150,14 +9251,14 @@ function tmplCollection(name,ctx){
   if(name.indexOf("analysis.cf.")===0){const code=name.slice(12),f=tmplCfField("analysis",code);
     if(f&&f.type==="reference")return {list:tmplRefInstances((analyse.custom||{})[code]),singular:"object",type:"object"};}
   if(name==="analysis.custom_fields"||name==="analysis.fields")   // valeurs de champs perso d'analyse (réflexif)
-    return {list:customFieldsFor("analysis").map(f=>({def:f,value:(analyse.custom||{})[f.code]})),singular:"field",type:"valattr"};
+    return {list:customFieldsFor("analysis").map(f=>({def:f,value:f.type==="computed"?cfComputedDisplay(f,"analysis",analyse):(analyse.custom||{})[f.code]})),singular:"field",type:"valattr"};
   const fr=tmplLookup(ctx||[],p[0]),sub=p.slice(1).join(".");
   if(fr){
     // Boucles réflexives (attributs/champs avec leur valeur), pour un rendu générique sans coder les codes.
     if(fr.type==="object"&&sub==="attributes")
-      return {list:((objectTypeByCode(fr.obj.type)||{}).attributes||[]).map(a=>({def:a,value:(fr.obj.values||{})[a.code]})),singular:"attribute",type:"valattr"};
+      return {list:((objectTypeByCode(fr.obj.type)||{}).attributes||[]).map(a=>({def:a,value:a.type==="computed"?cfComputedDisplay(a,objectTypeByCode(fr.obj.type),fr.obj):(fr.obj.values||{})[a.code]})),singular:"attribute",type:"valattr"};
     if((fr.type==="risk"||fr.type==="measure"||fr.type==="link")&&sub==="custom_fields")
-      return {list:customFieldsFor(fr.type).map(f=>({def:f,value:(fr.obj.custom||{})[f.code]})),singular:"field",type:"valattr"};
+      return {list:customFieldsFor(fr.type).map(f=>({def:f,value:f.type==="computed"?cfComputedDisplay(f,fr.type,fr.obj):(fr.obj.custom||{})[f.code]})),singular:"field",type:"valattr"};
     if(fr.type==="valattr"&&sub==="objects"&&fr.obj.def.type==="reference")
       return {list:tmplRefInstances(fr.obj.value),singular:"object",type:"object"};
     // Boucle sur les objets référencés : champ perso « reference » d'une entité, ou attribut « reference » d'un objet.
@@ -11178,6 +11279,23 @@ function cfComputedAlertColor(f,r){
   else{const x=+r.value;if(lo!=null&&lo!=="")below=x<+lo;if(hi!=null&&hi!=="")above=x>+hi;}
   return (below||above)?(a.color||"#c0505a"):null;
 }
+/* Un champ calculé peut-il servir de filtre à valeurs DISCRÈTES ?
+   « bool » (résultat booléen) ou « alert » (au moins une borne d'alerte définie) ; sinon null
+   (valeur continue, non filtrable par sélection). */
+function cfComputedFilterKind(f){
+  if(!f||f.type!=="computed")return null;
+  if((f.result_type||"number")==="boolean")return "bool";
+  const a=f.alert;if(a&&((a.min!=null&&a.min!=="")||(a.max!=null&&a.max!=="")))return "alert";
+  return null;
+}
+/* Valeur NUMÉRIQUE d'un champ pour une entité (métrique agrégeable) : échelle = valeur stockée,
+   calculé de résultat numérique = évalué. Renvoie null si non numérique / non renseigné. */
+function cfNumericValue(f,entity,target){
+  if(!f)return null;
+  if(f.type==="scale"){const v=(entity&&entity.custom||{})[f.code];return (v==null||v===""||!isFinite(+v))?null:+v;}
+  if(f.type==="computed"){const r=cfComputedValue(f,target,entity);return (r.ok&&r.type==="num"&&r.value!=null&&isFinite(+r.value))?+r.value:null;}
+  return null;
+}
 function cfComputedDisplayHTML(f,target,entity){
   const r=cfComputedValue(f,target,entity);
   if(!r.ok)return '<span class="cf-calc-err" title="'+esc(r.error||"")+'" style="color:#c0505a;cursor:help">#ERR</span>';
@@ -11186,6 +11304,14 @@ function cfComputedDisplayHTML(f,target,entity){
   return col?'<span style="color:'+esc(col)+';font-weight:600">'+esc(txt)+'</span>':esc(txt);
 }
 function cfComputedDisplay(f,target,entity){const r=cfComputedValue(f,target,entity);return r.ok?cfComputedText(f,r):"#ERR";}
+/* Valeur texte d'un champ pour une entité (CSV, Word natif…) : calculée si computed, sinon valeur stockée. */
+function cfCellText(f,entity,target){
+  if(f.type==="computed"){const v=cfComputedDisplay(f,target,entity);return v==="#ERR"?"":v;}
+  return cfDisplay(f,(entity&&entity.custom||{})[f.code]);
+}
+/* Idem pour un attribut d'instance d'objet (valeurs dans inst.values ; contexte = le type d'objet). */
+function cfObjAttrText(a,ot,inst){if(a.type==="computed"){const v=cfComputedDisplay(a,ot,inst);return v==="#ERR"?"":v;}return cfDisplayTxt(a,(inst.values||{})[a.code]);}
+function cfObjAttrHTML(a,ot,inst){return a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):(cfHasVal((inst.values||{})[a.code])?cfDisplayHTML(a,(inst.values||{})[a.code],true):"");}
 
 /* ---- Aperçus lecture seule des champs calculés dans les formulaires (mis à jour en direct) ---- */
 /* Construit une entité « en cours d'édition » à partir des saisies de la modale (risque/mesure/lien). */
@@ -11248,7 +11374,7 @@ function renderCustomFields(){
       '<td>'+(f.required?'✓':'<span class="muted">—</span>')+'</td>'+
       /* Trois états à distinguer : coché, décoché, et « sans objet » — type ouvert, qui ne
          peut pas alimenter une liste de valeurs, ou champ de l'analyse, qui n'a rien à trier. */
-      '<td>'+(cfFilterOptionApplies(f.target,f.type)
+      '<td>'+(cfFilterFlagApplies(f.target,f.type)
         ? (f.filterable?'✓':'<span class="muted">—</span>')
         : '<span class="muted" title="'+esc(t("cf_filterable_na"))+'">·</span>')+'</td>'+
       '<td><div class="actions">'+
@@ -11355,7 +11481,7 @@ function openCustomFieldModal(idx){
       /* Filtrable : réservé aux types à valeurs fermées, seuls à pouvoir alimenter une liste
          de choix. La ligne disparaît pour les autres types plutôt que d'être grisée sans
          explication (cf. cfSyncFilterable). */
-      '<label class="field full" id="cfFiltWrap" style="display:'+(cfFilterOptionApplies(f.target,f.type)?"block":"none")+'">'+
+      '<label class="field full" id="cfFiltWrap" style="display:'+(cfFilterFlagApplies(f.target,f.type)?"block":"none")+'">'+
         '<label style="display:flex;align-items:center;gap:8px;font-size:13px">'+
         '<input type="checkbox" id="cfFilterable" style="width:16px;height:16px;flex:none"'+(f.filterable?" checked":"")+'> '+
         esc(t("cf_filterable"))+'</label>'+
@@ -11390,7 +11516,7 @@ function openCustomFieldModal(idx){
     const obj={code,target,type,required:document.getElementById("cfReq").checked,label};
     // Filtrable : enregistré seulement s'il a un sens pour ce type, et seulement s'il est vrai.
     const fc=document.getElementById("cfFilterable");
-    if(fc&&fc.checked&&cfFilterOptionApplies(target,type))obj.filterable=true;
+    if(fc&&fc.checked&&cfFilterFlagApplies(target,type))obj.filterable=true;
     const helpVal=val("cfHelpTxt").trim(),help=Object.assign({},f.help);
     if(helpVal)help[lang]=helpVal;else delete help[lang];if(Object.keys(help).length)obj.help=help;
     const descVal=val("cfDescTxt").trim(),desc=Object.assign({},f.description||{});
@@ -11476,7 +11602,7 @@ function openCustomFieldModal(idx){
      qu'elle perd son sens, pour ne pas enregistrer un réglage sans effet. */
   const cfSyncFilterOption=()=>{
     const fw=document.getElementById("cfFiltWrap"), fc=document.getElementById("cfFilterable");
-    const ok=cfFilterOptionApplies(document.getElementById("cfTarget").value,document.getElementById("cfType").value);
+    const ok=cfFilterFlagApplies(document.getElementById("cfTarget").value,document.getElementById("cfType").value);
     if(fw)fw.style.display=ok?"block":"none";
     if(fc&&!ok)fc.checked=false;
     if(document.getElementById("cfCalcChips"))cfCalcPickerFill();   // picker : liste des champs suit la cible
@@ -12576,11 +12702,11 @@ function exportRisksCSV(){
   analyse.risks.forEach(r=>{
     const evi=r.initial_assessment, evr=residual(r);
     const si=scoreOf(evi.probability,evi.severity), sr=scoreOf(evr.probability,evr.severity);
-    const cot=[];cc.forEach(f=>{cot.push(cfDisplay(f,(evi.custom||{})[f.code]),cfDisplay(f,(evr.custom||{})[f.code]));});
+    const cot=[];cc.forEach(f=>{cot.push(cfCellText(f,evi,"cotation"),cfCellText(f,evr,"cotation"));});
     rows.push([r.id,r.label||"",r.category||"",r.description||"",r.owner||"",
       evi.probability,evi.severity,evr.probability,evr.severity,
       si,critFor(si).label,sr,critFor(sr).label]
-      .concat(cf.map(f=>cfDisplay(f,(r.custom||{})[f.code]))).concat(cot));
+      .concat(cf.map(f=>cfCellText(f,r,"risk"))).concat(cot));
   });
   const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
   downloadCSV(rows,base+"-risks.csv");
@@ -12595,7 +12721,7 @@ function exportMeasuresCSV(){
     rows.push([m.id,m.label||"",m.type?typeLabel(m.type):"",m.status?statusLabel(m.status):"",
       m.responsible||"",m.due_date||"",(m.cost!=null?m.cost:""),m.description||"",
       risksOfMeasure(m.id).join(", ")]
-      .concat(cf.map(f=>cfDisplay(f,(m.custom||{})[f.code]))));
+      .concat(cf.map(f=>cfCellText(f,m,"measure"))));
   });
   const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
   downloadCSV(rows,base+"-measures.csv");
@@ -12761,7 +12887,7 @@ function exportLinksCSV(){
   const rows=[H];
   analyse.treatments.forEach(tr=>{const r=riskById(tr.risk),m=measureById(tr.measure);
     rows.push([tr.risk,r?r.label:"",tr.measure,m?m.label:"",tr.comment||""]
-      .concat(cf.map(f=>cfDisplay(f,(tr.custom||{})[f.code]))));});
+      .concat(cf.map(f=>cfCellText(f,tr,"link"))));});
   const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
   downloadCSV(rows,base+"-links.csv");
 }

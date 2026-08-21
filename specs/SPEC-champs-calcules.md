@@ -363,7 +363,21 @@ computed « alerte », result_type=text :
    `AVERAGE`/`MEDIAN`/`SUM`/`MIN`/`MAX`/`COUNT` (absents ignorés). Affichage : **tuiles d'indicateurs** en
    tête de l'onglet **Statistiques** + section **présentation du rapport** (écran/PDF/Word), et aperçu
    lecture seule dans l'onglet **Présentation** (recalculé en direct). Détection de cycle par cible+code.
-6. **Lot F — Filtre / stats / radar / rapport / Word / CSV** sur valeurs calculées et échelles numériques.
+6. **Lot F — Filtre / stats / radar / rapport / Word / CSV** ✅ sur valeurs calculées et échelles numériques :
+   - **Restitution** : valeurs calculées rendues partout (tableaux HTML du rapport, tables Word natives,
+     moteur de gabarits Word, export CSV, notes d'objet) — pour les champs d'entité **et** les attributs
+     d'objet calculés.
+   - **Filtre** : les échelles filtrent déjà par item (type fermé) ; un champ **calculé** devient filtrable
+     lorsqu'il produit des valeurs discrètes — résultat **booléen** (Oui/Non) ou **alerte** définie
+     (« En alerte » / « Hors alerte »). Les résultats continus (numérique/date sans alerte) ne sont pas
+     proposés comme filtre de sélection.
+   - **Radar** : nouvelle **métrique « champ numérique »** — moyenne ou somme de la valeur d'un champ de
+     risque *échelle* ou *calculé numérique* par axe (indépendante de l'évaluation initiale/résiduelle,
+     comme le nombre de risques).
+   - **Statistiques** : nouveau bloc **« agrégat numérique »** (tuiles : effectif renseigné, moyenne, somme,
+     min, max) pour un champ *échelle* ou *calculé numérique* de risque/mesure/lien. Les échelles restent
+     par ailleurs disponibles en répartition catégorielle ; les calculés d'analyse restent en tuiles
+     d'indicateurs (lot E).
 7. **Lot G — Consolidation** : i18n complète, guide utilisateur, alignement `SPEC-format` + schéma, tests.
 
 ---
