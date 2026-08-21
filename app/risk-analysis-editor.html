@@ -11016,7 +11016,7 @@ function calcToNum(cv){if(cv.t==="num")return cv.v;if(cv.t==="bool")return cv.v?
 function calcToDate(cv){if(cv.t==="date")return cv.v;if(cv.t==="num")return calcFromDays(cv.v);if(cv.t==="text"&&CALC_DATE_RE.test(cv.v.trim()))return cv.v.trim();throw calcErr("Date attendue");}
 function calcToBool(cv){if(cv.t==="bool")return cv.v;if(cv.t==="num")return cv.v!==0;if(cv.t==="nil")return false;
   if(cv.t==="text"){const s=cv.v.trim().toLowerCase();if(s==="true"||s==="vrai")return true;if(s===""||s==="false"||s==="faux")return false;}throw calcErr("Booléen attendu");}
-function calcToText(cv){if(cv.t==="text")return cv.v;if(cv.t==="nil")return "";if(cv.t==="bool")return cv.v?"TRUE":"FALSE";if(cv.t==="date")return cv.v;if(cv.t==="num")return String(cv.v);return "";}
+function calcToText(cv){if(cv.t==="text")return cv.v;if(cv.t==="nil")return "";if(cv.t==="bool")return cv.v?"TRUE":"FALSE";if(cv.t==="date")return cv.v;if(cv.t==="num")return String(cv.v);if(cv.t==="list")return cv.v.map(calcToText).join(", ");return "";}
 function calcFlat(v,out){if(v&&v.t==="list")v.v.forEach(x=>calcFlat(x,out));else out.push(v);}
 function calcNums(args,env){const out=[];args.forEach(node=>calcFlat(calcEval(node,env),out));return out.filter(x=>x.t!=="nil").map(calcToNum);}
 function calcTokenize(src){
@@ -11162,7 +11162,7 @@ function calcTypeCf(f,raw){
     case "integer":case "float":case "progress":case "scale":{const n=+raw;return isNaN(n)?null:n;}
     case "boolean":return raw===true;
     case "date":return {date:String(raw)};
-    case "checklist":case "tags":case "reference":return (Array.isArray(raw)?raw:[raw]).map(String).join(", ");
+    case "checklist":case "tags":case "reference":return (Array.isArray(raw)?raw:[raw]).map(String);   // liste → COUNT/agrégats voient chaque valeur ; en texte, jointe par calcToText
     default:return String(raw);   // text, select (code), url, email, tel, regexp
   }
 }

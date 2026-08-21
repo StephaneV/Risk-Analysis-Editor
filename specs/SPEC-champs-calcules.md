@@ -105,7 +105,10 @@ Une expression est évaluée **dans le contexte d'une entité** (celle de la `ta
 - **`cf.<code>`** — un autre champ personnalisé **de la même entité** (ou un autre **attribut** de la même
   instance, pour un attribut d'objet). Résolution par type :
   - `boolean` → `true`/`false` ; `integer`/`float`/`progress`/`scale` → nombre ; `date` → date ;
-    `text`/`select`/`tags`/… → texte (ou liste) ; `computed` → sa valeur (récursif, cf. §3.7).
+    `text`/`select`/`url`/… → texte ; `computed` → sa valeur (récursif, cf. §3.7).
+  - Un champ **multivalué** (`tags`, `checklist`, `reference`) résout en **liste** de ses valeurs : `COUNT(cf.<code>)`
+    en donne le **nombre** (0 si vide ou absent), et les autres agrégats parcourent chaque valeur. En contexte
+    **texte** (`&`, `CONCAT`), la liste est rendue par ses valeurs jointes par `, `.
 - **Champs de base et dérivés de l'entité** — accessibles par leur nom (mêmes grandeurs que le rapport) :
   - **risque** : `id`, `label`, `category`, `owner`, `description`, `comment` ; `probability_initial`,
     `severity_initial`, `score_initial`, `criticality_initial` ; `probability_residual`, `severity_residual`,
@@ -245,8 +248,8 @@ la date locale est légitime.)*
 | **Affichage en fiche** | **Aperçu lecture seule** dans la liste des champs personnalisés de la modale (risque, mesure, lien, cotation, instance d'objet), **recalculé en direct** au fil des saisies des autres champs. |
 | **Affichage ailleurs** | Registre (colonne `cf:<code>`), rapport, exports — mis en forme selon `result_type`, `decimals` et `unit`. Un résultat **date** suit le **format de date global** de l'analyse (comme tout champ date), pas de format propre au champ. |
 | **Tri** | Par valeur calculée (numérique/date/texte). |
-| **Filtre** | Si `filterable` : **comparaison** (`>=`, `<=`, `=`) sur la valeur — pas une liste de choix. (Distinct des types à valeurs fermées.) |
-| **Statistiques** | Métrique **numérique** (moyenne/somme/min/max) ; répartition par tranches (option). |
+| **Filtre** | Si `filterable` **et** résultat discret : **booléen** (Oui/Non) ou **alerte** définie (« En alerte » / « Hors alerte »), sous forme de liste de choix. Un résultat continu (numérique/date sans alerte) n'est pas proposé au filtre. (Lot F.) |
+| **Statistiques** | Bloc **« agrégat numérique »** : tuiles effectif renseigné / moyenne / somme / min / max (lot F). Les calculés de cible *analyse* restent en **tuiles d'indicateurs** (lot E). |
 | **Rapport / Word / CSV** | Valeur **matérialisée** au moment de l'export (colonne, cartouche, `field_values`…). |
 | **Modèles Word** | `{{ risk.cf.<code> }}` rend la valeur calculée ; utilisable en `{{#if}}` et tri. |
 | **Éditeur** | Zone *expression* (sans Markdown) avec **validation en direct**, choix *result_type*, et **pickers** d'insertion des jetons au curseur (champs perso, **champs de base/dérivés** de la cible, fonctions, opérateurs ; une fonction entoure la sélection). Les options **non pertinentes selon le `result_type` sont masquées** (décimales → `number` ; unité → `number`/`integer` ; alerte → `number`/`integer`/`date`) ; la case **« obligatoire » est masquée** (sans objet). |
