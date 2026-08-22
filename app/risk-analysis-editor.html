@@ -551,6 +551,17 @@
   .cf-progress-track>span{display:block;height:100%;background:var(--pc,var(--accent))}
   .cf-progress-num{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
   .cf-progress-edit{display:flex;align-items:center;gap:12px;padding-top:6px}
+  /* Champs couleur & image */
+  .cf-swatch{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--border);vertical-align:-2px;flex:none}
+  .cf-swatch-hex{font:11px ui-monospace,Consolas,monospace;color:var(--muted);margin-left:6px}
+  .cf-img-thumb{max-height:40px;max-width:120px;border-radius:4px;border:1px solid var(--border);vertical-align:middle;object-fit:contain}
+  .cf-color{display:flex;align-items:center;gap:8px}
+  .cf-color input[type=color]{width:44px;height:32px;padding:2px;flex:none;cursor:pointer;border:1px solid var(--border);border-radius:6px;background:var(--bg)}
+  .cf-color-hex{font:12px ui-monospace,Consolas,monospace;color:var(--ink);min-width:64px}
+  .cf-color-clear{border:none;background:none;cursor:pointer;color:var(--muted);font-size:14px;line-height:1}
+  .cf-color-clear:hover{color:var(--danger)}
+  .cf-image-preview{min-height:44px;display:flex;align-items:center;padding:6px;border:1px dashed var(--border);border-radius:8px;background:var(--panel)}
+  .cf-image-preview img{max-height:120px;max-width:100%;border-radius:6px;object-fit:contain}
   /* Picker de l'éditeur de formule (champ calculé) */
   .cf-picker{border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow:hidden;margin-top:2px}
   .cfp-top{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--border)}
@@ -1788,7 +1799,8 @@ const I18N = {
     cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées et aux références, hors champs de l'analyse.",
     cf_filt_alert_on:"En alerte", cf_filt_alert_off:"Hors alerte",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
-    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.scale":"Échelle (valeur numérique)","cft.computed":"Valeur calculée","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.reference":"Référence à un objet",
+    "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.scale":"Échelle (valeur numérique)","cft.computed":"Valeur calculée","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.color":"Couleur","cft.image":"Image","cft.reference":"Référence à un objet",
+    cf_img_pick:"Choisir une image…", cf_img_remove:"Retirer", cf_img_none:"Aucune image", cf_color_clear:"Effacer la couleur",
     cf_object_type:"Type d'objet ciblé", cf_ref_none:"— (aucun)", cf_ref_add:"+ ajouter une instance…", cf_ref_create:"＋ créer", cf_ref_remove:"Retirer",
     cf_ref_notype:"Aucun type d'objet défini (Paramètres › Types d'objets).", cf_err_ref_type:"Choisissez le type d'objet ciblé.",
     cf_ref_self_warn:"Auto-référence : un objet de ce type en référence un autre (attention aux boucles).",
@@ -2171,7 +2183,8 @@ const I18N = {
     cf_filterable_na:"Not applicable: restricted to closed-value types and references, excluding analysis fields.",
     cf_filt_alert_on:"In alert", cf_filt_alert_off:"Not in alert",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
-    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.scale":"Scale (numeric value)","cft.computed":"Computed value","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.reference":"Object reference",
+    "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.scale":"Scale (numeric value)","cft.computed":"Computed value","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.color":"Color","cft.image":"Image","cft.reference":"Object reference",
+    cf_img_pick:"Choose an image…", cf_img_remove:"Remove", cf_img_none:"No image", cf_color_clear:"Clear color",
     cf_object_type:"Target object type", cf_ref_none:"— (none)", cf_ref_add:"+ add an instance…", cf_ref_create:"＋ new", cf_ref_remove:"Remove",
     cf_ref_notype:"No object type defined (Settings › Object types).", cf_err_ref_type:"Choose the target object type.",
     cf_ref_self_warn:"Self-reference: an object of this type references another (mind loops).",
@@ -2554,7 +2567,8 @@ const I18N = {
     cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi e ai riferimenti, esclusi i campi dell'analisi.",
     cf_filt_alert_on:"In avviso", cf_filt_alert_off:"Non in avviso",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
-    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.scale":"Scala (valore numerico)","cft.computed":"Valore calcolato","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.reference":"Riferimento a un oggetto",
+    "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.scale":"Scala (valore numerico)","cft.computed":"Valore calcolato","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.color":"Colore","cft.image":"Immagine","cft.reference":"Riferimento a un oggetto",
+    cf_img_pick:"Scegli un'immagine…", cf_img_remove:"Rimuovi", cf_img_none:"Nessuna immagine", cf_color_clear:"Cancella colore",
     cf_object_type:"Tipo di oggetto di destinazione", cf_ref_none:"— (nessuno)", cf_ref_add:"+ aggiungi un'istanza…", cf_ref_create:"＋ crea", cf_ref_remove:"Rimuovi",
     cf_ref_notype:"Nessun tipo di oggetto definito (Impostazioni › Tipi di oggetto).", cf_err_ref_type:"Scegli il tipo di oggetto di destinazione.",
     cf_ref_self_warn:"Auto-riferimento: un oggetto di questo tipo ne riferisce un altro (attenzione ai cicli).",
@@ -7111,7 +7125,7 @@ function linkCmp(col){return (a,b)=>{
    clé « cf:<code> » ; celles dont le champ a été supprimé sont ignorées silencieusement.
    Par défaut, un champ perso est masqué pour les risques/mesures, et visible pour les liens
    (comportement historique du détail des liens). Tri possible sur les colonnes scalaires. */
-const CF_SORTABLE_TYPES=["boolean","integer","float","date","text","select","progress","scale","computed"];
+const CF_SORTABLE_TYPES=["boolean","integer","float","date","text","select","progress","scale","computed","color"];
 function cfColSortable(f){return f&&CF_SORTABLE_TYPES.indexOf(f.type)>=0;}
 function cfTargetOf(table){return table==="risks"?"risk":table==="measures"?"measure":"link";}
 function riskCellTag(r,which){
@@ -8472,6 +8486,7 @@ function dxCellFor(tbl,key,row,bstyle){
     if(f){
       if(f.type==="computed"){const v=cfComputedDisplay(f,cfTargetOf(tbl),row);return {txt:(v&&v!=="#ERR")?v:"—"};}
       if(f.type==="tags"&&(bstyle==="pill"||bstyle==="chip"||bstyle==="flat")){const runs=dxTagsBadgeRuns(f,(row.custom||{})[f.code],bstyle);if(runs)return {runs};}
+      if(f.type==="color"){const cv=(row.custom||{})[f.code];const hex=/^#[0-9a-fA-F]{6}$/.test(cv||"")?cv:null;return hex?{txt:hex,fill:hex.slice(1).toUpperCase(),center:true}:{txt:"—"};}
       const v=cfDisplayTxt(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
   }
   return {txt:"—"};
@@ -10963,7 +10978,7 @@ function renderSettings(){
 /* ============================================================
    CHAMPS PERSONNALISÉS — éditeur de définitions
    ============================================================ */
-const CF_TYPES=["boolean","integer","float","date","text","textarea","url","email","tel","regexp","select","checklist","tags","scale","progress","reference","computed"];
+const CF_TYPES=["boolean","integer","float","date","text","textarea","url","email","tel","regexp","color","image","select","checklist","tags","scale","progress","reference","computed"];
 /* Formats des types contrôlés. Le téléphone reste permissif (usages FR et internationaux). */
 const CF_RE_URL=/^https?:\/\/[^\s]+$/i, CF_RE_EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, CF_RE_TEL=/^\+?[0-9][0-9\s().\-]{5,}$/;
 /* Motif d'un champ « regexp » : correspondance sur la totalité de la valeur.
@@ -11990,7 +12005,8 @@ function cfDisplay(f,v){
   if(f.type==="checklist"||f.type==="tags"){const arr=Array.isArray(v)?v:[];return arr.map(code=>{const it=(f.items||[]).find(x=>x.code===code);return it?cfItemLabel(it):code;}).join(", ");}
   if(f.type==="progress")return Math.max(0,Math.min(100,Math.round(+v||0)))+" %";
   if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];return arr.map(id=>{const o=objectById(id);return o?objectLabel(o):id;}).join(", ");}
-  return String(v);
+  if(f.type==="image")return v?"[image]":"";   // marqueur (le data-URI n'est pas exporté en texte/CSV)
+  return String(v);   // color (hex), text…
 }
 /* Comme cfDisplay, mais applique le format de date choisi (contextes d'affichage : rapport
    Word). cfDisplay reste brut (ISO) pour le tri, la recherche et les exports CSV. */
@@ -12147,6 +12163,9 @@ function cfDisplayHTML(f,v,rich){
     return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
   if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];
     return '<span class="cf-chips">'+arr.map(id=>{const o=objectById(id);return '<span class="cf-chip" style="--tagc:#5b7089;--tagfg:#fff">'+esc(o?objectLabel(o):id)+'</span>';}).join("")+'</span>';}
+  if(f.type==="color"){const hex=/^#[0-9a-fA-F]{6}$/.test(v)?v:String(v);
+    return '<span class="cf-swatch" title="'+esc(hex)+'" style="background:'+esc(hex)+'"></span><span class="cf-swatch-hex">'+esc(hex)+'</span>';}
+  if(f.type==="image")return '<img class="cf-img-thumb" src="'+esc(v)+'" alt="">';
   return esc(cfDisplay(f,v));
 }
 function cfHasVal(v){return !(v===undefined||v===null||v===""||(Array.isArray(v)&&!v.length));}
@@ -12155,8 +12174,9 @@ function cfMatchItem(f,raw){const n=normV(raw);
   return (f.items||[]).find(it=>[it.code,(it.label&&it.label.fr),(it.label&&it.label.en)].some(x=>x&&normV(x)===n));}
 /* Interprète une valeur textuelle (CSV) selon le type ; renvoie la valeur interne ou undefined. */
 function cfParseValue(f,raw){
-  if(f.type==="computed")return undefined;   // champ dérivé : jamais importé (la colonne éventuelle est ignorée)
+  if(f.type==="computed"||f.type==="image")return undefined;   // dérivé / image : jamais importés depuis CSV
   raw=(raw==null?"":String(raw)).trim();if(raw==="")return undefined;
+  if(f.type==="color"){const m=/^#?([0-9a-fA-F]{6})$/.exec(raw);return m?("#"+m[1].toLowerCase()):undefined;}
   if(f.type==="boolean"){return ["oui","yes","true","vrai","1","x"].includes(normV(raw));}
   if(f.type==="integer"){const v=parseInt(raw,10);return isNaN(v)?undefined:v;}
   if(f.type==="float"){const v=parseFloat(raw.replace(",","."));return isNaN(v)?undefined:v;}
@@ -12175,7 +12195,7 @@ function cfParseValue(f,raw){
 function cfImportCols(target,H,claimed){
   const map=[];
   customFieldsFor(target).forEach(f=>{
-    if(f.type==="computed")return;   // champ dérivé : jamais importé
+    if(f.type==="computed"||f.type==="image")return;   // dérivé / image : jamais importés
     const cands=[cfLabel(f),(f.label&&f.label.fr),(f.label&&f.label.en),f.code].filter(Boolean).map(normH);
     let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
     if(col>=0){claimed.add(col);map.push({f,col});}
@@ -12238,6 +12258,23 @@ function cfControlHTML(f,value){
     case "email": c='<input type="email" data-cfv placeholder="nom@exemple.fr" value="'+esc(value||"")+'">';break;
     case "tel": c='<input type="tel" data-cfv placeholder="+33 1 23 45 67 89" value="'+esc(value||"")+'">';break;
     case "regexp": c='<input type="text" data-cfv value="'+esc(value||"")+'"'+(f.pattern?' title="'+esc(f.pattern)+'"':"")+'>';break;
+    case "color":{const hex=(value&&/^#[0-9a-fA-F]{6}$/.test(value))?value.toLowerCase():"";
+      c='<div class="cf-color">'+
+          '<input type="color" data-cf-colpick value="'+(hex||"#4c7dff")+'">'+
+          '<input type="hidden" data-cfv value="'+esc(hex)+'">'+
+          '<span class="cf-color-hex">'+(hex||"—")+'</span>'+
+          '<button type="button" class="cf-color-clear" title="'+esc(t("cf_color_clear"))+'" aria-label="'+esc(t("cf_color_clear"))+'">✕</button>'+
+        '</div>';break;}
+    case "image":{full=true;const src=(value&&/^(data:|https?:)/i.test(value))?value:"";
+      c='<div class="cf-image">'+
+          '<input type="hidden" data-cfv value="'+esc(src)+'">'+
+          '<input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/*" data-cf-imgfile style="display:none">'+
+          '<div class="cf-image-preview">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="muted">'+esc(t("cf_img_none"))+'</span>')+'</div>'+
+          '<div class="inline" style="gap:6px;margin-top:6px">'+
+            '<button type="button" class="btn ghost sm cf-image-pick">'+esc(t("cf_img_pick"))+'</button>'+
+            '<button type="button" class="btn ghost sm cf-image-clear"'+(src?'':' style="display:none"')+'>'+esc(t("cf_img_remove"))+'</button>'+
+          '</div>'+
+        '</div>';break;}
     case "textarea": full=true;c='<textarea data-cfv'+(f.max!=null?' maxlength="'+f.max+'"':"")+'>'+esc(value||"")+'</textarea>';break;
     case "select": c='<select data-cfv><option value="">—</option>'+(f.items||[]).map(it=>'<option value="'+esc(it.code)+'"'+(value===it.code?" selected":"")+'>'+esc(cfItemLabel(it))+'</option>').join("")+'</select>';break;
     case "scale": c='<select data-cfv><option value="">—</option>'+(f.items||[]).map(it=>'<option value="'+esc(it.value)+'"'+(String(value)===String(it.value)?" selected":"")+'>'+esc(cfItemLabel(it))+(it.value!=null?' ('+esc(it.value)+')':'')+'</option>').join("")+'</select>';break;
@@ -12273,6 +12310,50 @@ document.addEventListener("change",e=>{const s=e.target;if(!s.matches||!s.matche
 document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest(".cf-ref-del");if(!d)return;e.preventDefault();
   const box=d.closest(".cf-refs"),chip=d.closest(".cf-ref-chip"),id=chip.dataset.refid,add=box.querySelector(".cf-ref-add");
   chip.remove();if(add){const o=objectById(id);add.insertAdjacentHTML("beforeend",'<option value="'+esc(id)+'">'+esc(o?objectLabel(o):id)+'</option>');}cfRefPending(box);});
+/* ---- Champs image / couleur : saisie (téléversement redimensionné, effacement) ---- */
+/* Fichier image → data-URI ; images matricielles trop grandes réduites (max 1024 px, aspect préservé)
+   pour limiter le poids de l'analyse. SVG conservé tel quel. */
+function cfImageFromFile(file){
+  return new Promise((resolve,reject)=>{
+    if(!file||!/^image\//.test(file.type||""))return reject(new Error("not an image"));
+    const rd=new FileReader();
+    rd.onerror=()=>reject(rd.error||new Error("read error"));
+    rd.onload=()=>{
+      const uri=String(rd.result||"");
+      if(file.type==="image/svg+xml"||/^data:image\/svg\+xml/i.test(uri))return resolve(uri);   // vectoriel : tel quel
+      const MAX=1024,img=new Image();
+      img.onload=()=>{
+        const w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+        if(!w||!h||(w<=MAX&&h<=MAX))return resolve(uri);
+        const s=MAX/Math.max(w,h),nw=Math.round(w*s),nh=Math.round(h*s);
+        const cv=document.createElement("canvas");cv.width=nw;cv.height=nh;cv.getContext("2d").drawImage(img,0,0,nw,nh);
+        const jpg=file.type==="image/jpeg";
+        resolve(cv.toDataURL(jpg?"image/jpeg":"image/png",jpg?0.85:undefined));
+      };
+      img.onerror=()=>resolve(uri);
+      img.src=uri;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+document.addEventListener("input",e=>{const p=e.target;if(!p||!p.matches||!p.matches("[data-cf-colpick]"))return;
+  const box=p.closest(".cf-color");if(!box)return;box.querySelector("[data-cfv]").value=p.value;
+  const hx=box.querySelector(".cf-color-hex");if(hx)hx.textContent=p.value;cfRefPending(box);});
+document.addEventListener("click",e=>{
+  const cc=e.target.closest&&e.target.closest(".cf-color-clear");
+  if(cc){e.preventDefault();const box=cc.closest(".cf-color");box.querySelector("[data-cfv]").value="";const hx=box.querySelector(".cf-color-hex");if(hx)hx.textContent="—";cfRefPending(box);return;}
+  const pick=e.target.closest&&e.target.closest(".cf-image-pick");
+  if(pick){e.preventDefault();const fi=pick.closest(".cf-image").querySelector("[data-cf-imgfile]");if(fi)fi.click();return;}
+  const rm=e.target.closest&&e.target.closest(".cf-image-clear");
+  if(rm){e.preventDefault();const box=rm.closest(".cf-image");box.querySelector("[data-cfv]").value="";
+    box.querySelector(".cf-image-preview").innerHTML='<span class="muted">'+esc(t("cf_img_none"))+'</span>';rm.style.display="none";cfRefPending(box);return;}
+});
+document.addEventListener("change",e=>{const fi=e.target;if(!fi||!fi.matches||!fi.matches("[data-cf-imgfile]"))return;
+  const file=fi.files&&fi.files[0];if(file){const box=fi.closest(".cf-image");
+    cfImageFromFile(file).then(uri=>{box.querySelector("[data-cfv]").value=uri;
+      box.querySelector(".cf-image-preview").innerHTML='<img src="'+esc(uri)+'" alt="">';
+      const rm=box.querySelector(".cf-image-clear");if(rm)rm.style.display="";cfRefPending(box);}).catch(()=>{});}
+  fi.value="";});
 document.addEventListener("click",e=>{const c=e.target.closest&&e.target.closest(".cf-ref-create");if(!c)return;e.preventDefault();
   const box=c.closest(".cf-refs"),type=box.dataset.cfref;if(!type)return;
   openObjectModal(type,null,newId=>{
@@ -13071,7 +13152,7 @@ function exportObjectTypeCSV(otCode){
 function cfObjImportCols(ot,H,claimed){
   const map=[];
   (ot.attributes||[]).forEach(a=>{
-    if(a.type==="computed")return;
+    if(a.type==="computed"||a.type==="image")return;
     const cands=[cfLabel(a),a.label&&a.label.fr,a.label&&a.label.en,a.label&&a.label.it,a.code].filter(Boolean).map(normH);
     let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
     if(col>=0){claimed.add(col);map.push({a,col});}
