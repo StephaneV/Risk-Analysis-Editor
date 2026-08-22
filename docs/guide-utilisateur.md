@@ -187,6 +187,8 @@ La fiche regroupe :
 
 Le bouton principal est **Créer** (nouvelle fiche) ou **Valider** (modification). À la création, un bouton **Enregistrer et nouveau** permet d'enchaîner les saisies sans rouvrir la fiche à chaque fois.
 
+> **Champ fautif signalé.** Si l'enregistrement est refusé (libellé manquant, identifiant déjà pris, champ personnalisé obligatoire ou hors bornes…), un **message** apparaît en bas de la fiche et le **premier champ en cause** reçoit le **focus** entouré d'un **contour rouge** (sa section est dépliée et amenée à l'écran si besoin). Le contour disparaît dès que vous corrigez la valeur. Ce comportement vaut pour toutes les fiches (risques, mesures, liens, objets) ainsi que pour les champs de l'onglet *Présentation*.
+
 ### Dupliquer, supprimer, réordonner
 
 Chaque ligne offre trois actions :

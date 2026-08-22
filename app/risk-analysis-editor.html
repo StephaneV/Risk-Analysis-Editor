@@ -144,6 +144,10 @@
   label.field .lab{display:block;color:var(--muted);font-size:12px;margin-bottom:4px;font-weight:600}
   /* Champ obligatoire : astérisque coloré, doublé par aria-required sur le contrôle. */
   .req{font-weight:700;margin-left:2px}
+  /* Champ fautif au refus d'enregistrement : contour rouge, conservé même au focus (on neutralise
+     le liseré de focus habituel) jusqu'à correction de la valeur. */
+  .field-bad{outline:2px solid var(--danger)!important;outline-offset:2px;border-radius:6px;box-shadow:0 0 0 3px rgba(214,69,69,.22)!important}
+  input.field-bad,select.field-bad,textarea.field-bad{border-color:var(--danger)!important}
   /* Réservé aux technologies d'assistance : présent dans l'arbre d'accessibilité,
      invisible à l'écran (les titres de carte portent déjà l'information visuelle). */
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
@@ -7614,15 +7618,15 @@ function openRiskModal(id,dup,focusCol){
       : '');
 
   openModal((isNew?t("risk_new"):t("edit_prefix",r.id)),body,()=>{
-    const lib=val("f_label").trim();if(!lib){modalMsg(t("err_label_required"));return false;}
+    const lib=val("f_label").trim();if(!lib){modalMsg(t("err_label_required"));modalFocusInvalid("#f_label");return false;}
     const newId=val("f_id").trim()||r.id;
-    if(newId!==r.id && analyse.risks.some(x=>x.id===newId)){modalMsg(t("err_id_exists"));return false;}
+    if(newId!==r.id && analyse.risks.some(x=>x.id===newId)){modalMsg(t("err_id_exists"));modalFocusInvalid("#f_id");return false;}
     const cc=cfCollect("risk",document.getElementById("modalBody"));
-    if(cc.error){modalMsg(cc.error);return false;}
+    if(cc.error){modalMsg(cc.error);modalFocusInvalid(cc.cont);return false;}
     // Champs personnalisés de cotation : lus séparément dans chaque bloc d'évaluation.
     const ci=cfCollect("cotation",document.getElementById("f_icustom")), cr=cfCollect("cotation",document.getElementById("f_rcustom"));
-    if(ci.error){modalMsg(ci.error);return false;}
-    if(cr.error){modalMsg(cr.error);return false;}
+    if(ci.error){modalMsg(ci.error);modalFocusInvalid(ci.cont);return false;}
+    if(cr.error){modalMsg(cr.error);modalFocusInvalid(cr.cont);return false;}
     const mkAssess=(p,s,cv)=>{const a={probability:+val(p),severity:+val(s)};if(Object.keys(cv).length)a.custom=cv;return a;};
     const obj={id:newId,label:lib,category:val("f_cat").trim(),owner:val("f_prop").trim(),
       description:val("f_desc").trim(),comment:val("f_comment").trim(),
@@ -7784,11 +7788,11 @@ function openMeasureModal(id,dup,focusCol){
           customFieldsFor("measure").length<=SEC_MAX_CF, customFieldsFor("measure").length)
       : '');
   openModal((isNew?t("measure_new"):t("edit_prefix",m.id)),body,()=>{
-    const lib=val("f_label").trim();if(!lib){modalMsg(t("err_label_required"));return false;}
+    const lib=val("f_label").trim();if(!lib){modalMsg(t("err_label_required"));modalFocusInvalid("#f_label");return false;}
     const newId=val("f_id").trim()||m.id;
-    if(newId!==m.id && analyse.measures.some(x=>x.id===newId)){modalMsg(t("err_id_exists"));return false;}
+    if(newId!==m.id && analyse.measures.some(x=>x.id===newId)){modalMsg(t("err_id_exists"));modalFocusInvalid("#f_id");return false;}
     const cc=cfCollect("measure",document.getElementById("modalBody"));
-    if(cc.error){modalMsg(cc.error);return false;}
+    if(cc.error){modalMsg(cc.error);modalFocusInvalid(cc.cont);return false;}
     const obj={id:newId,label:lib,type:val("f_type"),status:val("f_status")};
     const resp=val("f_resp").trim(),ech=val("f_due"),cout=val("f_cost").trim(),desc=val("f_desc").trim(),com=val("f_comment").trim();
     if(resp)obj.responsible=resp;if(ech)obj.due_date=ech;if(cout)obj.cost=cout;if(desc)obj.description=desc;if(com)obj.comment=com;
@@ -8107,7 +8111,7 @@ function openLinkModal(rid,mid,focusCol){
     (cf.length?'<h3 style="margin-top:14px">'+esc(t("cf_section"))+'</h3><div class="grid2">'+cfFieldsHTML("link",tr.custom)+'</div>':'');
   openModal(t("link_title",rid,mid),body,()=>{
     const cc=cfCollect("link",document.getElementById("modalBody"));
-    if(cc.error){modalMsg(cc.error);return false;}
+    if(cc.error){modalMsg(cc.error);modalFocusInvalid(cc.cont);return false;}
     const com=val("l_comment").trim();
     if(com)tr.comment=com;else delete tr.comment;
     if(Object.keys(cc.custom).length)tr.custom=cc.custom;else delete tr.custom;
@@ -10661,7 +10665,7 @@ function renderPresentation(){
 /* Applique la saisie de l'onglet à l'analyse. Renvoie false si un champ est invalide. */
 function presApply(){
   const cc=cfCollect("analysis",document.getElementById("cfAnalysisValues"));
-  if(cc.error){presMsg(cc.error);return false;}
+  if(cc.error){presMsg(cc.error);modalFocusInvalid(cc.cont,document.getElementById("cfAnalysisValues"));return false;}
   setMeta("title",val("mTitle"));setMeta("author",val("mAuthor"));setMeta("organization",val("mOrg"));
   setMeta("scope",val("mScope"));setMeta("methodology_reference",val("mRef"));setMeta("revision",val("mRevision"));
   setMeta("description",val("mDesc"));setMeta("status",val("mStatus"));
@@ -12038,7 +12042,7 @@ function openObjectModal(typeCode,id,onSaved,focusCol){
     {label:t("btn_cancel"),cls:"ghost",onClick:a=>a.close()},
     {label:isNew?t("btn_create"):t("btn_save_modal"),onClick:a=>{
       const values={};
-      for(const at of editAttrs){const cont=root.querySelector('[data-cf="'+at.code+'"]');const v=cfReadValue(cont,at);const err=cfValidate(at,v);if(err){root.querySelector("#objMsg").textContent=err;return;}if(cfPresent(at,v))values[at.code]=v;}
+      for(const at of editAttrs){const cont=root.querySelector('[data-cf="'+at.code+'"]');const v=cfReadValue(cont,at);const err=cfValidate(at,v);if(err){root.querySelector("#objMsg").textContent=err;modalFocusInvalid(cont,root);return;}if(cfPresent(at,v))values[at.code]=v;}
       let savedId=id;
       if(isNew){savedId=newObjectId(typeCode);objectsAll().push({id:savedId,type:typeCode,values});}
       else{const o=objectById(id);if(o)o.values=values;}
@@ -12611,7 +12615,7 @@ function cfCollect(target,scopeEl){
     if(f.type==="computed")continue;   // dérivé : rien à collecter
     const cont=scopeEl.querySelector('[data-cf="'+f.code+'"]');
     const v=cfReadValue(cont,f);
-    const err=cfValidate(f,v);if(err)return {error:err};
+    const err=cfValidate(f,v);if(err)return {error:err,cont:cont,code:f.code};
     if(cfPresent(f,v))custom[f.code]=v;
   }
   return {custom};
@@ -13400,7 +13404,7 @@ function modalColTarget(root,col,map){
   const sel=map&&map[col];return sel?root.querySelector(sel):null;
 }
 function modalFocusEl(el,root){
-  if(!el)return false;
+  if(!el)return null;
   for(let p=el.parentElement;p&&p!==root;p=p.parentElement){if(p.tagName==="DETAILS"&&!p.open)p.open=true;}
   // Premier contrôle réellement focalisable : on écarte les inputs cachés (data-cfv des champs image/
   // couleur) et masqués (input file display:none) — sinon le focus tombe sur un élément invisible.
@@ -13415,9 +13419,24 @@ function modalFocusEl(el,root){
   // Curseur en FIN de valeur (et non sélection totale) : évite d'écraser la valeur si l'utilisateur
   // se met à taper. setSelectionRange lève sur certains types (nombre, date) → ignoré.
   if(tgt.tagName==="INPUT"||tgt.tagName==="TEXTAREA"){try{const n=(tgt.value||"").length;tgt.setSelectionRange(n,n);}catch(_){}}
+  return tgt;
+}
+function modalFocusCol(root,col,map){const el=modalColTarget(root,col,map);return el?!!modalFocusEl(el,root):false;}
+/* Enregistrement refusé : focalise le champ fautif et le cerne d'un contour rouge (visible aussi au
+   focus). Le contour disparaît dès que l'utilisateur corrige la valeur (input/change). `target` est un
+   élément ou un sélecteur ; `root` borne la recherche (corps de la modale concernée). */
+function modalFocusInvalid(target,root){
+  root=root||document.getElementById("modalBody");
+  if(root)root.querySelectorAll(".field-bad").forEach(x=>x.classList.remove("field-bad"));
+  const host=(typeof target==="string")?((root&&root.querySelector(target))||document.querySelector(target)):target;
+  if(!host)return false;
+  const tgt=modalFocusEl(host,root)||host;
+  tgt.classList.add("field-bad");
+  // Écoute sur le conteneur : les événements des contrôles internes (tags, checklist, image) remontent.
+  const clear=()=>{tgt.classList.remove("field-bad");host.removeEventListener("input",clear);host.removeEventListener("change",clear);};
+  host.addEventListener("input",clear);host.addEventListener("change",clear);
   return true;
 }
-function modalFocusCol(root,col,map){const el=modalColTarget(root,col,map);return el?modalFocusEl(el,root):false;}
 document.addEventListener("keydown",e=>{
   if(e.key!=="Tab")return;
   const top=topLayer();if(!top)return;
