@@ -285,7 +285,7 @@ Une **barre d'outils** pilote l'affichage :
 
 > Les métriques **cumulée**, **pondérée**, **nombre** et **champ numérique** sont affichées sur fond **neutre** avec **échelle automatique**, sans bandes de criticité. (*Cumulée*, *pondérée*, *nombre* et *champ (somme)* sont en outre *extensives* : leur valeur croît avec le nombre de risques.)
 
-**Infobulles au survol** (comme sur les secteurs des Statistiques) : un **point** affiche la **liste des risques** de l'axe ; un **libellé d'axe** affiche la **description** de la valeur (pour un champ personnalisé dont l'item porte une description) ; un **niveau** dans la légende affiche la **description du niveau de criticité**.
+**Infobulles au survol** (comme sur les secteurs des Statistiques) : un **point** affiche la **liste des risques** de l'axe, chacun avec sa **criticité initiale → résiduelle** (pastille de couleur et libellé du niveau) ; un **libellé d'axe** affiche la **description** de la valeur (pour un champ personnalisé dont l'item porte une description) ; un **niveau** dans la légende affiche la **description du niveau de criticité**.
 
 Sous le graphique, un **tableau** récapitule les valeurs par axe. Comme les autres onglets, le radar **respecte les filtres actifs** (§16).
 

@@ -3987,12 +3987,19 @@ function statItemRef(it,kind){
 function statReg(sid,series,idx,kind,label,items){
   STAT_HOVER[sid+"|"+(series||"")+"|"+idx]={kind:kind,label:label,items:(items||[]).map(x=>statItemRef(x,kind))};
 }
+/* Pastille de niveau de criticité (carré coloré + libellé), pour les tooltips. */
+function critChipHTML(c){return '<span style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;flex:none;background:'+esc((c&&c.color)||"#888")+'"></span>'+esc((c&&c.label)||"?")+'</span>';}
 function statTipHTML(rec){
   const n=rec.items.length,one=n===1;
   const kindLbl=rec.kind==="risk"?t(one?"stat_risk":"stat_risks"):rec.kind==="measure"?t(one?"stat_measure":"stat_measures"):rec.kind==="object"?t(one?"stat_object":"stat_objects"):t(one?"stat_link":"tab_links");
   const MAX=14,shown=rec.items.slice(0,MAX);
-  let h='<b>'+esc(rec.label)+'</b><br><span class="t-cat">'+n+' '+esc(kindLbl)+'</span>';
-  if(n)h+='<br>'+shown.map(x=>'• '+esc(x.id)+(x.label?' · '+esc(x.label):'')).join('<br>');
+  const hasCrit=!!(n&&rec.items[0].ci);
+  let h='<b>'+esc(rec.label)+'</b><br><span class="t-cat">'+n+' '+esc(kindLbl)+(hasCrit?' · '+esc(t("stat_initial"))+' → '+esc(t("stat_residual")):'')+'</span>';
+  if(n)h+='<br>'+shown.map(x=>{
+    let s='• '+esc(x.id)+(x.label?' · '+esc(x.label):'');
+    if(x.ci&&x.cr)s+=' '+critChipHTML(x.ci)+' <span style="opacity:.55">→</span> '+critChipHTML(x.cr);
+    return s;
+  }).join('<br>');
   if(n>MAX)h+='<br><span class="t-cat">+'+(n-MAX)+' …</span>';
   return h;
 }
@@ -4550,7 +4557,7 @@ function renderRadars(){
   if(m.tooFew){area.innerHTML='<div style="padding:44px;text-align:center;color:#61707f">'+esc(t("radar_need_axes",m.axes.length))+'</div>';leg.innerHTML="";tbl.innerHTML="";RADAR_HOVER=[];return;}
   const labels=m.labels,series=m.series,vmax=m.vmax;
   const axisRisks=radarAxisRisks(visibleRisks(),radarState.dim,m.axes);
-  RADAR_HOVER=labels.map((lab,i)=>({label:lab,kind:"risk",items:axisRisks[i].map(r=>({id:r.id,label:r.label}))}));
+  RADAR_HOVER=labels.map((lab,i)=>({label:lab,kind:"risk",items:axisRisks[i].map(r=>({id:r.id,label:r.label,ci:critOfEval(r.initial_assessment),cr:critOfEval(residual(r))}))}));
   RADAR_AXIS_TIP=m.axes.map((k,i)=>{const d=radarAxisDesc(radarState.dim,k);return d?{label:labels[i],desc:d}:null;});
   RADAR_CRIT_TIP=critBands().map(c=>({label:c.label,desc:c.description||""}));
   const wrap=inner=>'<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:26px">'+inner+'</div>';
