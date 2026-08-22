@@ -562,6 +562,13 @@
   .cf-color-clear:hover{color:var(--danger)}
   .cf-image-preview{min-height:44px;display:flex;align-items:center;padding:6px;border:1px dashed var(--border);border-radius:8px;background:var(--panel)}
   .cf-image-preview img{max-height:120px;max-width:100%;border-radius:6px;object-fit:contain}
+  /* Loupe (agrandissement) d'une image de champ personnalisé */
+  .cf-img-thumb,.cf-image-preview img{cursor:zoom-in}
+  .imglb{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;padding:4vh 4vw;background:rgba(6,10,18,.78);backdrop-filter:blur(3px);cursor:zoom-out}
+  .imglb.open{display:flex}
+  .imglb img{max-width:92vw;max-height:92vh;border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,.5);background:#fff;cursor:default}
+  .imglb-close{position:fixed;top:14px;right:18px;width:38px;height:38px;border:none;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .imglb-close:hover{background:rgba(255,255,255,.3)}
   /* Picker de l'éditeur de formule (champ calculé) */
   .cf-picker{border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow:hidden;margin-top:2px}
   .cfp-top{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--border)}
@@ -1802,6 +1809,7 @@ const I18N = {
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.scale":"Échelle (valeur numérique)","cft.computed":"Valeur calculée","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.color":"Couleur","cft.image":"Image","cft.reference":"Référence à un objet",
     cf_img_pick:"Choisir une image…", cf_img_remove:"Retirer", cf_img_none:"Aucune image", cf_color_clear:"Effacer la couleur",
     cf_color_render:"Affichage", cf_color_render_both:"Pastille + valeur hexa", cf_color_render_swatch:"Pastille seule", cf_color_render_hex:"Valeur hexadécimale",
+    img_close:"Fermer l'aperçu",
     cf_object_type:"Type d'objet ciblé", cf_ref_none:"— (aucun)", cf_ref_add:"+ ajouter une instance…", cf_ref_create:"＋ créer", cf_ref_remove:"Retirer",
     cf_ref_notype:"Aucun type d'objet défini (Paramètres › Types d'objets).", cf_err_ref_type:"Choisissez le type d'objet ciblé.",
     cf_ref_self_warn:"Auto-référence : un objet de ce type en référence un autre (attention aux boucles).",
@@ -2187,6 +2195,7 @@ const I18N = {
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.scale":"Scale (numeric value)","cft.computed":"Computed value","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.color":"Color","cft.image":"Image","cft.reference":"Object reference",
     cf_img_pick:"Choose an image…", cf_img_remove:"Remove", cf_img_none:"No image", cf_color_clear:"Clear color",
     cf_color_render:"Display", cf_color_render_both:"Swatch + hex value", cf_color_render_swatch:"Swatch only", cf_color_render_hex:"Hex value",
+    img_close:"Close preview",
     cf_object_type:"Target object type", cf_ref_none:"— (none)", cf_ref_add:"+ add an instance…", cf_ref_create:"＋ new", cf_ref_remove:"Remove",
     cf_ref_notype:"No object type defined (Settings › Object types).", cf_err_ref_type:"Choose the target object type.",
     cf_ref_self_warn:"Self-reference: an object of this type references another (mind loops).",
@@ -2572,6 +2581,7 @@ const I18N = {
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.scale":"Scala (valore numerico)","cft.computed":"Valore calcolato","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.color":"Colore","cft.image":"Immagine","cft.reference":"Riferimento a un oggetto",
     cf_img_pick:"Scegli un'immagine…", cf_img_remove:"Rimuovi", cf_img_none:"Nessuna immagine", cf_color_clear:"Cancella colore",
     cf_color_render:"Visualizzazione", cf_color_render_both:"Pastiglia + valore esa", cf_color_render_swatch:"Solo pastiglia", cf_color_render_hex:"Valore esadecimale",
+    img_close:"Chiudi anteprima",
     cf_object_type:"Tipo di oggetto di destinazione", cf_ref_none:"— (nessuno)", cf_ref_add:"+ aggiungi un'istanza…", cf_ref_create:"＋ crea", cf_ref_remove:"Rimuovi",
     cf_ref_notype:"Nessun tipo di oggetto definito (Impostazioni › Tipi di oggetto).", cf_err_ref_type:"Scegli il tipo di oggetto di destinazione.",
     cf_ref_self_warn:"Auto-riferimento: un oggetto di questo tipo ne riferisce un altro (attenzione ai cicli).",
@@ -12424,6 +12434,31 @@ document.addEventListener("change",e=>{const fi=e.target;if(!fi||!fi.matches||!f
       box.querySelector(".cf-image-preview").innerHTML='<img src="'+esc(uri)+'" alt="">';
       const rm=box.querySelector(".cf-image-clear");if(rm)rm.style.display="";cfRefPending(box);}).catch(()=>{});}
   fi.value="";});
+/* ---- Loupe (lightbox) d'une valeur image : centrée, plafonnée à la fenêtre, fond obscurcissant ---- */
+function openImageLightbox(src){
+  if(!src)return;
+  let lb=document.getElementById("imgLightbox");
+  if(!lb){
+    lb=document.createElement("div");lb.id="imgLightbox";lb.className="imglb";lb.setAttribute("role","dialog");lb.setAttribute("aria-modal","true");
+    lb.innerHTML='<button type="button" class="imglb-close" aria-label="'+esc(t("img_close"))+'" title="'+esc(t("img_close"))+'">✕</button><img alt="">';
+    document.body.appendChild(lb);
+    lb.addEventListener("mousedown",ev=>ev.stopPropagation());   // n'atteint pas le « clic dehors » d'une modale sous-jacente
+    lb.addEventListener("click",ev=>{ev.stopPropagation();if(ev.target===lb||ev.target.closest(".imglb-close"))closeImageLightbox();});
+  }
+  lb.removeAttribute("inert");document.body.appendChild(lb);   // toujours interactive et au-dessus (même par-dessus une modale)
+  lb.querySelector("img").setAttribute("src",src);
+  lb._prev=document.activeElement;
+  lb.classList.add("open");
+  const c=lb.querySelector(".imglb-close");if(c)c.focus();
+}
+function closeImageLightbox(){const lb=document.getElementById("imgLightbox");if(!lb||!lb.classList.contains("open"))return;
+  lb.classList.remove("open");lb.querySelector("img").setAttribute("src","");
+  const p=lb._prev;if(p&&p.focus){try{p.focus();}catch(e){}}}
+/* Clic sur une vignette d'image (affichage OU aperçu d'édition) : ouvre la loupe et n'active pas la
+   ligne du registre (interception en phase de capture). */
+document.addEventListener("click",e=>{const img=e.target.closest&&e.target.closest(".cf-img-thumb, .cf-image-preview img");
+  if(img&&img.getAttribute("src")){e.preventDefault();e.stopPropagation();openImageLightbox(img.getAttribute("src"));}},true);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){const lb=document.getElementById("imgLightbox");if(lb&&lb.classList.contains("open")){e.preventDefault();e.stopPropagation();closeImageLightbox();}}},true);
 document.addEventListener("click",e=>{const c=e.target.closest&&e.target.closest(".cf-ref-create");if(!c)return;e.preventDefault();
   const box=c.closest(".cf-refs"),type=box.dataset.cfref;if(!type)return;
   openObjectModal(type,null,newId=>{
@@ -13330,7 +13365,7 @@ function focusablesIn(root){
 function refreshInert(){
   const top=topLayer();
   [...document.body.children].forEach(el=>{
-    if(el.tagName==="SCRIPT")return;
+    if(el.tagName==="SCRIPT"||el.id==="imgLightbox")return;   // la loupe reste au-dessus des modales et interactive
     if(top&&el!==top)el.setAttribute("inert","");else el.removeAttribute("inert");
   });
 }
@@ -13360,7 +13395,11 @@ function modalColTarget(root,col,map){
 function modalFocusEl(el,root){
   if(!el)return false;
   for(let p=el.parentElement;p&&p!==root;p=p.parentElement){if(p.tagName==="DETAILS"&&!p.open)p.open=true;}
-  const inner=el.matches("input,select,textarea,button,[tabindex]")?el:el.querySelector("input,select,textarea,button,[tabindex]");
+  // Premier contrôle réellement focalisable : on écarte les inputs cachés (data-cfv des champs image/
+  // couleur) et masqués (input file display:none) — sinon le focus tombe sur un élément invisible.
+  const focusable=c=>c&&c.type!=="hidden"&&!c.disabled&&(c.offsetParent!==null||c.tagName==="SUMMARY");
+  const inner=(el.matches("input,select,textarea,button,[tabindex]")&&focusable(el))
+    ? el : [...el.querySelectorAll("input,select,textarea,button,[tabindex]")].find(focusable);
   const tgt=inner||el;
   // Zone Markdown affichée en aperçu : basculer en édition, sinon le textarea est masqué (focus sans effet).
   if(tgt.tagName==="TEXTAREA"&&tgt._mdSetMode&&tgt._mdPreview&&tgt._mdPreview())tgt._mdSetMode(false);
