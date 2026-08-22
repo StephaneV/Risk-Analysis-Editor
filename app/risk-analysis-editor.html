@@ -836,6 +836,18 @@
   .report th,.report td{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top}
   .report th{background:var(--panel-2);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
   .report .meta-tbl td:first-child{color:var(--muted);width:190px;white-space:nowrap}
+  /* Cotations initiale/résiduelle dans le Détail des risques : deux panneaux côte à côte. */
+  .report .rp-phases{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 4px}
+  .report .rp-phase{border:1px solid var(--border);border-radius:8px;overflow:hidden;break-inside:avoid}
+  .report .rp-phase>header{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--panel-2);border-bottom:1px solid var(--border)}
+  .report .rp-phase-name{font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .report .rp-phase-score{margin-left:auto;color:var(--muted);font-size:11.5px}
+  .report .rp-phase-score b{color:var(--text);font-size:14px;font-variant-numeric:tabular-nums}
+  .report .rp-phase-pg{display:flex;gap:16px;flex-wrap:wrap;padding:7px 10px 2px;font-size:12px}
+  .report .rp-phase-pg .k{color:var(--muted)}
+  .report .rp-phase-cf{padding:2px 10px 8px}
+  .report .rp-phase-cf .rp-note{margin-top:4px}
+  .report .rp-riskcf{margin-top:10px}
   .report .rp-swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px}
   .report .rp-tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
   .report .rp-matrices{text-align:center}
@@ -6270,10 +6282,10 @@ function renderReport(){
         h+='<div class="rp-item"><div><b>'+esc(r.id)+' — '+esc(r.label)+'</b>'+(sub?' <span class="rp-item-sub">'+sub+'</span>':'')+'</div>';
         if(r.description)h+='<div class="md">'+mdToHTML(r.description)+'</div>';
         if(r.comment)h+='<div class="rp-note md">'+mdToHTML(r.comment)+'</div>';
-        const ic=cfReportNotes("cotation",r.initial_assessment.custom), rc=cfReportNotes("cotation",r.residual_assessment.custom);
-        if(ic)h+='<div class="rp-note"><b>'+esc(t("th_initial"))+'</b></div>'+ic;
-        if(rc)h+='<div class="rp-note"><b>'+esc(t("th_residual"))+'</b></div>'+rc;
-        h+=cfReportNotes("risk",r.custom)+'</div>';
+        h+=riskEvalPanelsHTML(r);
+        const rcf=cfReportNotes("risk",r.custom);
+        if(rcf)h+='<div class="rp-riskcf">'+rcf+'</div>';
+        h+='</div>';
       });
       return card("risks_detail",h);
     },
@@ -7183,6 +7195,35 @@ function cfTargetOf(table){return table==="risks"?"risk":table==="measures"?"mea
 function riskCellTag(r,which){
   const ev=which==="i"?r.initial_assessment:residual(r);const c=critOfEval(ev),s=scoreOf(ev.probability,ev.severity);
   return '<span class="tag" style="background:'+c.color+';color:'+badgeFg(c.color)+'">'+esc(c.label)+' · '+s+'</span>';
+}
+/* Cotations initiale et résiduelle d'un risque (probabilité, gravité, score, niveau de criticité)
+   pour le Détail des risques du rapport. Les en-têtes « probabilité »/« gravité » reprennent les
+   libellés d'axe de la grille ; le libellé de niveau reprend celui de l'axe (repli sur la valeur). */
+function riskEvalData(r){
+  const pv=probabilityLevels(),sv=severityLevels();
+  const nameOf=(levels,v)=>{const l=levels.find(x=>x.value===v);return (l&&l.label)?l.label:(v!=null?String(v):"—");};
+  const rowOf=ev=>{const sc=scoreOf(ev.probability,ev.severity);return {prob:nameOf(pv,ev.probability),sev:nameOf(sv,ev.severity),score:sc,crit:critFor(sc)};};
+  return {initial:rowOf(r.initial_assessment),residual:rowOf(residual(r))};
+}
+/* Deux panneaux « Initial » / « Résiduel » côte à côte : criticité + score en vedette, vraisemblance
+   et gravité, puis les champs personnalisés DE COTATION propres à la phase (Justification, Date…). */
+function riskEvalPanelsHTML(r){
+  const g=analyse.grid,e=riskEvalData(r);
+  const panel=(name,d,custom)=>{
+    const notes=cfReportNotes("cotation",custom);
+    return '<section class="rp-phase">'+
+      '<header><span class="rp-phase-name">'+esc(name)+'</span>'+
+        '<span class="rp-tag" style="background:'+d.crit.color+';color:'+badgeFg(d.crit.color)+'">'+esc(d.crit.label)+'</span>'+
+        '<span class="rp-phase-score">'+esc(t("xl_score"))+' <b>'+d.score+'</b></span></header>'+
+      '<div class="rp-phase-pg"><span><span class="k">'+esc(g.vertical_axis.label)+' :</span> <b>'+esc(String(d.prob))+'</b></span>'+
+        '<span><span class="k">'+esc(g.horizontal_axis.label)+' :</span> <b>'+esc(String(d.sev))+'</b></span></div>'+
+      (notes?'<div class="rp-phase-cf">'+notes+'</div>':'')+
+      '</section>';
+  };
+  return '<div class="rp-phases">'+
+    panel(t("th_initial"),e.initial,r.initial_assessment.custom)+
+    panel(t("th_residual"),e.residual,residual(r).custom)+
+    '</div>';
 }
 function riskDeltaCell(r){
   const evi=r.initial_assessment,evr=residual(r);
@@ -8374,10 +8415,12 @@ function dxTbl(rows,widths){
     h+='<w:tr>';
     cells.forEach((c,i)=>{
       c=typeof c==="string"?{txt:c}:(c||{txt:""});
+      // c.xml : bloc de paragraphes déjà formés (cellule multi-paragraphes) ; sinon c.runs (un paragraphe) ; sinon c.txt.
+      const content=c.xml!=null?c.xml
+        :(c.runs!=null?dxP(c.runs,{sa:40,sb:40,center:c.center})
+          :dxP(dxRun(c.txt==null?"":String(c.txt),{b:c.b,color:c.color,sz:c.sz||20}),{sa:40,sb:40,center:c.center}));
       h+='<w:tc><w:tcPr><w:tcW w:w="'+widths[i]+'" w:type="dxa"/>'+(c.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+c.fill+'"/>':'')+
-        '<w:vAlign w:val="center"/></w:tcPr>'+
-        (c.runs!=null?dxP(c.runs,{sa:40,sb:40,center:c.center}):dxP(dxRun(c.txt==null?"":String(c.txt),{b:c.b,color:c.color,sz:c.sz||20}),{sa:40,sb:40,center:c.center}))+
-      '</w:tc>';
+        '<w:vAlign w:val="'+(c.valign||"center")+'"/></w:tcPr>'+content+'</w:tc>';
     });
     h+='</w:tr>';
   });
@@ -8574,6 +8617,24 @@ function dxReportTable(tbl,colKeys,rows,cw,bstyle){
   return dxTbl([header].concat(data),widths);
 }
 function dxPlanTable(list,cw){return dxReportTable("measures",["id","measure","status","resp","due"],list,cw);}
+/* Deux panneaux Initial/Résiduel côte à côte (miroir Word de riskEvalPanelsHTML) : une table à
+   2 colonnes, chaque cellule contenant l'en-tête (criticité + score), la vraisemblance/gravité, puis
+   les champs personnalisés de cotation propres à la phase. */
+function dxRiskEvalPanels(r,cw){
+  const g=analyse.grid,e=riskEvalData(r);
+  const half=Math.floor(cw/2),widths=[half,cw-half];
+  const cell=(name,d,custom)=>{
+    let xml=dxP(dxRun(name+"  ",{b:true,sz:18,color:"5A6B82"})+
+        tmplBadgeChipRun("",d.crit.label,hex6(badgeFg(d.crit.color)),hex6(d.crit.color))+
+        dxRun("   "+t("xl_score")+" ",{sz:20,color:"5A6B82"})+dxRun(String(d.score),{sz:20,b:true}),{sb:20,sa:20});
+    xml+=dxP(dxRun(g.vertical_axis.label+" : ",{sz:20,color:"5A6B82"})+dxRun(String(d.prob),{sz:20,b:true})+
+        dxRun("    "+g.horizontal_axis.label+" : ",{sz:20,color:"5A6B82"})+dxRun(String(d.sev),{sz:20,b:true}),{sa:20});
+    xml+=dxCfNotes("cotation",custom);
+    return {xml,valign:"top"};
+  };
+  return dxTbl([[cell(t("th_initial"),e.initial,r.initial_assessment.custom),
+                 cell(t("th_residual"),e.residual,residual(r).custom)]],widths)+dxP("",{sa:60,sb:20});
+}
 function dxCfNotes(target,custom){
   let out="";
   customFieldsFor(target).forEach(f=>{
@@ -8877,9 +8938,7 @@ async function buildDocx(){
         out+=dxP(dxRun(r.id+" — "+r.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
         if(r.description)out+=mdDocxBlocks(r.description);
         if(r.comment)out+=mdDocxBlocks(r.comment);
-        const ic=dxCfNotes("cotation",r.initial_assessment.custom), rc=dxCfNotes("cotation",r.residual_assessment.custom);
-        if(ic)out+=dxP(dxRun(t("th_initial")+" :",{b:true,sz:20}),{sa:20})+ic;
-        if(rc)out+=dxP(dxRun(t("th_residual")+" :",{b:true,sz:20}),{sa:20})+rc;
+        out+=dxRiskEvalPanels(r,CW);
         out+=dxCfNotes("risk",r.custom);
       });
       return out;

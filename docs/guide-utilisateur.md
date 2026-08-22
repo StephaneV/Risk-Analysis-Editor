@@ -347,6 +347,8 @@ Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par stat
 
 L'onglet **Rapport** génère un rapport configurable, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **référentiels et légendes des champs** (valeurs des listes/tags accompagnées de leur description), les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
 
+> Le **Détail des risques** présente, pour chaque risque, sa description et ses notes, puis **deux panneaux côte à côte** — **Initial** et **Résiduel** — chacun réunissant le **niveau de criticité** (pastille colorée), le **score**, la **probabilité** et la **gravité** (les intitulés reprennent les **libellés d'axe** de la grille), ainsi que les **champs personnalisés de cotation** propres à la phase (par ex. *Justification*, *Date de cotation*), qui ont une valeur distincte pour l'évaluation initiale et pour la résiduelle. Les **champs personnalisés du risque** (tags, références… non liés à la phase) figurent dans un bloc distinct sous les panneaux. Cette présentation est identique dans l'aperçu écran, l'impression PDF et l'export Word.
+
 Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §18).
 
 ### Personnaliser le rapport (Paramètres › Rapport)
