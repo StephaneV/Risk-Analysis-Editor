@@ -5599,8 +5599,36 @@ function svgEsc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp
 function colorToFill(c){if(!c)return{fill:"#000",opacity:1};
   const m=c.match(/rgba?\(([^)]+)\)/);if(m){const p=m[1].split(",").map(s=>s.trim());const a=p.length>3?parseFloat(p[3]):1;
     return{fill:"rgb("+p[0]+","+p[1]+","+p[2]+")",opacity:isNaN(a)?1:a};}return{fill:c,opacity:1};}
+/* Découpe le texte (nœud unique) d'un élément selon ses lignes RÉELLEMENT rendues par le
+   navigateur : une entrée {text, rect} par ligne. Permet de restituer dans le SVG un titre
+   long retourné à la ligne (sinon aplati sur une seule ligne qui déborde). */
+function svgTextLines(el){
+  const node=el.firstChild;
+  if(!node||node.nodeType!==3||el.childNodes.length!==1)return null;
+  const s=node.nodeValue;if(!s)return null;
+  const rng=document.createRange();
+  const lines=[];let start=0,curTop=null;
+  const flush=end=>{if(end<=start)return;rng.setStart(node,start);rng.setEnd(node,end);
+    const rect=rng.getBoundingClientRect();lines.push({text:s.slice(start,end).trim(),rect});start=end;};
+  for(let i=1;i<=s.length;i++){
+    rng.setStart(node,i-1);rng.setEnd(node,i);
+    const rects=rng.getClientRects();if(!rects.length)continue;
+    const top=rects[0].top;
+    if(curTop===null)curTop=top;
+    else if(top-curTop>1){flush(i-1);curTop=top;}
+  }
+  flush(s.length);
+  return lines.filter(l=>l.text);
+}
 function svgTextEl(el,ox,oy,rot){
-  const r=el.getBoundingClientRect(),cs=getComputedStyle(el);
+  const cs=getComputedStyle(el);
+  if(!rot){   // texte horizontal : restituer les retours à la ligne du DOM (titres longs)
+    const lines=svgTextLines(el);
+    if(lines&&lines.length>1)
+      return lines.map(l=>{const cx=l.rect.left-ox+l.rect.width/2,cy=l.rect.top-oy+l.rect.height/2;
+        return '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="'+svgEsc(cs.fontFamily)+'" font-size="'+cs.fontSize+'" font-weight="'+cs.fontWeight+'" fill="'+cs.color+'">'+svgEsc(l.text)+'</text>';}).join("");
+  }
+  const r=el.getBoundingClientRect();
   const cx=r.left-ox+r.width/2,cy=r.top-oy+r.height/2,t=svgEsc((el.textContent||"").trim());
   if(!t)return"";
   const tr=rot?' transform="rotate(-90 '+cx+' '+cy+')"':"";
