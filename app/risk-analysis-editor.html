@@ -1801,6 +1801,7 @@ const I18N = {
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.scale":"Échelle (valeur numérique)","cft.computed":"Valeur calculée","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.color":"Couleur","cft.image":"Image","cft.reference":"Référence à un objet",
     cf_img_pick:"Choisir une image…", cf_img_remove:"Retirer", cf_img_none:"Aucune image", cf_color_clear:"Effacer la couleur",
+    cf_color_render:"Affichage", cf_color_render_both:"Pastille + valeur hexa", cf_color_render_swatch:"Pastille seule", cf_color_render_hex:"Valeur hexadécimale",
     cf_object_type:"Type d'objet ciblé", cf_ref_none:"— (aucun)", cf_ref_add:"+ ajouter une instance…", cf_ref_create:"＋ créer", cf_ref_remove:"Retirer",
     cf_ref_notype:"Aucun type d'objet défini (Paramètres › Types d'objets).", cf_err_ref_type:"Choisissez le type d'objet ciblé.",
     cf_ref_self_warn:"Auto-référence : un objet de ce type en référence un autre (attention aux boucles).",
@@ -2185,6 +2186,7 @@ const I18N = {
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.scale":"Scale (numeric value)","cft.computed":"Computed value","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.color":"Color","cft.image":"Image","cft.reference":"Object reference",
     cf_img_pick:"Choose an image…", cf_img_remove:"Remove", cf_img_none:"No image", cf_color_clear:"Clear color",
+    cf_color_render:"Display", cf_color_render_both:"Swatch + hex value", cf_color_render_swatch:"Swatch only", cf_color_render_hex:"Hex value",
     cf_object_type:"Target object type", cf_ref_none:"— (none)", cf_ref_add:"+ add an instance…", cf_ref_create:"＋ new", cf_ref_remove:"Remove",
     cf_ref_notype:"No object type defined (Settings › Object types).", cf_err_ref_type:"Choose the target object type.",
     cf_ref_self_warn:"Self-reference: an object of this type references another (mind loops).",
@@ -2569,6 +2571,7 @@ const I18N = {
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.scale":"Scala (valore numerico)","cft.computed":"Valore calcolato","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.color":"Colore","cft.image":"Immagine","cft.reference":"Riferimento a un oggetto",
     cf_img_pick:"Scegli un'immagine…", cf_img_remove:"Rimuovi", cf_img_none:"Nessuna immagine", cf_color_clear:"Cancella colore",
+    cf_color_render:"Visualizzazione", cf_color_render_both:"Pastiglia + valore esa", cf_color_render_swatch:"Solo pastiglia", cf_color_render_hex:"Valore esadecimale",
     cf_object_type:"Tipo di oggetto di destinazione", cf_ref_none:"— (nessuno)", cf_ref_add:"+ aggiungi un'istanza…", cf_ref_create:"＋ crea", cf_ref_remove:"Rimuovi",
     cf_ref_notype:"Nessun tipo di oggetto definito (Impostazioni › Tipi di oggetto).", cf_err_ref_type:"Scegli il tipo di oggetto di destinazione.",
     cf_ref_self_warn:"Auto-riferimento: un oggetto di questo tipo ne riferisce un altro (attenzione ai cicli).",
@@ -8452,6 +8455,16 @@ async function dxLogoPng(dataUri){
   const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
   return {bytes:new Uint8Array(await blob.arrayBuffer()),w:w,h:h};
 }
+/* Rapport Word natif : images de champs personnalisés embarquées. La pré-passe (buildDocx) remplit
+   cette map (data-URI → {rid,w,h}) ; dxCellFor/les tableaux d'objets y lisent le rid pour émettre un
+   dessin dimensionné en vignette. */
+let dxCfImgMap=null,dxCfImgId=0;
+/* Cellule-image (vignette bornée ~130×90 px) à partir d'un data-URI déjà enregistré, sinon marqueur. */
+function dxCfImageCell(uri){
+  if(uri&&dxCfImgMap&&dxCfImgMap[uri]){const im=dxCfImgMap[uri],sc=Math.min(130/im.w,90/im.h,1);
+    return {runs:dxDrawingRun(im.rid,++dxCfImgId,Math.round(im.w*sc*9525),Math.round(im.h*sc*9525)),center:true};}
+  return {txt:uri?"[image]":"—"};
+}
 /* ---- Tableaux de registre pilotés par les colonnes choisies (voir reportCfg) ---- */
 const DX_COLW={id:.6,risk:2,measure:2,cat:1.1,owner:1.1,initial:1.2,residual:1.2,evolution:1.1,measures:1.5,
   type:1,status:1.1,resp:1.1,due:1,cost:.8,covered:1.5,rid:.7,mid:.7,notes:1.8};
@@ -8486,7 +8499,10 @@ function dxCellFor(tbl,key,row,bstyle){
     if(f){
       if(f.type==="computed"){const v=cfComputedDisplay(f,cfTargetOf(tbl),row);return {txt:(v&&v!=="#ERR")?v:"—"};}
       if(f.type==="tags"&&(bstyle==="pill"||bstyle==="chip"||bstyle==="flat")){const runs=dxTagsBadgeRuns(f,(row.custom||{})[f.code],bstyle);if(runs)return {runs};}
-      if(f.type==="color"){const cv=(row.custom||{})[f.code];const hex=/^#[0-9a-fA-F]{6}$/.test(cv||"")?cv:null;return hex?{txt:hex,fill:hex.slice(1).toUpperCase(),center:true}:{txt:"—"};}
+      if(f.type==="color"){const cv=(row.custom||{})[f.code];const hex=/^#[0-9a-fA-F]{6}$/.test(cv||"")?cv:null;if(!hex)return {txt:"—"};
+        const fill=hex.slice(1).toUpperCase(),mode=f.color_mode||"both";
+        return mode==="hex"?{txt:hex,center:true}:mode==="swatch"?{fill,txt:" ",center:true}:{txt:hex,fill,center:true};}
+      if(f.type==="image")return dxCfImageCell((row.custom||{})[f.code]);
       const v=cfDisplayTxt(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
   }
   return {txt:"—"};
@@ -8517,8 +8533,9 @@ function dxObjNotes(inst){
   const ot=objectTypeByCode(inst&&inst.type); if(!ot)return "";
   let out="";
   (ot.attributes||[]).forEach(a=>{
-    const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v)return;
-    if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
+    const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v&&a.type!=="image")return;
+    if(a.type==="image"){const cell=dxCfImageCell(raw);if(cell.runs){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=dxP(cell.runs,{sa:20});}else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun("[image]",{sz:20}),{sa:20});}
+    else if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
     else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
   });
   return out;
@@ -8610,6 +8627,20 @@ async function buildDocx(){
   if(cfg.cover.on&&logoInfo){
     docRels.push('<Relationship Id="rLogoDoc" Type="'+OD_REL+'/image" Target="media/logo.png"/>');
     coverLogoXml=dxImage("rLogoDoc",++pid,logoInfo.w,logoInfo.h,200);
+  }
+
+  // Pré-passe : embarquement des images des champs personnalisés (registres + attributs d'objet).
+  dxCfImgMap={};dxCfImgId=0;
+  {
+    const uris=new Set();
+    const scan=(arr,tg)=>{const imgs=customFieldsFor(tg).filter(f=>f.type==="image");if(imgs.length)arr.forEach(e=>imgs.forEach(f=>{const v=(e.custom||{})[f.code];if(v)uris.add(v);}));};
+    scan(RISKS0,"risk");scan(MEAS0,"measure");scan(TRs0,"link");
+    objectTypes().forEach(ot=>{const imgs=(ot.attributes||[]).filter(a=>a.type==="image");if(imgs.length)objectsOfType(ot.code).forEach(o=>imgs.forEach(a=>{const v=(o.values||{})[a.code];if(v)uris.add(v);}));});
+    for(const uri of uris){
+      try{const info=await dxLogoPng(uri);imgN++;const rid="rCfImg"+imgN,fn="cfimg"+imgN+".png";
+        media["word/media/"+fn]=info.bytes;docRels.push('<Relationship Id="'+rid+'" Type="'+OD_REL+'/image" Target="media/'+fn+'"/>');
+        dxCfImgMap[uri]={rid:rid,w:info.w,h:info.h};}catch(_){}
+    }
   }
 
   // ---- En-tête / pied natifs ----
@@ -8737,13 +8768,14 @@ async function buildDocx(){
         if(mode==="detail"){
           insts.forEach(inst=>{
             out+=dxP(dxRun(inst.id+" — "+objectLabel(inst),{b:true}),{sb:120,sa:40});
-            attrs.forEach(a=>{const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v)return;
-              if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
+            attrs.forEach(a=>{const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v&&a.type!=="image")return;
+              if(a.type==="image"){const cell=dxCfImageCell(raw);if(cell.runs){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=dxP(cell.runs,{sa:20});}else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun("[image]",{sz:20}),{sa:20});}
+              else if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
               else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});});
           });
         }else{
           const head=[{txt:t("rp_obj_id"),b:true,fill:"EEF2F8"}].concat(attrs.map(a=>({txt:cfLabel(a),b:true,fill:"EEF2F8"})));
-          const rows=insts.map(inst=>[{txt:inst.id,b:true}].concat(attrs.map(a=>({txt:cfObjAttrText(a,ot,inst)||""}))));
+          const rows=insts.map(inst=>[{txt:inst.id,b:true}].concat(attrs.map(a=>a.type==="image"?dxCfImageCell((inst.values||{})[a.code]):({txt:cfObjAttrText(a,ot,inst)||""}))));
           const n=attrs.length, idW=1400, rest=Math.max(900, n?Math.round((CW-idW)/n):(CW-idW));
           out+=dxTbl([head].concat(rows),[idW].concat(attrs.map(()=>rest)));
         }
@@ -8964,7 +8996,7 @@ async function tmplLoadDocx(file){
 /* ---- Lot 1 : substitution des balises de VALEUR + directive {{ report }} + formats ----
    Le tokenizer respecte l'échappement (\{{  \}}  \'  \"  \\). Les balises de bloc et de
    section ({{ matrix }}, {{#each}}…) sont laissées intactes pour les lots suivants. */
-let tmplReport={date_format:null,filter:null}, tmplWarnings=[], tmplImgReqs=[], tmplBlocksAllowed=true, tmplLogo=null;
+let tmplReport={date_format:null,filter:null}, tmplWarnings=[], tmplImgReqs=[], tmplBlocksAllowed=true, tmplLogo=null, tmplCfImg={};
 function tmplWarn(k,a){tmplWarnings.push(a!=null?t(k,a):t(k));}
 const TMPL_KNOWN_FMT={date:1,codes:1,labels:1,join:1,percent:1,upper:1,lower:1,default:1,swatch:1,badge:1};
 const TMPL_FILTER_FIELDS={id:1,category:1,owner:1,type:1,status:1,responsible:1,overdue:1,criticality_initial:1,criticality_residual:1};
@@ -9533,6 +9565,10 @@ function tmplLoopIterations(name,attrs,ctx){
 // Renvoie une liste de descripteurs {type:text|square|badge,…} si un format enrichi (swatch/badge)
 // s'applique, sinon null (rendu texte classique). Couleur -> carré ; tags -> badge (fond) ou carré+texte.
 function tmplRichParts(res,mods){
+  if(res.kind==="cf"&&res.field&&res.field.type==="image")return (res.value&&tmplCfImg[res.value])?[{type:"image",uri:res.value,mods:mods||{}}]:null;
+  if(res.kind==="cf"&&res.field&&res.field.type==="color"){const v=res.value,hex=/^#[0-9a-fA-F]{6}$/.test(v||"")?v:null;
+    if(!hex)return null;const mode=res.field.color_mode||"both";if(mode==="hex")return null;   // texte hexa via le chemin par défaut
+    const parts=[{type:"square",fill:hex6(hex)}];if(mode==="both")parts.push({type:"text",text:" "+hex});return parts;}
   if(!mods||(!mods.swatch&&!mods.badge))return null;
   // style de badge : bare {{ …| badge }} => défaut du rapport (tmplReport.badge) ; sinon valeur explicite (flat|chip|pill|cell)
   const bstyle=(mods.badge===true||["","1","true"].indexOf(String(mods.badge).toLowerCase())>=0)?(tmplReport.badge||"flat"):String(mods.badge).toLowerCase();
@@ -9593,6 +9629,14 @@ function tmplBadgePillRun(label,fill,fg){
   return dxDrawingRun(rid,1000+n,Math.round(W*EMU_PX*DISP),Math.round(H*EMU_PX*DISP));
 }
 function tmplRunFromDesc(baseInner,d){
+  if(d.type==="image"){
+    const im=tmplCfImg[d.uri];
+    if(!tmplBlocksAllowed||!im)return tmplRunXml(baseInner,"[image]",null,null);   // images réservées au corps
+    const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n,fn="tmplimg"+n+".png";
+    tmplImgReqs.push({rid,bytes:im.bytes,W:im.w,H:im.h,fn});
+    const dim=tmplImgEmu(d.mods,im.w,im.h,360);
+    return dxDrawingRun(rid,1000+n,dim.cx,dim.cy);
+  }
   if(d.type==="square")return tmplRunXml(baseInner,"■",d.fill,null);
   if(d.type==="badge"){
     if(d.style==="pill")return tmplBlocksAllowed?tmplBadgePillRun(d.text,d.fill,d.fg):tmplBadgeChipRun(baseInner,d.text,d.fg,d.fill);   // pastille (repli chip hors corps)
@@ -10467,6 +10511,14 @@ async function tmplRender(parts){
   const _logoUri=(function(){const c=reportCfgRaw();return c&&c.cover&&c.cover.logo;})();
   if(_logoUri&&items.some(it=>/\{\{\s*logo\b/.test(it.xml))){
     try{const info=await dxLogoPng(_logoUri);tmplLogo={bytes:info.bytes,w:info.w,h:info.h};}catch(e){tmplLogo=null;}
+  }
+  tmplCfImg={};                                                                             // précharge (bytes + dimensions) les images des champs personnalisés (rendu synchrone ensuite)
+  {
+    const uris=new Set();
+    const scan=(arr,tg)=>{const imgs=customFieldsFor(tg).filter(f=>f.type==="image");if(imgs.length)arr.forEach(e=>imgs.forEach(f=>{const v=(e.custom||{})[f.code];if(v)uris.add(v);}));};
+    scan(analyse.risks||[],"risk");scan(analyse.measures||[],"measure");scan(analyse.treatments||[],"link");
+    objectTypes().forEach(ot=>{const imgs=(ot.attributes||[]).filter(a=>a.type==="image");if(imgs.length)objectsOfType(ot.code).forEach(o=>imgs.forEach(a=>{const v=(o.values||{})[a.code];if(v)uris.add(v);}));});
+    for(const uri of uris){try{const info=await dxLogoPng(uri);tmplCfImg[uri]={bytes:info.bytes,w:info.w,h:info.h};}catch(_){}}
   }
   items.forEach(it=>{                                                                        // pass 2 : boucles/blocs + valeurs
     if(!it.doc){tmplWarn("tw_xml_unreadable");parts[it.p]=fflate.strToU8(it.xml);return;}
@@ -11476,6 +11528,8 @@ function cfItemsRows(f){return cfItemsRowsHTML(f.items||[],f.type==="tags"||f.ty
 function cfTypeOptsHTML(f){
   if(f.type==="regexp")return '<label class="field full"><span class="lab">'+esc(t("cf_pattern"))+'</span>'+
     '<input id="cfPattern" placeholder="'+esc(t("cf_pattern_ph"))+'" value="'+esc(f.pattern||"")+'"></label>';
+  if(f.type==="color")return '<label class="field"><span class="lab">'+esc(t("cf_color_render"))+'</span><select id="cfColorMode">'+
+    ["both","swatch","hex"].map(m=>'<option value="'+m+'"'+((f.color_mode||"both")===m?" selected":"")+'>'+esc(t("cf_color_render_"+m))+'</option>').join("")+'</select></label>';
   if(f.type==="tags"){const tpid=tagPaletteId(f);
     return '<label class="field"><span class="lab">'+esc(t("cf_palette"))+'</span><select id="cfTagPalette">'+tagPaletteOptions(tpid)+'</select></label>'+
       '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfMultiple" style="width:16px;height:16px;flex:none"'+(f.multiple?" checked":"")+'> '+esc(t("cf_multiple"))+'</label></label>'+
@@ -11583,6 +11637,7 @@ function openCustomFieldModal(idx){
     }
     if(type==="regexp"){const pat=val("cfPattern").trim();
       if(pat){try{new RegExp(pat);}catch(e){modalMsg(t("cf_err_pattern"));return false;}obj.pattern=pat;}}
+    if(type==="color"){const m=val("cfColorMode");obj.color_mode=["hex","swatch","both"].indexOf(m)>=0?m:"both";}
     if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;
       const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
     if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";
@@ -11797,6 +11852,7 @@ function openAttrModal(idx,list,onSave,selfType){
       if(kind==="items"){const mi=val("cfMinI").trim(),ma=val("cfMaxI").trim();if(mi!=="")obj.min_items=+mi;if(ma!=="")obj.max_items=+ma;if(mi!==""&&ma!==""&&+mi>+ma){showMsg(t("cf_err_minmax"));return;}}
       else if(kind){const mi=val("cfMin").trim(),ma=val("cfMax").trim();if(mi!=="")obj.min=(kind==="date")?mi:+mi;if(ma!=="")obj.max=(kind==="date")?ma:+ma;if(mi!==""&&ma!==""&&((kind==="date")?mi>ma:+mi>+ma)){showMsg(t("cf_err_minmax"));return;}}
       if(type==="regexp"){const pat=val("cfPattern").trim();if(pat){try{new RegExp(pat);}catch(e){showMsg(t("cf_err_pattern"));return;}obj.pattern=pat;}}
+      if(type==="color"){const m=val("cfColorMode");obj.color_mode=["hex","swatch","both"].indexOf(m)>=0?m:"both";}
       if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
       if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){showMsg(t("cf_err_colors"));return;}obj.colors=cols;}const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
       if(type==="reference"){const oty=val("cfObjectType");if(!oty){showMsg(t("cf_err_ref_type"));return;}obj.object_type=oty;const m=document.getElementById("cfMultiple");obj.multiple=!!(m&&m.checked);if(selfType&&oty===selfType)toast(t("cf_ref_self_warn"));}
@@ -12163,8 +12219,9 @@ function cfDisplayHTML(f,v,rich){
     return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
   if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];
     return '<span class="cf-chips">'+arr.map(id=>{const o=objectById(id);return '<span class="cf-chip" style="--tagc:#5b7089;--tagfg:#fff">'+esc(o?objectLabel(o):id)+'</span>';}).join("")+'</span>';}
-  if(f.type==="color"){const hex=/^#[0-9a-fA-F]{6}$/.test(v)?v:String(v);
-    return '<span class="cf-swatch" title="'+esc(hex)+'" style="background:'+esc(hex)+'"></span><span class="cf-swatch-hex">'+esc(hex)+'</span>';}
+  if(f.type==="color"){const hex=/^#[0-9a-fA-F]{6}$/.test(v)?v:String(v),mode=f.color_mode||"both";
+    const sw='<span class="cf-swatch" title="'+esc(hex)+'" style="background:'+esc(hex)+'"></span>';
+    return mode==="hex"?esc(hex):mode==="swatch"?sw:(sw+'<span class="cf-swatch-hex">'+esc(hex)+'</span>');}
   if(f.type==="image")return '<img class="cf-img-thumb" src="'+esc(v)+'" alt="">';
   return esc(cfDisplay(f,v));
 }
