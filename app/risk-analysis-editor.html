@@ -8458,12 +8458,18 @@ async function dxLogoPng(dataUri){
 /* Rapport Word natif : images de champs personnalisés embarquées. La pré-passe (buildDocx) remplit
    cette map (data-URI → {rid,w,h}) ; dxCellFor/les tableaux d'objets y lisent le rid pour émettre un
    dessin dimensionné en vignette. */
-let dxCfImgMap=null,dxCfImgId=0;
-/* Cellule-image (vignette bornée ~130×90 px) à partir d'un data-URI déjà enregistré, sinon marqueur. */
+let dxCfImgMap=null,dxCfImgId=0,dxTmplImgCtx=false;
+/* Cellule-image (vignette bornée ~130×90 px). En contexte GABARIT (bloc {{ table }}), l'image est
+   enregistrée via la file tmplImgReqs (préchargée dans tmplCfImg) ; sinon via la map du rapport natif.
+   Faute d'image enregistrée : marqueur. */
 function dxCfImageCell(uri){
-  if(uri&&dxCfImgMap&&dxCfImgMap[uri]){const im=dxCfImgMap[uri],sc=Math.min(130/im.w,90/im.h,1);
-    return {runs:dxDrawingRun(im.rid,++dxCfImgId,Math.round(im.w*sc*9525),Math.round(im.h*sc*9525)),center:true};}
-  return {txt:uri?"[image]":"—"};
+  if(!uri)return {txt:"—"};
+  const cell=(rid,idn,w,h)=>{const sc=Math.min(130/w,90/h,1);return {runs:dxDrawingRun(rid,idn,Math.round(w*sc*9525),Math.round(h*sc*9525)),center:true};};
+  if(dxTmplImgCtx){const im=tmplCfImg&&tmplCfImg[uri];   // gabarit : file tmplImgReqs (id de dessin 1000+n)
+    if(im){const n=tmplImgReqs.length+1,rid="rIdTmplImg"+n;tmplImgReqs.push({rid,bytes:im.bytes,W:im.w,H:im.h,fn:"tmplimg"+n+".png"});return cell(rid,1000+n,im.w,im.h);}
+    return {txt:"[image]"};}
+  if(dxCfImgMap&&dxCfImgMap[uri]){const im=dxCfImgMap[uri];return cell(im.rid,5000+(++dxCfImgId),im.w,im.h);}   // natif : id de dessin 5000+ (évite le logo)
+  return {txt:"[image]"};
 }
 /* ---- Tableaux de registre pilotés par les colonnes choisies (voir reportCfg) ---- */
 const DX_COLW={id:.6,risk:2,measure:2,cat:1.1,owner:1.1,initial:1.2,residual:1.2,evolution:1.1,measures:1.5,
@@ -8998,7 +9004,7 @@ async function tmplLoadDocx(file){
    section ({{ matrix }}, {{#each}}…) sont laissées intactes pour les lots suivants. */
 let tmplReport={date_format:null,filter:null}, tmplWarnings=[], tmplImgReqs=[], tmplBlocksAllowed=true, tmplLogo=null, tmplCfImg={};
 function tmplWarn(k,a){tmplWarnings.push(a!=null?t(k,a):t(k));}
-const TMPL_KNOWN_FMT={date:1,codes:1,labels:1,join:1,percent:1,upper:1,lower:1,default:1,swatch:1,badge:1};
+const TMPL_KNOWN_FMT={date:1,codes:1,labels:1,join:1,percent:1,upper:1,lower:1,default:1,swatch:1,badge:1,width:1,height:1};
 const TMPL_FILTER_FIELDS={id:1,category:1,owner:1,type:1,status:1,responsible:1,overdue:1,criticality_initial:1,criticality_residual:1};
 function tmplFilterFieldKnown(f){return f.indexOf("cf.")===0||!!TMPL_FILTER_FIELDS[f];}
 function tmplGroupFieldKnown(type,f){
@@ -9071,7 +9077,11 @@ function tmplClassify(inner){
   const sp=tmplSplitPipe(inner), path=sp.path.trim(), name=path.split(/\s+/)[0];
   if(name==="report")return {kind:"report"};
   if(TMPL_BLOCKS.indexOf(name)>=0)return {kind:"block", name};
-  if(!sp.mods && /\s\S+=/.test(path))return {kind:"unknown_block", name};   // « nom attr="…" » mais nom inconnu
+  if(!sp.mods && /\s\S+=/.test(path)){                                       // « nom attr="…" »
+    const a=tmplParseAttrs(path.slice(name.length));                         // valeur DIMENSIONNÉE (image) : nom = chemin, attributs = width/height seuls
+    if(name.indexOf(".")>=0 && Object.keys(a).length && Object.keys(a).every(k=>k==="width"||k==="height"))return {kind:"value", path:name, mods:a};
+    return {kind:"unknown_block", name};                                     // sinon : nom inconnu
+  }
   return {kind:"value", path:path, mods:tmplParseAttrs(sp.mods)};
 }
 // « JJ/MM/AAAA » etc. -> code interne de fmtDate (iso/eu/us/long).
@@ -10248,7 +10258,10 @@ function tmplTableXml(attrs,ctx){
   if(["risks","measures","links"].indexOf(src)<0){tmplWarn("tw_table_source",src);return null;}
   const rows=tmplFilteredItems(src,attrs,ctx),keys=tmplTableCols(src,attrs.columns);
   const bstyle=(attrs.badge!=null?String(attrs.badge).toLowerCase():tmplReport.badge);   // style des badges (criticité/statut) : attribut ou défaut du rapport
-  return tmplApplyTableStyle(dxReportTable(src,keys,rows,cw,bstyle),attrs.style);
+  dxTmplImgCtx=true;                                                                      // images cf du tableau enregistrées via tmplImgReqs
+  const xml=dxReportTable(src,keys,rows,cw,bstyle);
+  dxTmplImgCtx=false;
+  return tmplApplyTableStyle(xml,attrs.style);
 }
 // Parse un fragment OOXML (un ou plusieurs blocs) et l'importe dans le document cible (fragment).
 function tmplImportXml(fragXml,doc){
