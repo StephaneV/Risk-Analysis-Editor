@@ -463,6 +463,12 @@ Chaque **attribut** se décrit exactement comme un champ personnalisé (voir §1
 
 Les **instances** se gèrent dans l'onglet **Objets** (bouton **« + Ajouter une instance »**). Le formulaire de saisie est **généré automatiquement** à partir des attributs du type. À l'enregistrement, l'instance reçoit un **identifiant automatique** (plus petit numéro libre du type) et son **libellé** reflète la valeur de l'attribut désigné. Le badge de l'onglet compte les instances. Un type **sans attribut** reste utilisable : ses instances n'ont qu'un identifiant.
 
+Chaque type d'objet s'affiche dans une **carte** avec le tableau de ses instances. Trois commodités :
+
+- **Sous-onglets par type** — dès qu'il y a au moins deux types, un **sélecteur** en haut de l'onglet affiche un type à la fois (les autres sont masqués). Jusqu'à huit types, c'est un **jeu de sous-onglets** (même principe que *Paramètres*, avec l'effectif de chaque type) ; au-delà, il bascule en **liste déroulante « Type… »**, plus compacte.
+- **Tri des tableaux** — chaque colonne se **trie** au clic, avec le même cycle à **trois états** que les registres Risques/Mesures : croissant → décroissant → **ordre du fichier** (indicateur ▲/▼). Le tri est **numérique** pour les échelles et les valeurs calculées, et propre à chaque type.
+- **Import / export CSV** — chaque carte propose **Exporter (CSV)** et **Importer (CSV)**, **un fichier par type** (colonnes = `id` + attributs du type). Les instances sont **fusionnées par identifiant** ; un id inconnu crée une instance. Les attributs *calculés* sont exportés (valeur, informatif) mais **ignorés à l'import** ; les *échelles* s'exportent en libellé et se ré-importent par libellé **ou** valeur ; les *références* s'exportent en libellés d'objets et se ré-importent par libellé ou id.
+
 ### Poser une référence
 
 Le type de champ **« Référence à un objet »** est disponible partout où l'on définit des champs :
@@ -513,10 +519,11 @@ Vous pouvez y **afficher/masquer** chaque colonne (y compris les champs personna
 
 ## 17. Import et export CSV
 
-Chaque registre (Risques, Mesures, Liens) propose **Importer (CSV)** et **Exporter (CSV)**.
+Chaque registre (Risques, Mesures, Liens) propose **Importer (CSV)** et **Exporter (CSV)** ; l'onglet **Objets** propose les mêmes boutons **par type d'objet** (voir §15).
 
 - **Export.** Les en-têtes sont les **clés anglaises** du format (identiques quelle que soit la langue de l'interface), avec délimiteur `;` et BOM UTF-8 pour Excel. Des colonnes dérivées en lecture seule sont ajoutées (score/criticité pour les risques ; risques couverts pour les mesures ; libellés pour les liens). Le fichier est **ré-importable**.
 - **Import.** Les colonnes sont nommées d'après ces mêmes clés anglaises ; le séparateur est auto-détecté. Les risques et mesures sont **fusionnés par identifiant** ; les liens font l'objet d'un contrôle d'intégrité et d'une déduplication.
+- **Champs personnalisés dans les CSV.** Les colonnes de champs personnalisés portent le **libellé** du champ. Les champs **calculés** sont exportés (leur valeur) mais **jamais réimportés** — dérivés, ils se recalculent. Les **échelles** s'exportent en libellé et se ré-importent par libellé ou valeur numérique. Les **références** s'exportent en libellés d'objets et se ré-importent par libellé ou identifiant (un libellé ambigu — doublon, ou contenant une virgule — peut ne pas être reconnu).
 
 Le CSV est idéal pour préparer ou retravailler les données dans un tableur, puis les réinjecter.
 

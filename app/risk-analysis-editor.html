@@ -116,7 +116,7 @@
 
   /* ---------- Onglets ---------- */
   .tabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--border);
-    background:var(--panel);position:sticky;top:53px;z-index:40;flex-wrap:wrap}
+    background:var(--panel);position:sticky;top:var(--topbar-h,53px);z-index:40;flex-wrap:wrap}
   /* Onglets : de vrais <button> (atteignables au clavier), dépouillés de leur style natif. */
   .tab{padding:12px 16px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;
     border:0;border-bottom:2px solid transparent;user-select:none;
@@ -461,7 +461,7 @@
   .fopt-all{color:var(--muted);border-bottom:1px solid var(--border);margin-bottom:3px;padding-bottom:9px}
   .fopt-all[aria-selected="true"]{color:#fff}
   th[data-sort]{cursor:pointer;user-select:none}
-  th[data-sort]:hover{color:var(--text)}
+  th[data-sort]:hover,th[data-objsort]:hover{color:var(--text)}
   .sort-ind{font-size:10px;margin-left:4px;color:var(--accent)}
 
   /* ---------- Colonnes personnalisables des registres ---------- */
@@ -1212,7 +1212,6 @@
 
   <!-- ============ OBJETS (instances) ============ -->
   <section class="view" id="view-objects">
-    <div class="caption" data-i18n="obj_caption">Gérez les instances de vos types d'objets (biens supports, valeurs métier…). Les types se définissent dans Paramètres › Types d'objets.</div>
     <div id="objectsBody"></div>
     <div class="empty" id="objectsEmpty" style="display:none" data-i18n="obj_none">Aucun type d'objet défini. Créez-en un dans Paramètres › Types d'objets pour ajouter des instances.</div>
   </section>
@@ -1568,7 +1567,7 @@ const I18N = {
     cov_uncovered:"score {0} non couvert", cov_multi:"score {0} couvert par plusieurs niveaux",
     cov_warn_title:"⚠ Couverture des scores incomplète ou ambiguë", cov_warn_range:"(scores atteignables {0}→{1}) :",
     cov_ok:"✓ Les niveaux de criticité couvrent tous les scores atteignables ({0} → {1}) sans chevauchement.",
-    import_risks_title:"Importer des risques (CSV)", import_measures_title:"Importer des mesures (CSV)",
+    import_risks_title:"Importer des risques (CSV)", import_measures_title:"Importer des mesures (CSV)", import_obj_title:"Importer — {0} (CSV)",
     import_cols_risks:"id, label, category, description, owner, initial_probability, initial_severity, residual_probability, residual_severity",
     import_cols_measures:"id, label, type, status, responsible, due_date, cost, description",
     import_liens_title:"Importer des liens (CSV)", import_cols_liens:"risk, measure, comment",
@@ -1778,7 +1777,7 @@ const I18N = {
     obj_del_used:"Cette instance est référencée {0} fois. La supprimer et retirer ces références partout ?",
     ot_err_code_dup:"Ce code de type est déjà utilisé.", ot_err_prefix:"Le préfixe d'identifiant est obligatoire.",
     attr_new:"Nouvel attribut", attr_edit:"Modifier l'attribut",
-    tab_objects:"Objets", obj_caption:"Gérez les instances de vos types d'objets (biens supports, valeurs métier…). Les types se définissent dans Paramètres › Types d'objets.",
+    tab_objects:"Objets",
     obj_none:"Aucun type d'objet défini. Créez-en un dans Paramètres › Types d'objets pour ajouter des instances.",
     obj_add:"+ Ajouter une instance", obj_id:"Id", obj_none_type:"Aucune instance.",
     obj_new_of:"Nouvelle instance — {0}", obj_edit_of:"Modifier — {0}", obj_no_attr:"Ce type n'a aucun attribut. Ajoutez-en dans Paramètres › Types d'objets.", obj_del_confirm:"Supprimer cette instance ?",
@@ -1956,7 +1955,7 @@ const I18N = {
     cov_uncovered:"score {0} not covered", cov_multi:"score {0} covered by several levels",
     cov_warn_title:"⚠ Incomplete or ambiguous score coverage", cov_warn_range:"(reachable scores {0}→{1}):",
     cov_ok:"✓ The criticality levels cover all reachable scores ({0} → {1}) without overlap.",
-    import_risks_title:"Import risks (CSV)", import_measures_title:"Import measures (CSV)",
+    import_risks_title:"Import risks (CSV)", import_measures_title:"Import measures (CSV)", import_obj_title:"Import — {0} (CSV)",
     import_cols_risks:"id, label, category, description, owner, initial_probability, initial_severity, residual_probability, residual_severity",
     import_cols_measures:"id, label, type, status, responsible, due_date, cost, description",
     import_liens_title:"Import links (CSV)", import_cols_liens:"risk, measure, comment",
@@ -2161,7 +2160,7 @@ const I18N = {
     obj_del_used:"This instance is referenced {0} time(s). Delete it and remove those references everywhere?",
     ot_err_code_dup:"This type code is already used.", ot_err_prefix:"The id prefix is required.",
     attr_new:"New attribute", attr_edit:"Edit attribute",
-    tab_objects:"Objects", obj_caption:"Manage instances of your object types (supporting assets, business values…). Types are defined in Settings › Object types.",
+    tab_objects:"Objects",
     obj_none:"No object type defined. Create one in Settings › Object types to add instances.",
     obj_add:"+ Add an instance", obj_id:"Id", obj_none_type:"No instance.",
     obj_new_of:"New instance — {0}", obj_edit_of:"Edit — {0}", obj_no_attr:"This type has no attribute. Add some in Settings › Object types.", obj_del_confirm:"Delete this instance?",
@@ -2339,7 +2338,7 @@ const I18N = {
     cov_uncovered:"punteggio {0} non coperto", cov_multi:"punteggio {0} coperto da più livelli",
     cov_warn_title:"⚠ Copertura dei punteggi incompleta o ambigua", cov_warn_range:"(punteggi raggiungibili {0}→{1}):",
     cov_ok:"✓ I livelli di criticità coprono tutti i punteggi raggiungibili ({0} → {1}) senza sovrapposizioni.",
-    import_risks_title:"Importa rischi (CSV)", import_measures_title:"Importa misure (CSV)",
+    import_risks_title:"Importa rischi (CSV)", import_measures_title:"Importa misure (CSV)", import_obj_title:"Importa — {0} (CSV)",
     import_cols_risks:"id, label, category, description, owner, initial_probability, initial_severity, residual_probability, residual_severity",
     import_cols_measures:"id, label, type, status, responsible, due_date, cost, description",
     import_liens_title:"Importa collegamenti (CSV)", import_cols_liens:"risk, measure, comment",
@@ -2544,7 +2543,7 @@ const I18N = {
     obj_del_used:"Questa istanza è referenziata {0} volta/e. Eliminarla e rimuovere questi riferimenti ovunque?",
     ot_err_code_dup:"Questo codice di tipo è già utilizzato.", ot_err_prefix:"Il prefisso dell'identificatore è obbligatorio.",
     attr_new:"Nuovo attributo", attr_edit:"Modifica attributo",
-    tab_objects:"Oggetti", obj_caption:"Gestisci le istanze dei tuoi tipi di oggetto (beni di supporto, valori aziendali…). I tipi si definiscono in Impostazioni › Tipi di oggetto.",
+    tab_objects:"Oggetti",
     obj_none:"Nessun tipo di oggetto definito. Creane uno in Impostazioni › Tipi di oggetto per aggiungere istanze.",
     obj_add:"+ Aggiungi un'istanza", obj_id:"Id", obj_none_type:"Nessuna istanza.",
     obj_new_of:"Nuova istanza — {0}", obj_edit_of:"Modifica — {0}", obj_no_attr:"Questo tipo non ha attributi. Aggiungine in Impostazioni › Tipi di oggetto.", obj_del_confirm:"Eliminare questa istanza?",
@@ -11838,30 +11837,91 @@ document.getElementById("otTable").addEventListener("click",e=>{const b=e.target
    cfReadValue / cfValidate). Id auto par type. Création à la volée via openObjectModal(…,onSaved).
    ============================================================ */
 function refreshObjectsUI(){renderObjects();renderObjectTypes();updateBadges();}
+/* Tri des tableaux d'objets : par type, 3 états (croissant → décroissant → ordre du fichier). */
+let objSort={};
+function objSortToggle(otCode,col){
+  const st=objSort[otCode];
+  if(!st||st.col!==col)objSort[otCode]={col:col,dir:1};
+  else if(st.dir===1)objSort[otCode]={col:col,dir:-1};
+  else delete objSort[otCode];   // 3e état : ordre du fichier
+  renderObjects();
+}
+/* Valeur numérique d'un attribut d'instance (pour un tri numérique), sinon null. */
+function cfObjNumeric(a,ot,inst){
+  if(a.type==="computed"){const r=cfComputedValue(a,ot,inst);return (r.ok&&r.type==="num"&&isFinite(+r.value))?+r.value:null;}
+  if(["scale","integer","float","progress"].indexOf(a.type)>=0){const v=(inst.values||{})[a.code];return (v==null||v===""||!isFinite(+v))?null:+v;}
+  return null;
+}
+function objSortedInstances(ot){
+  const insts=objectsOfType(ot.code),st=objSort[ot.code];
+  if(!st||!st.col)return insts;
+  const attr=st.col==="id"?null:(ot.attributes||[]).find(a=>("cf:"+a.code)===st.col);
+  const key=inst=>{if(st.col==="id")return inst.id||"";if(!attr)return "";const nv=cfObjNumeric(attr,ot,inst);return nv!=null?nv:cfObjAttrText(attr,ot,inst).toLowerCase();};
+  return insts.map((inst,i)=>({inst,i,k:key(inst)})).sort((a,b)=>{
+    const na=typeof a.k==="number",nb=typeof b.k==="number";let c;
+    if(na&&nb)c=a.k-b.k; else if(na)c=-1; else if(nb)c=1; else c=String(a.k).localeCompare(String(b.k),undefined,{numeric:true});
+    return c!==0?c*st.dir:a.i-b.i;   // stable : à valeur égale, ordre du fichier
+  }).map(x=>x.inst);
+}
+/* Onglets collants : ils se collent SOUS la barre supérieure, dont la hauteur réelle varie (largeur,
+   enroulement, langue). On la mesure → --topbar-h (top des onglets), pour qu'ils ne passent pas
+   dessous au défilement. Recalcul automatique via ResizeObserver + au redimensionnement. */
+function syncStickyOffsets(){
+  const tb=document.querySelector(".topbar");
+  document.documentElement.style.setProperty("--topbar-h",(tb?tb.offsetHeight:53)+"px");
+}
+(function(){const tb=document.querySelector(".topbar"),tabs=document.getElementById("tabs");
+  if(window.ResizeObserver){const ro=new ResizeObserver(syncStickyOffsets);if(tb)ro.observe(tb);if(tabs)ro.observe(tabs);}
+  window.addEventListener("resize",syncStickyOffsets);syncStickyOffsets();})();
+/* Onglet Objets : sous-onglets (style Paramètres) — un type d'objet affiché à la fois.
+   Jusqu'à OBJ_SEG_MAX types : segmented control ; au-delà : liste déroulante « Type : […] ». */
+const OBJ_SEG_MAX=8;
+let objMode=null;
+function objTypeCardHTML(ot){
+  const insts=objSortedInstances(ot), attrs=ot.attributes||[], st=objSort[ot.code]||{};
+  const hdr=(col,label,cls)=>{const ind=st.col===col?(st.dir<0?" ▼":" ▲"):"";
+    return '<th'+(cls?' class="'+cls+'"':'')+' data-objsort="'+esc(col)+'" data-ot="'+esc(ot.code)+'" style="cursor:pointer;user-select:none">'+esc(label)+'<span class="sort-ind">'+ind+'</span></th>';};
+  let h='<div class="card">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">'+
+      '<h3 style="margin:0">'+esc(otLabel(ot))+' <span class="muted" style="font-weight:400">('+insts.length+')</span></h3>'+
+      '<div class="inline" style="gap:6px;flex:none">'+
+        (insts.length?'<button class="btn ghost sm" data-obj-export="'+esc(ot.code)+'">'+esc(t("btn_export_csv"))+'</button>':'')+
+        '<button class="btn ghost sm" data-obj-import="'+esc(ot.code)+'">'+esc(t("btn_import_csv"))+'</button>'+
+        '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button>'+
+      '</div></div>';
+  if(insts.length){
+    h+='<div class="table-scroll"><table><thead><tr>'+hdr("id",t("obj_id"),"muted")+
+      attrs.map(a=>hdr("cf:"+a.code,cfLabel(a))).join("")+'<th></th></tr></thead><tbody>';
+    insts.forEach(inst=>{
+      h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
+        attrs.map(a=>'<td data-col="cf:'+esc(a.code)+'">'+(a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):cfDisplayHTML(a,(inst.values||{})[a.code],true))+'</td>').join("")+
+        '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
+        '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }else h+='<div class="empty" style="display:block">'+esc(t("obj_none_type"))+'</div>';
+  return h+'</div>';
+}
+function setObjMode(code){objMode=code;renderObjects();}
 function renderObjects(){
   const host=document.getElementById("objectsBody"); if(!host)return; host.innerHTML="";
   const types=objectTypes();
   const emp=document.getElementById("objectsEmpty"); if(emp)emp.style.display=types.length?"none":"block";
-  types.forEach(ot=>{
-    const insts=objectsOfType(ot.code), attrs=ot.attributes||[];
-    let h='<div class="card" style="margin-bottom:14px">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">'+
-        '<h3 style="margin:0">'+esc(otLabel(ot))+' <span class="muted" style="font-weight:400">('+insts.length+')</span></h3>'+
-        '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button></div>';
-    if(insts.length){
-      h+='<div class="table-scroll"><table><thead><tr><th class="muted">'+esc(t("obj_id"))+'</th>'+
-        attrs.map(a=>'<th>'+esc(cfLabel(a))+'</th>').join("")+'<th></th></tr></thead><tbody>';
-      insts.forEach(inst=>{
-        h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
-          attrs.map(a=>'<td data-col="cf:'+esc(a.code)+'">'+(a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):cfDisplayHTML(a,(inst.values||{})[a.code],true))+'</td>').join("")+
-          '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
-          '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
-      });
-      h+='</tbody></table></div>';
-    }else h+='<div class="empty" style="display:block">'+esc(t("obj_none_type"))+'</div>';
-    h+='</div>';
-    host.insertAdjacentHTML("beforeend",h);
-  });
+  if(!types.length)return;
+  if(!types.some(ot=>ot.code===objMode))objMode=types[0].code;   // sous-onglet actif toujours valide
+  if(types.length>=2){
+    if(types.length<=OBJ_SEG_MAX){
+      // Peu de types : sous-onglets (segmented control, comme Paramètres) ; défilement horizontal au besoin.
+      host.insertAdjacentHTML("beforeend",'<div style="overflow-x:auto;margin-bottom:14px"><div class="seg" id="objSeg">'+
+        types.map(ot=>'<button type="button" data-otmode="'+esc(ot.code)+'"'+(ot.code===objMode?' class="active"':'')+'>'+esc(otLabel(ot))+' ('+objectsOfType(ot.code).length+')</button>').join("")+'</div></div>');
+    }else{
+      // Beaucoup de types : liste déroulante « Type : […] » (plus compacte que le segmented control).
+      host.insertAdjacentHTML("beforeend",'<div style="margin-bottom:14px"><label for="objTypeSel" class="muted" style="font-size:13px;margin-right:8px">'+esc(t("th_type"))+'</label>'+
+        '<select id="objTypeSel" style="width:auto;min-width:200px;max-width:360px;vertical-align:middle">'+types.map(ot=>'<option value="'+esc(ot.code)+'"'+(ot.code===objMode?' selected':'')+'>'+esc(otLabel(ot))+' ('+objectsOfType(ot.code).length+')</option>').join("")+'</select></div>');
+    }
+  }
+  host.insertAdjacentHTML("beforeend", objTypeCardHTML(objectTypeByCode(objMode)||types[0]));
+  syncSegAria();
 }
 /* Modale d'une INSTANCE. onSaved(id) : rappelé après enregistrement (création à la volée, Lot 4). */
 function openObjectModal(typeCode,id,onSaved,focusCol){
@@ -11893,8 +11953,15 @@ function openObjectModal(typeCode,id,onSaved,focusCol){
   // Focus sur le contrôle de l'attribut correspondant à la cellule cliquée (col « cf:<code> »).
   if(focusCol)modalFocusCol(root,focusCol,{});
 }
-document.getElementById("view-objects").addEventListener("click",e=>{const b=e.target.closest("button");
+document.getElementById("view-objects").addEventListener("change",e=>{if(e.target&&e.target.id==="objTypeSel")setObjMode(e.target.value);});
+document.getElementById("view-objects").addEventListener("click",e=>{
+  const th=e.target.closest("th[data-objsort]");
+  if(th){objSortToggle(th.dataset.ot,th.dataset.objsort);return;}
+  const b=e.target.closest("button");
   if(b){
+    if(b.dataset.otmode!=null)return setObjMode(b.dataset.otmode);
+    if(b.dataset.objExport!=null)return exportObjectTypeCSV(b.dataset.objExport);
+    if(b.dataset.objImport!=null)return openImportModal("obj:"+b.dataset.objImport);
     if(b.dataset.objAdd!=null)return openObjectModal(b.dataset.objAdd,null);
     if(b.dataset.objEdit!=null){const inst=objectById(b.dataset.objEdit);if(inst)openObjectModal(inst.type,inst.id);return;}
     if(b.dataset.objDel!=null){const inst=objectById(b.dataset.objDel);if(!inst)return;
@@ -12088,10 +12155,13 @@ function cfMatchItem(f,raw){const n=normV(raw);
   return (f.items||[]).find(it=>[it.code,(it.label&&it.label.fr),(it.label&&it.label.en)].some(x=>x&&normV(x)===n));}
 /* Interprète une valeur textuelle (CSV) selon le type ; renvoie la valeur interne ou undefined. */
 function cfParseValue(f,raw){
+  if(f.type==="computed")return undefined;   // champ dérivé : jamais importé (la colonne éventuelle est ignorée)
   raw=(raw==null?"":String(raw)).trim();if(raw==="")return undefined;
   if(f.type==="boolean"){return ["oui","yes","true","vrai","1","x"].includes(normV(raw));}
   if(f.type==="integer"){const v=parseInt(raw,10);return isNaN(v)?undefined:v;}
   if(f.type==="float"){const v=parseFloat(raw.replace(",","."));return isNaN(v)?undefined:v;}
+  if(f.type==="scale"){const it=(f.items||[]).find(x=>String(x.value)===raw)||(f.items||[]).find(x=>normV(cfItemLabel(x))===normV(raw));   // niveau par valeur ou par libellé
+    if(it)return it.value;const n=parseFloat(raw.replace(",","."));return isNaN(n)?undefined:n;}
   if(f.type==="select"){const it=cfMatchItem(f,raw);return it?it.code:undefined;}
   if(f.type==="checklist"||f.type==="tags"){const codes=raw.split(/[,;]/).map(s=>{const it=cfMatchItem(f,s.trim());return it?it.code:null;}).filter(Boolean);return codes.length?codes:undefined;}
   if(f.type==="progress"){const v=parseInt(String(raw).replace(/[^0-9-]/g,""),10);return isNaN(v)?undefined:Math.max(0,Math.min(100,v));}
@@ -12105,6 +12175,7 @@ function cfParseValue(f,raw){
 function cfImportCols(target,H,claimed){
   const map=[];
   customFieldsFor(target).forEach(f=>{
+    if(f.type==="computed")return;   // champ dérivé : jamais importé
     const cands=[cfLabel(f),(f.label&&f.label.fr),(f.label&&f.label.en),f.code].filter(Boolean).map(normH);
     let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
     if(col>=0){claimed.add(col);map.push({f,col});}
@@ -12986,11 +13057,61 @@ function exportLinksCSV(){
   const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
   downloadCSV(rows,base+"-links.csv");
 }
+/* ---------- Objets : export / import CSV, un fichier par type d'objet ---------- */
+function exportObjectTypeCSV(otCode){
+  const ot=objectTypeByCode(otCode); if(!ot)return;
+  const attrs=ot.attributes||[];
+  const H=["id"].concat(attrs.map(a=>cfLabel(a)));
+  const rows=[H];
+  objectsOfType(otCode).forEach(inst=>rows.push([inst.id].concat(attrs.map(a=>cfObjAttrText(a,ot,inst)))));
+  const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
+  downloadCSV(rows,base+"-"+(slug(otLabel(ot))||otCode)+".csv");
+}
+/* Colonnes d'import d'un type d'objet : attribut ↔ colonne (par libellé FR/EN/IT ou code), calculés exclus. */
+function cfObjImportCols(ot,H,claimed){
+  const map=[];
+  (ot.attributes||[]).forEach(a=>{
+    if(a.type==="computed")return;
+    const cands=[cfLabel(a),a.label&&a.label.fr,a.label&&a.label.en,a.label&&a.label.it,a.code].filter(Boolean).map(normH);
+    let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
+    if(col>=0){claimed.add(col);map.push({a,col});}
+  });
+  return map;
+}
+function analyzeObjectsCSV(otCode,text){
+  const ot=objectTypeByCode(otCode);
+  const {rows,sep}=parseCSV(text),res={sep,items:[],errors:[]};
+  if(!ot||rows.length<1){res.errors.push(t("import_no_data"));return res;}
+  const H=rows[0].map(normH);
+  const idIdx=colIndex(H,["id"]);
+  const map=cfObjImportCols(ot,H,new Set(idIdx>=0?[idIdx]:[]));
+  if(!map.length&&idIdx<0){res.errors.push(t("import_no_col"));return res;}
+  for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
+    const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[],values:{}};
+    const id=get(idIdx);if(id)p.id=id;
+    map.forEach(({a,col})=>{const v=cfParseValue(a,get(col));if(cfHasVal(v))p.values[a.code]=v;});
+    res.items.push(p);}
+  return res;
+}
+function commitObjectImport(otCode,items){
+  if(!objectTypeByCode(otCode))return {added:0,updated:0};
+  let added=0,updated=0;
+  items.forEach(p=>{if(p.errors&&p.errors.length)return;
+    const target=p.id?objectById(p.id):null;
+    if(target&&target.type===otCode){target.values=Object.assign(target.values||{},p.values||{});updated++;}
+    else{const id=(p.id&&!objectById(p.id))?p.id:newObjectId(otCode);objectsAll().push({id:id,type:otCode,values:p.values||{}});added++;}
+  });
+  return {added,updated};
+}
 function openImportModal(kind){
+  const objCode=(kind&&kind.indexOf("obj:")===0)?kind.slice(4):null;
+  const objType=objCode?objectTypeByCode(objCode):null;
   const isR=kind==="risks", isL=kind==="links";
-  let cols=isR?t("import_cols_risks"):isL?t("import_cols_liens"):t("import_cols_measures");
-  const cfT=isR?"risk":(kind==="measures"?"measure":null);
-  if(cfT){const extra=customFieldsFor(cfT).map(f=>cfLabel(f));if(extra.length)cols+=", "+extra.join(", ");}
+  let cols;
+  if(objType)cols=["id"].concat((objType.attributes||[]).filter(a=>a.type!=="computed").map(a=>cfLabel(a))).join(", ");
+  else{cols=isR?t("import_cols_risks"):isL?t("import_cols_liens"):t("import_cols_measures");
+    const cfT=isR?"risk":(kind==="measures"?"measure":null);
+    if(cfT){const extra=customFieldsFor(cfT).map(f=>cfLabel(f));if(extra.length)cols+=", "+extra.join(", ");}}
   const hint=(isL?t("import_hint_liens",esc(cols)):t("import_hint",esc(cols)))+(isR?t("import_pg_hint"):'');
   const body=
     '<div class="hint" style="margin-bottom:10px">'+hint+'</div>'+
@@ -13002,12 +13123,13 @@ function openImportModal(kind){
       '<input type="file" id="impFile" accept=".csv,text/csv,text/plain" style="display:none">'+
       '<span class="hint" id="impInfo" style="flex:1"></span></div>'+
     '<div id="impPreview"></div>';
-  const analyze=()=>{const txt=document.getElementById("impText").value;return isR?analyzeRisksCSV(txt):isL?analyzeLinksCSV(txt):analyzeMeasuresCSV(txt);};
-  const title=isR?t("import_risks_title"):isL?t("import_liens_title"):t("import_measures_title");
+  const analyze=()=>{const txt=document.getElementById("impText").value;return objCode?analyzeObjectsCSV(objCode,txt):isR?analyzeRisksCSV(txt):isL?analyzeLinksCSV(txt):analyzeMeasuresCSV(txt);};
+  const title=objType?t("import_obj_title",otLabel(objType)):isR?t("import_risks_title"):isL?t("import_liens_title"):t("import_measures_title");
   openModal(title,body,()=>{
     const res=analyze();const valid=res.items.filter(p=>!(p.errors&&p.errors.length));
     if(!valid.length){modalMsg(t("err_no_valid"));return false;}
-    if(isL){const rl=commitImportLinks(res.items);toast(t("toast_import_links",rl.added,rl.skipped));}
+    if(objCode){const {added,updated}=commitObjectImport(objCode,res.items);markDirty();refreshObjectsUI();toast(t("toast_import",added,updated));}
+    else if(isL){const rl=commitImportLinks(res.items);toast(t("toast_import_links",rl.added,rl.skipped));}
     else{const {added,updated}=commitImport(kind,res.items);toast(t("toast_import",added,updated));}
     return true;
   },t("btn_import"));
