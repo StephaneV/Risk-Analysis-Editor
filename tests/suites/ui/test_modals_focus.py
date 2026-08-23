@@ -17,6 +17,20 @@ def test_faulty_field_focus_and_mark(app):
     assert app.js("document.getElementById('modalMsg').textContent"), "message d'erreur absent"
 
 
+def test_duplicate_id_rejected_and_marked(app):
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("openRiskModal(null)")                 # nouveau risque (id frais)
+    app.set_input("#f_label", "Risque de test")   # libellé valide → l'id sera le seul fautif
+    app.set_input("#f_id", "R1")                   # id déjà pris
+    app.click("#modalOk")
+    assert app.modal_open(), "la modale doit rester ouverte sur id dupliqué"
+    assert app.js("!!document.querySelector('#f_id.field-bad')") or \
+        app.js("document.activeElement && document.activeElement.id === 'f_id'"), \
+        "le champ id dupliqué n'est ni marqué ni focalisé"
+    assert app.js("document.getElementById('modalMsg').textContent"), "message d'erreur absent"
+
+
 def test_stacked_modal_inert(app):
     app.load("ebios.rae.json")
     app.goto("risks")

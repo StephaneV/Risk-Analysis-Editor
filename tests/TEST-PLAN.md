@@ -9,12 +9,12 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 ## Bilan de couverture
 
-Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **390 tests**).
+Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **391 tests**).
 
 | Couche | Tests | Contenu |
 |---|---:|---|
 | `unit` | 53 | moteurs : expression (68 cas) + avancés (J/E/LF/MV/RH/IMP/CI), modèle/grille, i18n, champs perso (18 types), markdown, ooxml, csv |
-| `ui` | 223 | chargement fixtures + **CRUD** (risques/mesures/champs perso/objets/stats) + **tris 3 états** + **colonnes** (visibilité/ordre) + **clavier** (onglets/kanban/lignes) + **grille** (axes/score/criticité) + **import CSV** + **contraste** + **Markdown** + **autosave** + **réglages stats/radars** + **toasts** + fonctionnel (17 écrans) + smoke **fr/en/it × clair/sombre** |
+| `ui` | 224 | chargement fixtures + **CRUD** (risques/mesures/champs perso/objets/stats) + **tris 3 états** + **colonnes** (visibilité/ordre) + **clavier** (onglets/kanban/lignes) + **grille** (axes/score/criticité) + **import CSV** + **contraste** + **Markdown** + **autosave** + **réglages stats/radars** + **toasts** + fonctionnel (17 écrans) + smoke **fr/en/it × clair/sombre** |
 | `export` | 28 | Word natif + rapport éclaté, gabarit (31 cas d'erreur + conditions/prooferr/badges/lot9), **images/couleur/EMU**, Excel, CSV (+ **round-trip**) — inspection OOXML |
 | `@pdf` (lane) | 2 | conversion PDF (LibreOffice) |
 | `@visual` (lane) | 84 | baselines **pleine page** : chrome (barre haut/nav) + 11 onglets + matrices (trajectoire + 8 dispositions) + radars (4 modes) + menu Fichier + 7 sous-onglets Paramètres + 8 modales (fr clair/sombre) |
@@ -75,7 +75,7 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 |---|---|---|---|---|
 | D01 | Modale **risque / mesure / lien / objet** | ouverture au clic cellule + focus colonne, validation, enregistrement | I | ⬜ |
 | D02 | Modale **type d'objet / attribut / champ perso** | CRUD, types, validation | I | ⬜ |
-| D03 | **Champ fautif** (focus + contour rouge) | libellé manquant, id dupliqué, perso obligatoire/hors bornes | I `test_modals_focus` | ✅ (libellé manquant → focus + `.field-bad`) · ⬜ id dupliqué, bornes |
+| D03 | **Champ fautif** (focus + contour rouge) | libellé manquant, id dupliqué, perso obligatoire/hors bornes | I `test_modals_focus` | ✅ (libellé manquant, **id dupliqué** → focus/`.field-bad` + message) · ⬜ perso obligatoire/hors bornes |
 | D04 | **Empilement / focus / inert** | confirmation par-dessus modale, restitution focus, Échap | I `test_modals_focus` | ✅ (confirmation empilée → modale sous-jacente `inert`, retour actif après fermeture) · ⬜ restitution focus précis, Échap |
 | D05 | **Lightbox** image | ouverture/fermeture, depuis modale | I `test_modals_focus` | ✅ (ouverture, fermeture programmée, **fermeture par Échap**) · ⬜ depuis modale, clic fond/croix |
 | D06 | **Import CSV** (risques/mesures/liens/objets) | mappage colonnes, erreurs par ligne, commit | I `test_import_csv` | 🟡 (ouverture modale + collage + commit risques/mesures) · ⬜ mappage colonnes, erreurs par ligne, liens/objets |
