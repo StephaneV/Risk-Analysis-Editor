@@ -32,56 +32,76 @@ Seul un navigateur piloté (Playwright) permet de les exercer fidèlement **et**
 tests/
 ├── README.md                     # ce fichier
 ├── TEST-PLAN.md                  # MATRICE DE COUVERTURE : chaque écran/onglet/menu/modale → IDs de test
-├── requirements.txt              # dépendances Python (pytest, playwright)
-├── pytest.ini                    # config pytest (marqueurs, chemins)
-├── conftest.py                   # fixtures pytest partagées : browser, page, load_analysis, lang, theme
-├── run-all.py                    # point d'entrée unique : lance toutes les suites et agrège le rapport
+├── MIGRATION-travaux.md          # correspondance avec les anciens tests de travaux/ (tous supersédés)
+├── requirements.txt              # dépendances Python (pytest, playwright, Pillow)
+├── pytest.ini                    # config pytest (marqueurs, pythonpath)
+├── conftest.py                   # fixtures pytest (browser, base_url, app), options --lang/--theme,
+│                                 #   skip des lanes, écriture TEST-REPORT.md / results.json / junit.xml
+├── run-all.py                    # point d'entrée unique : lance les suites et agrège le rapport
 │
 ├── harness/                      # socle technique partagé (pas des tests)
-│   ├── browser.py                #   lance Playwright, sert/charge une copie de l'app, helpers bas niveau
-│   ├── app.py                    #   « page-object » : open_tab, open_subtab, open_menu, load_analysis, read_console…
-│   ├── asserts.js                #   helpers JS injectés (aucune erreur console, élément présent, etc.)
+│   ├── __init__.py
+│   ├── browser.py                #   serveur HTTP local + chemins du dépôt
+│   ├── app.py                    #   « page-object » : goto/settings_subtab/open_file_menu, load,
+│   │                             #   set_lang/set_theme, click/set_input/modal_open, view_screenshot, docx_bytes…
 │   ├── ooxml.py                  #   unzip + inspection docx/xlsx
-│   ├── render.py                 #   LibreOffice → PDF, pdf → png (lane PDF)
-│   └── report.py                 #   écrit TEST-REPORT.md + results.json + JUnit
+│   ├── render.py                 #   conversion .docx → PDF via LibreOffice (lane PDF)
+│   └── visual.py                 #   comparaison d'images tolérante via Pillow (lane visuelle)
 │
 ├── fixtures/                     # jeux de données de test (VERSIONNÉS)
-│   ├── analyses/                 #   analyses fictives .rae.json (vide, minimale, EBIOS, AIPD, objets,
-│   │                             #   « tous types de champs », échelles/calculés, images/couleurs,
-│   │                             #   grilles 3×3/5×5/transposée, titre long, volumineuse, fr/en/it, malformées…)
-│   ├── csv/                      #   imports risks/measures/links/objects
-│   ├── word-templates/           #   gabarits .docx (dont erreurs e01..e30) — fixtures binaires
-│   └── generators/               #   scripts qui (re)génèrent les fixtures (make-kitchen-sink.py, …)
+│   ├── README.md                 #   description de chaque fixture
+│   ├── analyses/                 #   21 analyses .rae.json (vide, minimale, ebios(-objets/-en), aipd(-objets),
+│   │   │                         #   dpia-en, si, tous-types-champs, échelles/calculés, images/couleurs,
+│   │   │                         #   grilles 3×3/5×5/transposée, titre-long, volumineuse, contrôle stats/conditions/
+│   │   │                         #   badges, configs rapport classique/éclaté…)
+│   │   └── malformes/            #     3 fichiers invalides (chemin d'erreur)
+│   ├── csv/                      #   3 imports « Système d'information »
+│   ├── word-templates/           #   14 gabarits .docx + erreurs/ (31 cas e01..e30) — fixtures binaires
+│   └── generators/
+│       └── make_fixtures.py      #   (re)génère les fixtures synthétiques, auto-validées
 │
 ├── suites/                       # les tests, par couche
 │   ├── unit/                     #   fonctions internes (JS in-page) — rapide, sans UI
-│   │   ├── test_expression.py    #     moteur de formules (généralise travaux/test-champs-calcules)
-│   │   ├── test_model.py         #     scoreOf/critFor/residual/normalize/validateStructure
-│   │   ├── test_i18n.py          #     parité des clés fr/en/it + toEN/fromEN
-│   │   ├── test_custom_fields.py #     cfControlHTML/cfDisplay/cfValidate par type
-│   │   ├── test_csv.py           #     parse/format CSV
-│   │   ├── test_ooxml.py         #     primitives dx* (Word natif)
-│   │   └── test_markdown.py
+│   │   ├── test_expression.py        #  moteur de formules (68 cas)
+│   │   ├── test_computed_advanced.py #  cas avancés J/E/LF/MV/RH/IMP/CI (porté de test-champs-calcules)
+│   │   ├── test_computed_fields.py   #  cfComputedValue sur la fixture kitchen-sink
+│   │   ├── test_model.py             #  scoreOf/critFor/residual/transpose/validateStructure
+│   │   ├── test_i18n.py              #  parité des clés fr/en/it
+│   │   ├── test_custom_fields.py     #  cfValidate/cfControlHTML par type (18)
+│   │   ├── test_csv.py               #  parseCSV
+│   │   ├── test_ooxml.py             #  primitives dx*
+│   │   └── test_markdown.py          #  rendu + sécurité
 │   ├── ui/                       #   fonctionnel : pilotage de la vraie UI
-│   │   ├── test_smoke_sweep.py   #     EXHAUSTIF : chaque écran/menu/modale s'ouvre sans erreur — fr/en/it × clair/sombre
-│   │   ├── test_presentation.py  test_risks.py  test_measures.py  test_links.py
-│   │   ├── test_objects.py       #     (généralise travaux/test-objets, rendu auto-contenu)
-│   │   ├── test_matrices.py      test_radars.py  test_stats.py  test_plan.py  test_report.py
-│   │   ├── test_settings.py      #     sous-onglets Affichage/Grille/Champs perso/Rapport/Radars/Stats
-│   │   ├── test_menus.py         #     Fichier : nouveau/charger/enregistrer/modèles/récents
-│   │   ├── test_filters_sort_columns.py
-│   │   ├── test_modals_focus.py  #     empilement, focus, inert, champ fautif
-│   │   └── test_persistence.py   #     save → reload, autosave, récents
-│   ├── export/                   #   artefacts bureautiques + inspection
-│   │   ├── test_report_html.py   test_word_native.py  test_word_template.py
-│   │   └── test_excel.py         test_csv_export.py
-│   └── visual/                   #   régression visuelle (lane optionnelle)
-│       ├── test_screenshots.py   #     captures par écran (fr/en/it × clair/sombre)
-│       └── baselines/            #     PNG de référence (VERSIONNÉS)
+│   │   ├── test_smoke_sweep.py       #  EXHAUSTIF : chaque écran/sous-onglet — fr/en/it × clair/sombre
+│   │   ├── test_fixtures_load.py     #  chargement des fixtures + rejet des malformées
+│   │   ├── test_presentation.py  test_risks.py  test_measures.py  test_links.py  test_objects.py
+│   │   ├── test_matrices.py  test_radars.py  test_stats.py  test_plan.py  test_report.py
+│   │   ├── test_settings.py          #  7 sous-onglets + création champ perso
+│   │   ├── test_menus.py             #  menu Fichier + nouvelle analyse
+│   │   ├── test_crud.py              #  CRUD : risques/mesures/champs perso/types & instances/blocs stats
+│   │   ├── test_filters_sort_columns.py  #  filtres + tri 3 états (registre & objets)
+│   │   ├── test_modals_focus.py      #  champ fautif (focus + contour rouge), lightbox
+│   │   ├── test_toasts.py            #  notifications (message, action/annulation)
+│   │   └── test_persistence.py       #  aller-retour sérialisation
+│   ├── export/                   #   artefacts bureautiques + inspection OOXML
+│   │   ├── test_word_native.py       #  buildDocx + rapport éclaté
+│   │   ├── test_word_template.py     #  moteur de gabarit (valides + 31 cas d'erreur)
+│   │   ├── test_word_template_control.py  #  conditions/prooferr/badges/lot9 (analyses de contrôle)
+│   │   ├── test_word_images.py       #  images/couleur/calculé + tailles EMU
+│   │   ├── test_excel.py             #  buildXlsx
+│   │   ├── test_csv_export.py        #  export/import + aller-retour (round-trip)
+│   │   └── test_pdf.py               #  @pdf : conversion PDF (LibreOffice)
+│   └── visual/                   #   régression visuelle (lane @visual)
+│       ├── test_screenshots.py       #  captures par écran (fr, clair/sombre)
+│       └── baselines/                #  22 PNG de référence (VERSIONNÉS)
 │
 └── _artifacts/                   # SORTIES GÉNÉRÉES — gitignoré
     └── .gitignore                #   ignore tout sauf lui-même
 ```
+
+> Le rapport agrégé (`TEST-REPORT.md`, `results.json`, `junit.xml`) est écrit par un hook de
+> `conftest.py`, pas par un module dédié. Le rendu du rapport HTML de l'application est un test
+> **UI** (`suites/ui/test_report.py`), pas un export de fichier.
 
 ---
 

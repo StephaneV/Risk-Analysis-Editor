@@ -62,3 +62,40 @@ def test_column_menu_opens(app):
     gear = app.js("()=>{const b=document.querySelector('#view-risks .colgear'); if(b){b.click(); return true;} return false;}")
     assert gear is True
     assert not app.console_errors()
+
+
+def _risk_ids(app):
+    return app.js("[...document.querySelectorAll('#risksTable tr .id-badge')].map(e=>e.textContent)")
+
+
+def test_column_sort_three_states(app):
+    """Tri de colonne à 3 états : croissant → décroissant → ordre du fichier."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.click('#risksTableEl th[data-sort="risk"]')      # 1er clic : croissant
+    st_asc = app.js("[listState.risks.sort, listState.risks.dir]")
+    asc = _risk_ids(app)
+    app.click('#risksTableEl th[data-sort="risk"]')      # 2e clic : décroissant
+    st_desc = app.js("[listState.risks.sort, listState.risks.dir]")
+    desc = _risk_ids(app)
+    app.click('#risksTableEl th[data-sort="risk"]')      # 3e clic : plus de tri
+    st_none = app.js("[listState.risks.sort, listState.risks.dir]")
+    assert st_asc == ["risk", 1] and st_desc == ["risk", -1] and st_none == ["", 1]
+    assert asc == list(reversed(desc)), "croissant devrait être l'inverse de décroissant"
+    assert not app.console_errors()
+
+
+def test_object_sort_three_states(app):
+    """Tri d'objets à 3 états (objSortToggle) : croissant → décroissant → ordre du fichier."""
+    app.load("ebios-objets.rae.json")
+    code = app.js("analyse.object_types[0].code")
+
+    def ids():
+        return app.js("c=>objSortedInstances(objectTypeByCode(c)).map(o=>o.id)", code)
+
+    file_order = ids()
+    app.js("c=>objSortToggle(c,'id')", code); asc = ids()
+    app.js("c=>objSortToggle(c,'id')", code); desc = ids()
+    app.js("c=>objSortToggle(c,'id')", code); none = ids()
+    assert asc == list(reversed(desc)), "tri objets : croissant ≠ inverse du décroissant"
+    assert none == file_order, "3e état : retour à l'ordre du fichier"
