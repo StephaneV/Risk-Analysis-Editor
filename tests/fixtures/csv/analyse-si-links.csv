@@ -1,0 +1,22 @@
+﻿risk;risk_label;measure;measure_label;comment;Effet sur le risque
+R1;Fuite de données clients;M1;Chiffrement + contrôle d'accès + DLP;Chiffrement, moindre privilège et DLP réduisent la probabilité et l'ampleur d'une fuite.;Réduit la vraisemblance, Réduit la gravité
+R1;Fuite de données clients;M4;Audit + registre des traitements + DPO;La conformité RGPD et la minimisation limitent l'exposition des données personnelles.;Réduit la gravité
+R1;Fuite de données clients;M9;Segmentation réseau + SOC 24/7;Le SOC détecte les accès anormaux et les tentatives d'exfiltration.;Détecte, Réduit la vraisemblance
+R2;Panne du serveur principal;M2;Redondance + plan de reprise (PRA);La redondance et le PRA réduisent la durée d'indisponibilité.;Réduit la gravité
+R3;Départ d'une compétence clé;M3;Documentation + binômage;Documentation et binômage réduisent la dépendance aux personnes clés.;Réduit la vraisemblance, Réduit la gravité
+R4;Non-conformité RGPD;M4;Audit + registre des traitements + DPO;Registre, DPO et audits assurent la conformité et réduisent le risque de sanction.;Réduit la vraisemblance, Réduit la gravité
+R4;Non-conformité RGPD;M1;Chiffrement + contrôle d'accès + DLP;Le chiffrement contribue à la protection des données personnelles.;Réduit la gravité
+R5;Retard d'un fournisseur critique;M5;Double sourcing + stock tampon;Double sourcing et stock tampon absorbent les ruptures d'approvisionnement.;Réduit la vraisemblance, Réduit la gravité
+R5;Retard d'un fournisseur critique;M8;Plan d'assurance sécurité fournisseurs + audits tiers;Les audits tiers et le plan d'assurance sécurité réduisent la probabilité de défaillance fournisseur.;Réduit la vraisemblance
+R7;Incendie du site;M6;Détection + extinction + assurance;"Détection et extinction limitent les dégâts ; l'assurance transfère le risque résiduel.";Réduit la gravité, Transfère
+R8;Attaque par rançongiciel;M7;Sauvegardes hors-ligne + EDR + formation;Sauvegardes hors-ligne, EDR et formation limitent l'impact et la propagation.;Réduit la vraisemblance, Réduit la gravité, Détecte
+R8;Attaque par rançongiciel;M9;Segmentation réseau + SOC 24/7;Le SOC détecte l'intrusion et accélère la réponse.;Détecte, Réduit la vraisemblance
+R8;Attaque par rançongiciel;M1;Chiffrement + contrôle d'accès + DLP;Le contrôle d'accès freine l'élévation de privilèges et la propagation.;Réduit la vraisemblance
+R9;Compromission via un prestataire;M8;Plan d'assurance sécurité fournisseurs + audits tiers;Le plan d'assurance sécurité et les audits tiers réduisent le risque de compromission via un prestataire.;Réduit la vraisemblance
+R9;Compromission via un prestataire;M9;Segmentation réseau + SOC 24/7;Le SOC surveille les accès partenaires et détecte les rebonds.;Détecte, Réduit la vraisemblance
+R10;Espionnage / exfiltration ciblée;M9;Segmentation réseau + SOC 24/7;Segmentation et SOC détectent et ralentissent l'exfiltration ciblée.;Détecte, Réduit la vraisemblance, Réduit la gravité
+R10;Espionnage / exfiltration ciblée;M1;Chiffrement + contrôle d'accès + DLP;Chiffrement et contrôle d'accès limitent la valeur des données exfiltrées.;Réduit la gravité
+R11;Déni de service (DDoS);M10;Protection anti-DDoS + CDN;La protection anti-DDoS absorbe la saturation et maintient le service.;Réduit la vraisemblance, Réduit la gravité
+R11;Déni de service (DDoS);M9;Segmentation réseau + SOC 24/7;Le SOC détecte l'attaque et coordonne la réponse.;Détecte
+R12;Erreur de configuration cloud;M11;IaC + revue de configuration + CSPM;IaC et CSPM préviennent et détectent les erreurs de configuration.;Réduit la vraisemblance, Détecte
+R12;Erreur de configuration cloud;M4;Audit + registre des traitements + DPO;Les audits vérifient la conformité des configurations.;Détecte
