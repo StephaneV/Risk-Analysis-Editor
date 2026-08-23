@@ -79,12 +79,12 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 | # | Export | À couvrir | Suite | Statut |
 |---|---|---|---|---|
-| X01 | **Rapport HTML** | sections, éclaté, périmètre filtré, détail risques (2 panneaux) | X `test_report_html` | ⬜ |
-| X02 | **Word natif** (`buildDocx`) | registres, détail, matrices (image), radars, stats, objets, champs perso (couleur/image/calculé) | X `test_word_native` | ⬜ |
-| X03 | **Word via gabarit** (`tmpl*`) | boucles, conditions, blocs (matrix/radar/table/stat), images, objets | X `test_word_template` | ⬜ |
-| X04 | Word gabarit — **30 cas d'erreur** | messages clairs, non bloquants (repris de `travaux/test-modeles-erreurs`) | X `test_word_template` | ⬜ |
-| X05 | **Excel** (`buildXlsx`) | feuilles, styles, distribution | X `test_excel` | ⬜ |
-| X06 | **CSV** export (risques/mesures/liens/objets) | colonnes, valeurs, encodage | X `test_csv_export` | ⬜ |
+| X01 | **Rapport HTML** | sections, détail risques (2 panneaux) | I `test_report` | ✅ (rendu écran, panneaux, volumineuse) · ⬜ éclaté |
+| X02 | **Word natif** (`buildDocx`) | paquet OOXML, détail, matrices (image), champs perso couleur/image | X `test_word_native` | ✅ (paquet valide, risque+panneaux, médias, image cf) · ⬜ radars/stats détaillés |
+| X03 | **Word via gabarit** (`tmpl*`) | boucles, conditions, blocs, images, objets | X `test_word_template` | ✅ (11 gabarits valides rendus) |
+| X04 | Word gabarit — **cas d'erreur** | messages non bloquants | X `test_word_template` | ✅ (**31 gabarits d'erreur → avertissement**, sans plantage) |
+| X05 | **Excel** (`buildXlsx`) | paquet OOXML, données | X `test_excel` | ✅ (paquet valide, libellé de risque présent) |
+| X06 | **CSV** export + import | colonnes/valeurs (export) ; analyse (import) | X `test_csv_export` | ✅ (export risques/mesures, import risques) · ⬜ liens/objets |
 
 ## 6. Moteurs internes (unit)
 
@@ -95,7 +95,7 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 | U03 | **Champs perso** (18 types) | `cfControlHTML` / `cfValidate` par type | U `test_custom_fields` | ✅ (validation + contrôle des 18 types) |
 | U04 | **i18n** | parité des clés fr/en/it (pas d'orphelin en/it, clés à espace de noms identiques) | U `test_i18n` | ✅ |
 | U05 | **CSV** | parse (séparateur, guillemets) | U `test_csv` | ✅ |
-| U06 | **OOXML** | primitives `dx*` (fragments bien formés) | U `test_ooxml` | 🟡 (primitives ; `buildDocx` en export) |
+| U06 | **OOXML** | primitives `dx*` (fragments bien formés) + `buildDocx`/`buildXlsx` (export) | U `test_ooxml` + X | ✅ |
 | U07 | **Markdown** | sous-ensemble GFM, sécurité (échappement, filtrage URL) | U `test_markdown` | ✅ |
 
 ## 7. Lanes optionnelles
