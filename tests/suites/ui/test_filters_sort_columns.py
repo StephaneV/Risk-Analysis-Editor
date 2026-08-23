@@ -56,6 +56,33 @@ def test_reference_field_filter(app):
     assert not app.console_errors()
 
 
+SELECT_SETUP = r"""
+() => {
+  analyse.object_types=[]; analyse.objects=[];
+  analyse.custom_fields=[{code:'zone',target:'risk',type:'select',filterable:true,label:{fr:'Zone'},
+    items:[{code:'nord',label:{fr:'Nord'}},{code:'sud',label:{fr:'Sud'}}]}];
+  analyse.risks=[
+    {id:'R1',label:'r1',initial_assessment:{probability:1,severity:1},custom:{zone:'nord'}},
+    {id:'R2',label:'r2',initial_assessment:{probability:1,severity:1},custom:{zone:'sud'}},
+    {id:'R3',label:'r3',initial_assessment:{probability:1,severity:1},custom:{zone:'nord'}}];
+  analyse.measures=[]; analyse.treatments=[];
+}
+"""
+
+
+def test_select_field_filter(app):
+    """Filtre UI sur un champ perso de type « select » (fermé) — D07."""
+    app.load("ebios.rae.json")
+    app.js(SELECT_SETUP)
+    app.goto("risks")
+    assert app.js("cfFilterableFields('risk').map(f=>f.code).indexOf('zone')>=0"), "champ select non filtrable"
+    app.js("()=>{cfFilters={zone:'nord'}; renderRisks();}")
+    ids = sorted(app.js("visibleRisks().map(r=>r.id)"))
+    app.js("()=>{cfFilters={}; renderRisks();}")
+    assert ids == ["R1", "R3"], f"filtre select nord → {ids}"
+    assert not app.console_errors()
+
+
 def test_column_menu_opens(app):
     app.load("ebios.rae.json")
     app.goto("risks")

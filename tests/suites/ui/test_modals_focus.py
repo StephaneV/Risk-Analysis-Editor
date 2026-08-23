@@ -31,6 +31,39 @@ def test_duplicate_id_rejected_and_marked(app):
     assert app.js("document.getElementById('modalMsg').textContent"), "message d'erreur absent"
 
 
+def test_cell_click_opens_modal(app):
+    """Clic sur une cellule de registre → ouverture de la fiche (D01)."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("""()=>{
+      const tr = document.querySelector('#risksTable tr');
+      const td = [...tr.querySelectorAll('td[data-col]')].find(td=>!td.querySelector('button,.pill,.row-grip'));
+      td.click();
+    }""")
+    assert app.modal_open(), "le clic sur une cellule n'a pas ouvert la fiche"
+    app.close_modals()
+
+
+def test_escape_closes_modal(app):
+    """Échap ferme la modale du dessus (D04)."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("openRiskModal(null)")
+    assert app.modal_open()
+    app.js("()=>document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))")
+    assert not app.modal_open(), "Échap n'a pas fermé la modale"
+
+
+def test_lightbox_closes_on_cross(app):
+    """Fermeture de la lightbox par le bouton croix (D05)."""
+    app.load("ebios.rae.json")
+    app.js("src=>openImageLightbox(src)", PNG)
+    assert app.js("document.getElementById('imgLightbox').classList.contains('open')")
+    clicked = app.js("()=>{const c=document.querySelector('#imgLightbox .imglb-close'); if(c){c.click(); return true;} return false;}")
+    assert clicked, "bouton de fermeture (croix) introuvable"
+    assert not app.js("document.getElementById('imgLightbox').classList.contains('open')"), "la croix n'a pas fermé la lightbox"
+
+
 def test_stacked_modal_inert(app):
     app.load("ebios.rae.json")
     app.goto("risks")

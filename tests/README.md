@@ -87,7 +87,8 @@ tests/
 │   │   ├── test_menus.py             #  menu Fichier + nouvelle analyse
 │   │   ├── test_crud.py              #  CRUD : risques/mesures/champs perso/types & instances/blocs stats
 │   │   ├── test_filters_sort_columns.py  #  filtres + tri 3 états (registre & objets)
-│   │   ├── test_modals_focus.py      #  champ fautif (focus + contour rouge), empilement/inert, lightbox
+│   │   ├── test_modals_focus.py      #  champ fautif, id dupliqué, clic cellule, empilement/inert, Échap, lightbox
+│   │   ├── test_a11y.py              #  ARIA tablist/tab + aria-selected suit l'onglet actif
 │   │   ├── test_toasts.py            #  notifications (message, action/annulation)
 │   │   └── test_persistence.py       #  aller-retour sérialisation + sauvegarde auto (IndexedDB)
 │   ├── export/                   #   artefacts bureautiques + inspection OOXML

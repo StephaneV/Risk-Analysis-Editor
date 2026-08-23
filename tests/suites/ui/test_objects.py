@@ -12,6 +12,32 @@ def test_object_types_and_instances(app):
     assert not app.console_errors()
 
 
+OBJ_ROUNDTRIP = r"""
+code => {
+  const q = s => { s = String(s==null?'':s); return /[",;\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const ids0 = objectsOfType(code).map(o=>o.id).sort();
+  let cap=null; const dl=window.downloadCSV; window.downloadCSV=(rows)=>{cap={rows};};
+  exportObjectTypeCSV(code); window.downloadCSV=dl;
+  const text = cap.rows.map(r=>r.map(q).join(',')).join('\n');
+  analyse.objects = objectsAll().filter(o=>o.type!==code);   // vide les instances de ce type
+  const an = analyzeObjectsCSV(code, text);
+  const res = commitObjectImport(code, an.items);
+  return { ids0, ids1: objectsOfType(code).map(o=>o.id).sort(), errors: an.errors, added: res.added };
+}
+"""
+
+
+def test_object_type_csv_roundtrip(app):
+    """Export CSV d'un type d'objet → réimport : les instances (ids) sont préservées (T05)."""
+    app.load("ebios-objets.rae.json")
+    code = app.js("analyse.object_types[0].code")
+    r = app.js(OBJ_ROUNDTRIP, code)
+    assert r["ids0"], "le type choisi n'a aucune instance"
+    assert not r["errors"], f"erreurs d'import objets : {r['errors']}"
+    assert r["ids1"] == r["ids0"], "aller-retour CSV objets : instances altérées"
+    assert not app.console_errors()
+
+
 def test_open_instance_modal(app):
     app.load("ebios-objets.rae.json")
     code = app.js("analyse.object_types[0].code")

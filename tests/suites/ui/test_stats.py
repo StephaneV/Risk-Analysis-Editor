@@ -44,3 +44,21 @@ def test_stats_settings_toggle_and_reset(app):
     assert app.js("s=>statsCfg().find(x=>x.id===s).on !== false", r["id"]) == r["on"], \
         "la réinitialisation n'a pas restauré l'état par défaut du bloc"
     assert not app.console_errors()
+
+
+def test_stats_reorder(app):
+    """Réordonnancement d'un bloc stats via statsMove (alternative au glisser) — T08."""
+    app.load("ebios.rae.json")
+    app.settings_subtab("stats")
+    before = app.js("statsCfg().map(b=>b.id)")
+    if len(before) < 3:
+        pytest.skip("pas assez de blocs pour réordonner")
+    # place le 1er bloc juste avant le 3e
+    r = app.js("""()=>{
+      const ids = statsCfg().map(b=>b.id);
+      statsMove(ids[0], ids[2]);
+      return statsCfg().map(b=>b.id);
+    }""")
+    assert r != before, "statsMove n'a pas changé l'ordre"
+    assert sorted(r) == sorted(before), "statsMove a ajouté/perdu un bloc"
+    assert not app.console_errors()
