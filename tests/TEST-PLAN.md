@@ -95,7 +95,7 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 | X03 | **Word via gabarit** (`tmpl*`) | boucles, conditions, blocs, images, objets | X `test_word_template` | ✅ (11 gabarits valides rendus) |
 | X04 | Word gabarit — **cas d'erreur** | messages non bloquants | X `test_word_template` | ✅ (**31 gabarits d'erreur → avertissement**, sans plantage) |
 | X05 | **Excel** (`buildXlsx`) | paquet OOXML, données | X `test_excel` | ✅ (paquet valide, libellé de risque présent) |
-| X06 | **CSV** export + import | colonnes/valeurs (export) ; analyse (import) | X `test_csv_export` | ✅ (export risques/mesures, import risques) · ⬜ liens/objets |
+| X06 | **CSV** export + import + **round-trip** | export, analyse, et **aller-retour export→réimport** | X `test_csv_export` (+ objets : `test_computed_advanced` IMP3) | ✅ round-trip risques/mesures/liens + objets |
 
 ## 6. Moteurs internes (unit)
 

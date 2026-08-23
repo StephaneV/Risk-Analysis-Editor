@@ -40,3 +40,53 @@ def test_import_risks_csv(app):
     res = app.js("t => analyzeRisksCSV(t)", text)
     assert res["items"], "aucun risque analysé depuis le CSV"
     assert isinstance(res["errors"], list)
+
+
+# --- Aller-retour export -> réimport (round-trip) ------------------------------------------
+
+# Construit le texte CSV depuis les lignes capturées, vide la collection, réimporte, compare.
+ROUNDTRIP = r"""
+kind => {
+  const q = s => { s = String(s==null?'':s); return /[",;\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const dumpR = () => analyse.risks.map(r=>({id:r.id,label:r.label,cat:r.category||'',
+      ip:r.initial_assessment.probability, ig:r.initial_assessment.severity,
+      rp:(r.residual_assessment||r.initial_assessment).probability, rg:(r.residual_assessment||r.initial_assessment).severity}))
+      .sort((a,b)=>a.id<b.id?-1:1);
+  const dumpM = () => analyse.measures.map(m=>({id:m.id,label:m.label,type:m.type||'',status:m.status||'',
+      resp:m.responsible||'',due:m.due_date||'',cost:m.cost==null?'':String(m.cost)})).sort((a,b)=>a.id<b.id?-1:1);
+  const dumpL = () => analyse.treatments.map(t=>t.risk+'|'+t.measure).sort();
+  const capture = fn => { let cap=null; const dl=window.downloadCSV; window.downloadCSV=(rows)=>{cap={rows};};
+      fn(); window.downloadCSV=dl; return cap.rows.map(row=>row.map(q).join(',')).join('\n'); };
+
+  if (kind === 'risks') {
+    const before = dumpR();
+    const text = capture(exportRisksCSV);
+    analyse.risks = []; analyse.treatments = [];
+    const an = analyzeRisksCSV(text); commitImport('risks', an.items);
+    return { before, after: dumpR(), errors: an.errors };
+  }
+  if (kind === 'measures') {
+    const before = dumpM();
+    const text = capture(exportMeasuresCSV);
+    analyse.measures = []; analyse.treatments = [];
+    const an = analyzeMeasuresCSV(text); commitImport('measures', an.items);
+    return { before, after: dumpM(), errors: an.errors };
+  }
+  if (kind === 'links') {
+    const before = dumpL();
+    const text = capture(exportLinksCSV);
+    analyse.treatments = [];                    // on garde risques & mesures
+    const an = analyzeLinksCSV(text); commitImportLinks(an.items);
+    return { before, after: dumpL(), errors: an.errors };
+  }
+}
+"""
+
+
+@pytest.mark.parametrize("kind", ["risks", "measures", "links"])
+def test_csv_export_reimport_roundtrip(app, kind):
+    app.load("ebios.rae.json")
+    r = app.js(ROUNDTRIP, kind)
+    assert not r["errors"], f"{kind} : erreurs d'import {r['errors']}"
+    assert r["before"], f"{kind} : rien à exporter"
+    assert r["after"] == r["before"], f"{kind} : données altérées par l'aller-retour"
