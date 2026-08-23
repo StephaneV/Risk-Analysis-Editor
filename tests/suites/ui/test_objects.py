@@ -50,6 +50,20 @@ def test_create_instance_via_modal(app):
     assert not app.console_errors()
 
 
+def test_type_cascade_delete_referential_integrity(app):
+    """Suppression d'un type d'objet : cascade sur ses instances ET purge des champs de référence
+    qui le ciblent (intégrité référentielle)."""
+    app.load("tous-types-champs.rae.json")   # type 'srv' + objets SRV1/SRV2 + champ ref 'f_ref' -> srv
+    assert app.js("analyse.objects.filter(o=>o.type==='srv').length") == 2
+    assert app.js("!!analyse.custom_fields.find(f=>f.code==='f_ref')")
+    app.js("()=>{const i=analyse.object_types.findIndex(t=>t.code==='srv'); deleteObjectType(i);}")
+    app.top_modal_confirm()   # confirmer la cascade
+    assert app.js("!analyse.object_types.find(t=>t.code==='srv')"), "type non supprimé"
+    assert app.js("analyse.objects.filter(o=>o.type==='srv').length") == 0, "instances non supprimées"
+    assert app.js("!analyse.custom_fields.find(f=>f.code==='f_ref')"), "champ de référence non purgé"
+    assert not app.console_errors()
+
+
 def test_modal_cleanup_no_phantom(app):
     """Contexte fantôme : l'éditeur de type (id #otLabel/#cfCode) ne doit pas laisser de résidu DOM
     qui entrerait en collision avec la modale d'instance ouverte ensuite."""

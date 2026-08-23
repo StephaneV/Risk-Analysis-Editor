@@ -1,0 +1,327 @@
+{
+ "format": "risk-analysis-editor",
+ "version": "1.0",
+ "metadata": {
+  "title": "Analyse de test — conditions",
+  "description": "Analyse contrôlée pour tester les opérateurs des conditions.",
+  "author": "Alice Martin",
+  "organization": "OrgTest SA",
+  "scope": "Périmètre de test",
+  "methodology_reference": "REF-2024-CNIL",
+  "revision": "2.0",
+  "status": "approved",
+  "language": "fr",
+  "created_at": "2024-01-15",
+  "updated_at": "2024-06-30"
+ },
+ "grid": {
+  "vertical_axis": {
+   "label": "Vraisemblance",
+   "levels": [
+    {
+     "value": 1,
+     "label": "Négligeable",
+     "description": "Il ne semble pas possible pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+    },
+    {
+     "value": 2,
+     "label": "Limitée",
+     "description": "Il semble difficile pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+    },
+    {
+     "value": 3,
+     "label": "Importante",
+     "description": "Il semble possible pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+    },
+    {
+     "value": 4,
+     "label": "Maximale",
+     "description": "Il semble extrêmement facile pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+    }
+   ]
+  },
+  "horizontal_axis": {
+   "label": "Gravité",
+   "levels": [
+    {
+     "value": 1,
+     "label": "Négligeable",
+     "description": "Les personnes concernées ne seront pas impactées ou pourraient connaître quelques désagréments, qu'elles surmonteront sans difficulté."
+    },
+    {
+     "value": 2,
+     "label": "Limitée",
+     "description": "Les personnes concernées pourraient connaître des désagréments significatifs, qu'elles pourront surmonter malgré quelques difficultés."
+    },
+    {
+     "value": 3,
+     "label": "Importante",
+     "description": "Les personnes concernées pourraient connaître des conséquences significatives, qu'elles devraient pouvoir surmonter, mais avec de réelles et sérieuses difficultés."
+    },
+    {
+     "value": 4,
+     "label": "Maximale",
+     "description": "Les personnes concernées pourraient connaître des conséquences significatives, voire irrémédiables, qu'elles pourraient ne pas surmonter."
+    }
+   ]
+  },
+  "score": {
+   "method": "product"
+  },
+  "criticality_levels": [
+   {
+    "code": "negligeable",
+    "label": "Négligeable",
+    "score_min": 1,
+    "score_max": 3,
+    "color": "#2e9e5b",
+    "acceptance": "acceptable",
+    "order": 1,
+    "description": "Risque négligeable : acceptable en l'état ; les mesures existantes suffisent, à réexaminer lors des revues de l'AIPD."
+   },
+   {
+    "code": "limite",
+    "label": "Limité",
+    "score_min": 4,
+    "score_max": 6,
+    "color": "#e0b93a",
+    "acceptance": "tolerable",
+    "order": 2,
+    "description": "Risque limité : tolérable ; des mesures complémentaires sont recommandées selon une analyse coût/bénéfice."
+   },
+   {
+    "code": "important",
+    "label": "Important",
+    "score_min": 7,
+    "score_max": 11,
+    "color": "#e6862e",
+    "acceptance": "to_treat",
+    "order": 3,
+    "description": "Risque important : doit être traité ; des mesures doivent être planifiées et suivies avant ou pendant la mise en œuvre du traitement."
+   },
+   {
+    "code": "maximal",
+    "label": "Maximal",
+    "score_min": 12,
+    "score_max": 16,
+    "color": "#d64545",
+    "acceptance": "unacceptable",
+    "order": 4,
+    "description": "Risque maximal : inacceptable ; traitement prioritaire requis. En l'absence de réduction suffisante, une consultation préalable de la CNIL peut être nécessaire."
+   }
+  ]
+ },
+ "custom_fields": [
+  {
+   "code": "source",
+   "target": "risk",
+   "type": "tags",
+   "multiple": true,
+   "order": 1,
+   "label": {
+    "fr": "Source de risque"
+   },
+   "items": [
+    {
+     "code": "interne",
+     "label": {
+      "fr": "Personnel interne"
+     },
+     "color": "#922b21"
+    },
+    {
+     "code": "externe",
+     "label": {
+      "fr": "Attaquant externe"
+     },
+     "color": "#c0392b"
+    },
+    {
+     "code": "soustraitant",
+     "label": {
+      "fr": "Sous-traitant"
+     },
+     "color": "#1abc9c"
+    }
+   ]
+  },
+  {
+   "code": "priorite",
+   "target": "risk",
+   "type": "select",
+   "order": 2,
+   "label": {
+    "fr": "Priorité"
+   },
+   "items": [
+    {
+     "code": "haute",
+     "label": {
+      "fr": "Haute"
+     }
+    },
+    {
+     "code": "basse",
+     "label": {
+      "fr": "Basse"
+     }
+    }
+   ]
+  }
+ ],
+ "risks": [
+  {
+   "id": "R1",
+   "label": "Risque un",
+   "category": "Accès",
+   "owner": "Bob",
+   "description": "desc1",
+   "comment": "",
+   "initial_assessment": {
+    "probability": 4,
+    "severity": 4
+   },
+   "residual_assessment": {
+    "probability": 2,
+    "severity": 4
+   },
+   "custom": {
+    "source": [
+     "interne"
+    ],
+    "priorite": "haute"
+   }
+  },
+  {
+   "id": "R2",
+   "label": "Risque deux",
+   "category": "Fuite",
+   "owner": "",
+   "description": "desc2",
+   "comment": "",
+   "initial_assessment": {
+    "probability": 2,
+    "severity": 2
+   },
+   "residual_assessment": {
+    "probability": 2,
+    "severity": 2
+   },
+   "custom": {
+    "source": [
+     "externe"
+    ],
+    "priorite": "basse"
+   }
+  },
+  {
+   "id": "R3",
+   "label": "Risque trois",
+   "category": "Accès",
+   "owner": "Bob",
+   "description": "desc3",
+   "comment": "",
+   "initial_assessment": {
+    "probability": 3,
+    "severity": 3
+   },
+   "residual_assessment": {
+    "probability": 1,
+    "severity": 2
+   },
+   "custom": {
+    "source": [
+     "interne",
+     "externe"
+    ],
+    "priorite": "haute"
+   }
+  },
+  {
+   "id": "R4",
+   "label": "Risque quatre",
+   "category": "Fuite",
+   "owner": "Dora",
+   "description": "desc4",
+   "comment": "",
+   "initial_assessment": {
+    "probability": 1,
+    "severity": 1
+   },
+   "residual_assessment": {
+    "probability": 1,
+    "severity": 1
+   },
+   "custom": {
+    "source": [
+     "soustraitant"
+    ]
+   }
+  }
+ ],
+ "measures": [
+  {
+   "id": "M1",
+   "label": "Mesure un",
+   "type": "technical",
+   "status": "implemented",
+   "responsible": "Carol",
+   "due_date": "2020-01-01",
+   "cost": "",
+   "description": "",
+   "comment": "",
+   "custom": {}
+  },
+  {
+   "id": "M2",
+   "label": "Mesure deux",
+   "type": "organizational",
+   "status": "planned",
+   "responsible": "",
+   "due_date": "2030-01-01",
+   "cost": "",
+   "description": "",
+   "comment": "",
+   "custom": {}
+  },
+  {
+   "id": "M3",
+   "label": "Mesure trois",
+   "type": "preventive",
+   "status": "in_progress",
+   "responsible": "Carol",
+   "due_date": "2020-06-01",
+   "cost": "",
+   "description": "",
+   "comment": "",
+   "custom": {}
+  }
+ ],
+ "treatments": [
+  {
+   "risk": "R1",
+   "measure": "M1",
+   "comment": "",
+   "custom": {}
+  },
+  {
+   "risk": "R1",
+   "measure": "M2",
+   "comment": "",
+   "custom": {}
+  },
+  {
+   "risk": "R3",
+   "measure": "M3",
+   "comment": "",
+   "custom": {}
+  },
+  {
+   "risk": "R2",
+   "measure": "M2",
+   "comment": "",
+   "custom": {}
+  }
+ ],
+ "custom": {}
+}

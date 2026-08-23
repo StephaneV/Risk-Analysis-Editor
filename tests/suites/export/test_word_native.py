@@ -23,6 +23,10 @@ def _docx(app):
     return base64.b64decode(app.js(DOCX_B64))
 
 
+def document_xml_of(app):
+    return ooxml.document_xml(_docx(app))
+
+
 def test_docx_is_valid_package(app):
     app.load("ebios.rae.json")
     data = _docx(app)
@@ -46,6 +50,26 @@ def test_docx_embeds_matrix_images(app):
     app.load("ebios.rae.json")
     media = ooxml.media_names(_docx(app))
     assert len(media) >= 1, "aucune image (matrice) embarquée dans le Word"
+
+
+def _page_breaks(xml):
+    return xml.count('<w:br w:type="page"/>') + xml.count("<w:pageBreakBefore/>")
+
+
+def test_report_exploded_has_more_chapters(app):
+    """Rapport éclaté (par risque) vs classique : plus de sauts de page (un chapitre par groupe)."""
+    app.load("rapport-classique.rae.json")
+    classic = _page_breaks(document_xml_of(app))
+    app.load("rapport-eclate-risque.rae.json")
+    exploded = _page_breaks(document_xml_of(app))
+    assert exploded > classic, f"éclaté ({exploded}) devrait avoir plus de sauts que classique ({classic})"
+
+
+def test_report_exploded_by_category_renders(app):
+    app.load("rapport-eclate-categorie.rae.json")
+    xml = document_xml_of(app)
+    assert "<w:document" in xml and _page_breaks(xml) >= 1
+    assert not app.console_errors()
 
 
 def test_docx_with_color_and_image_fields(app):
