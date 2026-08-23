@@ -102,8 +102,8 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 | # | Lane | À couvrir | Suite | Statut |
 |---|---|---|---|---|
-| P01 | **PDF** (LibreOffice) | exports Word/rapport convertis en PDF, contrôle de non-plantage | X `@pdf` | ⏭️ |
-| Vz1 | **Visuel** (captures) | baseline par écran, fr/en/it × clair/sombre, tolérance | V `@visual` | ⏭️ |
+| P01 | **PDF** (LibreOffice) | Word natif + gabarit convertis en PDF, non-plantage | X `test_pdf` `@pdf` | ✅ (2 conversions) |
+| Vz1 | **Visuel** (captures) | baseline par écran, tolérance | V `test_screenshots` `@visual` | ✅ (22 baselines : 11 vues × fr clair/sombre) · ⬜ en/it |
 
 ---
 

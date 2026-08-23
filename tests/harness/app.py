@@ -145,3 +145,16 @@ class App:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.page.screenshot(path=str(path), full_page=True)
         return path
+
+    def view_screenshot(self, view):
+        """Capture PNG (octets) de la section de vue active — déterministe (bornée à l'élément)."""
+        return self.page.locator(f"#view-{view}").screenshot()
+
+    def docx_bytes(self):
+        """Octets du .docx produit par buildDocx() (via base64)."""
+        import base64
+        b64 = self.page.evaluate(
+            "async () => { const bl=await buildDocx(); const u8=new Uint8Array(await bl.arrayBuffer());"
+            " let s=''; const CH=0x8000; for(let i=0;i<u8.length;i+=CH) s+=String.fromCharCode.apply(null,u8.subarray(i,i+CH));"
+            " return btoa(s); }")
+        return base64.b64decode(b64)

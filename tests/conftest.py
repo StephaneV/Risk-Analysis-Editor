@@ -65,7 +65,8 @@ def browser(_pw):
 def app(browser, base_url, request):
     lang = request.config.getoption("--lang")
     theme = request.config.getoption("--theme")
-    context = browser.new_context(reduced_motion="reduce", color_scheme=theme)
+    context = browser.new_context(reduced_motion="reduce", color_scheme=theme,
+                                   viewport={"width": 1280, "height": 900}, device_scale_factor=1)
     page = context.new_page()
     a = App(page, base_url).open()
     a.set_lang(lang).set_theme(theme)

@@ -1,4 +1,6 @@
-# Dépendances Python de la suite de tests (cœur).
+# Dépendances Python de la suite de tests.
 # Après installation : `python -m playwright install chromium`
 pytest>=8
 playwright>=1.40
+# Lane visuelle (@visual) uniquement — comparaison de captures :
+Pillow>=10

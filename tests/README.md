@@ -92,13 +92,13 @@ tests/
 pip install -r tests/requirements.txt
 python -m playwright install chromium
 
-# 2) (Lane PDF, optionnelle) LibreOffice + poppler installés sur la machine
-#    - LibreOffice fournit `soffice`
-#    - poppler fournit `pdftoppm`
+# 2) (Lane PDF, optionnelle) LibreOffice installé sur la machine (fournit `soffice`)
+# 3) (Lane visuelle) Pillow — déjà dans requirements.txt ; captures via Playwright (pas de poppler requis)
 ```
 
-Le **cœur** (unit + UI + export/OOXML) ne dépend que de **Python + Playwright + Chromium**. Les lanes **PDF** et
-**visuelle** ont des prérequis plus lourds et sont **isolées** (voir §5).
+Le **cœur** (unit + UI + export/OOXML) ne dépend que de **Python + Playwright + Chromium**. La lane **PDF**
+requiert **LibreOffice** ; la lane **visuelle** requiert **Pillow** (dans `requirements.txt`) et compare des
+**captures Playwright** (aucun rendu PDF ni poppler). Les deux lanes sont **isolées** (voir §5).
 
 ---
 
