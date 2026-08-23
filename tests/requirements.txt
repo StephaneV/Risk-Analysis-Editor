@@ -1,0 +1,4 @@
+# Dépendances Python de la suite de tests (cœur).
+# Après installation : `python -m playwright install chromium`
+pytest>=8
+playwright>=1.40
