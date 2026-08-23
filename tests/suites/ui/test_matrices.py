@@ -35,3 +35,22 @@ def test_grid_3x3_and_5x5(app):
         app.goto("matrices")
         assert _cells(app) > 0, f"{fx} : aucune cellule"
         assert not app.console_errors()
+
+
+def test_all_arrangements_render(app):
+    app.load("ebios.rae.json")
+    app.goto("matrices")
+    codes = app.js("ARRANGEMENT_CODES")
+    for code in codes:
+        app.js("c=>{setArrangement(c); renderMatrices();}", code)
+        assert _cells(app) > 0, f"disposition {code} : aucune cellule"
+        assert not app.console_errors(), f"disposition {code} : erreur console"
+
+
+def test_export_svg_side_and_trajectory(app):
+    app.load("ebios.rae.json")
+    app.goto("matrices")
+    side = app.js("reportMatrixSVG('side').indexOf('<svg')")
+    traj = app.js("reportMatrixSVG('traj').indexOf('<svg')")
+    assert side >= 0 and traj >= 0, "export SVG des matrices vide"
+    assert not app.console_errors()

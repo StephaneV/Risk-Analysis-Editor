@@ -150,6 +150,10 @@ class App:
         """Capture PNG (octets) de la section de vue active — déterministe (bornée à l'élément)."""
         return self.page.locator(f"#view-{view}").screenshot()
 
+    def element_screenshot(self, selector):
+        """Capture PNG (octets) d'un élément quelconque (menu, carte de modale…)."""
+        return self.page.locator(selector).screenshot()
+
     def docx_bytes(self):
         """Octets du .docx produit par buildDocx() (via base64)."""
         import base64

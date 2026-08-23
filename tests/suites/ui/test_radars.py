@@ -26,3 +26,21 @@ def test_change_eval_mode(app):
     for mode in ("both-side", "both-over", "initial", "residual"):
         app.js("m=>{radarState.eval=m; renderRadars();}", mode)
         assert not app.console_errors(), f"radar eval={mode}"
+
+
+def test_change_dimension(app):
+    # kitchen-sink : des champs perso servent de dimensions radar alternatives
+    app.load("tous-types-champs.rae.json")
+    app.goto("radars")
+    opts = app.js("[...document.getElementById('radarDim').options].map(o=>o.value)")
+    assert len(opts) >= 2, "aucune dimension alternative dans le sélecteur"
+    for val in opts:
+        app.set_input("#radarDim", val)     # passe par le gestionnaire de changement de l'appli
+        assert not app.console_errors(), f"radar dim={val}"
+
+
+def test_radar_export_svg(app):
+    app.load("ebios.rae.json")
+    app.goto("radars")
+    out = app.js("buildRadarExportSVG(radarState)")   # renvoie {svg, W, H}
+    assert isinstance(out, dict) and "<svg" in out.get("svg", ""), "export SVG du radar vide"

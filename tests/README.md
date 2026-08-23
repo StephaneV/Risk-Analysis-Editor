@@ -76,13 +76,18 @@ tests/
 │   │   ├── test_fixtures_load.py     #  chargement des fixtures + rejet des malformées
 │   │   ├── test_presentation.py  test_risks.py  test_measures.py  test_links.py  test_objects.py
 │   │   ├── test_matrices.py  test_radars.py  test_stats.py  test_plan.py  test_report.py
-│   │   ├── test_settings.py          #  7 sous-onglets + création champ perso
+│   │   ├── test_settings.py          #  7 sous-onglets + champ perso + mode contraste
+│   │   ├── test_report_settings.py   #  Paramètres › Rapport : sections (on/off), structure
+│   │   ├── test_grid.py              #  grille : niveaux d'axe, méthode de score, criticité
+│   │   ├── test_columns.py           #  colonnes des registres : visibilité + ordre
+│   │   ├── test_keyboard.py          #  navigation clavier (onglets, kanban, réordonnancement)
+│   │   ├── test_import_csv.py        #  modale d'import CSV (risques/mesures)
 │   │   ├── test_menus.py             #  menu Fichier + nouvelle analyse
 │   │   ├── test_crud.py              #  CRUD : risques/mesures/champs perso/types & instances/blocs stats
 │   │   ├── test_filters_sort_columns.py  #  filtres + tri 3 états (registre & objets)
-│   │   ├── test_modals_focus.py      #  champ fautif (focus + contour rouge), lightbox
+│   │   ├── test_modals_focus.py      #  champ fautif (focus + contour rouge), empilement/inert, lightbox
 │   │   ├── test_toasts.py            #  notifications (message, action/annulation)
-│   │   └── test_persistence.py       #  aller-retour sérialisation
+│   │   └── test_persistence.py       #  aller-retour sérialisation + sauvegarde auto (IndexedDB)
 │   ├── export/                   #   artefacts bureautiques + inspection OOXML
 │   │   ├── test_word_native.py       #  buildDocx + rapport éclaté
 │   │   ├── test_word_template.py     #  moteur de gabarit (valides + 31 cas d'erreur)
@@ -92,8 +97,9 @@ tests/
 │   │   ├── test_csv_export.py        #  export/import + aller-retour (round-trip)
 │   │   └── test_pdf.py               #  @pdf : conversion PDF (LibreOffice)
 │   └── visual/                   #   régression visuelle (lane @visual)
-│       ├── test_screenshots.py       #  captures par écran (fr, clair/sombre)
-│       └── baselines/                #  22 PNG de référence (VERSIONNÉS)
+│       ├── test_screenshots.py       #  les 11 onglets (fr, clair/sombre)
+│       ├── test_visual_ui.py         #  menu Fichier, 7 sous-onglets Paramètres, 8 modales
+│       └── baselines/                #  54 PNG de référence (VERSIONNÉS)
 │
 └── _artifacts/                   # SORTIES GÉNÉRÉES — gitignoré
     └── .gitignore                #   ignore tout sauf lui-même

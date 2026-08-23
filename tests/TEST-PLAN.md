@@ -9,15 +9,15 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 ## Bilan de couverture
 
-Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **301 tests**).
+Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **356 tests**).
 
 | Couche | Tests | Contenu |
 |---|---:|---|
 | `unit` | 53 | moteurs : expression (68 cas) + avancés (J/E/LF/MV/RH/IMP/CI), modèle/grille, i18n, champs perso (18 types), markdown, ooxml, csv |
-| `ui` | 196 | chargement fixtures + **CRUD** (risques/mesures/champs perso/objets/stats) + **tris 3 états** + **toasts** + fonctionnel (15 écrans) + smoke **fr/en/it × clair/sombre** |
+| `ui` | 219 | chargement fixtures + **CRUD** (risques/mesures/champs perso/objets/stats) + **tris 3 états** + **colonnes** (visibilité/ordre) + **clavier** (onglets/kanban/lignes) + **grille** (axes/score/criticité) + **import CSV** + **contraste** + **Markdown** + **autosave** + **toasts** + fonctionnel (17 écrans) + smoke **fr/en/it × clair/sombre** |
 | `export` | 28 | Word natif + rapport éclaté, gabarit (31 cas d'erreur + conditions/prooferr/badges/lot9), **images/couleur/EMU**, Excel, CSV (+ **round-trip**) — inspection OOXML |
 | `@pdf` (lane) | 2 | conversion PDF (LibreOffice) |
-| `@visual` (lane) | 22 | baselines par écran (fr clair/sombre) |
+| `@visual` (lane) | 54 | baselines : 11 onglets + menu Fichier + 7 sous-onglets Paramètres + 8 modales (fr clair/sombre) |
 
 Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[MIGRATION-travaux.md](MIGRATION-travaux.md)**.
 
@@ -27,13 +27,13 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 
 | # | Onglet (`data-view`) | Éléments / interactions à couvrir | Suite | Statut |
 |---|---|---|---|---|
-| T01 | **presentation** | métadonnées, champs perso d'analyse, Enregistrer | I `test_presentation` | ✅ (méta, édition titre, champs perso) · ⬜ aperçu Markdown |
-| T02 | **risks** | registre, fiche, CRUD | I `test_risks` + `test_crud` | ✅ (compte, modale, création, **duplication, édition, suppression+undo**) · ⬜ réordonnancement lignes (glisser/clavier) |
+| T01 | **presentation** | métadonnées, champs perso d'analyse, Enregistrer | I `test_presentation` | ✅ (méta, édition titre, champs perso, **aperçu Markdown**) |
+| T02 | **risks** | registre, fiche, CRUD | I `test_risks` + `test_crud` + `test_keyboard` | ✅ (compte, modale, création, **duplication, édition, suppression+undo, réordonnancement clavier**) · ⬜ réordonnancement glisser |
 | T03 | **measures** | idem risques | I `test_measures` + `test_crud` | ✅ (compte, modale, création, **duplication, suppression+undo**) |
 | T04 | **links** | Associations (tableau croisé) / Détails | I `test_links` | ✅ (grille croisée, sous-onglet Détails) · ⬜ clavier, confirmation débrayable |
 | T05 | **objects** | types, instances, références, CSV par type | I `test_objects` + `test_crud` + `test_filters_sort_columns` | ✅ (types/instances, **création/édition/suppression d'instance**, cascade, **tri 3 états**, filtre référence) · ⬜ import/export CSV par type (UI) |
-| T06 | **matrices** | initial/résiduel/accolés/trajectoire, titre long | I `test_matrices` | ✅ (rendu, trajectoire, titre long, grilles 3×3/5×5) · ⬜ dispositions, glisser, export |
-| T07 | **radars** | dimension, métrique, évaluation | I `test_radars` | ✅ (métriques, modes d'éval) · ⬜ dimension, infobulle, export |
+| T06 | **matrices** | initial/résiduel/accolés/trajectoire, titre long | I `test_matrices` | ✅ (rendu, trajectoire, titre long, grilles 3×3/5×5, **8 dispositions**, **export SVG**) · ⬜ glisser (placement manuel) |
+| T07 | **radars** | dimension, métrique, évaluation | I `test_radars` | ✅ (métriques, modes d'éval, **dimension** dont champ `scale`, **export SVG**) · ⬜ infobulle |
 | T08 | **stats** | blocs, graphiques | I `test_stats` + `test_crud` | ✅ (rendu, statCounters, **ajout/suppression de bloc**) · ⬜ déplacement (glisser) |
 | T09 | **plan** | échéancier / statut / responsable | I `test_plan` | ✅ (3 présentations) · ⬜ retards, clavier |
 | T10 | **report** | sections, détail (panneaux), éclaté | I `test_report` | ✅ (sections, panneaux Initial/Résiduel, volumineuse) · ⬜ éclaté, impression |
@@ -44,11 +44,11 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 
 | # | Sous-onglet | À couvrir | Statut |
 |---|---|---|---|
-| S01 | **display** (Affichage) | thème, langue, contraste WCAG, options d'affichage | ⬜ |
-| S02 | **grid** (Grille de cotation) | axes, criticité, méthode de score, transposition, tailles 3×3/5×5 | 🟡 (transposition + grilles 3×3/5×5 via fixtures/unit) · ⬜ édition UI des niveaux |
+| S01 | **display** (Affichage) | thème, langue, contraste WCAG, options d'affichage | ✅ (thème/langue via smoke, **contraste WCAG** `test_settings`) · ⬜ options d'affichage fines |
+| S02 | **grid** (Grille de cotation) | axes, criticité, méthode de score, transposition, tailles 3×3/5×5 | ✅ (**édition UI** : ajout/suppr. niveau d'axe, libellé, méthode de score, ajout/suppr. criticité — `test_grid` ; transposition + grilles 3×3/5×5 via fixtures/unit) |
 | S03 | **fields** (Champs personnalisés) | CRUD d'un champ perso, types, bornes, filtrable, réordonnancement | ✅ (**création, édition, réordonnancement, suppression** + validation 18 types en unit) |
 | S04 | **objtypes** (Types d'objets) | CRUD d'un type, attributs, préfixe d'id | ✅ (**réordonnancement, suppression en cascade**, ouverture éditeur) · ⬜ création UI d'un type |
-| S05 | **report** (Rapport) | sections & ordre, page de garde, en-tête/pied, colonnes, matrices, orientation, éclaté | ⬜ |
+| S05 | **report** (Rapport) | sections & ordre, page de garde, en-tête/pied, colonnes, matrices, orientation, éclaté | 🟡 (**activation/désactivation de section** + reflet dans `reportCfg`, présence des contrôles de structure — `test_report_settings`) · ⬜ ordre (glisser), page de garde, en-tête/pied, orientation |
 | S06 | **stats** (Statistiques) | blocs par défaut, cibles | ⬜ |
 | S07 | **radars** (Radars) | poids pondérés, rendu (luminosité/saturation/contour/pas/couleurs) | ⬜ |
 | — | smoke | chaque sous-onglet s'ouvre sans erreur console | ✅ **fr/en/it × clair/sombre** |
@@ -76,13 +76,13 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 | D01 | Modale **risque / mesure / lien / objet** | ouverture au clic cellule + focus colonne, validation, enregistrement | I | ⬜ |
 | D02 | Modale **type d'objet / attribut / champ perso** | CRUD, types, validation | I | ⬜ |
 | D03 | **Champ fautif** (focus + contour rouge) | libellé manquant, id dupliqué, perso obligatoire/hors bornes | I `test_modals_focus` | ✅ (libellé manquant → focus + `.field-bad`) · ⬜ id dupliqué, bornes |
-| D04 | **Empilement / focus / inert** | confirmation par-dessus modale, restitution focus, Échap | I `test_modals_focus` | ⬜ |
+| D04 | **Empilement / focus / inert** | confirmation par-dessus modale, restitution focus, Échap | I `test_modals_focus` | ✅ (confirmation empilée → modale sous-jacente `inert`, retour actif après fermeture) · ⬜ restitution focus précis, Échap |
 | D05 | **Lightbox** image | ouverture/fermeture, depuis modale | I `test_modals_focus` | ✅ (ouverture/fermeture) · ⬜ depuis modale, fond/Échap/croix |
-| D06 | **Import CSV** (risques/mesures/liens/objets) | mappage colonnes, erreurs par ligne, commit | I/X | ⬜ |
+| D06 | **Import CSV** (risques/mesures/liens/objets) | mappage colonnes, erreurs par ligne, commit | I `test_import_csv` | 🟡 (ouverture modale + collage + commit risques/mesures) · ⬜ mappage colonnes, erreurs par ligne, liens/objets |
 | D07 | **Filtres** (natifs + champs perso) | application, recherche, reset | I `test_filters_sort_columns` | ✅ (catégorie, recherche) · ⬜ champs perso, propagation liens |
-| D08 | **Tri** (3 états) & **colonnes perso** (menu, ordre, épingle) | | I `test_filters_sort_columns` | ✅ (**tri 3 états** registre + objets, menu colonnes) · ⬜ ordre/épingle des colonnes |
-| D09 | **Glisser-déposer** (kanban, lignes, pastilles matrices) + alternatives clavier | | I | ⬜ |
-| D10 | **Persistance** save→reload, **autosave**, restauration | | I `test_persistence` | ✅ (aller-retour sérialisation) · ⬜ autosave, restauration, récents |
+| D08 | **Tri** (3 états) & **colonnes perso** (menu, ordre, épingle) | | I `test_filters_sort_columns` + `test_columns` | ✅ (**tri 3 états** registre + objets, menu colonnes, **visibilité + ordre** des colonnes) · ⬜ épingle |
+| D09 | **Glisser-déposer** (kanban, lignes, pastilles matrices) + alternatives clavier | | I `test_keyboard` | ✅ (**alternatives clavier** : kanban Ctrl+flèches, réordonnancement de ligne, nav onglets/menu) · ⬜ glisser-déposer souris, pastilles matrices |
+| D10 | **Persistance** save→reload, **autosave**, restauration | | I `test_persistence` | ✅ (aller-retour sérialisation, **autosave IndexedDB** write→read→clear) · ⬜ restauration au démarrage, récents |
 | D11 | **i18n** parité + rendu fr/en/it | | U `test_i18n` + I | ✅ (parité unit + rendu smoke fr/en/it) |
 | D12 | **Accessibilité** (ARIA tablist, roving tabindex, focus visible) | | I | ⬜ |
 | D13 | **Toasts** (notification, action/annulation) | message affiché, bouton d'action déclenche le callback + masque, toast réel sur suppression | I `test_toasts` | ✅ |
@@ -115,7 +115,7 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 | # | Lane | À couvrir | Suite | Statut |
 |---|---|---|---|---|
 | P01 | **PDF** (LibreOffice) | Word natif + gabarit convertis en PDF, non-plantage | X `test_pdf` `@pdf` | ✅ (2 conversions) |
-| Vz1 | **Visuel** (captures) | baseline par écran, tolérance | V `test_screenshots` `@visual` | ✅ (22 baselines : 11 vues × fr clair/sombre) · ⬜ en/it |
+| Vz1 | **Visuel** (captures) | baseline par écran, tolérance | V `test_screenshots` + `test_visual_ui` `@visual` | ✅ (54 baselines : 11 onglets + menu Fichier + 7 sous-onglets Paramètres + 8 modales, × fr clair/sombre) · ⬜ en/it |
 
 ---
 

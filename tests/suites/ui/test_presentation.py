@@ -24,3 +24,18 @@ def test_analysis_custom_fields_render(app):
     app.load("tous-types-champs.rae.json")
     app.goto("presentation")
     assert app.js("document.querySelectorAll('#cfAnalysisValues [data-cf]').length") >= 1
+
+
+def test_markdown_preview_toggle(app):
+    app.load("ebios.rae.json")
+    app.goto("presentation")
+    app.js("()=>{const ta=document.getElementById('mDesc'); ta.value='# Titre\\n\\n**gras** et *italique*';}")
+    # activer l'aperçu
+    app.js("()=>document.getElementById('mDesc')._mdSetMode(true)")
+    assert app.js("()=>document.getElementById('mDesc')._mdPreview()") is True
+    html = app.js("()=>document.getElementById('mDesc').closest('.md-wrap').querySelector('.md-preview').innerHTML")
+    assert "<strong>" in html or "<h1" in html, "l'aperçu Markdown n'est pas rendu"
+    # revenir en édition
+    app.js("()=>document.getElementById('mDesc')._mdSetMode(false)")
+    assert app.js("()=>document.getElementById('mDesc')._mdPreview()") is False
+    assert not app.console_errors()

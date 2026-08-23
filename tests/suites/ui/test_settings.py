@@ -16,6 +16,17 @@ def test_subtab_renders(app, pmode):
     assert not app.console_errors()
 
 
+def test_contrast_mode_apply(app):
+    app.load("ebios.rae.json")
+    app.settings_subtab("display")
+    app.set_input("#cfgContraste", "wcag")
+    assert app.js("document.documentElement.getAttribute('data-contrast')") == "wcag"
+    assert app.js("labelContrast()") == "wcag"
+    app.set_input("#cfgContraste", "classic")
+    assert app.js("document.documentElement.getAttribute('data-contrast')") == "classic"
+    assert not app.console_errors()
+
+
 def test_add_custom_field_via_modal(app):
     app.load("ebios.rae.json")
     app.settings_subtab("fields")

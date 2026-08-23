@@ -17,6 +17,21 @@ def test_faulty_field_focus_and_mark(app):
     assert app.js("document.getElementById('modalMsg').textContent"), "message d'erreur absent"
 
 
+def test_stacked_modal_inert(app):
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("openRiskModal(null)")
+    assert app.js("!document.getElementById('modalBg').hasAttribute('inert')"), \
+        "la modale seule ne doit pas être inerte"
+    app.js("()=>confirmModal('Confirmer ?', ()=>{})")   # confirmation empilée au-dessus
+    assert app.js("document.getElementById('modalBg').hasAttribute('inert')"), \
+        "la modale sous-jacente doit devenir inerte"
+    app.top_modal_confirm()                              # répondre à la confirmation
+    assert app.js("!document.getElementById('modalBg').hasAttribute('inert')"), \
+        "la modale doit redevenir active après fermeture de la confirmation"
+    app.close_modals()
+
+
 def test_lightbox_opens_and_closes(app):
     app.load("ebios.rae.json")
     app.js("src=>openImageLightbox(src)", PNG)
