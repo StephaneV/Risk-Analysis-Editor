@@ -104,6 +104,36 @@ class App:
         self.page.evaluate("document.getElementById('btnFile').click()")
         return self
 
+    # ---- pilotage DOM ----
+    def click(self, selector):
+        self.page.evaluate("s=>{const e=document.querySelector(s);if(!e)throw new Error('absent: '+s);e.click();}", selector)
+        return self
+
+    def set_input(self, selector, value):
+        self.page.evaluate(
+            "([s,v])=>{const e=document.querySelector(s);if(!e)throw new Error('absent: '+s);e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));}",
+            [selector, value])
+        return self
+
+    def modal_open(self):
+        return self.page.evaluate("()=>{const m=document.getElementById('modalBg');return !!(m&&m.classList.contains('open'));}")
+
+    def top_modal_click(self, label):
+        """Clique le bouton portant `label` dans la modale du dessus (statique ou empilée)."""
+        self.page.evaluate(
+            "lbl=>{const layers=[...document.querySelectorAll('body > .modal-bg.open')];const top=layers[layers.length-1];const b=[...top.querySelectorAll('footer button')].find(x=>x.textContent.trim()===lbl);if(!b)throw new Error('bouton \"'+lbl+'\" absent');b.click();}",
+            label)
+        return self
+
+    def top_modal_confirm(self):
+        """Clique le bouton primaire (dernier du pied) de la modale empilée du dessus."""
+        self.page.evaluate("()=>{const l=[...document.querySelectorAll('body > .modal-bg.open')];const top=l[l.length-1];const bs=[...top.querySelectorAll('footer button')];if(!bs.length)throw new Error('aucun bouton');bs[bs.length-1].click();}")
+        return self
+
+    def close_modals(self):
+        self.page.evaluate("()=>{try{[...document.querySelectorAll('body > .modal-bg')].forEach(bg=>{if(bg.id!=='modalBg')bg.remove();});if(typeof dynModals!=='undefined')dynModals.length=0;if(typeof closeModal==='function')closeModal();}catch(e){}}")
+        return self
+
     # ---- utilitaires ----
     def js(self, expr, arg=None):
         return self.page.evaluate(expr, arg) if arg is not None else self.page.evaluate(expr)

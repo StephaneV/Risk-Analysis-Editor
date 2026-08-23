@@ -1,0 +1,28 @@
+"""Paramètres : rendu des 7 sous-onglets + création d'un champ personnalisé."""
+import pytest
+
+from harness.app import SETTINGS_SUBTABS
+
+pytestmark = pytest.mark.ui
+
+
+@pytest.mark.parametrize("pmode", SETTINGS_SUBTABS)
+def test_subtab_renders(app, pmode):
+    app.load("ebios.rae.json")
+    app.settings_subtab(pmode)
+    # le panneau du sous-onglet existe et la vue a du contenu
+    assert app.js("m=>!!document.querySelector('#view-settings [data-pmode=\"'+m+'\"]')", pmode)
+    assert app.js("document.getElementById('view-settings').querySelectorAll('*').length") > 15
+    assert not app.console_errors()
+
+
+def test_add_custom_field_via_modal(app):
+    app.load("ebios.rae.json")
+    app.settings_subtab("fields")
+    before = app.js("(analyse.custom_fields||[]).length")
+    app.js("openCustomFieldModal(null)")
+    app.set_input("#cfLab", "Champ de test")
+    app.set_input("#cfCode", "champ_de_test")
+    app.click("#modalOk")   # « Créer »
+    assert app.js("(analyse.custom_fields||[]).length") == before + 1
+    assert not app.console_errors()

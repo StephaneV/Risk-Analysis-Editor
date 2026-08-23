@@ -16,18 +16,18 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 | # | Onglet (`data-view`) | Éléments / interactions à couvrir | Suite | Statut |
 |---|---|---|---|---|
-| T01 | **presentation** | métadonnées (titre/auteur/orga/périmètre/réf/révision/statut/description Markdown), champs perso d'analyse, aperçu Markdown (double-clic), Enregistrer/Annuler de l'onglet | I `test_presentation` | ⬜ |
-| T02 | **risks** | registre, ouverture fiche, création/duplication/suppression+undo, tri colonnes, recherche, colonnes perso, réordonnancement lignes, pastilles mesures | I `test_risks` | ⬜ |
-| T03 | **measures** | idem risques (type/statut/responsable/échéance/coût), pastilles risques couverts | I `test_measures` | ⬜ |
-| T04 | **links** | sous-onglets **Associations** (tableau croisé, clavier) / **Détails** (registre + champs perso de lien), confirmation d'association débrayable | I `test_links` | ⬜ |
-| T05 | **objects** | navigation par type (segments/déroulant selon nb), tri 3 états, création/édition/suppression d'instance, références, import/export CSV par type | I `test_objects` | ⬜ |
-| T06 | **matrices** | initial/résiduel/accolés/trajectoire, dispositions (grid/cluster/manual…), glisser pastille, export PNG/SVG/copie, titre long (retour ligne) | I `test_matrices` | ⬜ |
-| T07 | **radars** | dimension, métrique (moyenne/max/somme/pondérée/nombre), évaluation (accolés/superposés), axes vides, infobulle criticité, export | I `test_radars` | ⬜ |
-| T08 | **stats** | blocs (compteurs/répartition/coverage/custom/num_agg/object_*), graphiques (donut/pie), glisser-réordonner, redimensionner, ajout/suppression bloc | I `test_stats` | ⬜ |
-| T09 | **plan** | échéancier / statut (kanban) / responsable, retards, cartes éditables, alternatives clavier | I `test_plan` | ⬜ |
-| T10 | **report** | aperçu, sections, structure (complet/filtré/éclaté), impression (mécanisme) | I `test_report` | ⬜ |
-| T11 | **settings** | 7 sous-onglets (voir §2) | I `test_settings` | 🟡 (ouverture) |
-| — | **smoke sweep** | **chaque** onglet s'ouvre et se rend sans erreur console | I `test_smoke_sweep` | 🟡 fr/clair + en/sombre (→ +it, +light/dark) |
+| T01 | **presentation** | métadonnées, champs perso d'analyse, Enregistrer | I `test_presentation` | ✅ (méta, édition titre, champs perso) · ⬜ aperçu Markdown |
+| T02 | **risks** | registre, ouverture fiche, création… | I `test_risks` | ✅ (compte, modale, création) · ⬜ duplication/suppression+undo, réordonnancement |
+| T03 | **measures** | idem risques | I `test_measures` | ✅ (compte, modale, création) |
+| T04 | **links** | Associations (tableau croisé) / Détails | I `test_links` | ✅ (grille croisée, sous-onglet Détails) · ⬜ clavier, confirmation débrayable |
+| T05 | **objects** | types, instances, références, CSV par type | I `test_objects` | 🟡 (types/instances, modales instance & type, référence) · ⬜ CRUD complet, tri 3 états, CSV |
+| T06 | **matrices** | initial/résiduel/accolés/trajectoire, titre long | I `test_matrices` | ✅ (rendu, trajectoire, titre long, grilles 3×3/5×5) · ⬜ dispositions, glisser, export |
+| T07 | **radars** | dimension, métrique, évaluation | I `test_radars` | ✅ (métriques, modes d'éval) · ⬜ dimension, infobulle, export |
+| T08 | **stats** | blocs, graphiques | I `test_stats` | 🟡 (rendu non vide) · ⬜ ajout/suppression/déplacement de bloc |
+| T09 | **plan** | échéancier / statut / responsable | I `test_plan` | ✅ (3 présentations) · ⬜ retards, clavier |
+| T10 | **report** | sections, détail (panneaux), éclaté | I `test_report` | ✅ (sections, panneaux Initial/Résiduel, volumineuse) · ⬜ éclaté, impression |
+| T11 | **settings** | 7 sous-onglets (voir §2) | I `test_settings` | ✅ (rendu des 7 sous-onglets + création champ perso) |
+| — | **smoke sweep** | **chaque** onglet s'ouvre sans erreur console | I `test_smoke_sweep` | ✅ **fr/en/it × clair/sombre** |
 
 ## 2. Sous-onglets Paramètres (7, `data-pmode`)
 
@@ -40,21 +40,21 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 | S05 | **report** (Rapport) | sections & ordre, page de garde, en-tête/pied, colonnes, matrices, orientation, éclaté | ⬜ |
 | S06 | **stats** (Statistiques) | blocs par défaut, cibles | ⬜ |
 | S07 | **radars** (Radars) | poids pondérés, rendu (luminosité/saturation/contour/pas/couleurs) | ⬜ |
-| — | smoke | chaque sous-onglet s'ouvre sans erreur console | 🟡 fr/clair + en/sombre |
+| — | smoke | chaque sous-onglet s'ouvre sans erreur console | ✅ **fr/en/it × clair/sombre** |
 
 ## 3. Menus & barre supérieure
 
 | # | Élément | À couvrir | Suite | Statut |
 |---|---|---|---|---|
-| M01 | Menu **Fichier** : Nouvelle analyse | confirmation, remise à zéro | I `test_menus` | ⬜ |
+| M01 | Menu **Fichier** : ouverture + Nouvelle analyse | confirmation, remise à zéro | I `test_menus` | ✅ (ouverture menu, reset) |
 | M02 | Fichier : Charger `.rae.json` | sélection + `applyLoadedData` | I `test_menus` | ⬜ |
 | M03 | Fichier : Enregistrer / Enregistrer sous | mécanisme (sans clic natif) | I `test_menus` | ⬜ |
 | M04 | Fichier : Enregistrer comme modèle | squelette | I `test_menus` | ⬜ |
 | M05 | Fichier : Exporter Word (natif) | → §5 | X | ⬜ |
 | M06 | Fichier : Exporter avec un modèle Word | → §5 | X | ⬜ |
 | M07 | Fichier : Exporter Excel / CSV | → §5 | X | ⬜ |
-| M08 | Sélecteur **langue** (fr/en/it) | bascule + `toEN`/`fromEN` | I/U | 🟡 |
-| M09 | Sélecteur **thème** (clair/sombre) | bascule `data-theme` | I | 🟡 |
+| M08 | Sélecteur **langue** (fr/en/it) | bascule d'interface | I/U | ✅ (smoke fr/en/it) |
+| M09 | Sélecteur **thème** (clair/sombre) | bascule `data-theme` | I | ✅ (smoke clair/sombre) |
 | M10 | Écran d'**accueil** | démo, charger, nouvelle, récents | I `test_menus` | ⬜ |
 | M11 | **Fichiers récents** | IndexedDB, ouverture, vidage | I `test_persistence` | ⬜ |
 
@@ -64,15 +64,15 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 |---|---|---|---|---|
 | D01 | Modale **risque / mesure / lien / objet** | ouverture au clic cellule + focus colonne, validation, enregistrement | I | ⬜ |
 | D02 | Modale **type d'objet / attribut / champ perso** | CRUD, types, validation | I | ⬜ |
-| D03 | **Champ fautif** (focus + contour rouge) | libellé manquant, id dupliqué, perso obligatoire/hors bornes | I `test_modals_focus` | ⬜ |
+| D03 | **Champ fautif** (focus + contour rouge) | libellé manquant, id dupliqué, perso obligatoire/hors bornes | I `test_modals_focus` | ✅ (libellé manquant → focus + `.field-bad`) · ⬜ id dupliqué, bornes |
 | D04 | **Empilement / focus / inert** | confirmation par-dessus modale, restitution focus, Échap | I `test_modals_focus` | ⬜ |
-| D05 | **Lightbox** image | ouverture/fermeture (fond/Échap/croix), depuis modale | I | ⬜ |
+| D05 | **Lightbox** image | ouverture/fermeture, depuis modale | I `test_modals_focus` | ✅ (ouverture/fermeture) · ⬜ depuis modale, fond/Échap/croix |
 | D06 | **Import CSV** (risques/mesures/liens/objets) | mappage colonnes, erreurs par ligne, commit | I/X | ⬜ |
-| D07 | **Filtres** (natifs + champs perso) | puces, application, propagation le long des liens, reset | I `test_filters_sort_columns` | ⬜ |
-| D08 | **Tri** (3 états) & **colonnes perso** (menu, ordre, épingle) | | I `test_filters_sort_columns` | ⬜ |
+| D07 | **Filtres** (natifs + champs perso) | application, recherche, reset | I `test_filters_sort_columns` | ✅ (catégorie, recherche) · ⬜ champs perso, propagation liens |
+| D08 | **Tri** (3 états) & **colonnes perso** (menu, ordre, épingle) | | I `test_filters_sort_columns` | 🟡 (ouverture menu colonnes) · ⬜ tri, ordre, épingle |
 | D09 | **Glisser-déposer** (kanban, lignes, pastilles matrices) + alternatives clavier | | I | ⬜ |
-| D10 | **Persistance** save→reload, **autosave**, restauration | | I `test_persistence` | ⬜ |
-| D11 | **i18n** parité + rendu fr/en/it | | U `test_i18n` + I | 🟡 |
+| D10 | **Persistance** save→reload, **autosave**, restauration | | I `test_persistence` | ✅ (aller-retour sérialisation) · ⬜ autosave, restauration, récents |
+| D11 | **i18n** parité + rendu fr/en/it | | U `test_i18n` + I | ✅ (parité unit + rendu smoke fr/en/it) |
 | D12 | **Accessibilité** (ARIA tablist, roving tabindex, focus visible) | | I | ⬜ |
 
 ## 5. Exports bureautiques

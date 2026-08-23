@@ -5,12 +5,12 @@ La matrice complète (fr/en/it × clair/sombre) sera étendue en Phase 4.
 """
 import pytest
 
-from harness.app import VIEWS, SETTINGS_SUBTABS
+from harness.app import VIEWS, SETTINGS_SUBTABS, LANGS, THEMES
 
 pytestmark = pytest.mark.ui
 
-# (lang, theme) — sous-ensemble pilote ; élargir à it/light etc. en Phase 4.
-COMBOS = [("fr", "light"), ("en", "dark")]
+# Matrice complète : fr/en/it × clair/sombre.
+COMBOS = [(l, t) for l in LANGS for t in THEMES]
 
 
 def _prepare(app, lang, theme, fixture="ebios.rae.json"):
