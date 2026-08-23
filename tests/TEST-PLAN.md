@@ -9,19 +9,17 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 ## Bilan de couverture
 
-Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **259 tests**).
+Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **283 tests**).
 
 | Couche | Tests | Contenu |
 |---|---:|---|
-| `unit` | 52 | moteurs : expression (68 cas), calculés+référence, modèle/grille, i18n, champs perso (18 types), markdown, ooxml, csv |
-| `ui` — fixtures | 18 | chargement des 15 fixtures + rejet des malformées |
-| `ui` — fonctionnel | 45 | 15 écrans (registres, modales, matrices/radars/stats/plan, rapport, paramètres, menus, filtres, focus, persistance) |
-| `ui` — smoke | 108 | chaque onglet + sous-onglet × **fr/en/it × clair/sombre**, sans erreur console |
-| `export` | 12 | Word natif + gabarit (31 cas d'erreur), Excel, CSV — inspection OOXML |
+| `unit` | 53 | moteurs : expression (68 cas) + avancés (J/E/LF/MV/RH/IMP/CI), modèle/grille, i18n, champs perso (18 types), markdown, ooxml, csv |
+| `ui` | 181 | 18 (chargement fixtures) + ~55 (fonctionnel, 15 écrans) + 108 (smoke **fr/en/it × clair/sombre**) |
+| `export` | 25 | Word natif + rapport éclaté, gabarit (31 cas d'erreur + conditions/prooferr/badges/lot9), **images/couleur/EMU**, Excel, CSV — inspection OOXML |
 | `@pdf` (lane) | 2 | conversion PDF (LibreOffice) |
 | `@visual` (lane) | 22 | baselines par écran (fr clair/sombre) |
 
-Trous connus (⬜/🟡 ci-dessous) et migration depuis `travaux/` : voir **[MIGRATION-travaux.md](MIGRATION-travaux.md)**.
+Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[MIGRATION-travaux.md](MIGRATION-travaux.md)**.
 
 ---
 
