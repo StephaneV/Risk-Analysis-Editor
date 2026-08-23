@@ -35,3 +35,32 @@ def test_reference_field_present(app):
     app.load("tous-types-champs.rae.json")
     refs = app.js("analyse.risks[0].custom.f_ref")
     assert isinstance(refs, list) and len(refs) == 2
+
+
+def test_create_instance_via_modal(app):
+    app.load("tous-types-champs.rae.json")
+    before = app.js("(analyse.objects||[]).length")
+    app.js("openObjectModal('srv', null)")
+    # remplir l'attribut texte « nom » puis créer
+    app.js("()=>{const i=document.querySelector('body > .modal-bg.open [data-cf=\"nom\"] [data-cfv]');"
+           " if(!i)throw new Error('champ nom absent'); i.value='Serveur créé par test';"
+           " i.dispatchEvent(new Event('input',{bubbles:true}));}")
+    app.top_modal_confirm()   # « Créer »
+    assert app.js("(analyse.objects||[]).length") == before + 1
+    assert not app.console_errors()
+
+
+def test_modal_cleanup_no_phantom(app):
+    """Contexte fantôme : l'éditeur de type (id #otLabel/#cfCode) ne doit pas laisser de résidu DOM
+    qui entrerait en collision avec la modale d'instance ouverte ensuite."""
+    app.load("ebios-objets.rae.json")
+    app.js("openObjectTypeModal(0)")
+    assert app.js("!!document.getElementById('otLabel')")
+    app.close_modals()
+    assert app.js("!document.getElementById('otLabel')"), "résidu DOM de la modale de type"
+    code = app.js("analyse.object_types[0].code")
+    app.js("c=>openObjectModal(c, null)", code)
+    assert app.js("!!document.querySelector('body > .modal-bg.open')")
+    # aucun champ fantôme de l'éditeur de type dans la modale d'instance
+    assert app.js("!document.getElementById('otLabel')")
+    app.close_modals()

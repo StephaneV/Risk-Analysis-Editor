@@ -16,7 +16,7 @@ avant suppression) · ⬜ non migré (garder tel quel pour l'instant).
 |---|---|---|---|
 | `test-modeles-erreurs/` (30+1 cas) | `export/test_word_template` (les 31 gabarits → avertissement) + gabarits repris dans `fixtures/word-templates/erreurs/` | ✅ **supersédé** | rien (éventuellement garder `cas-d-erreurs.md` comme doc) |
 | `test-champs-calcules/` (127 cas) | `unit/test_expression` (68 purs) + `unit/test_computed_advanced` (53 : J/E/LF/MV/RH/IMP/CI, JS rejoué à l'identique) + `unit/test_computed_fields` (4) | ✅ **supersédé** (127/127 portés et verts) | rien |
-| `test-objets/` (sections A–N) | `ui/test_objects` + `ui/test_persistence` + `unit/test_computed_fields` | 🟡 **partiel** | **contexte fantôme** (collisions d'id entre modales), **CRUD** instance complet, **intégrité référentielle**, **filtres sur références** |
+| `test-objets/` (sections A–N) | `ui/test_objects` (types/instances, modales, **création d'instance**, **nettoyage anti-fantôme**, référence) + `ui/test_persistence` + `unit/test_computed_advanced` (RH traversée + IMP round-trip objet) | 🟡 **quasi complet** | **intégrité référentielle** (suppression d'un objet référencé), **filtres sur références** |
 | `test-rapport-word/` (classique + éclaté) | `export/test_word_native` (natif) + `ui/test_report` | 🟡 **partiel** | rapport **éclaté** (par catégorie / par risque) |
 | `test-rapport-images/` (images/couleur/calculé) | `export/test_word_native` (présence de médias + image cf) | 🟡 **partiel** | **tailles EMU** exactes (`width`/`height`), modes de rendu couleur (both/swatch/hex) |
 | `test-stats/` (stats en gabarit) | `export/test_word_template` (rendu des gabarits `modele-stats*`) | 🟡 **partiel** | assertions de **mise en page** / combinaisons de graphiques |
