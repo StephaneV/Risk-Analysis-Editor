@@ -90,13 +90,13 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 | # | Domaine | À couvrir | Suite | Statut |
 |---|---|---|---|---|
-| U01 | **Moteur d'expression** | lexer, précédence, fonctions, IF, dates, texte, erreurs, agrégats, traversée réf., multivalué | U `test_expression` | 🟡 (échantillon) |
-| U02 | **Modèle & grille** | `scoreOf`, `critFor`, `residual`, `normalize`, `validateStructure`, transposition | U `test_model` | ⬜ |
-| U03 | **Champs perso** (18 types) | `cfControlHTML` / `cfDisplay*` / `cfValidate` par type | U `test_custom_fields` | ⬜ |
-| U04 | **i18n** | parité des clés fr/en/it, `toEN`/`fromEN` (aller-retour) | U `test_i18n` | ⬜ |
-| U05 | **CSV** | parse / format | U `test_csv` | ⬜ |
-| U06 | **OOXML** | primitives `dx*` | U `test_ooxml` | ⬜ |
-| U07 | **Markdown** | sous-ensemble GFM, sécurité (échappement, filtrage URL) | U `test_markdown` | ⬜ |
+| U01 | **Moteur d'expression** | lexer, précédence, fonctions, IF, dates, texte, erreurs, agrégats, traversée réf. | U `test_expression` + `test_computed_fields` | ✅ (68 cas + entité/référence/cycle) |
+| U02 | **Modèle & grille** | `scoreOf`, `critFor`, `residual`, `validateStructure`, transposition | U `test_model` | ✅ |
+| U03 | **Champs perso** (18 types) | `cfControlHTML` / `cfValidate` par type | U `test_custom_fields` | ✅ (validation + contrôle des 18 types) |
+| U04 | **i18n** | parité des clés fr/en/it (pas d'orphelin en/it, clés à espace de noms identiques) | U `test_i18n` | ✅ |
+| U05 | **CSV** | parse (séparateur, guillemets) | U `test_csv` | ✅ |
+| U06 | **OOXML** | primitives `dx*` (fragments bien formés) | U `test_ooxml` | 🟡 (primitives ; `buildDocx` en export) |
+| U07 | **Markdown** | sous-ensemble GFM, sécurité (échappement, filtrage URL) | U `test_markdown` | ✅ |
 
 ## 7. Lanes optionnelles
 

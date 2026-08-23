@@ -115,7 +115,7 @@ async () => {
   a.object_types.push({code:'srv', prefix:'SRV', label:{fr:'Serveur'}, attributes:[
     {code:'nom', type:'text', label:{fr:'Nom'}},
     {code:'niveau', type:'scale', label:{fr:'Niveau'}, items:[{value:1,label:'Bas'},{value:2,label:'Moyen'},{value:3,label:'Haut'}]},
-    {code:'crit', type:'computed', label:{fr:'Niveau ×10'}, expr:'=cf.niveau*10', result_type:'integer'},
+    {code:'crit', type:'computed', label:{fr:'Niveau ×10'}, expression:'=cf.niveau*10', result_type:'integer'},
     {code:'couleur', type:'color', label:{fr:'Couleur'}, color_mode:'both'}
   ]});
   a.objects.push({id:'SRV1', type:'srv', values:{nom:'Serveur A', niveau:3, couleur:'#c0392b'}});
@@ -140,8 +140,8 @@ async () => {
   cf.push({code:'f_scale', target:'risk', type:'scale', items:[{value:1,label:'Bas',color:'#2e9e5b'},{value:2,label:'Moyen',color:'#e0b93a'},{value:3,label:'Haut',color:'#d64545'}], label:{fr:'Échelle'}});
   cf.push({code:'f_progress', target:'risk', type:'progress', label:{fr:'Progression'}});
   cf.push({code:'f_ref', target:'risk', type:'reference', object_type:'srv', multiple:true, label:{fr:'Serveurs liés'}});
-  cf.push({code:'f_calc', target:'risk', type:'computed', expr:'=cf.f_int*2', result_type:'integer', label:{fr:'Entier ×2'}});
-  cf.push({code:'f_calc_ref', target:'risk', type:'computed', expr:'=SUM(cf.f_ref.cf.niveau)', result_type:'integer', label:{fr:'Somme niveaux serveurs'}});
+  cf.push({code:'f_calc', target:'risk', type:'computed', expression:'=cf.f_int*2', result_type:'integer', label:{fr:'Entier ×2'}});
+  cf.push({code:'f_calc_ref', target:'risk', type:'computed', expression:'=SUM(cf.f_ref.cf.niveau)', result_type:'integer', label:{fr:'Somme niveaux serveurs'}});
   // un champ perso de cotation + un champ d'analyse
   cf.push({code:'f_just', target:'cotation', type:'textarea', label:{fr:'Justification'}});
   cf.push({code:'f_ana', target:'analysis', type:'text', label:{fr:'Champ analyse'}});
