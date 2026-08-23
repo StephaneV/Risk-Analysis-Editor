@@ -43,9 +43,11 @@ tests/
 │   ├── __init__.py
 │   ├── browser.py                #   serveur HTTP local + chemins du dépôt
 │   ├── app.py                    #   « page-object » : goto/settings_subtab/open_file_menu, load,
-│   │                             #   set_lang/set_theme, click/set_input/modal_open, view_screenshot, docx_bytes…
+│   │                             #   set_lang/set_theme, click/set_input/modal_open,
+│   │                             #   view/element/full_screenshot, docx_bytes…
 │   ├── ooxml.py                  #   unzip + inspection docx/xlsx
 │   ├── render.py                 #   conversion .docx → PDF via LibreOffice (lane PDF)
+│   ├── exports.py                #   sauvegarde des livrables produits → _artifacts/exports/ (examen humain)
 │   └── visual.py                 #   comparaison d'images tolérante via Pillow (lane visuelle)
 │
 ├── fixtures/                     # jeux de données de test (VERSIONNÉS)
@@ -97,12 +99,15 @@ tests/
 │   │   ├── test_csv_export.py        #  export/import + aller-retour (round-trip)
 │   │   └── test_pdf.py               #  @pdf : conversion PDF (LibreOffice)
 │   └── visual/                   #   régression visuelle (lane @visual)
-│       ├── test_screenshots.py       #  les 11 onglets (fr, clair/sombre)
-│       ├── test_visual_ui.py         #  menu Fichier, 7 sous-onglets Paramètres, 8 modales
-│       └── baselines/                #  54 PNG de référence (VERSIONNÉS)
+│       ├── test_screenshots.py       #  scènes PLEINE PAGE : chrome (barre haut/nav), 11 onglets,
+│       │                             #  matrices (trajectoire + 8 dispositions), radars (4 modes)
+│       ├── test_visual_ui.py         #  menu Fichier, 7 sous-onglets Paramètres, 8 modales (bornés à l'élément)
+│       └── baselines/                #  84 PNG de référence (VERSIONNÉS)
 │
-└── _artifacts/                   # SORTIES GÉNÉRÉES — gitignoré
-    └── .gitignore                #   ignore tout sauf lui-même
+└── _artifacts/                   # SORTIES GÉNÉRÉES — gitignoré (tout sauf .gitignore)
+    ├── .gitignore                #   ignore tout sauf lui-même
+    └── exports/                  #   livrables produits par les tests d'export (Word/Excel/CSV/PDF),
+                                  #   conservés pour examen — jamais effacés, jamais versionnés
 ```
 
 > Le rapport agrégé (`TEST-REPORT.md`, `results.json`, `junit.xml`) est écrit par un hook de
@@ -180,7 +185,7 @@ python tests/run-all.py --with-pdf --with-visual   # tout
 | Rapport lisible agrégé | `tests/_artifacts/TEST-REPORT.md` | non (généré) |
 | Résultats machine | `tests/_artifacts/results.json` | non |
 | Rapport JUnit (CI éventuelle) | `tests/_artifacts/junit.xml` | non |
-| Exports produits pendant les tests | `tests/_artifacts/exports/*.docx|xlsx|csv` | non |
+| Exports produits pendant les tests (Word/Excel/CSV + `gabarits/`) — **conservés pour examen** | `tests/_artifacts/exports/` | non |
 | Rendus PDF/PNG (lane PDF) | `tests/_artifacts/render/*.pdf|png` | non |
 | Captures de la lane visuelle (run) | `tests/_artifacts/visual/*.png` | non |
 | **Baselines visuelles de référence** | `tests/suites/visual/baselines/*.png` | **oui** (versionnées) |

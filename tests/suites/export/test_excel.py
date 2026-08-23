@@ -3,7 +3,7 @@ import base64
 
 import pytest
 
-from harness import ooxml
+from harness import exports, ooxml
 
 pytestmark = pytest.mark.export
 
@@ -20,7 +20,9 @@ async () => {
 
 def test_xlsx_is_valid_package(app):
     app.load("ebios.rae.json")
-    parts = ooxml.open_pkg(base64.b64decode(app.js(XLSX_B64)))
+    data = base64.b64decode(app.js(XLSX_B64))
+    exports.save("export-excel-ebios.xlsx", data)
+    parts = ooxml.open_pkg(data)
     assert "xl/workbook.xml" in parts
     assert any(n.startswith("xl/worksheets/") for n in parts)
 

@@ -154,6 +154,10 @@ class App:
         """Capture PNG (octets) d'un élément quelconque (menu, carte de modale…)."""
         return self.page.locator(selector).screenshot()
 
+    def full_screenshot(self):
+        """Capture PNG (octets) de la page entière : barre du haut + navigation + vue active."""
+        return self.page.screenshot(full_page=True)
+
     def docx_bytes(self):
         """Octets du .docx produit par buildDocx() (via base64)."""
         import base64

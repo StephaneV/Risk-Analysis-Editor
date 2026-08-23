@@ -6,7 +6,7 @@ import base64
 
 import pytest
 
-from harness import ooxml
+from harness import exports, ooxml
 from harness.browser import FIXTURES
 
 pytestmark = pytest.mark.export
@@ -52,7 +52,9 @@ def test_valid_templates_render(app):
     for tpl in VALID_TEMPLATES:
         try:
             res = _render(app, tpl)
-            xml = ooxml.document_xml(base64.b64decode(res["docx"]))
+            data = base64.b64decode(res["docx"])
+            exports.save(f"gabarits/{tpl.stem}-rendu.docx", data)  # rendu conservé pour examen
+            xml = ooxml.document_xml(data)
             if not xml or "<w:document" not in xml:
                 failures.append((tpl.name, "document.xml vide/invalide"))
         except Exception as e:  # noqa: BLE001

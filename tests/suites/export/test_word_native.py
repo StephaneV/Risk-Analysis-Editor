@@ -3,7 +3,7 @@ import base64
 
 import pytest
 
-from harness import ooxml
+from harness import exports, ooxml
 
 pytestmark = pytest.mark.export
 
@@ -30,6 +30,7 @@ def document_xml_of(app):
 def test_docx_is_valid_package(app):
     app.load("ebios.rae.json")
     data = _docx(app)
+    exports.save("rapport-word-natif-ebios.docx", data)
     parts = ooxml.open_pkg(data)
     assert "word/document.xml" in parts
     assert "[Content_Types].xml" in parts
@@ -60,8 +61,10 @@ def test_report_exploded_has_more_chapters(app):
     """Rapport éclaté (par risque) vs classique : plus de sauts de page (un chapitre par groupe)."""
     app.load("rapport-classique.rae.json")
     classic = _page_breaks(document_xml_of(app))
+    exports.save("rapport-word-classique.docx", _docx(app))  # analyse classique encore chargée
     app.load("rapport-eclate-risque.rae.json")
     exploded = _page_breaks(document_xml_of(app))
+    exports.save("rapport-word-eclate-risque.docx", _docx(app))
     assert exploded > classic, f"éclaté ({exploded}) devrait avoir plus de sauts que classique ({classic})"
 
 

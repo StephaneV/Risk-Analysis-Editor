@@ -1,8 +1,17 @@
-"""Régression visuelle (lane optionnelle @visual).
+"""Régression visuelle (lane optionnelle @visual) — captures pleine page.
 
-Capture chaque vue en fr × clair/sombre et compare à une baseline versionnée (tolérance).
-- Baseline absente ou `--update-baselines` : (re)génère la baseline puis SKIP (pas de faux positif).
+Couvre, en fr × clair/sombre, chaque « scène » de l'application :
+- chrome : barre du haut, barre de navigation ;
+- les 11 onglets, capturés **pleine page** (barre du haut + navigation + vue) ;
+- variantes de la vue Matrices : trajectoire + les 8 dispositions ;
+- variantes de la vue Radars : les 4 modes d'affichage (accolés/superposés/initial/résiduel).
+
+Chaque scène est comparée à une baseline versionnée (tolérance).
+- Baseline absente ou `--update-baselines` : (re)génère puis SKIP (pas de faux positif).
 - Sinon : compare et échoue si l'écart dépasse le seuil.
+
+Les surfaces hors onglets (menu Fichier, sous-onglets Paramètres, modales) sont
+dans test_visual_ui.py.
 """
 from pathlib import Path
 
@@ -15,20 +24,43 @@ pytestmark = pytest.mark.visual
 
 BASELINES = Path(__file__).parent / "baselines"
 COMBOS = [("fr", "light"), ("fr", "dark")]
-THRESHOLD = 0.02   # 2 % d'écart absolu moyen toléré
+THRESHOLD = 0.02
+FIXTURE = "ebios.rae.json"
 
-PARAMS = [(v, l, t) for v in VIEWS for (l, t) in COMBOS]
+ARRANGEMENTS = ["grid", "row_col", "col_row", "cluster", "row", "column", "overflow", "manual"]
+RADAR_EVALS = ["both-side", "both-over", "initial", "residual"]
+
+# Une scène = (nom, vue à activer, setup JS optionnel, sélecteur de capture | None → pleine page)
+SCENES = []
+# chrome (barre du haut + navigation) — bornés à l'élément
+SCENES.append(("chrome-topbar", "presentation", None, ".topbar"))
+SCENES.append(("chrome-nav", "presentation", None, "#tabs"))
+# les 11 onglets, pleine page
+SCENES += [(f"view-{v}", v, None, None) for v in VIEWS]
+# variantes Matrices
+SCENES.append(("matrices-traj", "matrices", "matrixMode='traj';renderMatrices();", None))
+SCENES += [(f"matrices-{c}", "matrices", f"setArrangement('{c}');renderMatrices();", None) for c in ARRANGEMENTS]
+# variantes Radars (modes d'affichage)
+SCENES += [(f"radars-{m}", "radars", f"radarState.eval='{m}';renderRadars();", None) for m in RADAR_EVALS]
+
+PARAMS = [(name, view, js, sel, l, t) for (name, view, js, sel) in SCENES for (l, t) in COMBOS]
 
 
-@pytest.mark.parametrize("view,lang,theme", PARAMS, ids=[f"{v}-{l}-{t}" for v, l, t in PARAMS])
-def test_view_matches_baseline(app, update_baselines, view, lang, theme):
-    app.load("ebios.rae.json")
+@pytest.mark.parametrize(
+    "name,view,setup_js,selector,lang,theme", PARAMS,
+    ids=[f"{name}-{l}-{t}" for (name, _v, _j, _s) in SCENES for (l, t) in COMBOS],
+)
+def test_scene_matches_baseline(app, update_baselines, name, view, setup_js, selector, lang, theme):
+    app.load(FIXTURE)
     app.set_lang(lang)
     app.set_theme(theme)
     app.goto(view)
-    png = app.view_screenshot(view)
+    if setup_js:
+        app.js(f"()=>{{{setup_js}}}")
+    assert not app.console_errors(), f"erreur console sur la scène {name}"
+    png = app.element_screenshot(selector) if selector else app.full_screenshot()
 
-    baseline = BASELINES / f"{view}-{lang}-{theme}.png"
+    baseline = BASELINES / f"{name}-{lang}-{theme}.png"
     if update_baselines or not baseline.exists():
         baseline.parent.mkdir(parents=True, exist_ok=True)
         baseline.write_bytes(png)

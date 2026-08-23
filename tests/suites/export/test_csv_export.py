@@ -1,9 +1,17 @@
 """Export/Import CSV : contenu de l'export et analyse d'un CSV d'import."""
 import pytest
 
+from harness import exports
 from harness.browser import FIXTURES
 
 pytestmark = pytest.mark.export
+
+
+def _csv_text(rows):
+    def q(x):
+        s = "" if x is None else str(x)
+        return '"' + s.replace('"', '""') + '"' if any(c in s for c in ',";\n') else s
+    return "\n".join(",".join(q(c) for c in row) for row in rows)
 
 # Intercepte downloadCSV(rows,name) pour capturer les lignes produites.
 CAPTURE_EXPORT = r"""
@@ -21,6 +29,7 @@ def test_export_risks_csv(app):
     app.load("ebios.rae.json")
     cap = app.js(CAPTURE_EXPORT, "exportRisksCSV")
     assert cap and cap["rows"], "aucune ligne CSV capturée"
+    exports.save("export-risques-ebios.csv", _csv_text(cap["rows"]))
     n = app.js("analyse.risks.length")
     # en-tête + une ligne par risque
     assert len(cap["rows"]) == n + 1
@@ -32,6 +41,7 @@ def test_export_measures_csv(app):
     app.load("ebios.rae.json")
     cap = app.js(CAPTURE_EXPORT, "exportMeasuresCSV")
     assert cap and len(cap["rows"]) == app.js("analyse.measures.length") + 1
+    exports.save("export-mesures-ebios.csv", _csv_text(cap["rows"]))
 
 
 def test_import_risks_csv(app):

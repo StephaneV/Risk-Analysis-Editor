@@ -9,7 +9,7 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 ## Bilan de couverture
 
-Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **356 tests**).
+Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **386 tests**).
 
 | Couche | Tests | Contenu |
 |---|---:|---|
@@ -17,7 +17,7 @@ Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **356 t
 | `ui` | 219 | chargement fixtures + **CRUD** (risques/mesures/champs perso/objets/stats) + **tris 3 états** + **colonnes** (visibilité/ordre) + **clavier** (onglets/kanban/lignes) + **grille** (axes/score/criticité) + **import CSV** + **contraste** + **Markdown** + **autosave** + **toasts** + fonctionnel (17 écrans) + smoke **fr/en/it × clair/sombre** |
 | `export` | 28 | Word natif + rapport éclaté, gabarit (31 cas d'erreur + conditions/prooferr/badges/lot9), **images/couleur/EMU**, Excel, CSV (+ **round-trip**) — inspection OOXML |
 | `@pdf` (lane) | 2 | conversion PDF (LibreOffice) |
-| `@visual` (lane) | 54 | baselines : 11 onglets + menu Fichier + 7 sous-onglets Paramètres + 8 modales (fr clair/sombre) |
+| `@visual` (lane) | 84 | baselines **pleine page** : chrome (barre haut/nav) + 11 onglets + matrices (trajectoire + 8 dispositions) + radars (4 modes) + menu Fichier + 7 sous-onglets Paramètres + 8 modales (fr clair/sombre) |
 
 Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[MIGRATION-travaux.md](MIGRATION-travaux.md)**.
 
@@ -115,7 +115,7 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 | # | Lane | À couvrir | Suite | Statut |
 |---|---|---|---|---|
 | P01 | **PDF** (LibreOffice) | Word natif + gabarit convertis en PDF, non-plantage | X `test_pdf` `@pdf` | ✅ (2 conversions) |
-| Vz1 | **Visuel** (captures) | baseline par écran, tolérance | V `test_screenshots` + `test_visual_ui` `@visual` | ✅ (54 baselines : 11 onglets + menu Fichier + 7 sous-onglets Paramètres + 8 modales, × fr clair/sombre) · ⬜ en/it |
+| Vz1 | **Visuel** (captures) | baseline par écran, tolérance | V `test_screenshots` + `test_visual_ui` `@visual` | ✅ (84 baselines **pleine page** : chrome barre haut/nav + 11 onglets + matrices trajectoire/8 dispositions + radars 4 modes + menu Fichier + 7 sous-onglets + 8 modales, × fr clair/sombre) · ⬜ en/it |
 
 ---
 
