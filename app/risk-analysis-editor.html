@@ -4304,7 +4304,7 @@ function radarAxes(risks,dim,includeEmpty){
     objectsOfType(f.object_type).forEach(o=>{if(includeEmpty||used[o.id])keys.push(o.id);});
     Object.keys(uni).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);});
   }
-  else{keys=f?(f.items||[]).map(i=>i.code).filter(c=>includeEmpty||used[c]):[];}
+  else{keys=f?(f.items||[]).map(i=>f.type==="scale"?String(i.value):i.code).filter(c=>c!=null&&(includeEmpty||used[c])):[];}
   if(uni["__unset__"])keys.push("__unset__");
   return keys;
 }
