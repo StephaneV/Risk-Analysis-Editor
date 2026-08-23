@@ -75,6 +75,31 @@ def test_report_exploded_by_category_renders(app):
     assert not app.console_errors()
 
 
+def _set_section(app, sec_id, on):
+    app.js("([s,v])=>{reportCfgStore().sections=[{id:s,on:v}]; markDirty();}", [sec_id, on])
+
+
+def test_word_radar_section_embeds_image(app):
+    """X02 : activer la section Radar ajoute une image (le radar) au Word natif."""
+    app.load("ebios.rae.json")
+    _set_section(app, "radar", False)
+    off = len(ooxml.media_names(_docx(app)))
+    _set_section(app, "radar", True)
+    on = len(ooxml.media_names(_docx(app)))
+    assert on > off, f"la section Radar n'ajoute pas d'image ({off} -> {on})"
+
+
+def test_word_stats_distribution_section_present(app):
+    """X02 : activer la section « répartition » (stats) enrichit le Word natif (tableaux)."""
+    app.load("ebios.rae.json")
+    _set_section(app, "summary_distribution", False)
+    off = ooxml.document_xml(_docx(app))
+    _set_section(app, "summary_distribution", True)
+    on = ooxml.document_xml(_docx(app))
+    assert on.count("<w:tbl>") > off.count("<w:tbl>"), \
+        f"la section « répartition » n'ajoute pas de tableau ({off.count('<w:tbl>')} -> {on.count('<w:tbl>')})"
+
+
 def test_docx_with_color_and_image_fields(app):
     app.load("tous-types-champs.rae.json")
     data = _docx(app)

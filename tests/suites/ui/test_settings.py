@@ -27,6 +27,21 @@ def test_contrast_mode_apply(app):
     assert not app.console_errors()
 
 
+def test_create_object_type_via_modal(app):
+    """S04 : création d'un type d'objet via la modale (code + libellé + préfixe)."""
+    app.load("ebios-objets.rae.json")
+    app.settings_subtab("objtypes")
+    before = app.js("objectTypes().length")
+    app.js("()=>openObjectTypeModal(null)")     # modale empilée (dyn)
+    app.set_input("#otLabel", "Nouveau type")
+    app.set_input("#otCode", "nouveau_type")
+    app.set_input("#otPrefix", "NT")
+    app.top_modal_confirm()                     # « Créer »
+    assert app.js("objectTypes().length") == before + 1
+    assert app.js("!!objectTypeByCode('nouveau_type')"), "type créé introuvable"
+    assert not app.console_errors()
+
+
 def test_add_custom_field_via_modal(app):
     app.load("ebios.rae.json")
     app.settings_subtab("fields")

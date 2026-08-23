@@ -46,6 +46,21 @@ def test_radar_export_svg(app):
     assert isinstance(out, dict) and "<svg" in out.get("svg", ""), "export SVG du radar vide"
 
 
+def test_radar_hover_tooltip_data(app):
+    """Infobulle radar (T07) : RADAR_HOVER porte, par axe, les risques + criticités initiale/résiduelle."""
+    app.load("ebios.rae.json")
+    app.goto("radars")
+    hv = app.js("RADAR_HOVER")
+    assert isinstance(hv, list) and len(hv) > 0, "RADAR_HOVER vide après rendu"
+    with_items = [h for h in hv if h.get("items")]
+    assert with_items, "aucun axe ne porte de risque"
+    it = with_items[0]["items"][0]
+    for k in ("id", "label", "ci", "cr"):
+        assert k in it, f"clé {k} absente de l'infobulle radar"
+    # l'infobulle est aussi construite pour le SVG (data-rk référencé)
+    assert "data-rk" in app.js("document.getElementById('radarArea').innerHTML")
+
+
 def test_radar_settings_weights_render_reset(app):
     """Paramètres › Radars (S07) : poids pondérés, curseur de rendu, réinitialisation."""
     app.load("ebios.rae.json")

@@ -29,3 +29,34 @@ def test_import_measures_via_modal(app):
     app.click("#modalOk")
     assert app.js("!!measureById('MX1')")
     assert app.js("analyse.measures.length") == before + 1
+
+
+def test_import_column_mapping_by_header(app):
+    """D06 : mappage des colonnes par en-tête (ordre libre) via analyzeRisksCSV."""
+    app.load("ebios.rae.json")
+    # colonnes dans le désordre + libellés reconnus
+    csv = "label,id,initial_severity,initial_probability\nRisque A,RA1,4,2"
+    res = app.js("t=>analyzeRisksCSV(t)", csv)
+    ok = [it for it in res["items"] if not it.get("errors")]
+    assert ok and ok[0]["id"] == "RA1", "mappage par en-tête (ordre libre) échoué"
+
+
+def test_import_risks_reports_line_errors(app):
+    """D06 : une valeur hors échelle produit une erreur portée par la ligne concernée."""
+    app.load("ebios.rae.json")
+    csv = "id,label,initial_probability,initial_severity\nRB1,Bonne ligne,1,1\nRB2,Mauvaise,99,1"
+    res = app.js("t=>analyzeRisksCSV(t)", csv)
+    bad = [it for it in res["items"] if it.get("errors")]
+    assert bad, "aucune erreur par ligne détectée pour une valeur hors échelle"
+    # la bonne ligne reste importable
+    good = [it for it in res["items"] if not it.get("errors")]
+    assert any(it["id"] == "RB1" for it in good)
+
+
+def test_import_links_unknown_refs(app):
+    """D06 : import de liens signalant risque/mesure inconnu(e)."""
+    app.load("ebios.rae.json")
+    csv = "risk,measure\nR1,M1\nZZ,M1"
+    res = app.js("t=>analyzeLinksCSV(t)", csv)
+    has_err = bool(res.get("errors")) or any(it.get("errors") for it in res["items"])
+    assert has_err, "référence inconnue non signalée à l'import de liens"

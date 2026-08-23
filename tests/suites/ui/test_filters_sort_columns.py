@@ -83,6 +83,25 @@ def test_select_field_filter(app):
     assert not app.console_errors()
 
 
+def test_filter_propagates_to_links(app):
+    """D07 : un filtre de catégorie sur les risques se propage au tableau croisé des liens."""
+    app.load("ebios.rae.json")
+    cats = app.js("[...new Set(analyse.risks.map(r=>r.category).filter(Boolean))]")
+    if len(cats) < 2:
+        pytest.skip("moins de deux catégories : propagation non observable")
+    total = app.js("visibleRisks().length")
+    app.js("c=>{listState.risks.cat=c; filtersChanged();}", cats[0])
+    app.goto("links")
+    filtered = app.js("visibleRisks().length")
+    assert 0 < filtered < total, f"le filtre ne réduit pas l'ensemble ({filtered}/{total})"
+    # le tableau croisé ne montre que les risques de la catégorie retenue
+    inc = app.js("c=>analyse.risks.find(r=>r.category===c).id", cats[0])
+    exc = app.js("c=>analyse.risks.find(r=>r.category!==c && r.category).id", cats[0])
+    txt = app.js("document.getElementById('crossArea').innerText")
+    assert inc in txt and exc not in txt, f"croisé : inclus={inc} exclu={exc} non respectés"
+    app.js("()=>{listState.risks.cat=''; filtersChanged();}")
+
+
 def test_column_menu_opens(app):
     app.load("ebios.rae.json")
     app.goto("risks")

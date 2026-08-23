@@ -64,6 +64,65 @@ def test_lightbox_closes_on_cross(app):
     assert not app.js("document.getElementById('imgLightbox').classList.contains('open')"), "la croix n'a pas fermé la lightbox"
 
 
+D03_SETUP = r"""
+() => {
+  analyse.custom_fields = [
+    {code:'oblig', target:'risk', type:'text', required:true, label:{fr:'Obligatoire'}},
+    {code:'note',  target:'risk', type:'integer', min:0, max:10, label:{fr:'Note'}}];
+  analyse.risks = []; analyse.measures = []; analyse.treatments = [];
+}
+"""
+
+
+def test_required_custom_field_blocks_save(app):
+    """D03 : un champ perso obligatoire vide bloque l'enregistrement (message + .field-bad)."""
+    app.load("ebios.rae.json")
+    app.js(D03_SETUP)
+    app.goto("risks")
+    app.js("openRiskModal(null)")
+    app.set_input("#f_label", "Risque de test")   # libellé OK → le champ obligatoire est le fautif
+    app.click("#modalOk")
+    assert app.modal_open(), "la modale doit rester ouverte (champ obligatoire vide)"
+    assert app.js("!!document.querySelector('#modalBody .field-bad')"), "champ obligatoire non marqué"
+    assert app.js("document.getElementById('modalMsg').textContent"), "message d'erreur absent"
+
+
+def test_out_of_bounds_custom_field_blocks_save(app):
+    """D03 : une valeur numérique hors bornes bloque l'enregistrement."""
+    app.load("ebios.rae.json")
+    app.js(D03_SETUP)
+    app.goto("risks")
+    app.js("openRiskModal(null)")
+    app.set_input("#f_label", "Risque de test")
+    app.set_input("#modalBody [data-cf='oblig'] input", "rempli")   # satisfait l'obligatoire
+    app.set_input("#modalBody [data-cf='note'] input", "99")        # > max (10)
+    app.click("#modalOk")
+    assert app.modal_open(), "la modale doit rester ouverte (valeur hors bornes)"
+    assert app.js("!!document.querySelector('#modalBody .field-bad')"), "champ hors bornes non marqué"
+
+
+def test_object_type_modal_validation(app):
+    """D02 : la modale « type d'objet » refuse un code vide."""
+    app.load("ebios-objets.rae.json")
+    before = app.js("objectTypes().length")
+    app.js("()=>openObjectTypeModal(null)")     # nouveau type (modale empilée)
+    app.top_modal_confirm()                     # « Créer » avec des champs vides
+    assert app.js("document.getElementById('otMsg').textContent"), "aucun message de validation (type d'objet)"
+    assert app.js("objectTypes().length") == before, "un type invalide a été créé"
+    app.close_modals()
+
+
+def test_custom_field_modal_validation(app):
+    """D02 : la modale « champ personnalisé » refuse un code/libellé vide."""
+    app.load("ebios.rae.json")
+    app.settings_subtab("fields")
+    before = app.js("(analyse.custom_fields||[]).length")
+    app.js("openCustomFieldModal(null)")
+    app.click("#modalOk")                       # « Créer » sans rien saisir
+    assert app.modal_open(), "la modale champ perso doit rester ouverte"
+    assert app.js("(analyse.custom_fields||[]).length") == before, "un champ invalide a été créé"
+
+
 def test_stacked_modal_inert(app):
     app.load("ebios.rae.json")
     app.goto("risks")
