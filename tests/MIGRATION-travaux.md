@@ -16,7 +16,7 @@ avant suppression) · ⬜ non migré (garder tel quel pour l'instant).
 |---|---|---|---|
 | `test-modeles-erreurs/` (30+1 cas) | `export/test_word_template` (les 31 gabarits → avertissement) + gabarits repris dans `fixtures/word-templates/erreurs/` | ✅ **supersédé** | rien (éventuellement garder `cas-d-erreurs.md` comme doc) |
 | `test-champs-calcules/` (127 cas) | `unit/test_expression` (68 purs) + `unit/test_computed_advanced` (53 : J/E/LF/MV/RH/IMP/CI, JS rejoué à l'identique) + `unit/test_computed_fields` (4) | ✅ **supersédé** (127/127 portés et verts) | rien |
-| `test-objets/` (sections A–N) | `ui/test_objects` (types/instances, **création d'instance**, **nettoyage anti-fantôme**, **cascade/intégrité référentielle**, référence) + `ui/test_persistence` + `unit/test_computed_advanced` (RH + round-trip objet) | ✅ **supersédé** | (mineur : filtres UI sur références) |
+| `test-objets/` (sections A–N) | `ui/test_objects` (types/instances, **création**, **anti-fantôme**, **cascade/intégrité référentielle**, référence) + `ui/test_filters_sort_columns` (**filtre UI sur référence**) + `ui/test_persistence` + `unit/test_computed_advanced` (RH + round-trip) | ✅ **supersédé** | rien |
 | `test-rapport-word/` (classique + éclaté) | `export/test_word_native` (natif + **rapport éclaté** par risque/catégorie) + `ui/test_report` | ✅ **supersédé** | rien |
 | `test-rapport-images/` (images/couleur/calculé) | `export/test_word_images` (**médias, dessins, couleur both/swatch/hex, ■, tailles EMU**) | ✅ **supersédé** | rien |
 | `test-image-dims/` (EMU) | `export/test_word_images` (`width=4`→1440000×720000, `height=1`→720000×360000, W4H1) | ✅ **supersédé** | rien |
@@ -38,9 +38,9 @@ travaux/test-objets/         travaux/test-prooferr/         travaux/test-rapport
 travaux/test-rapport-word/   travaux/test-stats/
 ```
 
-Reste un point mineur non porté : les **filtres UI sur champs de référence** (le reste des objets est
-couvert). `travaux/` étant gitignoré, la suppression est un simple `rm` local (réversible seulement par
-recréation), à faire sur ton accord explicite.
+**Plus aucun écart** : l'intégralité des vérifications fines est portée et verte. `travaux/` étant
+gitignoré, la suppression est un simple `rm` local (réversible seulement par recréation), à faire sur
+ton accord explicite.
 
 > Note : les **jeux de données** épars de `travaux/` (`acme-test/`, `aipd*/`, `.tuto-serve/`, `tests/`…)
 > utiles aux tests ont été repris dans `tests/fixtures/`. Les autres contenus de `travaux/` (maquettes,
