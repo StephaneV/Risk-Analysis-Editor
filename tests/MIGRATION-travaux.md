@@ -15,7 +15,7 @@ avant suppression) · ⬜ non migré (garder tel quel pour l'instant).
 | Dossier `travaux/` | Couvert par `tests/` | Verdict | À porter avant suppression |
 |---|---|---|---|
 | `test-modeles-erreurs/` (30+1 cas) | `export/test_word_template` (les 31 gabarits → avertissement) + gabarits repris dans `fixtures/word-templates/erreurs/` | ✅ **supersédé** | rien (éventuellement garder `cas-d-erreurs.md` comme doc) |
-| `test-champs-calcules/` (127 cas) | `unit/test_expression` (68 cas purs) + `unit/test_computed_fields` (4) + `unit/test_custom_fields` | 🟡 **partiel** (~72/127) | cas **MV** (multivalué), **RH** (traversée réf. variées), **CI** (couleur/image), **J/E** (liaison/agrégats), **LF** (filtre/radar/stats sur calculés) |
+| `test-champs-calcules/` (127 cas) | `unit/test_expression` (68 purs) + `unit/test_computed_advanced` (53 : J/E/LF/MV/RH/IMP/CI, JS rejoué à l'identique) + `unit/test_computed_fields` (4) | ✅ **supersédé** (127/127 portés et verts) | rien |
 | `test-objets/` (sections A–N) | `ui/test_objects` + `ui/test_persistence` + `unit/test_computed_fields` | 🟡 **partiel** | **contexte fantôme** (collisions d'id entre modales), **CRUD** instance complet, **intégrité référentielle**, **filtres sur références** |
 | `test-rapport-word/` (classique + éclaté) | `export/test_word_native` (natif) + `ui/test_report` | 🟡 **partiel** | rapport **éclaté** (par catégorie / par risque) |
 | `test-rapport-images/` (images/couleur/calculé) | `export/test_word_native` (présence de médias + image cf) | 🟡 **partiel** | **tailles EMU** exactes (`width`/`height`), modes de rendu couleur (both/swatch/hex) |
@@ -28,9 +28,9 @@ avant suppression) · ⬜ non migré (garder tel quel pour l'instant).
 
 ## Recommandation
 
-- **Supprimable maintenant** : `travaux/test-modeles-erreurs/` (fonctionnellement supersédé — les
-  gabarits sont désormais des fixtures et le contrôle « chaque cas produit un avertissement » est
-  automatisé, ce qui est **plus robuste** que l'ancien).
+- **Supprimables maintenant** (supersédés et vérifiés) :
+  - `travaux/test-champs-calcules/` — les **127 cas** sont portés et verts (`test_expression` + `test_computed_advanced` + `test_computed_fields`).
+  - `travaux/test-modeles-erreurs/` — gabarits repris en fixtures + contrôle automatisé « chaque cas produit un avertissement » (plus robuste que l'ancien).
 - **À conserver pour l'instant** : tous les autres dossiers 🟡/⬜, tant que leurs vérifications fines
   n'ont pas été portées. Je peux les **porter** (par priorité : les 127 cas de calcul complets, le
   contexte fantôme des objets, les tailles EMU d'images, le rapport éclaté), après quoi ils
