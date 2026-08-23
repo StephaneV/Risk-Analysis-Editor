@@ -44,3 +44,19 @@ def test_radar_export_svg(app):
     app.goto("radars")
     out = app.js("buildRadarExportSVG(radarState)")   # renvoie {svg, W, H}
     assert isinstance(out, dict) and "<svg" in out.get("svg", ""), "export SVG du radar vide"
+
+
+def test_radar_settings_weights_render_reset(app):
+    """Paramètres › Radars (S07) : poids pondérés, curseur de rendu, réinitialisation."""
+    app.load("ebios.rae.json")
+    app.settings_subtab("radars")
+    assert app.js("document.querySelectorAll('#radarCfgPanel [data-rw]').length") > 0
+    code = app.js("critBands()[0].code")
+    app.set_input(f'#radarCfgPanel [data-rw="{code}"]', "3.5")
+    assert app.js(f"radarCfg().weights['{code}']") == 3.5
+    app.set_input('#radarCfgPanel [data-rd="hslL"]', "0.8")
+    assert abs(app.js("radarCfg().render.hslL") - 0.8) < 1e-9
+    app.click("#radarCfgReset")
+    assert app.js("!(analyse.extensions && analyse.extensions.display && analyse.extensions.display.radar)"), \
+        "la réinitialisation n'a pas supprimé la config radar stockée"
+    assert not app.console_errors()

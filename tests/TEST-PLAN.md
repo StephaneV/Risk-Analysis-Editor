@@ -9,12 +9,12 @@ l'application y est listé et rattaché à des tests. Sert à mesurer la couvert
 
 ## Bilan de couverture
 
-Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **386 tests**).
+Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **390 tests**).
 
 | Couche | Tests | Contenu |
 |---|---:|---|
 | `unit` | 53 | moteurs : expression (68 cas) + avancés (J/E/LF/MV/RH/IMP/CI), modèle/grille, i18n, champs perso (18 types), markdown, ooxml, csv |
-| `ui` | 219 | chargement fixtures + **CRUD** (risques/mesures/champs perso/objets/stats) + **tris 3 états** + **colonnes** (visibilité/ordre) + **clavier** (onglets/kanban/lignes) + **grille** (axes/score/criticité) + **import CSV** + **contraste** + **Markdown** + **autosave** + **toasts** + fonctionnel (17 écrans) + smoke **fr/en/it × clair/sombre** |
+| `ui` | 223 | chargement fixtures + **CRUD** (risques/mesures/champs perso/objets/stats) + **tris 3 états** + **colonnes** (visibilité/ordre) + **clavier** (onglets/kanban/lignes) + **grille** (axes/score/criticité) + **import CSV** + **contraste** + **Markdown** + **autosave** + **réglages stats/radars** + **toasts** + fonctionnel (17 écrans) + smoke **fr/en/it × clair/sombre** |
 | `export` | 28 | Word natif + rapport éclaté, gabarit (31 cas d'erreur + conditions/prooferr/badges/lot9), **images/couleur/EMU**, Excel, CSV (+ **round-trip**) — inspection OOXML |
 | `@pdf` (lane) | 2 | conversion PDF (LibreOffice) |
 | `@visual` (lane) | 84 | baselines **pleine page** : chrome (barre haut/nav) + 11 onglets + matrices (trajectoire + 8 dispositions) + radars (4 modes) + menu Fichier + 7 sous-onglets Paramètres + 8 modales (fr clair/sombre) |
@@ -49,8 +49,8 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 | S03 | **fields** (Champs personnalisés) | CRUD d'un champ perso, types, bornes, filtrable, réordonnancement | ✅ (**création, édition, réordonnancement, suppression** + validation 18 types en unit) |
 | S04 | **objtypes** (Types d'objets) | CRUD d'un type, attributs, préfixe d'id | ✅ (**réordonnancement, suppression en cascade**, ouverture éditeur) · ⬜ création UI d'un type |
 | S05 | **report** (Rapport) | sections & ordre, page de garde, en-tête/pied, colonnes, matrices, orientation, éclaté | 🟡 (**activation/désactivation de section** + reflet dans `reportCfg`, présence des contrôles de structure — `test_report_settings`) · ⬜ ordre (glisser), page de garde, en-tête/pied, orientation |
-| S06 | **stats** (Statistiques) | blocs par défaut, cibles | ⬜ |
-| S07 | **radars** (Radars) | poids pondérés, rendu (luminosité/saturation/contour/pas/couleurs) | ⬜ |
+| S06 | **stats** (Statistiques) | blocs par défaut, cibles | 🟡 (bascule on/off d'un bloc + réinitialisation → `test_stats`) · ⬜ cibles numériques, formes/affichage, réordonnancement |
+| S07 | **radars** (Radars) | poids pondérés, rendu (luminosité/saturation/contour/pas/couleurs) | ✅ (poids pondéré, curseur de rendu → `radarCfg`, réinitialisation — `test_radars`) |
 | — | smoke | chaque sous-onglet s'ouvre sans erreur console | ✅ **fr/en/it × clair/sombre** |
 
 ## 3. Menus & barre supérieure
@@ -77,10 +77,10 @@ Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[
 | D02 | Modale **type d'objet / attribut / champ perso** | CRUD, types, validation | I | ⬜ |
 | D03 | **Champ fautif** (focus + contour rouge) | libellé manquant, id dupliqué, perso obligatoire/hors bornes | I `test_modals_focus` | ✅ (libellé manquant → focus + `.field-bad`) · ⬜ id dupliqué, bornes |
 | D04 | **Empilement / focus / inert** | confirmation par-dessus modale, restitution focus, Échap | I `test_modals_focus` | ✅ (confirmation empilée → modale sous-jacente `inert`, retour actif après fermeture) · ⬜ restitution focus précis, Échap |
-| D05 | **Lightbox** image | ouverture/fermeture, depuis modale | I `test_modals_focus` | ✅ (ouverture/fermeture) · ⬜ depuis modale, fond/Échap/croix |
+| D05 | **Lightbox** image | ouverture/fermeture, depuis modale | I `test_modals_focus` | ✅ (ouverture, fermeture programmée, **fermeture par Échap**) · ⬜ depuis modale, clic fond/croix |
 | D06 | **Import CSV** (risques/mesures/liens/objets) | mappage colonnes, erreurs par ligne, commit | I `test_import_csv` | 🟡 (ouverture modale + collage + commit risques/mesures) · ⬜ mappage colonnes, erreurs par ligne, liens/objets |
 | D07 | **Filtres** (natifs + champs perso) | application, recherche, reset | I `test_filters_sort_columns` | ✅ (catégorie, recherche) · ⬜ champs perso, propagation liens |
-| D08 | **Tri** (3 états) & **colonnes perso** (menu, ordre, épingle) | | I `test_filters_sort_columns` + `test_columns` | ✅ (**tri 3 états** registre + objets, menu colonnes, **visibilité + ordre** des colonnes) · ⬜ épingle |
+| D08 | **Tri** (3 états) & **colonnes perso** (menu, ordre, épingle) | | I `test_filters_sort_columns` + `test_columns` | ✅ (**tri 3 états** registre + objets, menu colonnes, **visibilité + ordre**, **colonne épinglée reste en tête**) |
 | D09 | **Glisser-déposer** (kanban, lignes, pastilles matrices) + alternatives clavier | | I `test_keyboard` | ✅ (**alternatives clavier** : kanban Ctrl+flèches, réordonnancement de ligne, nav onglets/menu) · ⬜ glisser-déposer souris, pastilles matrices |
 | D10 | **Persistance** save→reload, **autosave**, restauration | | I `test_persistence` | ✅ (aller-retour sérialisation, **autosave IndexedDB** write→read→clear) · ⬜ restauration au démarrage, récents |
 | D11 | **i18n** parité + rendu fr/en/it | | U `test_i18n` + I | ✅ (parité unit + rendu smoke fr/en/it) |

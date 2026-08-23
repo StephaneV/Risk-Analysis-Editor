@@ -38,3 +38,11 @@ def test_lightbox_opens_and_closes(app):
     assert app.js("()=>{const lb=document.getElementById('imgLightbox');return !!lb && lb.classList.contains('open');}"), "lightbox non ouverte"
     app.js("()=>{ if(typeof closeImageLightbox==='function') closeImageLightbox(); }")
     assert app.js("()=>{const lb=document.getElementById('imgLightbox');return !lb || !lb.classList.contains('open');}"), "lightbox non fermée"
+
+
+def test_lightbox_closes_on_escape(app):
+    app.load("ebios.rae.json")
+    app.js("src=>openImageLightbox(src)", PNG)
+    assert app.js("document.getElementById('imgLightbox').classList.contains('open')"), "lightbox non ouverte"
+    app.js("()=>document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}))")
+    assert app.js("!document.getElementById('imgLightbox').classList.contains('open')"), "Échap n'a pas fermé la lightbox"
