@@ -2901,7 +2901,7 @@ const COMPLETION={
    ce dont dépend le calcul de la portion à surligner. */
 function cbxNorm(s){
   s=String(s==null?"":s).toLowerCase();
-  return COMPLETION.ignoreAccents ? s.normalize("NFD").replace(/[̀-ͯ]/g,"") : s;
+  return COMPLETION.ignoreAccents ? deburr(s) : s;
 }
 /* Viviers. « people » est commun aux propriétaires et aux responsables : c'est la même
    population, et les séparer priverait chaque champ de la moitié des noms connus.
@@ -3047,8 +3047,10 @@ function toastAction(msg,label,onAction){
 /* Nom accessible + infobulle d'un bouton à icône. Mêmes arguments que t(). */
 function a11y(){const s=t.apply(null,arguments);return ' aria-label="'+esc(s)+'" title="'+esc(s)+'"';}
 /* « 3 sur 12 » quand un filtre est actif ; rien sinon (le badge d'onglet porte déjà le total). */
-function slug(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
-  .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);}
+/* Minuscule + suppression des diacritiques (NFD, on retire les marques combinantes
+   U+0300–U+036F). Base commune de slug/normH/normV/cbxNorm. */
+function deburr(s){return String(s==null?"":s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");}
+function slug(s){return deburr(s).replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);}
 function cmpId(a,b){const na=parseInt(String(a.id).replace(/\D/g,""),10),nb=parseInt(String(b.id).replace(/\D/g,""),10);
   if(!isNaN(na)&&!isNaN(nb)&&na!==nb)return na-nb;return String(a.id).localeCompare(String(b.id));}
 /* ---------- Étiquette courte des pastilles de matrice ----------
@@ -3305,21 +3307,19 @@ function pickerOpts(base){
   return o;
 }
 
-function newAnalysis(){
-  const doNew=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
-    dirty=false;isFresh=true;startDismissed=true;   // demande explicite : pas de mode d'emploi
-    cfFilterReset();natPropagatingReset();cfFilterStripURL();   // les filtres de l'analyse précédente n'ont plus d'objet
-    autosaveClear();renderAll();goToPresentation();toast(t("toast_new"));};
-  if(dirty)confirmModal(t("confirm_new"),doNew); else doNew();
-}
-/* Retour à l'écran d'accueil : comme « Nouveau », mais on RÉAFFICHE le bloc d'amorçage
-   (startDismissed=false) au lieu de le masquer. Utile pour revenir aux modèles après coup. */
-function backToStart(){
+/* Réinitialise l'analyse (nouveau document vierge) puis va à la présentation. `dismissStart`
+   masque (true, « Nouveau ») ou réaffiche (false, « Accueil ») le bloc d'amorçage ; `toastKey`
+   optionnel. La confirmation n'apparaît que si des modifications sont en cours. */
+function resetAnalysis({dismissStart, confirmKey, toastKey}){
   const go=()=>{analyse=emptyAnalysis(lang);currentFileName=null;fileHandle=null;
-    dirty=false;isFresh=true;startDismissed=false;
-    cfFilterReset();natPropagatingReset();cfFilterStripURL();autosaveClear();renderAll();goToPresentation();};
-  if(dirty)confirmModal(t("confirm_home"),go); else go();
+    dirty=false;isFresh=true;startDismissed=dismissStart;
+    cfFilterReset();natPropagatingReset();cfFilterStripURL();   // les filtres de l'analyse précédente n'ont plus d'objet
+    autosaveClear();renderAll();goToPresentation();
+    if(toastKey)toast(t(toastKey));};
+  if(dirty)confirmModal(t(confirmKey),go); else go();
 }
+function newAnalysis(){resetAnalysis({dismissStart:true, confirmKey:"confirm_new", toastKey:"toast_new"});}
+function backToStart(){resetAnalysis({dismissStart:false, confirmKey:"confirm_home"});}
 /* Enregistrer comme modèle : produit un fichier .template.rae.json — squelette reprenant la
    grille et les champs personnalisés de l'analyse courante, mais sans risque ni mesure, et
    marqué metadata.kind="template". Opération NON destructive : l'analyse en cours et son
@@ -3332,7 +3332,7 @@ function templateBlob(){
     custom:{}, risks:[], measures:[], treatments:[]};
   return new Blob([JSON.stringify(tpl,null,2)],{type:"application/vnd.rae+json"});
 }
-function templateFileName(){return (slug(analyse.metadata&&analyse.metadata.title)||"modele")+".template."+lang+".rae.json";}
+function templateFileName(){return exportBaseName("modele")+".template."+lang+".rae.json";}
 async function saveAsTemplate(){
   const blob=templateBlob(), name=templateFileName();
   if(FS_OK&&window.showSaveFilePicker){
@@ -3535,7 +3535,7 @@ function analysisBlob(){
   try{computedCacheStore();}catch(e){}   // cache des champs calculés (non bloquant)
   return new Blob([JSON.stringify(analyse,null,2)],{type:"application/vnd.rae+json"});
 }
-function defaultFileName(){return (slug(analyse.metadata&&analyse.metadata.title)||"risk-analysis")+".rae.json";}
+function defaultFileName(){return exportBaseName("risk-analysis")+".rae.json";}
 /* L'autorisation d'écriture n'est acquise que pour la session : on la revérifie. */
 async function ensureWritable(h){
   if(!h.queryPermission)return true;
@@ -4326,12 +4326,18 @@ function radarAxisDesc(dim,key){
   return it?cfItemDesc(it):"";
 }
 function radarDescTipHTML(label,desc){return '<b>'+esc(label)+'</b><div style="white-space:normal;max-width:260px;margin-top:2px">'+esc(desc)+'</div>';}
-function radarTipShow(html,e){
-  tip.classList.remove("tt-link");tip.classList.add("tt-stat");tip.innerHTML=html;tip.style.opacity=1;
-  const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;
+/* Positionne l'infobulle globale `tip` près du curseur en la maintenant dans le viewport
+   (bascule à gauche/haut si débordement). Partagée par les tooltips radar/stat/pastille/description. */
+function placeTip(e){
+  const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;
+  let x=e.clientX+14,y=e.clientY+14;
   if(x+w>innerWidth-pad)x=e.clientX-14-w;if(x<pad)x=pad;
   if(y+h>innerHeight-pad)y=innerHeight-pad-h;if(y<pad)y=pad;
   tip.style.left=x+"px";tip.style.top=y+"px";
+}
+function radarTipShow(html,e){
+  tip.classList.remove("tt-link");tip.classList.add("tt-stat");tip.innerHTML=html;tip.style.opacity=1;
+  placeTip(e);
 }
 function radarTipHide(){tip.style.opacity=0;tip.classList.remove("tt-stat");}
 function radarNiceMax(vals){let m=0;vals.forEach(v=>{if(v>m)m=v;});return Math.max(1,Math.ceil(m));}
@@ -4505,7 +4511,7 @@ async function exportRadar(mode){
     const m=radarComputeModel();
     if(m.tooFew){toast(t("radar_need_axes",m.axes.length));return;}
     const {svg,W,H}=buildRadarExportSVG();
-    const base=(slug(analyse.metadata&&analyse.metadata.title)||"analyse")+"-radar";
+    const base=exportBaseName("analyse")+"-radar";
     if(mode==="svg"){downloadBlob(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}),base+".svg");toast(t("toast_img_saved",base+".svg"));return;}
     const blob=await rasterizePNG(svg,W,H,getPngScale());
     if(!blob){toast(t("toast_img_fail"));return;}
@@ -4626,15 +4632,7 @@ function calcAnalysisStatHTML(){
     if(!rec){hideTip();return;}
     tip.classList.remove("tt-link");tip.classList.add("tt-stat");tip.innerHTML=statTipHTML(rec);
     tip.style.opacity=1;
-    // Maintien dans le viewport : bascule à gauche du curseur si débordement à droite,
-    // recalage vertical si débordement en bas (l'infobulle peut être haute et large).
-    const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;
-    let x=e.clientX+14,y=e.clientY+14;
-    if(x+w>innerWidth-pad)x=e.clientX-14-w;
-    if(x<pad)x=pad;
-    if(y+h>innerHeight-pad)y=innerHeight-pad-h;
-    if(y<pad)y=pad;
-    tip.style.left=x+"px";tip.style.top=y+"px";host.__stt=true;});
+    placeTip(e);host.__stt=true;});
   host.addEventListener("mouseleave",hideTip);
 })();
 
@@ -5723,7 +5721,7 @@ async function rasterizePNG(svg,W,H,scale){
 async function exportMatrix(blockEls,mode){
   try{
     const {svg,W,H}=buildExportSVG(blockEls,document.getElementById("matrixLegend"),null,matrixMode==="traj");
-    const base=slug(analyse.metadata&&analyse.metadata.title)||"matrix";
+    const base=exportBaseName("matrix");
     if(mode==="svg"){
       downloadBlob(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}),base+".svg");
       toast(t("toast_img_saved",base+".svg"));return;
@@ -7451,11 +7449,7 @@ document.addEventListener("mousemove",e=>{
   const html=pillTipHTML(kind,d.openM||d.tipM||d.openR||d.tipR);
   if(!html){hidePillTip();return;}
   tip.classList.remove("tt-link","tt-stat");tip.innerHTML=html;tip.style.opacity=1;
-  const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;
-  let x=e.clientX+14,y=e.clientY+14;
-  if(x+w>innerWidth-pad)x=e.clientX-14-w;if(x<pad)x=pad;
-  if(y+h>innerHeight-pad)y=innerHeight-pad-h;if(y<pad)y=pad;
-  tip.style.left=x+"px";tip.style.top=y+"px";pillTipOn=true;
+  placeTip(e);pillTipOn=true;
 });
 /* Infobulle de description au survol des valeurs de listes/tags (pastilles affichées et
    sélecteur de la fiche). Inerte dans le rapport. */
@@ -7466,11 +7460,7 @@ document.addEventListener("mousemove",e=>{
   const d=el.getAttribute("data-cfdesc");if(!d){if(cfDescTipOn){tip.style.opacity=0;cfDescTipOn=false;}return;}
   tip.classList.remove("tt-link","tt-stat");
   tip.innerHTML='<b>'+esc(el.textContent.trim())+'</b><br>'+esc(d);tip.style.opacity=1;
-  const pad=10,w=tip.offsetWidth,h=tip.offsetHeight;
-  let x=e.clientX+14,y=e.clientY+14;
-  if(x+w>innerWidth-pad)x=e.clientX-14-w;if(x<pad)x=pad;
-  if(y+h>innerHeight-pad)y=innerHeight-pad-h;if(y<pad)y=pad;
-  tip.style.left=x+"px";tip.style.top=y+"px";cfDescTipOn=true;
+  placeTip(e);cfDescTipOn=true;
 });
 /* ---------- Aide & raccourcis ---------- */
 function openHelpModal(){
@@ -7572,7 +7562,7 @@ function renderRisks(){
   const all=visibleRisks();   // le filtre par catégorie est servi par une puce de la barre
   const q=normV(st.q);
   let list=all.filter(r=>{
-    if(st.cat && (r.category||"")!==st.cat)return false;
+    // catégorie déjà appliquée par visibleRisks() (natRiskMatches) ; ici seule la recherche texte
     if(q && normV([r.id,r.label,r.category,r.owner].join(" ")).indexOf(q)<0)return false;
     return true;});
   if(st.sort){list=list.slice().sort(riskCmp(st.sort));if(st.dir<0)list.reverse();}
@@ -7748,8 +7738,7 @@ function renderMeasures(){
   const all=visibleMeasures();   // type et statut sont servis par des puces de la barre
   const q=normV(st.q);
   let list=all.filter(m=>{
-    if(st.type && (m.type||"")!==st.type)return false;
-    if(st.status && (m.status||"")!==st.status)return false;
+    // type et statut déjà appliqués par visibleMeasures() (natMeasureMatches) ; ici seule la recherche texte
     if(q && normV([m.id,m.label,m.responsible].join(" ")).indexOf(q)<0)return false;
     return true;});
   if(st.sort){list=list.slice().sort(measureCmp(st.sort));if(st.dir<0)list.reverse();}
@@ -8068,11 +8057,13 @@ document.getElementById("crossArea").addEventListener("change",e=>{
    Le registre Liens > Détails garde, lui, sa confirmation systématique (suppression
    d'un lien porteur de note et de champs personnalisés). */
 let linkConfirmOff=false;
+/* Corps texte standard des dialogues : message échappé, retours à la ligne préservés. */
+function dialogBody(message){return '<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>';}
 function confirmLink(message,onYes,danger){
   if(linkConfirmOff){onYes();return;}
   const cbId="lcOff"+Date.now();
   pushModal(t("dialog_confirm"),
-    '<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>'+
+    dialogBody(message)+
     '<label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;color:var(--muted)">'+
       '<input type="checkbox" id="'+cbId+'" style="width:15px;height:15px;flex:none"> '+esc(t("link_confirm_off"))+'</label>',
     [{label:t("btn_cancel"),cls:"ghost",onClick:api=>api.close()},
@@ -8188,7 +8179,7 @@ function hex6(c){c=String(c||"").replace("#","");if(c.length===3)c=c.split("").m
 function hexDarken(c,f){c=hex6(c);const n=parseInt(c,16)||0;f=(f==null?0.82:f);
   const r=Math.round(((n>>16)&255)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f);
   return ((r<<16)|(g<<8)|b).toString(16).padStart(6,"0").toUpperCase();}
-function exportBaseName(){return slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";}
+function exportBaseName(fallback){return slug(analyse.metadata&&analyse.metadata.title)||(fallback||"analyse-risque");}
 function corePropsXML(){
   const md=analyse.metadata||{},d=new Date().toISOString().replace(/\.\d+Z$/,"Z");
   return XMLD+'<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'+
@@ -13110,7 +13101,7 @@ function exportRisksCSV(){
       si,critFor(si).label,sr,critFor(sr).label]
       .concat(cf.map(f=>cfCellText(f,r,"risk"))).concat(cot));
   });
-  const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
+  const base=exportBaseName();
   downloadCSV(rows,base+"-risks.csv");
 }
 document.getElementById("btnExportRisks").addEventListener("click",exportRisksCSV);
@@ -13125,7 +13116,7 @@ function exportMeasuresCSV(){
       risksOfMeasure(m.id).join(", ")]
       .concat(cf.map(f=>cfCellText(f,m,"measure"))));
   });
-  const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
+  const base=exportBaseName();
   downloadCSV(rows,base+"-measures.csv");
 }
 document.getElementById("btnExportMeasures").addEventListener("click",exportMeasuresCSV);
@@ -13144,8 +13135,8 @@ function parseCSV(text){
   while(rows.length&&rows[rows.length-1].length===1&&rows[rows.length-1][0].trim()==="")rows.pop();
   return {rows,sep};
 }
-function normH(h){return (h||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[\s_\-.]+/g,"");}
-function normV(s){return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim();}
+function normH(h){return deburr(h).replace(/[\s_\-.]+/g,"");}
+function normV(s){return deburr(s).trim();}
 function colIndex(headers,cands){for(const c of cands){const i=headers.indexOf(c);if(i>=0)return i;}return -1;}
 function parseLevel(val,axe){
   const v=(val||"").trim();if(!v)return {v:null};
@@ -13290,7 +13281,7 @@ function exportLinksCSV(){
   analyse.treatments.forEach(tr=>{const r=riskById(tr.risk),m=measureById(tr.measure);
     rows.push([tr.risk,r?r.label:"",tr.measure,m?m.label:"",tr.comment||""]
       .concat(cf.map(f=>cfCellText(f,tr,"link"))));});
-  const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
+  const base=exportBaseName();
   downloadCSV(rows,base+"-links.csv");
 }
 /* ---------- Objets : export / import CSV, un fichier par type d'objet ---------- */
@@ -13300,7 +13291,7 @@ function exportObjectTypeCSV(otCode){
   const H=["id"].concat(attrs.map(a=>cfLabel(a)));
   const rows=[H];
   objectsOfType(otCode).forEach(inst=>rows.push([inst.id].concat(attrs.map(a=>cfObjAttrText(a,ot,inst)))));
-  const base=slug(analyse.metadata&&analyse.metadata.title)||"analyse-risque";
+  const base=exportBaseName();
   downloadCSV(rows,base+"-"+(slug(otLabel(ot))||otCode)+".csv");
 }
 /* Colonnes d'import d'un type d'objet : attribut ↔ colonne (par libellé FR/EN/IT ou code), calculés exclus. */
@@ -13578,12 +13569,12 @@ function pushModal(title,bodyHtml,buttons,opts){
   return api;
 }
 function alertModal(message,title){
-  pushModal(title||t("dialog_error"),'<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>',
+  pushModal(title||t("dialog_error"),dialogBody(message),
     [{label:t("btn_ok"),onClick:api=>api.close()}],{role:"alertdialog"});
 }
 function confirmModal(message,onYes,opts){
   opts=opts||{};
-  pushModal(opts.title||t("dialog_confirm"),'<div style="font-size:13.5px;white-space:pre-wrap">'+esc(message)+'</div>',
+  pushModal(opts.title||t("dialog_confirm"),dialogBody(message),
     [{label:opts.cancelLabel||t("btn_cancel"),cls:"ghost",onClick:api=>{api.close();if(opts.onNo)opts.onNo();}},
      {label:opts.okLabel||t("btn_confirm"),cls:opts.danger?"danger":"",onClick:api=>{api.close();if(onYes)onYes();}}],
     {role:"alertdialog"});
