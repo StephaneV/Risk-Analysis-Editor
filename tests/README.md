@@ -47,7 +47,7 @@ tests/
 │   ├── ooxml.py                  #   unzip + inspection docx/xlsx
 │   ├── render.py                 #   conversion .docx → PDF via LibreOffice (lane PDF)
 │   ├── exports.py                #   sauvegarde des livrables produits → _artifacts/exports/ (examen humain)
-│   └── visual.py                 #   comparaison d'images tolérante via Pillow (lane visuelle)
+│   └── visual.py                 #   comparaison d'images (Pillow) + conservation des captures / diff
 │
 ├── fixtures/                     # jeux de données de test (VERSIONNÉS)
 │   ├── README.md                 #   description de chaque fixture
@@ -187,7 +187,8 @@ python tests/run-all.py --with-pdf --with-visual   # tout
 | Rapport JUnit (CI éventuelle) | `tests/_artifacts/junit.xml` | non |
 | Exports produits pendant les tests (Word/Excel/CSV + `gabarits/`) — **conservés pour examen** | `tests/_artifacts/exports/` | non |
 | Rendus PDF/PNG (lane PDF) | `tests/_artifacts/render/*.pdf|png` | non |
-| Captures de la lane visuelle (run) | `tests/_artifacts/visual/*.png` | non |
+| Captures de la lane visuelle (chaque run, **conservées pour examen**) | `tests/_artifacts/visual/<scène>.png` | non |
+| Comparatif en cas d'écart : capture courante + baseline + différence amplifiée | `tests/_artifacts/visual/_diff/<scène>.{current,baseline,diff}.png` | non |
 | **Baselines visuelles de référence** | `tests/suites/visual/baselines/*.png` | **oui** (versionnées) |
 
 **Règle** : tout ce qui est **généré** va dans `tests/_artifacts/` (gitignoré). Seuls **scripts, fixtures et

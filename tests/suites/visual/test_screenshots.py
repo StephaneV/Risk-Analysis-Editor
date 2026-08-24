@@ -60,11 +60,16 @@ def test_scene_matches_baseline(app, update_baselines, name, view, setup_js, sel
     assert not app.console_errors(), f"erreur console sur la scène {name}"
     png = app.element_screenshot(selector) if selector else app.full_screenshot()
 
-    baseline = BASELINES / f"{name}-{lang}-{theme}.png"
+    scene = f"{name}-{lang}-{theme}"
+    visual.save_current(png, scene)              # capture conservée à chaque exécution
+
+    baseline = BASELINES / f"{scene}.png"
     if update_baselines or not baseline.exists():
         baseline.parent.mkdir(parents=True, exist_ok=True)
         baseline.write_bytes(png)
         pytest.skip(f"baseline (re)générée : {baseline.name}")
 
     ratio = visual.diff_ratio(png, baseline)
-    assert ratio < THRESHOLD, f"écart visuel {ratio:.4f} > {THRESHOLD} pour {baseline.name}"
+    if ratio >= THRESHOLD:
+        out = visual.save_failure(png, baseline, scene)
+        pytest.fail(f"écart visuel {ratio:.4f} > {THRESHOLD} pour {baseline.name} — comparatif dans {out}")
