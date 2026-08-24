@@ -32,7 +32,6 @@ Seul un navigateur piloté (Playwright) permet de les exercer fidèlement **et**
 tests/
 ├── README.md                     # ce fichier
 ├── TEST-PLAN.md                  # MATRICE DE COUVERTURE : chaque écran/onglet/menu/modale → IDs de test
-├── MIGRATION-travaux.md          # correspondance avec les anciens tests de travaux/ (tous supersédés)
 ├── requirements.txt              # dépendances Python (pytest, playwright, Pillow)
 ├── pytest.ini                    # config pytest (marqueurs, pythonpath)
 ├── conftest.py                   # fixtures pytest (browser, base_url, app), options --lang/--theme,

@@ -1,0 +1,4 @@
+# Dossier de travail jetable : audits, maquettes, brouillons, catalogues,
+# lanceur local, notes de migration… Rien n'est versionné, sauf ce .gitignore.
+*
+!.gitignore

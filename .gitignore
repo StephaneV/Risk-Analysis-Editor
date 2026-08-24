@@ -1,20 +1,12 @@
 # --- Contenu confidentiel : ne jamais publier -------------------------------
-# Garde-fou : ces dossiers ont été retirés du dépôt. S'ils sont recréés
-# localement (analyses réelles, documents internes), ils resteront ignorés.
+# S'ils sont recréés localement (analyses réelles, documents internes),
+# ces dossiers restent ignorés.
 aipd/
 sources/
 
-# --- Outillage local ---------------------------------------------------------
+# --- Outillage local & dépendances de génération ----------------------------
 .claude/
-
-# --- Dépendances de génération (docx npm pour word-templates/) : non versionnées
 node_modules/
-
-# --- Documents de travail (audits, notes, brouillons) : non publiés ----------
-travaux/
-
-# --- Lanceur local (association .rae, chemins machine) : non versionné --------
-launcher/
 
 # --- Fichiers temporaires / système -----------------------------------------
 *.tmp
@@ -23,3 +15,6 @@ launcher/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Note : le dossier travaux/ (documents de travail, lanceur local) ignore
+# lui-même son contenu via travaux/.gitignore.

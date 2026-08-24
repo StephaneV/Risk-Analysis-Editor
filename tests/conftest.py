@@ -2,7 +2,7 @@
 skip des lanes à prérequis, écriture de TEST-REPORT.md / results.json.
 """
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -19,6 +19,16 @@ def pytest_configure(config):
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     if not getattr(config.option, "xmlpath", None):
         config.option.xmlpath = str(ARTIFACTS / "junit.xml")
+    # horodatage de début (heure locale, avec décalage) pour le rapport de synthèse
+    config._rae_start = datetime.now().astimezone()
+
+
+def _fmt_duration(delta):
+    """Durée « H:MM:SS » (+ secondes décimales sous la minute)."""
+    s = delta.total_seconds()
+    h, r = divmod(int(s), 3600)
+    m, sec = divmod(r, 60)
+    return f"{h}:{m:02d}:{sec:02d}" + (f" ({s:.1f}s)" if s < 60 else "")
 
 
 # ------------------------------------------------------------------ options
@@ -85,14 +95,27 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
             counts[outcome] = counts.get(outcome, 0) + 1
             rows.append({"id": getattr(rep, "nodeid", "?"), "outcome": outcome,
                          "duration": round(getattr(rep, "duration", 0.0), 3)})
+    end = datetime.now().astimezone()
+    start = getattr(config, "_rae_start", end)
+    elapsed = end - start
+    tests_time = sum(r["duration"] for r in rows)   # cumul des durées de test (call)
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     (ARTIFACTS / "results.json").write_text(
-        json.dumps({"generated": datetime.now(timezone.utc).isoformat(), "counts": counts, "tests": rows},
+        json.dumps({"generated": end.isoformat(),
+                    "started": start.isoformat(), "ended": end.isoformat(),
+                    "duration_seconds": round(elapsed.total_seconds(), 3),
+                    "tests_time_seconds": round(tests_time, 3),
+                    "counts": counts, "tests": rows},
                    ensure_ascii=False, indent=1), encoding="utf-8")
     total = sum(counts.values())
     md = ["# TEST-REPORT — Risk Analysis Editor", "",
-          f"_Généré le {datetime.now(timezone.utc).isoformat(timespec='seconds')} · "
-          f"{total} cas · statut de sortie pytest : {exitstatus}._", "",
+          f"_{total} cas · statut de sortie pytest : {exitstatus}._", "",
+          "| Exécution | |", "|---|---|",
+          f"| Début | {start.isoformat(timespec='seconds')} |",
+          f"| Fin | {end.isoformat(timespec='seconds')} |",
+          f"| Durée (horloge) | {_fmt_duration(elapsed)} |",
+          f"| Temps cumulé des tests | {_fmt_duration(timedelta(seconds=tests_time))} |",
+          "",
           "| Résultat | Nombre |", "|---|---:|"]
     for k in ("passed", "failed", "error", "skipped", "xfailed", "xpassed"):
         if counts.get(k):

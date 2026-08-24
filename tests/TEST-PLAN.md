@@ -19,7 +19,7 @@ Suite **construite et verte** (`run-all.py --with-pdf --with-visual` → **421 t
 | `@pdf` (lane) | 2 | conversion PDF (LibreOffice) |
 | `@visual` (lane) | 84 | baselines **pleine page** : chrome (barre haut/nav) + 11 onglets + matrices (trajectoire + 8 dispositions) + radars (4 modes) + menu Fichier + 7 sous-onglets Paramètres + 8 modales (fr clair/sombre) |
 
-Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : voir **[MIGRATION-travaux.md](MIGRATION-travaux.md)**.
+Migration depuis `travaux/` (tous les dossiers `test-*` supersédés) : notes locales dans `travaux/MIGRATION-travaux.md` (dossier de travail, non versionné).
 
 ---
 
