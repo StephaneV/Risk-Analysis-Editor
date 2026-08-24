@@ -3905,18 +3905,24 @@ function statsMove(id,beforeId){
 /* Champs personnalisés à valeurs fermées, candidats à un bloc de répartition. */
 function statCustomCandidates(){const out=[];["risk","measure","link"].forEach(tg=>(customFieldsFor(tg)||[]).forEach(f=>{if(cfIsClosed(f.type)||f.type==="reference")out.push({target:tg,field:f.code,label:cfLabel(f)});}));return out;}
 function statCustomId(tg,code){return "custom:"+tg+":"+code;}
-function statsAddCustom(){
-  const cand=statCustomCandidates();if(!cand.length)return;
-  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="custom")used[b.id]=1;});
-  const pick=cand.find(c=>!used[statCustomId(c.target,c.field)])||cand[0];
-  bl.push(normStatBlock({id:statCustomId(pick.target,pick.field),type:"custom",on:true,size:"half",display:"both",shape:"donut",target:pick.target,field:pick.field}));
+/* Ajout d'un bloc stats : prend le 1er candidat non déjà utilisé (sinon le 1er). `idOf(c)` calcule
+   l'id du bloc, `fields(c)` les champs propres au type (target/field, object_type/attr…) ;
+   display/shape sont posés par normStatBlock (« both »/« donut », ou « table » pour un agrégat). */
+function statsAddOf({cands,type,idOf,fields}){
+  if(!cands.length)return;
+  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type===type)used[b.id]=1;});
+  const pick=cands.find(c=>!used[idOf(c)])||cands[0];
+  bl.push(normStatBlock(Object.assign({id:idOf(pick),type,on:true,size:"half"},fields(pick))));
   statsSetBlocks(bl);
 }
-function statsSetCustomField(oldId,tg,code){
+/* Remplacement du champ/type source d'un bloc existant (change son id et ses champs propres). */
+function statsReplaceField(oldId,patch){
   const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
-  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statCustomId(tg,code),target:tg,field:code}));
+  bl[i]=normStatBlock(Object.assign({},bl[i],patch));
   statsSetBlocks(bl);
 }
+function statsAddCustom(){statsAddOf({cands:statCustomCandidates(),type:"custom",idOf:c=>statCustomId(c.target,c.field),fields:c=>({target:c.target,field:c.field})});}
+function statsSetCustomField(oldId,tg,code){statsReplaceField(oldId,{id:statCustomId(tg,code),target:tg,field:code});}
 /* Bloc « agrégat numérique » : champ perso à valeur numérique (échelle, ou calculé numérique). */
 function statNumField(f){return !!f&&(f.type==="scale"||(f.type==="computed"&&["number","integer"].indexOf(f.result_type||"number")>=0));}
 function statNumCandidates(){const out=[];["risk","measure","link"].forEach(tg=>(customFieldsFor(tg)||[]).forEach(f=>{if(statNumField(f))out.push({target:tg,field:f.code,label:cfLabel(f)});}));return out;}
@@ -3925,50 +3931,20 @@ function statNumId(tg,code){return "num_agg:"+tg+":"+code;}
 function statNumFmt(f,x){if(!isFinite(x))return "—";
   let s;if(f&&f.type==="computed"&&f.decimals!=null)s=(+x).toFixed(f.decimals);else s=String(Math.round(x*100)/100);
   return s+((f&&f.type==="computed"&&f.unit)?(" "+f.unit):"");}
-function statsAddNum(){
-  const cand=statNumCandidates();if(!cand.length)return;
-  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="num_agg")used[b.id]=1;});
-  const pick=cand.find(c=>!used[statNumId(c.target,c.field)])||cand[0];
-  bl.push(normStatBlock({id:statNumId(pick.target,pick.field),type:"num_agg",on:true,size:"half",target:pick.target,field:pick.field}));
-  statsSetBlocks(bl);
-}
-function statsSetNumField(oldId,tg,code){
-  const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
-  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statNumId(tg,code),target:tg,field:code}));
-  statsSetBlocks(bl);
-}
+function statsAddNum(){statsAddOf({cands:statNumCandidates(),type:"num_agg",idOf:c=>statNumId(c.target,c.field),fields:c=>({target:c.target,field:c.field})});}
+function statsSetNumField(oldId,tg,code){statsReplaceField(oldId,{id:statNumId(tg,code),target:tg,field:code});}
 /* Attributs d'objet à valeurs fermées ou de référence, candidats à un bloc « type par attribut ». */
 function statObjAttrClosed(a){return a&&(cfIsClosed(a.type)||a.type==="reference");}
 function statObjCandidates(){const out=[];objectTypes().forEach(ot=>(ot.attributes||[]).forEach(a=>{
   if(statObjAttrClosed(a))out.push({object_type:ot.code,attr:a.code,label:otLabel(ot)+" · "+cfLabel(a)});}));return out;}
 function statObjId(otype,attr){return "object_attr:"+otype+":"+attr;}
-function statsAddObject(){
-  const cand=statObjCandidates();if(!cand.length)return;
-  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="object_attr")used[b.id]=1;});
-  const pick=cand.find(c=>!used[statObjId(c.object_type,c.attr)])||cand[0];
-  bl.push(normStatBlock({id:statObjId(pick.object_type,pick.attr),type:"object_attr",on:true,size:"half",display:"both",shape:"donut",object_type:pick.object_type,attr:pick.attr}));
-  statsSetBlocks(bl);
-}
-function statsSetObjectField(oldId,otype,attr){
-  const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
-  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statObjId(otype,attr),object_type:otype,attr:attr}));
-  statsSetBlocks(bl);
-}
+function statsAddObject(){statsAddOf({cands:statObjCandidates(),type:"object_attr",idOf:c=>statObjId(c.object_type,c.attr),fields:c=>({object_type:c.object_type,attr:c.attr})});}
+function statsSetObjectField(oldId,otype,attr){statsReplaceField(oldId,{id:statObjId(otype,attr),object_type:otype,attr:attr});}
 /* Complétude : par type, instances référencées (quelque part) vs orphelines. */
 function statUsageCandidates(){return objectTypes().map(ot=>({object_type:ot.code,label:otLabel(ot)}));}
 function statUsageId(otype){return "object_usage:"+otype;}
-function statsAddObjectUsage(){
-  const cand=statUsageCandidates();if(!cand.length)return;
-  const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="object_usage")used[b.id]=1;});
-  const pick=cand.find(c=>!used[statUsageId(c.object_type)])||cand[0];
-  bl.push(normStatBlock({id:statUsageId(pick.object_type),type:"object_usage",on:true,size:"half",display:"both",shape:"donut",object_type:pick.object_type}));
-  statsSetBlocks(bl);
-}
-function statsSetUsageType(oldId,otype){
-  const bl=statsCfg();const i=bl.findIndex(b=>b.id===oldId);if(i<0)return;
-  bl[i]=normStatBlock(Object.assign({},bl[i],{id:statUsageId(otype),object_type:otype}));
-  statsSetBlocks(bl);
-}
+function statsAddObjectUsage(){statsAddOf({cands:statUsageCandidates(),type:"object_usage",idOf:c=>statUsageId(c.object_type),fields:c=>({object_type:c.object_type})});}
+function statsSetUsageType(oldId,otype){statsReplaceField(oldId,{id:statUsageId(otype),object_type:otype});}
 function statsRemoveBlock(id){statsSetBlocks(statsCfg().filter(b=>b.id!==id));}
 /* Répartition catégorielle d'une liste (multi-valeur supporté : un élément peut compter
    dans plusieurs clés). Clé vide -> « non renseigné ». */
@@ -12318,13 +12294,17 @@ function cfParseValue(f,raw){
   return raw; // date, text, textarea
 }
 /* Colonnes personnalisées d'un import : associe chaque champ à sa colonne (par libellé FR/EN ou code), sans réutiliser une colonne déjà prise. */
+/* Candidats de colonne d'un champ/attribut à l'import : libellé courant + fr/en/it + code,
+   normalisés par `norm`. Centralise l'ordre et l'inclusion des trois langues. */
+function cfColCands(f,norm){return [cfLabel(f),f.label&&f.label.fr,f.label&&f.label.en,f.label&&f.label.it,f.code].filter(Boolean).map(norm);}
+/* Premier en-tête (index) correspondant à l'un des candidats et non déjà réservé ; le réserve. */
+function firstUnclaimed(H,claimed,cands){for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){claimed.add(i);return i;}}return -1;}
 function cfImportCols(target,H,claimed){
   const map=[];
   customFieldsFor(target).forEach(f=>{
     if(f.type==="computed"||f.type==="image")return;   // dérivé / image : jamais importés
-    const cands=[cfLabel(f),(f.label&&f.label.fr),(f.label&&f.label.en),(f.label&&f.label.it),f.code].filter(Boolean).map(normH);
-    let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
-    if(col>=0){claimed.add(col);map.push({f,col});}
+    const col=firstUnclaimed(H,claimed,cfColCands(f,normH));
+    if(col>=0)map.push({f,col});
   });
   return map;
 }
@@ -12338,7 +12318,7 @@ function cfCotImportCols(H,claimed){
   const norm=s=>normH(s).replace(/[^a-z0-9]/g,"");
   const map=[];
   customFieldsFor("cotation").forEach(f=>{
-    const labs=[cfLabel(f),f.label&&f.label.fr,f.label&&f.label.en,f.label&&f.label.it,f.code].filter(Boolean).map(norm);
+    const labs=cfColCands(f,norm);
     const find=phase=>{
       for(let i=0;i<H.length;i++){if(claimed.has(i))continue;
         const key=norm(H[i]);
@@ -13144,22 +13124,34 @@ function parseLevel(val,axe){
   const m=axe.levels.find(x=>normV(x.label)===normV(v));
   return m?{v:m.value}:{err:t("import_level_unknown",v)};
 }
-function analyzeRisksCSV(text){
+/* Squelette commun des analyseurs CSV d'import : parse + en-tête normalisé + boucle sur les lignes
+   non vides, avec agrégation des erreurs par ligne dans res.errors. `setup(H,res)` renvoie soit
+   `false` (erreur bloquante déjà poussée dans res.errors), soit une fonction `parseRow(p,get)` qui
+   remplit l'objet de ligne `p={_line,errors:[]}`. */
+function analyzeCSV(text,setup){
   const {rows,sep}=parseCSV(text),res={sep,items:[],errors:[]};
   if(rows.length<1){res.errors.push(t("import_no_data"));return res;}
   const H=rows[0].map(normH);
+  const parseRow=setup(H,res);
+  if(!parseRow)return res;
+  for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
+    const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[]};
+    parseRow(p,get);
+    res.items.push(p);if(p.errors.length)res.errors.push(t("import_line",r+1,p.errors.join(" ; ")));}
+  return res;
+}
+function analyzeRisksCSV(text){return analyzeCSV(text,(H,res)=>{
   const IDX={id:colIndex(H,["id"]),label:colIndex(H,["label"]),
     category:colIndex(H,["category"]),description:colIndex(H,["description"]),
     owner:colIndex(H,["owner"]),
     pi:colIndex(H,["initialprobability"]),gi:colIndex(H,["initialseverity"]),
     pr:colIndex(H,["residualprobability"]),gr:colIndex(H,["residualseverity"])};
-  if(IDX.label<0&&IDX.id<0){res.errors.push(t("import_no_col"));return res;}
+  if(IDX.label<0&&IDX.id<0){res.errors.push(t("import_no_col"));return false;}
   const claimed=new Set(Object.values(IDX).filter(i=>i>=0));
   const cfMap=cfImportCols("risk",H,claimed);
   const cotMap=cfCotImportCols(H,claimed);
   const axV=analyse.grid.vertical_axis,axH=analyse.grid.horizontal_axis;
-  for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
-    const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[]};
+  return (p,get)=>{
     const id=get(IDX.id),lib=get(IDX.label);if(id)p.id=id;if(lib)p.label=lib;
     if(!id&&!lib)p.errors.push(t("import_missing_id"));
     ["category","description","owner"].forEach(k=>{const v=get(IDX[k]);if(v)p[k]=v;});
@@ -13174,18 +13166,14 @@ function analyzeRisksCSV(text){
     if(Object.keys(ei).length)p.initial_assessment=ei;if(Object.keys(er).length)p.residual_assessment=er;
     const custom={};cfMap.forEach(({f,col})=>{const v=cfParseValue(f,get(col));if(cfHasVal(v))custom[f.code]=v;});
     if(Object.keys(custom).length)p.custom=custom;
-    res.items.push(p);if(p.errors.length)res.errors.push(t("import_line",r+1,p.errors.join(" ; ")));}
-  return res;
-}
-function analyzeMeasuresCSV(text){
-  const {rows,sep}=parseCSV(text),res={sep,items:[],errors:[]};
-  if(rows.length<1){res.errors.push(t("import_no_data"));return res;}
-  const H=rows[0].map(normH);
+  };
+});}
+function analyzeMeasuresCSV(text){return analyzeCSV(text,(H,res)=>{
   const IDX={id:colIndex(H,["id"]),label:colIndex(H,["label"]),
     type:colIndex(H,["type"]),status:colIndex(H,["status"]),
     responsible:colIndex(H,["responsible"]),due_date:colIndex(H,["duedate"]),
     cost:colIndex(H,["cost"]),description:colIndex(H,["description"])};
-  if(IDX.label<0&&IDX.id<0){res.errors.push(t("import_no_col"));return res;}
+  if(IDX.label<0&&IDX.id<0){res.errors.push(t("import_no_col"));return false;}
   const cfMap=cfImportCols("measure",H,new Set(Object.values(IDX).filter(i=>i>=0)));
   // accepte le code interne ou le libellé localisé (fr/en/it)
   const statusCode=v=>{const nv=normV(v);if(!nv)return null;
@@ -13197,8 +13185,7 @@ function analyzeMeasuresCSV(text){
     for(const code of TYPES){const forms=[code,I18N.fr["type."+code],I18N.en["type."+code],I18N.it["type."+code]];
       if(forms.some(f=>f&&nv===normV(f)))return code;}
     return v;};
-  for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
-    const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[]};
+  return (p,get)=>{
     const id=get(IDX.id),lib=get(IDX.label);if(id)p.id=id;if(lib)p.label=lib;
     if(!id&&!lib)p.errors.push(t("import_missing_id"));
     ["type","responsible","due_date","cost","description"].forEach(k=>{const v=get(IDX[k]);if(v)p[k]=v;});
@@ -13206,9 +13193,8 @@ function analyzeMeasuresCSV(text){
     const s=get(IDX.status);if(s){const c=statusCode(s);if(c&&c.err)p.errors.push(c.err);else if(c)p.status=c;}
     const custom={};cfMap.forEach(({f,col})=>{const v=cfParseValue(f,get(col));if(cfHasVal(v))custom[f.code]=v;});
     if(Object.keys(custom).length)p.custom=custom;
-    res.items.push(p);if(p.errors.length)res.errors.push(t("import_line",r+1,p.errors.join(" ; ")));}
-  return res;
-}
+  };
+});}
 /* Fusionne une évaluation importée dans l'existante : probabilité/gravité écrasées,
    valeurs de champs perso de cotation (custom) fusionnées clé à clé (les champs absents du CSV sont conservés). */
 function mergeAssess(dst,src){
@@ -13245,27 +13231,22 @@ function commitImport(kind,items){
   markDirty();renderAll();return {added,updated};
 }
 /* ---------- Import / export des liens risque ↔ mesure ---------- */
-function analyzeLinksCSV(text){
-  const {rows,sep}=parseCSV(text),res={sep,items:[],errors:[]};
-  if(rows.length<1){res.errors.push(t("import_no_data"));return res;}
-  const H=rows[0].map(normH);
+function analyzeLinksCSV(text){return analyzeCSV(text,(H,res)=>{
   const IDX={risk:colIndex(H,["risk"]),
     measure:colIndex(H,["measure"]),
     comment:colIndex(H,["comment"])};
-  if(IDX.risk<0||IDX.measure<0){res.errors.push(t("import_no_col_link"));return res;}
+  if(IDX.risk<0||IDX.measure<0){res.errors.push(t("import_no_col_link"));return false;}
   const cfMap=cfImportCols("link",H,new Set(Object.values(IDX).filter(i=>i>=0)));
   const riskIds=new Set(analyse.risks.map(r=>r.id)), mesIds=new Set(analyse.measures.map(m=>m.id));
-  for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
-    const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[]};
+  return (p,get)=>{
     const ri=get(IDX.risk),mi=get(IDX.measure),cm=get(IDX.comment);p.risk=ri;p.measure=mi;if(cm)p.comment=cm;
     if(!ri||!mi)p.errors.push(t("import_link_missing"));
     else{if(!riskIds.has(ri))p.errors.push(t("import_risk_unknown",ri));
       if(!mesIds.has(mi))p.errors.push(t("import_measure_unknown",mi));}
     const custom={};cfMap.forEach(({f,col})=>{const v=cfParseValue(f,get(col));if(cfHasVal(v))custom[f.code]=v;});
     if(Object.keys(custom).length)p.custom=custom;
-    res.items.push(p);if(p.errors.length)res.errors.push(t("import_line",r+1,p.errors.join(" ; ")));}
-  return res;
-}
+  };
+});}
 function commitImportLinks(items){
   let added=0,skipped=0;
   items.forEach(p=>{if(p.errors&&p.errors.length)return;
@@ -13299,27 +13280,23 @@ function cfObjImportCols(ot,H,claimed){
   const map=[];
   (ot.attributes||[]).forEach(a=>{
     if(a.type==="computed"||a.type==="image")return;
-    const cands=[cfLabel(a),a.label&&a.label.fr,a.label&&a.label.en,a.label&&a.label.it,a.code].filter(Boolean).map(normH);
-    let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
-    if(col>=0){claimed.add(col);map.push({a,col});}
+    const col=firstUnclaimed(H,claimed,cfColCands(a,normH));
+    if(col>=0)map.push({a,col});
   });
   return map;
 }
-function analyzeObjectsCSV(otCode,text){
+function analyzeObjectsCSV(otCode,text){return analyzeCSV(text,(H,res)=>{
   const ot=objectTypeByCode(otCode);
-  const {rows,sep}=parseCSV(text),res={sep,items:[],errors:[]};
-  if(!ot||rows.length<1){res.errors.push(t("import_no_data"));return res;}
-  const H=rows[0].map(normH);
+  if(!ot){res.errors.push(t("import_no_data"));return false;}
   const idIdx=colIndex(H,["id"]);
   const map=cfObjImportCols(ot,H,new Set(idIdx>=0?[idIdx]:[]));
-  if(!map.length&&idIdx<0){res.errors.push(t("import_no_col"));return res;}
-  for(let r=1;r<rows.length;r++){const row=rows[r];if(row.every(c=>(c||"").trim()===""))continue;
-    const get=i=>i>=0?(row[i]||"").trim():"";const p={_line:r+1,errors:[],values:{}};
+  if(!map.length&&idIdx<0){res.errors.push(t("import_no_col"));return false;}
+  return (p,get)=>{
+    p.values={};
     const id=get(idIdx);if(id)p.id=id;
     map.forEach(({a,col})=>{const v=cfParseValue(a,get(col));if(cfHasVal(v))p.values[a.code]=v;});
-    res.items.push(p);}
-  return res;
-}
+  };
+});}
 function commitObjectImport(otCode,items){
   if(!objectTypeByCode(otCode))return {added:0,updated:0};
   let added=0,updated=0;
