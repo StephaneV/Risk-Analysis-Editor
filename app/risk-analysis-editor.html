@@ -6085,10 +6085,10 @@ function renderReport(){
   const RISKS0 = isFiltered?visibleRisks():analyse.risks;
   const MEAS0  = isFiltered?visibleMeasures():analyse.measures;
   const TRs0   = isFiltered?visibleTreatments():analyse.treatments;
-  const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
+  const cats=critLevelsSorted();
   // Rapport éclaté : le périmètre courant (RISKS/MEAS/TRs et dérivés) est réaffecté par chapitre.
   let RISKS=RISKS0, MEAS=MEAS0, TRs=TRs0, nR, nM, treated, ci, cr;
-  const count=(w)=>{const c={};cats.forEach(x=>c[x.code]=0);RISKS.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
+  const count=w=>critCounts(RISKS,cats,w);
   function setScope(rg,mg,tg){RISKS=rg;MEAS=mg;TRs=tg;nR=RISKS.length;nM=MEAS.length;
     treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
     ci=count("i");cr=count("r");}
@@ -6270,15 +6270,7 @@ function renderReport(){
     action_plan:s=>{
       let inner='<h2>'+esc(t("tab_plan"))+'</h2>';
       if(!nM)inner+='<div class="rp-sub">'+esc(t("measures_empty"))+'</div>';
-      else if(s.view==="status"){
-        STATUS_CODES.forEach(code=>{const l=MEAS.filter(m=>(m.status||"proposed")===code);if(l.length)inner+='<h3>'+esc(statusLabel(code))+'</h3>'+planTable(l);});
-      }else if(s.view==="responsible"){
-        const by={};MEAS.forEach(m=>{const k=m.responsible||"—";(by[k]=by[k]||[]).push(m);});
-        Object.keys(by).sort((a,b)=>a==="—"?1:b==="—"?-1:a.localeCompare(b)).forEach(k=>inner+='<h3>'+esc(k)+'</h3>'+planTable(by[k]));
-      }else{
-        const withD=MEAS.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:0);
-        inner+=planTable(withD.concat(MEAS.filter(m=>!m.due_date)));
-      }
+      else planGroups(MEAS,s.view).forEach(g=>{if(g.label)inner+='<h3>'+esc(g.label)+'</h3>';inner+=planTable(g.measures);});
       return '<div class="rp-card" id="rsec-action_plan">'+inner+'</div>';
     }
   };
@@ -6396,6 +6388,19 @@ function planRow(m){
     '<td data-col="due">'+(m.due_date?esc(fmtDate(m.due_date))+(ov?' <span class="plan-late">'+esc(t("plan_overdue"))+'</span>':''):'<span class="muted">—</span>')+'</td>'+
     '<td data-col="status">'+statusBadge(m.status)+'</td>'+
     '<td data-col="covered">'+planCovered(m.id)+'</td></tr>';
+}
+/* Groupes du plan d'action selon la vue : "status" (par statut), "responsible" (par responsable,
+   « — » en dernier), sinon échéance (un seul groupe, datées triées puis non datées). Renvoie une
+   liste ordonnée de {label|null, measures} — partagée par le rapport HTML et le rapport Word. */
+function planGroups(MEAS,view){
+  if(view==="status")
+    return STATUS_CODES.map(code=>({label:statusLabel(code),measures:MEAS.filter(m=>(m.status||"proposed")===code)})).filter(g=>g.measures.length);
+  if(view==="responsible"){
+    const by={};MEAS.forEach(m=>{const k=m.responsible||"—";(by[k]=by[k]||[]).push(m);});
+    return Object.keys(by).sort((a,b)=>a==="—"?1:b==="—"?-1:a.localeCompare(b)).map(k=>({label:k,measures:by[k]}));
+  }
+  const withD=MEAS.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:0);
+  return [{label:null,measures:withD.concat(MEAS.filter(m=>!m.due_date))}];
 }
 function planTable(list){
   // Conteneur à défilement : sur écran étroit le tableau défile au lieu de pousser la page.
@@ -8227,6 +8232,10 @@ function sheetXML(rows,opts){
   const filt=opts.filter?'<autoFilter ref="A1:'+colA(opts.filter-1)+'1"/>':'';
   return XMLD+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+views+cols+'<sheetData>'+body+'</sheetData>'+filt+'</worksheet>';
 }
+/* Répartition par niveau de criticité (partagée rapport HTML / Excel / Word). Niveaux triés
+   (ordre explicite sinon score minimal), et comptage des risques par niveau pour une phase. */
+function critLevelsSorted(){return (analyse.grid.criticality_levels||[]).slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));}
+function critCounts(risks,cats,w){const c={};cats.forEach(x=>c[x.code]=0);(risks||[]).forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;}
 function buildXlsx(){
   const S=xlsxStyleReg(),md=analyse.metadata||{},g=analyse.grid;
   const HDR=S.xf({b:true,color:"FFFFFF",fill:"3B4A63",wrap:true});
@@ -8243,9 +8252,8 @@ function buildXlsx(){
     return s(cfDisplay(f,raw),TXT);
   };
   // --- Synthèse ---
-  const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
-  const count=w=>{const c={};cats.forEach(x=>c[x.code]=0);
-    analyse.risks.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
+  const cats=critLevelsSorted();
+  const count=w=>critCounts(analyse.risks,cats,w);
   const ci=count("i"),cr=count("r");
   const treated=analyse.risks.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
   const syn=[[s((md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle),TITLE)],[]];
@@ -8644,9 +8652,9 @@ async function buildDocx(){
   const RISKS0=isFiltered?visibleRisks():analyse.risks;
   const MEAS0 =isFiltered?visibleMeasures():analyse.measures;
   const TRs0  =isFiltered?visibleTreatments():analyse.treatments;
-  const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
+  const cats=critLevelsSorted();
   let RISKS=RISKS0,MEAS=MEAS0,TRs=TRs0,nR,nM,treated,ci,cr;
-  const count=w=>{const c={};cats.forEach(x=>c[x.code]=0);RISKS.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
+  const count=w=>critCounts(RISKS,cats,w);
   function setScope(rg,mg,tg){RISKS=rg;MEAS=mg;TRs=tg;nR=RISKS.length;nM=MEAS.length;
     treated=RISKS.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
     ci=count("i");cr=count("r");}
@@ -8900,15 +8908,7 @@ async function buildDocx(){
     action_plan:s=>{
       let out=heading(t("tab_plan"));
       if(!nM){out+=dxP(dxRun(t("measures_empty"),{color:"7A8699"}),{sa:120});return out;}
-      if(s.view==="status"){
-        STATUS_CODES.forEach(code=>{const l=MEAS.filter(m=>(m.status||"proposed")===code);if(l.length)out+=h3(statusLabel(code))+dxPlanTable(l,CW);});
-      }else if(s.view==="responsible"){
-        const by={};MEAS.forEach(m=>{const k=m.responsible||"—";(by[k]=by[k]||[]).push(m);});
-        Object.keys(by).sort((a,b)=>a==="—"?1:b==="—"?-1:a.localeCompare(b)).forEach(k=>out+=h3(k)+dxPlanTable(by[k],CW));
-      }else{
-        const withD=MEAS.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:0);
-        out+=dxPlanTable(withD.concat(MEAS.filter(m=>!m.due_date)),CW);
-      }
+      planGroups(MEAS,s.view).forEach(g=>{if(g.label)out+=h3(g.label);out+=dxPlanTable(g.measures,CW);});
       return out;
     }
   };
