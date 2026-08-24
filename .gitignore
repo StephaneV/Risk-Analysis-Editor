@@ -1,12 +1,9 @@
-# --- Contenu confidentiel : ne jamais publier -------------------------------
-# S'ils sont recréés localement (analyses réelles, documents internes),
-# ces dossiers restent ignorés.
-aipd/
-sources/
-
 # --- Outillage local & dépendances de génération ----------------------------
 .claude/
 node_modules/
+
+# --- Documents de travail (audits, notes, brouillons, lanceur local) --------
+travaux/
 
 # --- Fichiers temporaires / système -----------------------------------------
 *.tmp
@@ -15,6 +12,3 @@ node_modules/
 Thumbs.db
 desktop.ini
 .DS_Store
-
-# Note : le dossier travaux/ (documents de travail, lanceur local) ignore
-# lui-même son contenu via travaux/.gitignore.
