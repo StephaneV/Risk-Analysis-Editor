@@ -3047,10 +3047,6 @@ function toastAction(msg,label,onAction){
 /* Nom accessible + infobulle d'un bouton à icône. Mêmes arguments que t(). */
 function a11y(){const s=t.apply(null,arguments);return ' aria-label="'+esc(s)+'" title="'+esc(s)+'"';}
 /* « 3 sur 12 » quand un filtre est actif ; rien sinon (le badge d'onglet porte déjà le total). */
-function setFltCount(id,shown,total){
-  const el=document.getElementById(id);if(!el)return;
-  el.textContent=(shown<total)?t("flt_results",shown,total):"";
-}
 function slug(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
   .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);}
 function cmpId(a,b){const na=parseInt(String(a.id).replace(/\D/g,""),10),nb=parseInt(String(b.id).replace(/\D/g,""),10);
@@ -3878,7 +3874,7 @@ function statsCfg(){
       if(!statNumField((customFieldsFor(b.target)||[]).find(x=>x.code===b.field)))return;   // champ numérique disparu -> retiré
       out.push(normStatBlock(b));seen[b.id]=1;
     }else if(b.type==="object_attr"){
-      if(!statObjAttrClosed(statObjAttr(b.object_type,b.attr)))return;   // type/attribut disparu -> retiré
+      if(!statObjAttrClosed(objectTypeAttr(b.object_type,b.attr)))return;   // type/attribut disparu -> retiré
       out.push(normStatBlock(b));seen[b.id]=1;
     }else if(b.type==="object_usage"){
       if(!objectTypeByCode(b.object_type))return;                        // type disparu -> retiré
@@ -3891,7 +3887,6 @@ function statsCfg(){
   STAT_STD.forEach(s=>{if(s.cond&&!s.cond())return;if(!seen[s.id])out.push(normStatBlock({id:s.id,type:s.type,on:saved?false:s.defOn,size:s.size,display:"both",shape:"donut"}));});
   return out;
 }
-function statBlocks(){return statsCfg();}
 function cleanStatBlock(b){const o={id:b.id,type:b.type,on:b.on!==false,size:b.size,display:b.display,shape:b.shape};if(b.type==="custom"||b.type==="num_agg"){o.target=b.target;o.field=b.field;}if(b.type==="object_attr"){o.object_type=b.object_type;o.attr=b.attr;}if(b.type==="object_usage")o.object_type=b.object_type;return o;}
 /* Écrit la config, marque à sauver, redessine l'onglet ET les options. */
 function statsSetBlocks(blocks){
@@ -3947,7 +3942,6 @@ function statObjAttrClosed(a){return a&&(cfIsClosed(a.type)||a.type==="reference
 function statObjCandidates(){const out=[];objectTypes().forEach(ot=>(ot.attributes||[]).forEach(a=>{
   if(statObjAttrClosed(a))out.push({object_type:ot.code,attr:a.code,label:otLabel(ot)+" · "+cfLabel(a)});}));return out;}
 function statObjId(otype,attr){return "object_attr:"+otype+":"+attr;}
-function statObjAttr(otype,attr){return objectTypeAttr(otype,attr);}
 function statsAddObject(){
   const cand=statObjCandidates();if(!cand.length)return;
   const bl=statsCfg();const used={};bl.forEach(b=>{if(b.type==="object_attr")used[b.id]=1;});
@@ -4093,7 +4087,7 @@ function statTitle(b){
     case "custom":{const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);return t("stat_by_field",f?cfLabel(f):"?");}
     case "num_agg":{const f=(customFieldsFor(b.target)||[]).find(x=>x.code===b.field);return t("stat_num_agg",f?cfLabel(f):"?");}
     case "object_by_type":return t("stat_by_object_type");
-    case "object_attr":{const ot=objectTypeByCode(b.object_type),a=statObjAttr(b.object_type,b.attr);return t("stat_object_dist",ot?otLabel(ot):"?",a?cfLabel(a):"?");}
+    case "object_attr":{const ot=objectTypeByCode(b.object_type),a=objectTypeAttr(b.object_type,b.attr);return t("stat_object_dist",ot?otLabel(ot):"?",a?cfLabel(a):"?");}
     case "object_usage":{const ot=objectTypeByCode(b.object_type);return t("stat_object_usage",ot?otLabel(ot):"?");}
   }
   return b.id;
@@ -4110,7 +4104,6 @@ function statValueLabel(f,k){if(f.type==="boolean")return k==="true"?t("cf_yes")
   if(f.type==="scale"){const it=(f.items||[]).find(x=>String(x.value)===k);return it?cfItemLabel(it):k;}
   const it=(f.items||[]).find(x=>x.code===k);return it?cfItemLabel(it):k;}
 function statCustomKeys(it,f){return statValueKeys((it.custom||{})[f.code],f);}
-function statCustomLabel(f,k){return statValueLabel(f,k);}
 /* Idem pour un attribut d'instance (valeurs dans o.values). */
 function statObjAttrKeys(o,a){return statValueKeys((o.values||{})[a.code],a);}
 function statBlockBody(block){
@@ -4139,7 +4132,7 @@ function statBlockBody(block){
     case "custom":{const f=(customFieldsFor(block.target)||[]).find(x=>x.code===block.field);
       if(!f)return '<div class="st-content"><p class="muted">—</p></div>';
       const list=block.target==="risk"?visibleRisks():block.target==="measure"?visibleMeasures():visibleTreatments();
-      const data=statDist(list,it=>statCustomKeys(it,f),{labelFn:k=>statCustomLabel(f,k),colorMap:f.type==="tags"?(k=>cfChoiceColor(f,k)):null});
+      const data=statDist(list,it=>statCustomKeys(it,f),{labelFn:k=>statValueLabel(f,k),colorMap:f.type==="tags"?(k=>cfChoiceColor(f,k)):null});
       const sub=(f.type==="checklist"||f.type==="tags")?t("stat_values")
         :(block.target==="risk"?t("stat_risks"):block.target==="measure"?t("stat_measures"):t("tab_links"));
       return statDistCard(block,cfLabel(f),data,sub,block.target);}
@@ -4156,7 +4149,7 @@ function statBlockBody(block){
     case "object_by_type":{
       const data=statDist(objectsAll(),o=>o.type,{labelFn:code=>{const ot=objectTypeByCode(code);return ot?otLabel(ot):code;}});
       return statDistCard(block,t("th_type"),data,t("stat_objects"),"object");}
-    case "object_attr":{const a=statObjAttr(block.object_type,block.attr);
+    case "object_attr":{const a=objectTypeAttr(block.object_type,block.attr);
       if(!a)return '<div class="st-content"><p class="muted">—</p></div>';
       const data=statDist(objectsOfType(block.object_type),o=>statObjAttrKeys(o,a),{labelFn:k=>statValueLabel(a,k),colorMap:a.type==="tags"?(k=>cfChoiceColor(a,k)):null});
       const sub=(a.type==="checklist"||a.type==="tags"||a.type==="reference")?t("stat_values"):t("stat_objects");
@@ -4594,7 +4587,7 @@ function renderStats(){
   const host=document.getElementById("stats");if(!host)return;
   statReset();
   host.className="st-grid";
-  host.innerHTML=calcAnalysisStatHTML()+statBlocks().filter(b=>b.on!==false).map(statBlockHTML).join("");
+  host.innerHTML=calcAnalysisStatHTML()+statsCfg().filter(b=>b.on!==false).map(statBlockHTML).join("");
   setFilterCount("stats",visibleRisks().length,analyse.risks.length);
 }
 /* Tuiles « indicateurs calculés » : les champs personnalisés calculés de cible ANALYSE (agrégats). */
@@ -5914,20 +5907,6 @@ function reportMatrixSVG(mode,risks){
   return svg;
 }
 // Matrice UNIQUE (initial ou résiduel), pour la balise {{ matrix type="initial|residual" }} du modèle Word.
-function reportSingleMatrixSVG(which,risks){
-  const _prevGR=gridRiskOverride;if(risks)gridRiskOverride=risks;
-  const holder=document.createElement("div");
-  holder.style.cssText="position:absolute;left:-99999px;top:0;width:640px;background:#ffffff";
-  document.body.appendChild(holder);
-  const b=document.createElement("div");b.className="matrix-block";b.style.maxWidth="620px";b.style.margin="0 auto";
-  b.innerHTML=matrixHeader(which==="residual"?t("mtx_residual"):t("mtx_initial"));
-  const c=document.createElement("div");b.appendChild(c);holder.appendChild(b);
-  const mc=buildGrid(c,which);
-  if(getArrangement()==="manual"){ensureManualInit();renderManualSide(mc,which);}else layoutStacks(holder);
-  const legend=document.createElement("div");legend.className="legend";legend.innerHTML=critLegend();holder.appendChild(legend);
-  const svg=buildExportSVG([b],legend,holder,false).svg;
-  holder.remove();gridRiskOverride=_prevGR;return svg;
-}
 /* ============================================================
    PERSONNALISATION DU RAPPORT
    Config sous analyse.extensions.display.report. Absente => modèle par défaut
@@ -7108,11 +7087,6 @@ function cfFilterStripURL(){
   }catch(e){}
 }
 
-function fillSelect(sel,pairs,allLabel,current){
-  if(!sel)return;
-  sel.innerHTML='<option value="">'+esc(allLabel)+'</option>'+pairs.map(p=>'<option value="'+esc(p[0])+'">'+esc(p[1])+'</option>').join("");
-  sel.value=current||"";if(sel.value!==(current||""))sel.value="";
-}
 function updateSortInd(tableId,st){
   const tbl=document.getElementById(tableId);if(!tbl)return;
   tbl.querySelectorAll("th[data-sort] .sort-ind").forEach(s=>s.textContent="");
@@ -7235,7 +7209,6 @@ function riskDeltaCell(r){
 /* Pastille de code de risque, cliquable : ouvre la fiche du risque (pendant de measurePill). */
 function riskPill(id){const rr=riskById(id);
   return '<span class="pill" data-open-r="'+esc(id)+'" tabindex="0" role="button" aria-label="'+esc(rr?rr.id+" — "+rr.label:id)+'">'+esc(id)+'</span>';}
-function measurePillsFor(id){return riskPill(id);}
 // Descripteurs des colonnes intégrées (hors Actions), par table.
 function builtinCols(table){
   if(table==="risks")return [
@@ -7256,7 +7229,7 @@ function builtinCols(table){
     {key:"resp",label:t("th_responsible"),sort:"resp",cell:m=>'<span class="muted">'+esc(m.responsible||"—")+'</span>'},
     {key:"due",label:t("f_due_date"),sort:"due",def:false,cell:m=>'<span class="muted">'+esc(fmtDate(m.due_date)||"—")+'</span>'},
     {key:"cost",label:t("f_cost"),sort:"cost",def:false,cell:m=>'<span class="muted">'+(m.cost!=null&&m.cost!==""?esc(m.cost):"—")+'</span>'},
-    {key:"covered",label:t("th_covered_risks"),cell:m=>{const rk=risksOfMeasure(m.id);return rk.length?'<span class="pill-list">'+rk.map(id=>measurePillsFor(id)).join("")+'</span>':'<span class="muted">—</span>';}},
+    {key:"covered",label:t("th_covered_risks"),cell:m=>{const rk=risksOfMeasure(m.id);return rk.length?'<span class="pill-list">'+rk.map(id=>riskPill(id)).join("")+'</span>':'<span class="muted">—</span>';}},
   ];
   return [ // links (le champ « custom » vit dans l'objet treatment)
     {key:"rid",label:t("th_risk_id"),pinned:"first",sort:"rid",cell:x=>'<span class="id-badge">'+esc(x.risk)+'</span>'},
@@ -8689,17 +8662,6 @@ function dxBandPara(b,fields,logoRun){
 }
 const DX_HFNS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="'+OD_REL+'" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"';
 // Matrices du rapport en PNG (rendu ×2 pour l'impression), avec leurs dimensions d'affichage.
-async function reportImagesPNG(){
-  const out=[];
-  for(const mode of ["side","traj"]){
-    const svg=reportMatrixSVG(mode);
-    const m=/width="(\d+(?:\.\d+)?)" height="(\d+(?:\.\d+)?)"/.exec(svg);
-    const W=m?Math.round(+m[1]):800,H=m?Math.round(+m[2]):600;
-    const blob=await rasterizePNG(svg,W,H,2);
-    out.push({bytes:new Uint8Array(await blob.arrayBuffer()),w:W,h:H});
-  }
-  return out;
-}
 /* Rapport Word (.docx) piloté par la configuration (voir reportCfg()/renderReport()) :
    page de garde, table des matières native, en-tête/pied natifs (avec {page}/{pages}),
    sections dans l'ordre choisi, colonnes des tableaux, matrices empilées = 2 images,
@@ -9889,7 +9851,6 @@ function tmplRenderTokens(text,ctx,strip){
   }
   return {plain,parts,rich};
 }
-function tmplProcessText(text,ctx,strip){return tmplRenderTokens(text,ctx,strip).plain;}
 function tmplScanReport(text){
   for(const tk of tmplTokenize(text)){ if(tk.t!=="tag")continue; const inner=tk.v.trim();
     if(/^report\b/.test(inner)){ const a=tmplParseAttrs(inner.slice(6));
@@ -10250,7 +10211,7 @@ function tmplStatDim(type,attrs,ctx){
   if(type.indexOf("cf.")===0){const code=type.slice(3),f=tmplCfField("risk",code)||tmplCfField("measure",code)||tmplCfField("link",code)||tmplCfField("cotation",code);
     if(!f){tmplWarn("tw_stat_field",type);return {none:true};}
     const list=f.target==="measure"?meas():f.target==="link"?(analyse.treatments||[]).slice():risks();
-    return {data:statDist(list,it=>statCustomKeys(it,f),{labelFn:k=>statCustomLabel(f,k),colorMap:f.type==="tags"?(k=>cfChoiceColor(f,k)):null}),colLabel:cfLabel(f),sub:(f.target==="measure"?t("stat_measures"):f.target==="link"?t("tab_links"):t("stat_risks"))};
+    return {data:statDist(list,it=>statCustomKeys(it,f),{labelFn:k=>statValueLabel(f,k),colorMap:f.type==="tags"?(k=>cfChoiceColor(f,k)):null}),colLabel:cfLabel(f),sub:(f.target==="measure"?t("stat_measures"):f.target==="link"?t("tab_links"):t("stat_risks"))};
   }
   // Blocs « objets » (le référentiel n'est pas filtré par les filtres risque/mesure).
   if(type==="objects"||type==="object_by_type")
@@ -11180,7 +11141,6 @@ function cfItemLabel(it){const L=it&&it.label||{};return L[lang]||(it&&it.code)|
 function cfItemDesc(it){const D=it&&it.description||{};return D[lang]||"";}
 function cfNeedsItems(ty){return ty==="select"||ty==="checklist"||ty==="tags"||ty==="scale";}
 /* Échelle : items dont l'identité est la valeur numérique (pas de code), avec couleur. */
-function cfIsScale(ty){return ty==="scale";}
 function cfBoundKind(ty){ // 'num' | 'date' | 'len' | 'items' | null
   if(ty==="integer"||ty==="float")return "num";
   if(ty==="date")return "date";
@@ -11195,7 +11155,7 @@ function cfBoundKind(ty){ // 'num' | 'date' | 'len' | 'items' | null
    Valeurs typées : num · date ("AAAA-MM-JJ") · text · bool · nil (absent) · list (collections, lot E).
    env = { get(nom) → valeur brute/typée ou null(absent), today() → "AAAA-MM-JJ" }.
    Public : calcParse(src)→AST (jette CalcError), calcEvaluate(src,env)→{ok,type,value}|{ok:false,error},
-            calcCheck(src)→{ok}|{ok:false,error}, calcEnv(vars,todayISO).
+            calcCheck(src)→{ok}|{ok:false,error}.
    ============================================================ */
 function calcErr(m){const e=new Error(m);e.calc=true;return e;}
 const CV_NIL={t:"nil",v:null};
@@ -11352,9 +11312,6 @@ function calcFunc(node,env){
 function calcEvaluate(src,env){try{const v=calcEval(calcParse(src),env);return {ok:true,type:v.t,value:v.v};}catch(e){return {ok:false,error:(e&&e.message)||String(e)};}}
 function calcCheck(src){try{calcParse(src);return {ok:true};}catch(e){return {ok:false,error:(e&&e.message)||String(e)};}}
 /* Environnement d'évaluation : vars = { nom → valeur brute/typée }, today = "AAAA-MM-JJ". */
-function calcEnv(vars,todayISO){vars=vars||{};return {
-  get:name=>Object.prototype.hasOwnProperty.call(vars,name)?vars[name]:null,
-  today:()=>{if(!todayISO)throw calcErr("TODAY() indisponible (aucune date fournie)");return todayISO;}};}
 
 /* ---------- Champ « valeur calculée » (computed) — liaison à une entité (lot C) ----------
    L'expression réfère aux champs de la MÊME entité (cf.<code>) et à des grandeurs dérivées
@@ -12374,7 +12331,7 @@ function cfImportCols(target,H,claimed){
   const map=[];
   customFieldsFor(target).forEach(f=>{
     if(f.type==="computed"||f.type==="image")return;   // dérivé / image : jamais importés
-    const cands=[cfLabel(f),(f.label&&f.label.fr),(f.label&&f.label.en),f.code].filter(Boolean).map(normH);
+    const cands=[cfLabel(f),(f.label&&f.label.fr),(f.label&&f.label.en),(f.label&&f.label.it),f.code].filter(Boolean).map(normH);
     let col=-1;for(const c of cands){const i=H.indexOf(c);if(i>=0&&!claimed.has(i)){col=i;break;}}
     if(col>=0){claimed.add(col);map.push({f,col});}
   });
@@ -12411,11 +12368,6 @@ function cfReportNotes(target,values){
     return cfHasVal(v)?'<div class="rp-note md"><b>'+esc(cfLabel(f))+' :</b> '+cfDisplayHTML(f,v,true)+'</div>':"";}).join("");
 }
 /* Lignes de tableau « Libellé | valeur » (bloc Présentation de l'analyse). */
-function cfReportRows(target,values){
-  values=values||{};
-  return customFieldsFor(target).map(f=>{const v=values[f.code];
-    return cfHasVal(v)?'<tr><td>'+esc(cfLabel(f))+'</td><td class="md">'+cfDisplayHTML(f,v,true)+'</td></tr>':"";}).join("");
-}
 function cfControlHTML(f,value){
   const req=f.required?REQ:"", help=cfHelp(f);
   const lab='<span class="lab"'+(help?' title="'+esc(help)+'" style="cursor:help"':'')+'>'+esc(cfLabel(f))+req+'</span>';

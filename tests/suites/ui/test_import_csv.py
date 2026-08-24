@@ -53,6 +53,21 @@ def test_import_risks_reports_line_errors(app):
     assert any(it["id"] == "RB1" for it in good)
 
 
+def test_import_maps_italian_custom_label(app):
+    """Régression 0.3 : une colonne nommée par le libellé ITALIEN d'un champ perso est mappée
+    (cfImportCols incluait fr/en mais omettait it)."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("""()=>{ analyse.custom_fields=[{code:'lvl', target:'risk', type:'text',
+        label:{fr:'Niveau FR', en:'Level EN', it:'Livello IT'}}]; }""")
+    app.js("openImportModal('risks')")
+    app.set_input("#impText", "id,Livello IT\nRZ1,haut")   # en-tête = libellé italien
+    app.click("#modalOk")
+    r = app.js("riskById('RZ1')")
+    assert r and (r.get("custom") or {}).get("lvl") == "haut", \
+        f"colonne au libellé italien non mappée à l'import : {r and r.get('custom')}"
+
+
 def test_import_links_unknown_refs(app):
     """D06 : import de liens signalant risque/mesure inconnu(e)."""
     app.load("ebios.rae.json")
