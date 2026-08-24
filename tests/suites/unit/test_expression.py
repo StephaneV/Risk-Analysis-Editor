@@ -97,6 +97,7 @@ JS_SUITE = r"""
     {id:'I6',expr:'ROUND(1)',err:true},
     {id:'I8',expr:'TODAY()',err:true},
     {id:'I9',expr:'"abc" + 1',err:true},
+    {id:'I10',expr:'1.2.3',err:true},   // nombre à deux points -> rejeté (robustesse 3.1)
   ];
   return C.map(c=>{
     let ok=false, detail='';

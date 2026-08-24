@@ -2641,7 +2641,7 @@ function t(key){
 }
 /* Libellés localisés dérivés des codes internes (français) */
 const STATUS_CODES=["proposed","planned","in_progress","implemented","abandoned"];
-function statusLabel(code){return code?t("status."+code):"";}
+function statusLabel(code){if(!code)return "";const k="status."+code;const v=t(k);return v===k?code:v;}
 function typeLabel(code){const k="type."+code;const v=t(k);return v===k?code:v;}
 function accLabel(code){const k="acc."+code;const v=t(k);return v===k?code:v;}
 
@@ -6678,9 +6678,9 @@ function cfEntityMatches(obj,target){
 /* Filtres natifs qui se propagent (au meme titre que les champs perso) : categorie de
    risque, type et statut de mesure. La recherche texte et les filtres propres au Plan
    d'action (responsable, en retard) restent locaux a leur vue et ne passent pas ici. */
-function natRiskCat(){const ls=(typeof listState==="object"&&listState&&listState.risks)||{};return ls.cat||"";}
-function natMeasType(){const ls=(typeof listState==="object"&&listState&&listState.measures)||{};return ls.type||"";}
-function natMeasStatus(){const ls=(typeof listState==="object"&&listState&&listState.measures)||{};return ls.status||"";}
+function natRiskCat(){return (listState.risks||{}).cat||"";}
+function natMeasType(){return (listState.measures||{}).type||"";}
+function natMeasStatus(){return (listState.measures||{}).status||"";}
 function natRiskMatches(r){const c=natRiskCat();return !c||(r.category||"")===c;}
 function natMeasureMatches(m){const ty=natMeasType(),st=natMeasStatus();
   return (!ty||(m.type||"")===ty)&&(!st||(m.status||"")===st);}
@@ -8619,9 +8619,8 @@ function dxTocField(){
 }
 // Zone d'en-tête/pied : substitution des variables texte + {page}/{pages} en champs Word.
 function dxZoneRuns(text,fields){
-  const subOther=s=>String(s).replace(/\{title\}/g,fields.title).replace(/\{organization\}/g,fields.organization)
-    .replace(/\{author\}/g,fields.author).replace(/\{date\}/g,fields.date)
-    .replace(/\{version\}/g,fields.version).replace(/\{confidentiality\}/g,fields.confidentiality);
+  // Une seule passe : évite toute re-substitution et l'interprétation des motifs $ d'une valeur.
+  const subOther=s=>String(s).replace(/\{(title|organization|author|date|version|confidentiality)\}/g,(_,k)=>fields[k]);
   let out="",re=/\{(page|pages)\}/g,last=0,m;
   while((m=re.exec(text))){
     const before=text.slice(last,m.index);if(before)out+=dxRun(subOther(before),{sz:18,color:"7A8699"});
@@ -11157,7 +11156,9 @@ function calcTokenize(src){
   const isD=c=>c>="0"&&c<="9",isA=c=>/[A-Za-z_]/.test(c),isAN=c=>/[A-Za-z0-9_.]/.test(c);
   while(i<n){const c=s[i];
     if(c===" "||c==="\t"||c==="\n"||c==="\r"){i++;continue;}
-    if(isD(c)||(c==="."&&isD(s[i+1]))){let j=i+1;while(j<n&&(isD(s[j])||s[j]==="."))j++;out.push({k:"num",v:parseFloat(s.slice(i,j))});i=j;continue;}
+    if(isD(c)||(c==="."&&isD(s[i+1]))){let j=i+1,seenDot=(c===".");
+      while(j<n&&(isD(s[j])||s[j]===".")){if(s[j]==="."){if(seenDot)throw calcErr("Nombre invalide : « "+s.slice(i,j+1)+" »");seenDot=true;}j++;}
+      out.push({k:"num",v:parseFloat(s.slice(i,j))});i=j;continue;}
     if(c==='"'||c==="'"){const q=c;let j=i+1,str="";while(j<n&&s[j]!==q){if(s[j]==="\\"&&j+1<n){str+=s[j+1];j+=2;}else{str+=s[j];j++;}}if(j>=n)throw calcErr("Chaîne non terminée");out.push({k:"str",v:str});i=j+1;continue;}
     if(isA(c)){let j=i+1;while(j<n&&isAN(s[j]))j++;out.push({k:"id",v:s.slice(i,j)});i=j;continue;}
     const two=s.substr(i,2);
@@ -11233,7 +11234,7 @@ function calcCmp(node,env){
   if(A.t==="date"&&B.t==="date"){cmp=A.v<B.v?-1:A.v>B.v?1:0;}
   else if((A.t==="num"||A.t==="bool"||A.t==="date")&&(B.t==="num"||B.t==="bool"||B.t==="date")){const a=calcToNum(A),b=calcToNum(B);cmp=a<b?-1:a>b?1:0;}
   else{const c=calcToText(A).localeCompare(calcToText(B),undefined,{numeric:true});cmp=c<0?-1:c>0?1:0;}
-  switch(op){case "=":return cvBool(cmp===0);case "<>":return cvBool(cmp!==0);case "<":return cvBool(cmp<0);case "<=":return cvBool(cmp<=0);case ">":return cvBool(cmp>0);case ">=":return cvBool(cmp>=0);}
+  switch(op){case "=":return cvBool(cmp===0);case "<>":return cvBool(cmp!==0);case "<":return cvBool(cmp<0);case "<=":return cvBool(cmp<=0);case ">":return cvBool(cmp>0);case ">=":return cvBool(cmp>=0);default:throw calcErr("Comparateur inconnu : "+op);}
 }
 function calcFunc(node,env){
   const name=node.name,args=node.args,arg=i=>calcEval(args[i],env);
@@ -12828,7 +12829,7 @@ document.addEventListener("input",e=>{if(e.target&&e.target.closest&&e.target.cl
 document.addEventListener("change",e=>{if(e.target&&e.target.closest&&e.target.closest("#cfAnalysisValues"))cfAnalysisComputedRefresh();});
 
 function renderAxis(elId,axis,key){
-  const el=document.getElementById(elId);
+  const el=document.getElementById(elId);if(!el)return;
   el.innerHTML='<label class="field"><span class="lab">'+esc(t("axis_label"))+'</span><input value="'+esc(axis.label)+'" data-axis-label="'+key+'"></label>'+
     axis.levels.map((n,i)=>
       '<div style="margin-bottom:10px">'+
@@ -12950,7 +12951,7 @@ function setMeta(k,v){analyse.metadata=analyse.metadata||{};if(v)analyse.metadat
 
 /* --- niveaux de criticité --- */
 function renderCrit(){
-  const tb=document.getElementById("critBody");tb.innerHTML="";
+  const tb=document.getElementById("critBody");if(!tb)return;tb.innerHTML="";
   analyse.grid.criticality_levels.forEach((c,i)=>{
     const tr=document.createElement("tr");
     tr.innerHTML=
@@ -13305,7 +13306,7 @@ function commitObjectImport(otCode,items){
     if(target&&target.type===otCode){target.values=Object.assign(target.values||{},p.values||{});updated++;}
     else{const id=(p.id&&!objectById(p.id))?p.id:newObjectId(otCode);objectsAll().push({id:id,type:otCode,values:p.values||{}});added++;}
   });
-  return {added,updated};
+  markDirty();refreshObjectsUI();return {added,updated};   // s'auto-rafraîchit, comme commitImport/commitImportLinks
 }
 function openImportModal(kind){
   const objCode=(kind&&kind.indexOf("obj:")===0)?kind.slice(4):null;
@@ -13332,7 +13333,7 @@ function openImportModal(kind){
   openModal(title,body,()=>{
     const res=analyze();const valid=res.items.filter(p=>!(p.errors&&p.errors.length));
     if(!valid.length){modalMsg(t("err_no_valid"));return false;}
-    if(objCode){const {added,updated}=commitObjectImport(objCode,res.items);markDirty();refreshObjectsUI();toast(t("toast_import",added,updated));}
+    if(objCode){const {added,updated}=commitObjectImport(objCode,res.items);toast(t("toast_import",added,updated));}
     else if(isL){const rl=commitImportLinks(res.items);toast(t("toast_import_links",rl.added,rl.skipped));}
     else{const {added,updated}=commitImport(kind,res.items);toast(t("toast_import",added,updated));}
     return true;
