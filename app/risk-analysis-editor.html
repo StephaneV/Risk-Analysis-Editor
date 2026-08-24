@@ -3031,8 +3031,8 @@ function attachCompletion(input,source,libelleListe){
 }
 
 function nextId(list,prefix){let n=1;const ids=new Set(list.map(x=>x.id));while(ids.has(prefix+n))n++;return prefix+n;}
-function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),4000);}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),4000);}
 /* Toast avec bouton d'action (ex. « Annuler » après une suppression). Durée allongée :
    l'utilisateur doit avoir le temps de lire ET de cliquer. L'action ne vaut qu'une fois. */
 function toastAction(msg,label,onAction){
@@ -3102,8 +3102,8 @@ function critFor(score){
 }
 function critOfEval(ev){return critFor(scoreOf(ev.probability,ev.severity));}
 function residual(risk){return risk.residual_assessment||risk.initial_assessment;}
-function measuresOfRisk(rid){return analyse.treatments.filter(t=>t.risk===rid).map(t=>t.measure);}
-function risksOfMeasure(mid){return analyse.treatments.filter(t=>t.measure===mid).map(t=>t.risk);}
+function measuresOfRisk(rid){return analyse.treatments.filter(tr=>tr.risk===rid).map(tr=>tr.measure);}
+function risksOfMeasure(mid){return analyse.treatments.filter(tr=>tr.measure===mid).map(tr=>tr.risk);}
 function measureById(id){return analyse.measures.find(m=>m.id===id);}
 function riskById(id){return analyse.risks.find(r=>r.id===id);}
 /* ---------- Champs personnalisés (définitions) ---------- */
@@ -3156,7 +3156,7 @@ function purgeFieldValues(f){const del=s=>{if(s&&s[f.code]!==undefined)delete s[
   if(f.target==="analysis")del(analyse.custom);
   else if(f.target==="risk")(analyse.risks||[]).forEach(r=>del(r.custom));
   else if(f.target==="measure")(analyse.measures||[]).forEach(m=>del(m.custom));
-  else if(f.target==="link")(analyse.treatments||[]).forEach(t=>del(t.custom));
+  else if(f.target==="link")(analyse.treatments||[]).forEach(tr=>del(tr.custom));
   else if(f.target==="cotation")(analyse.risks||[]).forEach(r=>{if(r.initial_assessment)del(r.initial_assessment.custom);if(r.residual_assessment)del(r.residual_assessment.custom);});}
 /* Suppression d'un type en CASCADE (avec confirmation) : instances + champs/attributs de référence
    qui le ciblent (définitions et valeurs). */
@@ -5139,9 +5139,9 @@ function getTrajArrangement(){return (analyse.extensions&&analyse.extensions.dis
 function setTrajArrangement(v){analyse.extensions=analyse.extensions||{};analyse.extensions.display=analyse.extensions.display||{};
   analyse.extensions.display.trajectory_arrangement=v;markDirty();}
 function renderTrajectory(mc){
-  const t=getTrajArrangement();
-  if(t==="manual"){ensureManualInit();renderManualTraj(mc);}
-  else if(t==="like_matrices")drawTrajectories(mc);
+  const arr=getTrajArrangement();
+  if(arr==="manual"){ensureManualInit();renderManualTraj(mc);}
+  else if(arr==="like_matrices")drawTrajectories(mc);
   else layoutTrajectoryGridOpt(mc); // "optimized_grid" par défaut ; repli pour d'anciennes valeurs (ex. "grid", "optimized")
 }
 
@@ -5649,9 +5649,9 @@ function svgChipEl(el,ox,oy){
   const cx=r.left-ox+r.width/2,cy=r.top-oy+r.height/2,f=colorToFill(cs.backgroundColor);
   const sw=parseFloat(cs.borderTopWidth)||2,rad=Math.max(1,r.width/2-sw/2);
   const dash=cs.borderTopStyle==="dashed"?' stroke-dasharray="3 2"':"";
-  const t=svgEsc((el.textContent||"").trim());
+  const txt=svgEsc((el.textContent||"").trim());
   return '<circle cx="'+cx+'" cy="'+cy+'" r="'+rad+'" fill="'+f.fill+'"'+(f.opacity<1?' fill-opacity="'+f.opacity+'"':"")+' stroke="'+cs.borderTopColor+'" stroke-width="'+sw+'"'+dash+'/>'+
-    (t?'<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="'+svgEsc(cs.fontFamily)+'" font-size="'+cs.fontSize+'" font-weight="800" fill="'+cs.color+'">'+t+'</text>':"");
+    (txt?'<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="'+svgEsc(cs.fontFamily)+'" font-size="'+cs.fontSize+'" font-weight="800" fill="'+cs.color+'">'+txt+'</text>':"");
 }
 function svgArrowEl(l,ox,oy,mrect){
   const mx=mrect.left-ox,my=mrect.top-oy;
@@ -6107,10 +6107,10 @@ function renderReport(){
   const title=(md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle);
   // Périmètre de base. Modes exclusifs : analyse complète / sous-ensemble filtré / éclaté.
   // L'éclaté (iteration.by != none) part toujours de l'analyse complète, chaque chapitre filtrant.
-  const _filt = cfg.iteration.by==="none" && cfg.scope==="filtered";
-  const RISKS0 = _filt?visibleRisks():analyse.risks;
-  const MEAS0  = _filt?visibleMeasures():analyse.measures;
-  const TRs0   = _filt?visibleTreatments():analyse.treatments;
+  const isFiltered = cfg.iteration.by==="none" && cfg.scope==="filtered";
+  const RISKS0 = isFiltered?visibleRisks():analyse.risks;
+  const MEAS0  = isFiltered?visibleMeasures():analyse.measures;
+  const TRs0   = isFiltered?visibleTreatments():analyse.treatments;
   const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
   // Rapport éclaté : le périmètre courant (RISKS/MEAS/TRs et dérivés) est réaffecté par chapitre.
   let RISKS=RISKS0, MEAS=MEAS0, TRs=TRs0, nR, nM, treated, ci, cr;
@@ -7600,9 +7600,9 @@ document.getElementById("risksTable").addEventListener("click",e=>{
     /* Filet d'annulation : la fiche et ses liens sont mémorisés (avec sa position) et
        restaurables depuis le toast — la confirmation protège, le toast pardonne. */
     const idx=analyse.risks.findIndex(r=>r.id===id),obj=analyse.risks[idx];
-    const liens=analyse.treatments.filter(t=>t.risk===id);
+    const liens=analyse.treatments.filter(tr=>tr.risk===id);
     analyse.risks=analyse.risks.filter(r=>r.id!==id);
-    analyse.treatments=analyse.treatments.filter(t=>t.risk!==id);
+    analyse.treatments=analyse.treatments.filter(tr=>tr.risk!==id);
     markDirty();renderAll();
     toastAction(t("toast_deleted",id),t("btn_undo"),()=>{
       analyse.risks.splice(Math.min(idx,analyse.risks.length),0,obj);
@@ -7678,7 +7678,7 @@ function openRiskModal(id,dup,focusCol){
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.risks.push(obj);
     else{const i=analyse.risks.findIndex(x=>x.id===r.id);analyse.risks[i]=obj;
-      if(newId!==r.id)analyse.treatments.forEach(t=>{if(t.risk===r.id)t.risk=newId;});}
+      if(newId!==r.id)analyse.treatments.forEach(tr=>{if(tr.risk===r.id)tr.risk=newId;});}
     /* Liens de ce risque. On retire les décochés en place et on ajoute les nouveaux à la
        fin : les liens conservés gardent leur position, donc l'ordre du fichier reste
        stable d'un enregistrement à l'autre (diffs lisibles), et leur note comme leurs
@@ -7700,9 +7700,9 @@ function openRiskModal(id,dup,focusCol){
   // aperçus dynamiques du score/criticité
   const upd=()=>{
     const ip=+val("f_ip"),ig=+val("f_ig"),rp=+val("f_rp"),rg=+val("f_rg");
-    const si=scoreOf(ip,ig),ci=critFor(si),sr=scoreOf(rp,rg),cr=critFor(sr);
-    document.getElementById("prev_i").innerHTML=esc(t("score_prefix",si))+'<span class="tag" style="background:'+ci.color+';color:'+badgeFg(ci.color)+'">'+esc(ci.label)+'</span>';
-    document.getElementById("prev_r").innerHTML=esc(t("score_prefix",sr))+'<span class="tag" style="background:'+cr.color+';color:'+badgeFg(cr.color)+'">'+esc(cr.label)+'</span>';
+    const si=scoreOf(ip,ig),critI=critFor(si),sr=scoreOf(rp,rg),critR=critFor(sr);
+    document.getElementById("prev_i").innerHTML=esc(t("score_prefix",si))+'<span class="tag" style="background:'+critI.color+';color:'+badgeFg(critI.color)+'">'+esc(critI.label)+'</span>';
+    document.getElementById("prev_r").innerHTML=esc(t("score_prefix",sr))+'<span class="tag" style="background:'+critR.color+';color:'+badgeFg(critR.color)+'">'+esc(critR.label)+'</span>';
   };
   ["f_ip","f_ig","f_rp","f_rg"].forEach(id=>document.getElementById(id).addEventListener("change",upd));
   upd();
@@ -7792,9 +7792,9 @@ document.getElementById("measuresTable").addEventListener("click",e=>{
   if(dl){const id=dl.dataset.delM;confirmModal(t("confirm_del_measure",id),()=>{
     // Même filet d'annulation que pour les risques.
     const idx=analyse.measures.findIndex(m=>m.id===id),obj=analyse.measures[idx];
-    const liens=analyse.treatments.filter(t=>t.measure===id);
+    const liens=analyse.treatments.filter(tr=>tr.measure===id);
     analyse.measures=analyse.measures.filter(m=>m.id!==id);
-    analyse.treatments=analyse.treatments.filter(t=>t.measure!==id);
+    analyse.treatments=analyse.treatments.filter(tr=>tr.measure!==id);
     markDirty();renderAll();
     toastAction(t("toast_deleted",id),t("btn_undo"),()=>{
       analyse.measures.splice(Math.min(idx,analyse.measures.length),0,obj);
@@ -7841,7 +7841,7 @@ function openMeasureModal(id,dup,focusCol){
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.measures.push(obj);
     else{const i=analyse.measures.findIndex(x=>x.id===m.id);analyse.measures[i]=obj;
-      if(newId!==m.id)analyse.treatments.forEach(t=>{if(t.measure===m.id)t.measure=newId;});}
+      if(newId!==m.id)analyse.treatments.forEach(tr=>{if(tr.measure===m.id)tr.measure=newId;});}
     // Liens de cette mesure — même principe que la modale de risque : ordre du fichier
     // préservé, notes et champs personnalisés des liens conservés intacts.
     const keep=new Set();
@@ -7862,7 +7862,7 @@ function openMeasureModal(id,dup,focusCol){
 /* ============================================================
    VUE LIENS (sous-onglets Associations / Détails)
    ============================================================ */
-function treatmentOf(rid,mid){return analyse.treatments.find(t=>t.risk===rid&&t.measure===mid);}
+function treatmentOf(rid,mid){return analyse.treatments.find(tr=>tr.risk===rid&&tr.measure===mid);}
 function linkEnriched(tr){return !!(tr&&(tr.comment||(tr.custom&&Object.keys(tr.custom).length)));}
 
 let linkMode="grid";
@@ -8057,7 +8057,7 @@ document.getElementById("crossArea").addEventListener("change",e=>{
   }else{
     cb.checked=true; // décocher = supprimer le lien : on annule visuellement en attendant confirmation
     confirmLink(t("confirm_del_link",rid,mid),()=>{
-      analyse.treatments=analyse.treatments.filter(t=>!(t.risk===rid&&t.measure===mid));
+      analyse.treatments=analyse.treatments.filter(tr=>!(tr.risk===rid&&tr.measure===mid));
       refresh();
     },true);
   }
@@ -8673,10 +8673,10 @@ async function buildDocx(){
   const CW=(land?16838:11906)-2268;
   const title=(md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle);
   // Périmètre de base (modes exclusifs) ; l'éclaté part de l'analyse complète, chaque chapitre filtrant.
-  const _filt=cfg.iteration.by==="none"&&cfg.scope==="filtered";
-  const RISKS0=_filt?visibleRisks():analyse.risks;
-  const MEAS0 =_filt?visibleMeasures():analyse.measures;
-  const TRs0  =_filt?visibleTreatments():analyse.treatments;
+  const isFiltered=cfg.iteration.by==="none"&&cfg.scope==="filtered";
+  const RISKS0=isFiltered?visibleRisks():analyse.risks;
+  const MEAS0 =isFiltered?visibleMeasures():analyse.measures;
+  const TRs0  =isFiltered?visibleTreatments():analyse.treatments;
   const cats=g.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
   let RISKS=RISKS0,MEAS=MEAS0,TRs=TRs0,nR,nM,treated,ci,cr;
   const count=w=>{const c={};cats.forEach(x=>c[x.code]=0);RISKS.forEach(r=>{const ev=w==="i"?r.initial_assessment:residual(r);const k=critOfEval(ev).code;if(k in c)c[k]++;});return c;};
@@ -8782,7 +8782,7 @@ async function buildDocx(){
   }
 
   // Registre des sections (retourne du XML ; certaines sont asynchrones : matrices).
-  const RD={
+  const DX_SECTIONS={
     metadata:s=>{
       let out=heading(t("rp_metadata"));
       const DEF={author:[t("f_author"),md.author],organization:[t("f_org"),md.organization],scope:[t("f_scope"),md.scope],
@@ -8896,8 +8896,8 @@ async function buildDocx(){
       if(!nR)return "";
       let out=heading(t("rp_risk_details"));
       RISKS.forEach(r=>{
-        const s2=[r.category,r.owner].filter(Boolean).join(" · ");
-        out+=dxP(dxRun(r.id+" — "+r.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
+        const metaLine=[r.category,r.owner].filter(Boolean).join(" · ");
+        out+=dxP(dxRun(r.id+" — "+r.label,{b:true})+(metaLine?dxRun("   "+metaLine,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
         if(r.description)out+=mdDocxBlocks(r.description);
         if(r.comment)out+=mdDocxBlocks(r.comment);
         out+=dxRiskEvalPanels(r,CW);
@@ -8909,8 +8909,8 @@ async function buildDocx(){
       if(!nM)return "";
       let out=heading(t("rp_measure_details"));
       MEAS.forEach(m=>{
-        const s2=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,fmtDate(m.due_date),(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).join(" · ");
-        out+=dxP(dxRun(m.id+" — "+m.label,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
+        const metaLine=[m.type?typeLabel(m.type):null,m.status?statusLabel(m.status):null,m.responsible,fmtDate(m.due_date),(m.cost!=null&&m.cost!==""?m.cost:null)].filter(Boolean).join(" · ");
+        out+=dxP(dxRun(m.id+" — "+m.label,{b:true})+(metaLine?dxRun("   "+metaLine,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
         if(m.description)out+=mdDocxBlocks(m.description);
         if(m.comment)out+=mdDocxBlocks(m.comment);
         out+=dxCfNotes("measure",m.custom);
@@ -8923,8 +8923,8 @@ async function buildDocx(){
       let out=heading(t("rp_link_details"));
       TRs.forEach(tr=>{
         const r=riskById(tr.risk),m=measureById(tr.measure);
-        const s2=[r&&r.label,m&&m.label].filter(Boolean).join(" → ");
-        out+=dxP(dxRun(tr.risk+" → "+tr.measure,{b:true})+(s2?dxRun("   "+s2,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
+        const metaLine=[r&&r.label,m&&m.label].filter(Boolean).join(" → ");
+        out+=dxP(dxRun(tr.risk+" → "+tr.measure,{b:true})+(metaLine?dxRun("   "+metaLine,{color:"7A8699",sz:20}):""),{sb:160,sa:40});
         if(tr.comment)out+=mdDocxBlocks(tr.comment);
         out+=dxCfNotes("link",tr.custom);
       });
@@ -8945,7 +8945,7 @@ async function buildDocx(){
       return out;
     }
   };
-  const renderSecs=async list=>{let o="";for(const s of list){const fn=RD[s.id];if(fn){const r=await fn(s);if(r)o+=r;}}return o;};
+  const renderSecs=async list=>{let o="";for(const s of list){const fn=DX_SECTIONS[s.id];if(fn){const r=await fn(s);if(r)o+=r;}}return o;};
   if(cfg.iteration.by==="none"){
     body+=await renderSecs(enabled);
   }else{
@@ -9559,10 +9559,10 @@ function tmplEvalFilter(ast,c){
 }
 // Propagation : un risque passe si UN contexte (lui + une de ses mesures liées, ou lui seul) satisfait le filtre.
 function tmplRiskPasses(R,ast){
-  const cs=(analyse.treatments||[]).filter(t=>t.risk===R.id).map(L=>({risk:R,measure:measureById(L.measure),link:L}));
+  const cs=(analyse.treatments||[]).filter(tr=>tr.risk===R.id).map(L=>({risk:R,measure:measureById(L.measure),link:L}));
   cs.push({risk:R,measure:null,link:null}); return cs.some(c=>tmplEvalFilter(ast,c));}
 function tmplMeasurePasses(M,ast){
-  const cs=(analyse.treatments||[]).filter(t=>t.measure===M.id).map(L=>({risk:riskById(L.risk),measure:M,link:L}));
+  const cs=(analyse.treatments||[]).filter(tr=>tr.measure===M.id).map(L=>({risk:riskById(L.risk),measure:M,link:L}));
   cs.push({risk:null,measure:M,link:null}); return cs.some(c=>tmplEvalFilter(ast,c));}
 function tmplFilterList(list,type,ast){
   if(type==="risk")return list.filter(R=>tmplRiskPasses(R,ast));
@@ -11215,15 +11215,15 @@ function calcParse(src){
   function pProd(){let a=pPow();while(peek().k==="op"&&(peek().v==="*"||peek().v==="/")){const op=next().v;a={n:"bin",op,a,b:pPow()};}return a;}
   function pPow(){let a=pUnary();if(isOp("^")){p++;a={n:"bin",op:"^",a,b:pPow()};}return a;}
   function pUnary(){if(peek().k==="op"&&(peek().v==="-"||peek().v==="+")){const op=next().v;return {n:"unary",op,a:pUnary()};}return pPrim();}
-  function pPrim(){const t=peek();
-    if(t.k==="num"){p++;return {n:"num",v:t.v};}
-    if(t.k==="str"){p++;return {n:"str",v:t.v};}
+  function pPrim(){const tok=peek();
+    if(tok.k==="num"){p++;return {n:"num",v:tok.v};}
+    if(tok.k==="str"){p++;return {n:"str",v:tok.v};}
     if(isOp("(")){p++;const e=pExpr();eat(")");return e;}
-    if(t.k==="id"){const up=t.v.toUpperCase();
+    if(tok.k==="id"){const up=tok.v.toUpperCase();
       if(up==="TRUE"||up==="VRAI"){p++;return {n:"bool",v:true};}
       if(up==="FALSE"||up==="FAUX"){p++;return {n:"bool",v:false};}
       if(tk[p+1]&&tk[p+1].k==="op"&&tk[p+1].v==="("){p+=2;const args=[];if(!isOp(")")){args.push(pExpr());while(isOp(",")){p++;args.push(pExpr());}}eat(")");return {n:"func",name:up,args};}
-      p++;return {n:"ref",name:t.v};}
+      p++;return {n:"ref",name:tok.v};}
     throw calcErr("Expression attendue");}
   const ast=pExpr();if(peek().k!=="end")throw calcErr("Fin d'expression attendue");return ast;
 }
@@ -12878,16 +12878,16 @@ function renderAxis(elId,axis,key){
   presSetPending(true);
 }));
 document.getElementById("view-settings").addEventListener("input",e=>{
-  const t=e.target;
-  if(t.id==="cfgEspacement"){setDisplaySetting("cell_spacing",Math.max(0,Math.min(30,+t.value||0)));requestAnimationFrame(renderMatrices);}
-  else if(t.id==="cfgArrondi"){setDisplaySetting("corner_radius",Math.max(0,Math.min(40,+t.value||0)));requestAnimationFrame(renderMatrices);}
-  else if(t.id==="cfgPas"){setDisplaySetting("grid_step",Math.max(2,Math.min(12,+t.value||5)));requestAnimationFrame(renderMatrices);}
-  else if(t.id==="cfgAfficherGrille"){setDisplaySetting("show_grid",t.checked);requestAnimationFrame(renderMatrices);}
-  else if(t.dataset.axisLabel){axisOf(t.dataset.axisLabel).label=t.value;markDirty();requestAnimationFrame(renderMatrices);}
-  else if(t.dataset.axis){const ax=axisOf(t.dataset.axis);const n=ax.levels[+t.dataset.i];
-    if(t.dataset.f==="value")n.value=+t.value;
-    else if(t.dataset.f==="description")n.description=t.value;
-    else n.label=t.value;
+  const tgt=e.target;
+  if(tgt.id==="cfgEspacement"){setDisplaySetting("cell_spacing",Math.max(0,Math.min(30,+tgt.value||0)));requestAnimationFrame(renderMatrices);}
+  else if(tgt.id==="cfgArrondi"){setDisplaySetting("corner_radius",Math.max(0,Math.min(40,+tgt.value||0)));requestAnimationFrame(renderMatrices);}
+  else if(tgt.id==="cfgPas"){setDisplaySetting("grid_step",Math.max(2,Math.min(12,+tgt.value||5)));requestAnimationFrame(renderMatrices);}
+  else if(tgt.id==="cfgAfficherGrille"){setDisplaySetting("show_grid",tgt.checked);requestAnimationFrame(renderMatrices);}
+  else if(tgt.dataset.axisLabel){axisOf(tgt.dataset.axisLabel).label=tgt.value;markDirty();requestAnimationFrame(renderMatrices);}
+  else if(tgt.dataset.axis){const ax=axisOf(tgt.dataset.axis);const n=ax.levels[+tgt.dataset.i];
+    if(tgt.dataset.f==="value")n.value=+tgt.value;
+    else if(tgt.dataset.f==="description")n.description=tgt.value;
+    else n.label=tgt.value;
     markDirty();requestAnimationFrame(renderMatrices);}
 });
 document.getElementById("btnResetPlacement").addEventListener("click",()=>{
@@ -12949,9 +12949,9 @@ function transposeAxes(){
   const tmp=g.vertical_axis;g.vertical_axis=g.horizontal_axis;g.horizontal_axis=tmp;
   // 2) transposer la matrice de score (si méthode « matrice »)
   if(g.score&&g.score.method==="matrix"&&Array.isArray(g.score.matrix)&&g.score.matrix.length){
-    const m=g.score.matrix,rows=m.length,cols=m[0].length,t=[];
-    for(let i=0;i<cols;i++){t[i]=[];for(let j=0;j<rows;j++)t[i][j]=m[j][i];}
-    g.score.matrix=t;
+    const m=g.score.matrix,rows=m.length,cols=m[0].length,mt=[];
+    for(let i=0;i<cols;i++){mt[i]=[];for(let j=0;j<rows;j++)mt[i][j]=m[j][i];}
+    g.score.matrix=mt;
   }
   // 3) échanger probabilité ↔ gravité dans chaque cotation
   analyse.risks.forEach(r=>{
@@ -13042,13 +13042,13 @@ function renderMatrixEditor(){
   host.style.display="block";host.innerHTML=h;
 }
 document.getElementById("critTable").addEventListener("input",e=>{
-  const t=e.target;if(t.dataset.crit==null)return;const c=analyse.grid.criticality_levels[+t.dataset.crit];
-  const f=t.dataset.f;c[f]=(f==="score_min"||f==="score_max")?+t.value:t.value;markDirty();
+  const tgt=e.target;if(tgt.dataset.crit==null)return;const c=analyse.grid.criticality_levels[+tgt.dataset.crit];
+  const f=tgt.dataset.f;c[f]=(f==="score_min"||f==="score_max")?+tgt.value:tgt.value;markDirty();
   checkCritCoverage();renderMatrixEditor();renderRisks();requestAnimationFrame(renderMatrices);
 });
 document.getElementById("critTable").addEventListener("change",e=>{
-  const t=e.target;if(t.dataset.crit!=null&&t.dataset.f==="acceptance"){
-    analyse.grid.criticality_levels[+t.dataset.crit].acceptance=t.value;markDirty();}
+  const tgt=e.target;if(tgt.dataset.crit!=null&&tgt.dataset.f==="acceptance"){
+    analyse.grid.criticality_levels[+tgt.dataset.crit].acceptance=tgt.value;markDirty();}
 });
 document.getElementById("critTable").addEventListener("click",e=>{
   const del=e.target.closest("[data-crit-del]");if(!del)return;
@@ -13773,7 +13773,7 @@ function applyTheme(name){
   const sel=document.getElementById("themeSel");if(sel)sel.value=name;
 }
 document.getElementById("themeSel").addEventListener("change",e=>applyTheme(e.target.value));
-(function(){let t="light";try{t=localStorage.getItem("mar_theme")||"light";}catch(e){}applyTheme(t);})();
+(function(){let th="light";try{th=localStorage.getItem("mar_theme")||"light";}catch(e){}applyTheme(th);})();
 
 /* ---------- Langue de l'interface ---------- */
 function applyStaticI18n(){
