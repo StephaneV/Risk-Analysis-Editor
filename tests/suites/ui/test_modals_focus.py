@@ -138,6 +138,31 @@ def test_stacked_modal_inert(app):
     app.close_modals()
 
 
+def test_url_value_click_does_not_open_modal(app):
+    """Clic sur une valeur de champ perso URL : ouvre le lien (nouvel onglet) sans ouvrir la fiche."""
+    app.load("ebios-objets.rae.json")
+    app.js("""()=>{
+      const ot=analyse.object_types[0];
+      if(!ot.attributes.some(a=>a.code==='lien')) ot.attributes.push({code:'lien',type:'url',label:{fr:'Lien'}});
+      const inst=objectsOfType(ot.code)[0]; inst.values=inst.values||{}; inst.values.lien='https://example.org/';
+      renderAll();
+    }""")
+    app.goto("objects")
+    r = app.js("""()=>{
+      const a=document.querySelector('#view-objects a[href=\"https://example.org/\"]');
+      if(!a) return {anchor:false};
+      a.addEventListener('click',e=>e.preventDefault());   // évite l'ouverture réelle d'un onglet en test
+      a.click();
+      const dyn=[...document.querySelectorAll('body>.modal-bg.open')].length;
+      return {anchor:true, target:a.getAttribute('target'),
+              modalOpen: !!(document.getElementById('modalBg')||{}).classList?.contains('open') || dyn>0};
+    }""")
+    assert r["anchor"], "lien URL non rendu dans la vue objets"
+    assert r["target"] == "_blank", "le lien doit s'ouvrir dans un nouvel onglet"
+    assert r["modalOpen"] is False, "le clic sur le lien ne doit pas ouvrir la fiche d'édition"
+    assert not app.console_errors()
+
+
 def test_lightbox_opens_and_closes(app):
     app.load("ebios.rae.json")
     app.js("src=>openImageLightbox(src)", PNG)

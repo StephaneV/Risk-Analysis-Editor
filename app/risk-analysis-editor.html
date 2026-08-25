@@ -3124,6 +3124,26 @@ function objectLabel(inst){
   const ot=objectTypeByCode(inst.type),na=ot&&ot.name_attr,v=(na&&inst.values)?inst.values[na]:null;
   return (v!=null&&v!=="")?String(Array.isArray(v)?v.join(", "):v):(inst.id||"");
 }
+/* Référence à un objet OU à un élément de l'analyse. `object_type` d'un champ « reference » vaut
+   un code de type d'objet, ou le pseudo-type REF_RISK / REF_MEASURE. Ces helpers unifient la source
+   des candidats, la résolution d'un id en libellé et le libellé du type ciblé. */
+const REF_RISK="@risks", REF_MEASURE="@measures";
+function refIsEntity(otype){return otype===REF_RISK||otype===REF_MEASURE;}
+function refCandidates(otype){
+  if(otype===REF_RISK)return (analyse.risks||[]).map(r=>({id:r.id,label:r.label||r.id}));
+  if(otype===REF_MEASURE)return (analyse.measures||[]).map(m=>({id:m.id,label:m.label||m.id}));
+  return objectsOfType(otype).map(o=>({id:o.id,label:objectLabel(o)}));
+}
+function refLabel(otype,id){
+  if(otype===REF_RISK){const r=riskById(id);return r?(r.label||r.id):id;}
+  if(otype===REF_MEASURE){const m=measureById(id);return m?(m.label||m.id):id;}
+  const o=objectById(id);return o?objectLabel(o):id;
+}
+function refTargetLabel(otype){
+  if(otype===REF_RISK)return t("tab_risks");
+  if(otype===REF_MEASURE)return t("tab_measures");
+  const ot=objectTypeByCode(otype);return ot?otLabel(ot):(otype||"");
+}
 /* Nouvel id d'instance : `<id_prefix><n>`, plus petit n libre PAR TYPE. */
 function newObjectId(typeCode){
   const ot=objectTypeByCode(typeCode),pfx=(ot&&ot.id_prefix)||typeCode||"obj",used=new Set(objectsOfType(typeCode).map(o=>o.id));
@@ -4076,7 +4096,7 @@ function statValueKeys(v,f){
   if(f.type==="boolean")return [v?"true":"false"];
   return [String(v)];}
 function statValueLabel(f,k){if(f.type==="boolean")return k==="true"?t("cf_yes"):t("cf_no");
-  if(f.type==="reference"){const o=objectById(k);return o?objectLabel(o):k;}   // libellé d'instance, repli id
+  if(f.type==="reference")return refLabel(f.object_type,k);   // libellé d'instance / de risque-mesure, repli id
   if(f.type==="scale"){const it=(f.items||[]).find(x=>String(x.value)===k);return it?cfItemLabel(it):k;}
   const it=(f.items||[]).find(x=>x.code===k);return it?cfItemLabel(it):k;}
 function statCustomKeys(it,f){return statValueKeys((it.custom||{})[f.code],f);}
@@ -4249,7 +4269,7 @@ function radarAxisLabel(dim,key){
   if(key==="__unset__")return t("radar_unset");
   if(dim==="cat")return key;
   const f=radarFieldOf(dim);if(!f)return key;
-  if(f.type==="reference"){const o=objectById(key);return o?objectLabel(o):key;}
+  if(f.type==="reference")return refLabel(f.object_type,key);
   if(f.type==="scale"){const it=(f.items||[]).find(i=>String(i.value)===key);return it?cfItemLabel(it):key;}
   const it=(f.items||[]).find(i=>i.code===key);return it?cfItemLabel(it):key;
 }
@@ -4270,7 +4290,7 @@ function radarAxes(risks,dim,includeEmpty){
   if(dim==="cat"){(includeEmpty?(analyse.risks||[]):risks).forEach(r=>radarKeysOf(r,dim).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);}));}
   else if(f&&f.type==="reference"){
     // instances du référentiel (toutes si includeEmpty, sinon celles référencées), puis ids orphelins de l'univers
-    objectsOfType(f.object_type).forEach(o=>{if(includeEmpty||used[o.id])keys.push(o.id);});
+    refCandidates(f.object_type).forEach(o=>{if(includeEmpty||used[o.id])keys.push(o.id);});
     Object.keys(uni).forEach(k=>{if(k!=="__unset__"&&keys.indexOf(k)<0)keys.push(k);});
   }
   else{keys=f?(f.items||[]).map(i=>f.type==="scale"?String(i.value):i.code).filter(c=>c!=null&&(includeEmpty||used[c])):[];}
@@ -5918,7 +5938,7 @@ function reportActiveFilters(){
       const want=cfFilters[f.code];if(!want)return;
       let v=want;
       if(f.type==="boolean")v=want==="true"?t("cf_yes"):t("cf_no");
-      else if(f.type==="reference"){const o=objectById(want);v=o?objectLabel(o):want;}
+      else if(f.type==="reference")v=refLabel(f.object_type,want);
       else{const it=(f.items||[]).find(x=>x.code===want);v=it?cfItemLabel(it):want;}
       out.push({label:cfLabel(f),value:v});
     });
@@ -6633,7 +6653,7 @@ function filtersApplyFromFile(){
 /* Valeurs proposées : les items du champ, ou Oui/Non pour un booléen. */
 function cfFilterChoices(f){
   if(f.type==="boolean")return [["true",t("cf_yes")],["false",t("cf_no")]];
-  if(f.type==="reference")return objectsOfType(f.object_type).map(o=>[o.id,objectLabel(o)]);
+  if(f.type==="reference")return refCandidates(f.object_type).map(o=>[o.id,o.label]);
   if(f.type==="scale")return (f.items||[]).map(it=>[String(it.value),cfItemLabel(it)]);
   if(f.type==="computed"){const k=cfComputedFilterKind(f);
     if(k==="bool")return [["true",t("cf_yes")],["false",t("cf_no")]];
@@ -7557,7 +7577,7 @@ function renderRisks(){
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.dataset.rid=r.id;
     tr.innerHTML=renderColRow("risks",r);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
     tb.appendChild(tr);
   });
 }
@@ -7731,7 +7751,7 @@ function renderMeasures(){
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.dataset.rid=m.id;
     tr.innerHTML=renderColRow("measures",m);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
     tb.appendChild(tr);
   });
 }
@@ -8107,6 +8127,7 @@ document.getElementById("linkDetailsArea").addEventListener("click",e=>{
         markDirty();renderLinks();renderRisks();renderMeasures();updateBadges();toast(t("toast_restored"));
       });
     },{danger:true});return;}
+  if(e.target.closest("a[href]"))return;   // un lien (URL) s'ouvre seul, sans ouvrir la fiche
   const row=e.target.closest(".linkrow");if(!row)return;
   const td=e.target.closest("td[data-col]");
   openLinkModal(row.dataset.r,row.dataset.m,td&&td.dataset.col);
@@ -11585,10 +11606,11 @@ function cfTypeOptsHTML(f){
       '<label class="field"><span class="lab">'+esc(t("cf_step"))+'</span><input type="number" id="cfStep" min="1" max="100" step="1" value="'+(f.step!=null?f.step:10)+'"></label>'+
       '<div class="field full" id="cfCustomColors" style="display:'+(pal==="custom"?"block":"none")+'"><span class="lab">'+esc(t("cf_pal_colors"))+'</span><div id="cfColors">'+cfColorsRowsHTML(f.colors)+'</div><button class="btn ghost sm" id="cfColorAdd" type="button">'+esc(t("cf_pal_add_color"))+'</button></div>'+
       '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfPalettePreview" class="cf-pal-preview" style="background:'+palettePreviewBg(progressColors(f))+'"></div></div>';}
-  if(f.type==="reference"){const types=objectTypes();
-    return '<label class="field"><span class="lab">'+esc(t("cf_object_type"))+REQ+'</span>'+
-      (types.length?'<select id="cfObjectType">'+types.map(ot=>'<option value="'+esc(ot.code)+'"'+(ot.code===f.object_type?" selected":"")+'>'+esc(otLabel(ot))+'</option>').join("")+'</select>'
-        :'<div class="hint">'+esc(t("cf_ref_notype"))+'</div>')+'</label>'+
+  if(f.type==="reference"){
+    const opt=(val,lab)=>'<option value="'+esc(val)+'"'+(val===f.object_type?" selected":"")+'>'+esc(lab)+'</option>';
+    // Cibles possibles : risques et mesures de l'analyse (toujours), puis les types d'objets définis.
+    const opts=opt(REF_RISK,t("tab_risks"))+opt(REF_MEASURE,t("tab_measures"))+objectTypes().map(ot=>opt(ot.code,otLabel(ot))).join("");
+    return '<label class="field"><span class="lab">'+esc(t("cf_object_type"))+REQ+'</span><select id="cfObjectType">'+opts+'</select></label>'+
       '<label class="field"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfMultiple" style="width:16px;height:16px;flex:none"'+(f.multiple?" checked":"")+'> '+esc(t("cf_multiple"))+'</label></label>';}
   if(f.type==="computed"){const rts=["number","integer","date","text","boolean"],al=f.alert||{};
     return '<label class="field full"><span class="lab">'+esc(t("cf_calc_expr"))+REQ+'</span>'+
@@ -12087,6 +12109,7 @@ document.getElementById("view-objects").addEventListener("click",e=>{
     return;
   }
   // Clic sur une ligne d'instance → édition, focus sur l'attribut de la cellule cliquée.
+  if(e.target.closest("a[href]"))return;   // un lien (URL) s'ouvre seul, sans ouvrir la fiche
   const row=e.target.closest("tr[data-obj-row]");if(!row)return;
   const inst=objectById(row.dataset.objRow);if(!inst)return;
   const td=e.target.closest("td[data-col]");
@@ -12264,7 +12287,7 @@ function cfDisplayHTML(f,v,rich){
   if(f.type==="progress"){const pv=Math.max(0,Math.min(100,Math.round(+v||0)));
     return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
   if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];
-    return '<span class="cf-chips">'+arr.map(id=>{const o=objectById(id);return '<span class="cf-chip" style="--tagc:#5b7089;--tagfg:#fff">'+esc(o?objectLabel(o):id)+'</span>';}).join("")+'</span>';}
+    return '<span class="cf-chips">'+arr.map(id=>'<span class="cf-chip" style="--tagc:#5b7089;--tagfg:#fff">'+esc(refLabel(f.object_type,id))+'</span>').join("")+'</span>';}
   if(f.type==="color"){const hex=/^#[0-9a-fA-F]{6}$/.test(v)?v:String(v),mode=f.color_mode||"both";
     const sw='<span class="cf-swatch" title="'+esc(hex)+'" style="background:'+esc(hex)+'"></span>';
     return mode==="hex"?esc(hex):mode==="swatch"?sw:(sw+'<span class="cf-swatch-hex">'+esc(hex)+'</span>');}
@@ -12288,9 +12311,10 @@ function cfParseValue(f,raw){
   if(f.type==="select"){const it=cfMatchItem(f,raw);return it?it.code:undefined;}
   if(f.type==="checklist"||f.type==="tags"){const codes=raw.split(/[,;]/).map(s=>{const it=cfMatchItem(f,s.trim());return it?it.code:null;}).filter(Boolean);return codes.length?codes:undefined;}
   if(f.type==="progress"){const v=parseInt(String(raw).replace(/[^0-9-]/g,""),10);return isNaN(v)?undefined:Math.max(0,Math.min(100,v));}
-  if(f.type==="reference"){const ids=raw.split(/[,;]/).map(s=>s.trim()).filter(Boolean).map(tok=>{
-    if(objectById(tok))return tok;   // un id
-    const o=objectsOfType(f.object_type).find(x=>normV(objectLabel(x))===normV(tok));return o?o.id:null;}).filter(Boolean);
+  if(f.type==="reference"){const cands=refCandidates(f.object_type),byId=new Set(cands.map(c=>c.id));
+    const ids=raw.split(/[,;]/).map(s=>s.trim()).filter(Boolean).map(tok=>{
+      if(byId.has(tok))return tok;   // un id
+      const c=cands.find(x=>normV(x.label)===normV(tok));return c?c.id:null;}).filter(Boolean);
     return f.multiple?(ids.length?ids:undefined):(ids[0]||undefined);}
   return raw; // date, text, textarea
 }
@@ -12387,14 +12411,16 @@ function cfControlHTML(f,value){
         return '<button type="button" class="cf-tag'+(on?" on":"")+'" data-cftag="'+esc(it.code)+'"'+(cfItemDesc(it)?' data-cfdesc="'+esc(cfItemDesc(it))+'"':'')+' style="--tagc:'+esc(col)+';--tagfg:'+cfTagFg(col)+'">'+esc(cfItemLabel(it))+'</button>';}).join("")+'</div>';break;}
     case "progress":{full=true;const pv=(value!=null&&value!=="")?Math.max(0,Math.min(100,Math.round(+value||0))):0;const cols=progressColors(f);const colStr=cols?cols.join(","):"";
       c='<div class="cf-progress-edit"><input type="range" min="0" max="100" step="'+(f.step||10)+'" data-cfv data-pcolors="'+esc(colStr)+'" style="accent-color:'+(cols&&cols.length?paletteColor(cols,pv):"var(--accent)")+'" value="'+pv+'"><output class="cf-progress-val">'+pv+' %</output></div>';break;}
-    case "reference":{const insts=objectsOfType(f.object_type),cur=value==null?[]:(Array.isArray(value)?value:[value]);
+    case "reference":{const cands=refCandidates(f.object_type),cur=value==null?[]:(Array.isArray(value)?value:[value]);
+      // « Créer » à la volée réservé aux types d'objets ; pas pour un risque/mesure existant.
+      const createBtn=refIsEntity(f.object_type)?"":'<button type="button" class="btn ghost sm cf-ref-create">'+esc(t("cf_ref_create"))+'</button>';
       if(f.multiple){full=true;
-        c='<div class="cf-refs" data-cfv data-cfref="'+esc(f.object_type)+'" data-multi="1"><div class="cf-ref-chips">'+cur.map(id=>cfRefChipHTML(id)).join("")+'</div>'+
-          '<div class="inline" style="margin-top:6px"><select class="cf-ref-add"><option value="">'+esc(t("cf_ref_add"))+'</option>'+insts.filter(o=>cur.indexOf(o.id)<0).map(o=>'<option value="'+esc(o.id)+'">'+esc(objectLabel(o))+'</option>').join("")+'</select>'+
-          '<button type="button" class="btn ghost sm cf-ref-create">'+esc(t("cf_ref_create"))+'</button></div></div>';
+        c='<div class="cf-refs" data-cfv data-cfref="'+esc(f.object_type)+'" data-multi="1"><div class="cf-ref-chips">'+cur.map(id=>cfRefChipHTML(id,f.object_type)).join("")+'</div>'+
+          '<div class="inline" style="margin-top:6px"><select class="cf-ref-add"><option value="">'+esc(t("cf_ref_add"))+'</option>'+cands.filter(o=>cur.indexOf(o.id)<0).map(o=>'<option value="'+esc(o.id)+'">'+esc(o.label)+'</option>').join("")+'</select>'+
+          createBtn+'</div></div>';
       }else{
-        c='<div class="inline cf-refs" data-cfref="'+esc(f.object_type)+'"><select data-cfv><option value="">'+esc(t("cf_ref_none"))+'</option>'+insts.map(o=>'<option value="'+esc(o.id)+'"'+(cur[0]===o.id?" selected":"")+'>'+esc(objectLabel(o))+'</option>').join("")+'</select>'+
-          '<button type="button" class="btn ghost sm cf-ref-create">'+esc(t("cf_ref_create"))+'</button></div>';
+        c='<div class="inline cf-refs" data-cfref="'+esc(f.object_type)+'"><select data-cfv><option value="">'+esc(t("cf_ref_none"))+'</option>'+cands.map(o=>'<option value="'+esc(o.id)+'"'+(cur[0]===o.id?" selected":"")+'>'+esc(o.label)+'</option>').join("")+'</select>'+
+          createBtn+'</div>';
       }break;}
   }
   const dsc=cfDescription(f);
@@ -12402,16 +12428,16 @@ function cfControlHTML(f,value){
     (dsc?'<div class="hint cf-desc">'+esc(dsc)+'</div>':'')+'</div>';
 }
 /* ---- Champ « reference » : puce d'instance + interactions (ajouter / retirer / créer à la volée) ---- */
-function cfRefChipHTML(id){const inst=objectById(id),lbl=inst?objectLabel(inst):id;
+function cfRefChipHTML(id,otype){const lbl=refLabel(otype,id);
   return '<span class="cf-ref-chip" data-refid="'+esc(id)+'" style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:2px 4px 2px 10px;border-radius:20px;background:#e7ecf6;color:#1f2937;font-size:12px">'+esc(lbl)+
     '<button type="button" class="cf-ref-del" data-refid="'+esc(id)+'" title="'+esc(t("cf_ref_remove"))+'" style="border:none;background:none;cursor:pointer;color:#5b7089;font-size:13px;line-height:1;padding:0 4px">✕</button></span>';}
 function cfRefPending(box){if(box&&box.closest&&box.closest("#cfAnalysisValues"))presSetPending(true);}
 document.addEventListener("change",e=>{const s=e.target;if(!s.matches||!s.matches(".cf-ref-add")||!s.value)return;
-  const box=s.closest(".cf-refs");box.querySelector(".cf-ref-chips").insertAdjacentHTML("beforeend",cfRefChipHTML(s.value));
+  const box=s.closest(".cf-refs");box.querySelector(".cf-ref-chips").insertAdjacentHTML("beforeend",cfRefChipHTML(s.value,box.dataset.cfref));
   const opt=[...s.options].find(o=>o.value===s.value);if(opt)opt.remove();s.value="";cfRefPending(box);});
 document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest(".cf-ref-del");if(!d)return;e.preventDefault();
   const box=d.closest(".cf-refs"),chip=d.closest(".cf-ref-chip"),id=chip.dataset.refid,add=box.querySelector(".cf-ref-add");
-  chip.remove();if(add){const o=objectById(id);add.insertAdjacentHTML("beforeend",'<option value="'+esc(id)+'">'+esc(o?objectLabel(o):id)+'</option>');}cfRefPending(box);});
+  chip.remove();if(add){add.insertAdjacentHTML("beforeend",'<option value="'+esc(id)+'">'+esc(refLabel(box.dataset.cfref,id))+'</option>');}cfRefPending(box);});
 /* ---- Champs image / couleur : saisie (téléversement redimensionné, effacement) ---- */
 /* Fichier image → data-URI ; images matricielles trop grandes réduites (max 1024 px, aspect préservé)
    pour limiter le poids de l'analyse. SVG conservé tel quel. */
@@ -12482,11 +12508,11 @@ document.addEventListener("click",e=>{const img=e.target.closest&&e.target.close
   if(img&&img.getAttribute("src")){e.preventDefault();e.stopPropagation();openImageLightbox(img.getAttribute("src"));}},true);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){const lb=document.getElementById("imgLightbox");if(lb&&lb.classList.contains("open")){e.preventDefault();e.stopPropagation();closeImageLightbox();}}},true);
 document.addEventListener("click",e=>{const c=e.target.closest&&e.target.closest(".cf-ref-create");if(!c)return;e.preventDefault();
-  const box=c.closest(".cf-refs"),type=box.dataset.cfref;if(!type)return;
+  const box=c.closest(".cf-refs"),type=box.dataset.cfref;if(!type||refIsEntity(type))return;   // « créer » : types d'objets seulement
   openObjectModal(type,null,newId=>{
-    if(box.dataset.multi==="1"){box.querySelector(".cf-ref-chips").insertAdjacentHTML("beforeend",cfRefChipHTML(newId));
+    if(box.dataset.multi==="1"){box.querySelector(".cf-ref-chips").insertAdjacentHTML("beforeend",cfRefChipHTML(newId,type));
       const add=box.querySelector(".cf-ref-add"),opt=add&&[...add.options].find(o=>o.value===newId);if(opt)opt.remove();}
-    else{const sel=box.querySelector("select[data-cfv]"),o=objectById(newId);sel.insertAdjacentHTML("beforeend",'<option value="'+esc(newId)+'">'+esc(o?objectLabel(o):newId)+'</option>');sel.value=newId;}
+    else{const sel=box.querySelector("select[data-cfv]");sel.insertAdjacentHTML("beforeend",'<option value="'+esc(newId)+'">'+esc(refLabel(type,newId))+'</option>');sel.value=newId;}
     cfRefPending(box);});});
 /* Marque un champ obligatoire : astérisque visible + aria-required sur le contrôle.
    L'astérisque est aria-hidden, l'information étant déjà portée par aria-required. */
