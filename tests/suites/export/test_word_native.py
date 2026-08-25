@@ -1,5 +1,6 @@
 """Export Word natif (buildDocx) : paquet OOXML valide, contenu et médias attendus."""
 import base64
+import re
 
 import pytest
 
@@ -72,6 +73,24 @@ def test_report_exploded_by_category_renders(app):
     app.load("rapport-eclate-categorie.rae.json")
     xml = document_xml_of(app)
     assert "<w:document" in xml and _page_breaks(xml) >= 1
+    assert not app.console_errors()
+
+
+def test_word_reference_to_entity_as_pill(app):
+    """Rapport Word : une référence → mesure est rendue en pastille Mn (run à fond coloré = w:shd)."""
+    app.load("ebios.rae.json")
+    mid = app.js("analyse.measures[0].id")
+    app.js("""(mid)=>{
+      analyse.object_types=[{code:'ctrl',label:{fr:'Contrôle'},id_prefix:'C',name_attr:'nom',
+        attributes:[{code:'nom',type:'text',label:{fr:'Nom'}},
+                    {code:'mes',type:'reference',object_type:REF_MEASURE,multiple:true,label:{fr:'Mesures'}}]}];
+      analyse.objects=[{id:'C1',type:'ctrl',values:{nom:'Contrôle test',mes:[mid]}}];
+      reportCfgStore().sections=[{id:'objects',on:true}]; markDirty();
+    }""", mid)
+    xml = document_xml_of(app)
+    # un run avec ombrage (w:shd) dont le texte est le code de la mesure (avec marges d'espaces) = pastille
+    assert re.search(r'<w:shd[^>]*/></w:rPr><w:t[^>]*>\s*' + re.escape(mid) + r'\s*</w:t>', xml), \
+        "la référence → mesure n'est pas rendue en pastille (run shadé) dans le Word"
     assert not app.console_errors()
 
 

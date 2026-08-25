@@ -8367,7 +8367,8 @@ function dxT(s){return '<w:t xml:space="preserve">'+escX(s)+'</w:t>';}
 function dxRun(txt,f){f=f||{};
   return '<w:r><w:rPr>'+(f.b?'<w:b/>':'')+(f.i?'<w:i/>':'')+
     (f.mono?'<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>':'')+
-    (f.color?'<w:color w:val="'+f.color+'"/>':'')+(f.sz?'<w:sz w:val="'+f.sz+'"/>':'')+'</w:rPr>'+dxT(txt)+'</w:r>';}
+    (f.color?'<w:color w:val="'+f.color+'"/>':'')+(f.sz?'<w:sz w:val="'+f.sz+'"/>':'')+
+    (f.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+f.fill+'"/>':'')+'</w:rPr>'+dxT(txt)+'</w:r>';}
 function dxP(runs,p){p=p||{};
   return '<w:p><w:pPr>'+(p.style?'<w:pStyle w:val="'+p.style+'"/>':'')+(p.ind?'<w:ind w:left="'+p.ind+'"/>':'')+(p.center?'<w:jc w:val="center"/>':'')+
     (p.tabs||'')+'<w:spacing w:before="'+(p.sb||0)+'" w:after="'+(p.sa==null?120:p.sa)+'"/></w:pPr>'+runs+'</w:p>';}
@@ -8604,11 +8605,24 @@ function dxRiskEvalPanels(r,cw){
   return dxTbl([[cell(t("th_initial"),e.initial,r.initial_assessment.custom),
                  cell(t("th_residual"),e.residual,residual(r).custom)]],widths)+dxP("",{sa:60,sb:20});
 }
+/* Pastilles Rn/Mn pour le rapport Word : run à fond coloré (neutre pour un risque, couleur de
+   statut pour une mesure), miroir des pastilles HTML riskPill/measurePill. Le libellé n'apparaît
+   pas (pas d'infobulle en Word) : le code renvoie au registre correspondant. */
+function dxRefPill(f,id){
+  let bg="E7ECF6",fg="3B4A63";
+  if(f.object_type===REF_MEASURE){const m=measureById(id),sc=m&&m.status?STATUS_COLORS[m.status]:null;
+    if(sc){bg=hex6(sc.bg);fg=hex6(sc.fg||"FFFFFF");}}
+  return dxRun(" "+id+" ",{sz:18,b:true,fill:bg,color:fg});
+}
+function dxRefPills(f,raw){const arr=Array.isArray(raw)?raw:[raw];
+  return arr.filter(x=>x!=null&&x!=="").map(id=>dxRefPill(f,id)).join(dxRun("  ",{sz:14}));}
 function dxCfNotes(target,custom){
   let out="";
   customFieldsFor(target).forEach(f=>{
     const raw=(custom||{})[f.code],v=cfDisplayTxt(f,raw);if(!v)return;
     if(f.type==="textarea"){out+=dxP(dxRun(cfLabel(f),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
+    else if(f.type==="reference"&&refIsEntity(f.object_type))
+      out+=dxP(dxRun(cfLabel(f)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRefPills(f,raw),{sa:20});
     else out+=dxP(dxRun(cfLabel(f)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
   });
   return out;
@@ -8621,6 +8635,8 @@ function dxObjNotes(inst){
     const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v&&a.type!=="image")return;
     if(a.type==="image"){const cell=dxCfImageCell(raw);if(cell.runs){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=dxP(cell.runs,{sa:20});}else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun("[image]",{sz:20}),{sa:20});}
     else if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
+    else if(a.type==="reference"&&refIsEntity(a.object_type))
+      out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRefPills(a,raw),{sa:20});
     else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});
   });
   return out;
@@ -8841,14 +8857,16 @@ async function buildDocx(){
         if(mode==="detail"){
           insts.forEach(inst=>{
             out+=dxP(dxRun(inst.id+" — "+objectLabel(inst),{b:true}),{sb:120,sa:40});
-            attrs.forEach(a=>{const raw=(inst.values||{})[a.code],v=cfObjAttrText(a,ot,inst);if(!v&&a.type!=="image")return;
-              if(a.type==="image"){const cell=dxCfImageCell(raw);if(cell.runs){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=dxP(cell.runs,{sa:20});}else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun("[image]",{sz:20}),{sa:20});}
-              else if(a.type==="textarea"){out+=dxP(dxRun(cfLabel(a),{b:true,sz:20,color:"3B4A63"}),{sb:80,sa:20});out+=mdDocxBlocks(String(raw||""));}
-              else out+=dxP(dxRun(cfLabel(a)+" : ",{b:true,sz:20,color:"3B4A63"})+dxRun(v,{sz:20}),{sa:20});});
+            out+=dxObjNotes(inst);   // attributs (dont références risque/mesure en pastilles Rn/Mn)
           });
         }else{
           const head=[{txt:t("rp_obj_id"),b:true,fill:"EEF2F8"}].concat(attrs.map(a=>({txt:cfLabel(a),b:true,fill:"EEF2F8"})));
-          const rows=insts.map(inst=>[{txt:inst.id,b:true}].concat(attrs.map(a=>a.type==="image"?dxCfImageCell((inst.values||{})[a.code]):({txt:cfObjAttrText(a,ot,inst)||""}))));
+          const cellOf=(inst,a)=>{
+            if(a.type==="image")return dxCfImageCell((inst.values||{})[a.code]);
+            if(a.type==="reference"&&refIsEntity(a.object_type)){const p=dxRefPills(a,(inst.values||{})[a.code]);return p?{runs:p}:{txt:""};}
+            return {txt:cfObjAttrText(a,ot,inst)||""};
+          };
+          const rows=insts.map(inst=>[{txt:inst.id,b:true}].concat(attrs.map(a=>cellOf(inst,a))));
           const n=attrs.length, idW=1400, rest=Math.max(900, n?Math.round((CW-idW)/n):(CW-idW));
           out+=dxTbl([head].concat(rows),[idW].concat(attrs.map(()=>rest)));
         }
