@@ -8127,7 +8127,7 @@ document.getElementById("linkDetailsArea").addEventListener("click",e=>{
         markDirty();renderLinks();renderRisks();renderMeasures();updateBadges();toast(t("toast_restored"));
       });
     },{danger:true});return;}
-  if(e.target.closest("a[href]"))return;   // un lien (URL) s'ouvre seul, sans ouvrir la fiche
+  if(e.target.closest("a[href],[data-open-m],[data-open-r]"))return;   // lien URL / pastille R·M : action propre, sans ouvrir la fiche
   const row=e.target.closest(".linkrow");if(!row)return;
   const td=e.target.closest("td[data-col]");
   openLinkModal(row.dataset.r,row.dataset.m,td&&td.dataset.col);
@@ -12109,7 +12109,7 @@ document.getElementById("view-objects").addEventListener("click",e=>{
     return;
   }
   // Clic sur une ligne d'instance → édition, focus sur l'attribut de la cellule cliquée.
-  if(e.target.closest("a[href]"))return;   // un lien (URL) s'ouvre seul, sans ouvrir la fiche
+  if(e.target.closest("a[href],[data-open-m],[data-open-r]"))return;   // lien URL / pastille R·M : action propre, sans ouvrir la fiche
   const row=e.target.closest("tr[data-obj-row]");if(!row)return;
   const inst=objectById(row.dataset.objRow);if(!inst)return;
   const td=e.target.closest("td[data-col]");
@@ -12287,6 +12287,9 @@ function cfDisplayHTML(f,v,rich){
   if(f.type==="progress"){const pv=Math.max(0,Math.min(100,Math.round(+v||0)));
     return '<span class="cf-progress"><span class="cf-progress-track"><span style="width:'+pv+'%;--pc:'+cfProgressColor(f,pv)+'"></span></span><span class="cf-progress-num">'+pv+' %</span></span>';}
   if(f.type==="reference"){const arr=Array.isArray(v)?v:[v];
+    // Vers un risque / une mesure : pastille Rn / Mn (code + infobulle du libellé), comme dans les registres.
+    if(f.object_type===REF_RISK)return '<span class="pill-list">'+arr.map(id=>riskPill(id)).join("")+'</span>';
+    if(f.object_type===REF_MEASURE)return '<span class="pill-list">'+arr.map(id=>measurePill(id)).join("")+'</span>';
     return '<span class="cf-chips">'+arr.map(id=>'<span class="cf-chip" style="--tagc:#5b7089;--tagfg:#fff">'+esc(refLabel(f.object_type,id))+'</span>').join("")+'</span>';}
   if(f.type==="color"){const hex=/^#[0-9a-fA-F]{6}$/.test(v)?v:String(v),mode=f.color_mode||"both";
     const sw='<span class="cf-swatch" title="'+esc(hex)+'" style="background:'+esc(hex)+'"></span>';

@@ -34,16 +34,22 @@ def test_ref_entity_candidates_and_label(app, sentinel, coll):
     assert r["lbl"] == r["exp"], f"refLabel != libellé ({r})"
 
 
-@pytest.mark.parametrize("sentinel,coll", [("REF_RISK", "risks"), ("REF_MEASURE", "measures")])
-def test_ref_entity_control_and_display(app, sentinel, coll):
-    """Le contrôle liste l'entité et masque « créer » ; l'affichage résout le libellé."""
+@pytest.mark.parametrize("sentinel,coll,openattr", [
+    ("REF_RISK", "risks", "data-open-r"), ("REF_MEASURE", "measures", "data-open-m")])
+def test_ref_entity_control_and_display(app, sentinel, coll, openattr):
+    """Le contrôle liste l'entité et masque « créer » ; l'affichage est une pastille Rn/Mn
+    (code + infobulle du libellé via aria/tooltip), comme dans les registres."""
     app.load("ebios.rae.json")
+    eid = app.js(f"analyse.{coll}[0].id")
     label = app.js(f"analyse.{coll}[0].label")
     ctrl = app.js(f"()=>cfControlHTML({{type:'reference',object_type:{sentinel},multiple:true,code:'rr'}}, [])")
     assert label in ctrl, "l'entité n'apparaît pas dans le picker"
     assert "cf-ref-create" not in ctrl, "le bouton « créer » ne doit pas être proposé pour une entité"
     disp = app.js(f"()=>cfDisplayHTML({{type:'reference',object_type:{sentinel},multiple:true,code:'rr'}}, [analyse.{coll}[0].id], true)")
-    assert label in disp, "l'affichage ne résout pas le libellé de l'entité"
+    assert 'class="pill"' in disp, "l'affichage doit utiliser une pastille"
+    assert f'{openattr}="{eid}"' in disp, f"pastille sans {openattr} (navigation transversale)"
+    assert f">{eid}<" in disp, "le code (Rn/Mn) doit être affiché"
+    assert label in disp, "le libellé (infobulle/aria) doit rester disponible"
 
 
 def test_measure_field_references_risks_end_to_end(app):
