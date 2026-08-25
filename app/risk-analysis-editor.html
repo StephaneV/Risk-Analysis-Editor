@@ -8399,7 +8399,7 @@ function dxTbl(rows,widths){
 function dxBadgeCell(label,colr){return {txt:label,fill:hex6(colr),color:hex6(badgeFg(colr)),b:true,center:true};}
 // Pastille (run ombré) centrée dans une cellule — badge du rapport NATIF (compatible partout,
 // contrairement à la « pill » SVG du rapport à modèle, non embarquée hors moteur de gabarit).
-function dxPillCell(label,colr){return {runs:dxRun(" "+label+" ",{sz:18,b:true,fill:hex6(colr),color:hex6(badgeFg(colr))}),center:true};}
+function dxPillCell(label,colr){return {runs:dxRun(" "+label+" ",{sz:18,b:true,fill:hex6(colr),color:hex6(badgeFg(colr))}),center:true};}
 // Cellule d'un tableau clé en main pour une valeur badgeable, selon le style demandé :
 // "cell" (défaut) = fond de cellule plein ; sinon badge inline centré (flat / chip / pill).
 function dxBadgeCellStyled(label,colr,style){
