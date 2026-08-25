@@ -94,6 +94,25 @@ def test_word_reference_to_entity_as_pill(app):
     assert not app.console_errors()
 
 
+def test_word_native_criticality_status_as_centered_pills(app):
+    """Rapport natif : criticité (initial/résiduel) et statut rendus en pastilles CENTRÉES (run shadé)."""
+    app.load("ebios.rae.json")
+    app.js("""()=>{const s=reportCfgStore(); s.iteration={by:'none'}; s.scope='full';
+        s.sections=[{id:'risks_table',on:true,columns:['id','risk','initial','residual']},
+                    {id:'measures_table',on:true,columns:['id','measure','status']}]; markDirty();}""")
+    crit = app.js("()=>{const r=analyse.risks[0];return critFor(scoreOf(r.initial_assessment.probability,r.initial_assessment.severity)).label;}")
+    xml = document_xml_of(app)
+    # criticité : libellé dans un run shadé (pastille), au sein d'un paragraphe centré
+    assert re.search(r'<w:jc w:val="center"/>.{0,200}?<w:shd[^>]*/></w:rPr><w:t[^>]*>\s*' + re.escape(crit), xml), \
+        "la criticité n'est pas rendue en pastille centrée"
+    # statut : au moins un statut de mesure rendu en run shadé
+    st = app.js("()=>{const m=analyse.measures.find(x=>x.status);return m?statusLabel(m.status):'';}")
+    if st:
+        assert re.search(r'<w:shd[^>]*/></w:rPr><w:t[^>]*>\s*' + re.escape(st), xml), \
+            "le statut de mesure n'est pas rendu en pastille"
+    assert not app.console_errors()
+
+
 def _set_section(app, sec_id, on):
     app.js("([s,v])=>{reportCfgStore().sections=[{id:s,on:v}]; markDirty();}", [sec_id, on])
 

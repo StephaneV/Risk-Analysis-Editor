@@ -8397,6 +8397,9 @@ function dxTbl(rows,widths){
   return h+'</w:tbl>';
 }
 function dxBadgeCell(label,colr){return {txt:label,fill:hex6(colr),color:hex6(badgeFg(colr)),b:true,center:true};}
+// Pastille (run ombré) centrée dans une cellule — badge du rapport NATIF (compatible partout,
+// contrairement à la « pill » SVG du rapport à modèle, non embarquée hors moteur de gabarit).
+function dxPillCell(label,colr){return {runs:dxRun(" "+label+" ",{sz:18,b:true,fill:hex6(colr),color:hex6(badgeFg(colr))}),center:true};}
 // Cellule d'un tableau clé en main pour une valeur badgeable, selon le style demandé :
 // "cell" (défaut) = fond de cellule plein ; sinon badge inline centré (flat / chip / pill).
 function dxBadgeCellStyled(label,colr,style){
@@ -8536,25 +8539,25 @@ function dxCfImageCell(uri){
 /* ---- Tableaux de registre pilotés par les colonnes choisies (voir reportCfg) ---- */
 const DX_COLW={id:.6,risk:2,measure:2,cat:1.1,owner:1.1,initial:1.2,residual:1.2,evolution:1.1,measures:1.5,
   type:1,status:1.1,resp:1.1,due:1,cost:.8,covered:1.5,rid:.7,mid:.7,notes:1.8};
-function dxCellFor(tbl,key,row,bstyle){
+function dxCellFor(tbl,key,row,bstyle,npill){
   if(tbl==="risks"){
     if(key==="id")return {txt:row.id,b:true};
     if(key==="risk")return {txt:row.label};
     if(key==="cat")return {txt:row.category||"—"};
     if(key==="owner")return {txt:row.owner||"—"};
-    if(key==="initial"){const ev=row.initial_assessment,c=critOfEval(ev);return dxBadgeCellStyled(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color,bstyle);}
-    if(key==="residual"){const ev=residual(row),c=critOfEval(ev);return dxBadgeCellStyled(c.label+" · "+scoreOf(ev.probability,ev.severity),c.color,bstyle);}
+    if(key==="initial"){const ev=row.initial_assessment,c=critOfEval(ev),lbl=c.label+" · "+scoreOf(ev.probability,ev.severity);return npill?dxPillCell(lbl,c.color):dxBadgeCellStyled(lbl,c.color,bstyle);}
+    if(key==="residual"){const ev=residual(row),c=critOfEval(ev),lbl=c.label+" · "+scoreOf(ev.probability,ev.severity);return npill?dxPillCell(lbl,c.color):dxBadgeCellStyled(lbl,c.color,bstyle);}
     if(key==="evolution"){const d=scoreOf(residual(row).probability,residual(row).severity)-scoreOf(row.initial_assessment.probability,row.initial_assessment.severity);return {txt:(d>0?"+":"")+d,center:true};}
-    if(key==="measures"){const m=measuresOfRisk(row.id);return {txt:m.length?m.join(", "):"—"};}
+    if(key==="measures"){const m=measuresOfRisk(row.id);if(m.length&&npill)return {runs:dxRefPills({object_type:REF_MEASURE},m)};return {txt:m.length?m.join(", "):"—"};}
   }else if(tbl==="measures"){
     if(key==="id")return {txt:row.id,b:true};
     if(key==="measure")return {txt:row.label};
     if(key==="type")return {txt:row.type?typeLabel(row.type):"—"};
-    if(key==="status"){const sc=row.status?STATUS_COLORS[row.status]:null;return sc?dxBadgeCellStyled(statusLabel(row.status),sc.bg,bstyle):{txt:row.status?statusLabel(row.status):"—",center:true};}
+    if(key==="status"){const sc=row.status?STATUS_COLORS[row.status]:null;return sc?(npill?dxPillCell(statusLabel(row.status),sc.bg):dxBadgeCellStyled(statusLabel(row.status),sc.bg,bstyle)):{txt:row.status?statusLabel(row.status):"—",center:true};}
     if(key==="resp")return {txt:row.responsible||"—"};
     if(key==="due")return {txt:fmtDate(row.due_date)||"—"};
     if(key==="cost")return {txt:(row.cost!=null&&row.cost!=="")?String(row.cost):"—"};
-    if(key==="covered"){const rk=risksOfMeasure(row.id);return {txt:rk.length?rk.join(", "):"—"};}
+    if(key==="covered"){const rk=risksOfMeasure(row.id);if(rk.length&&npill)return {runs:dxRefPills({object_type:REF_RISK},rk)};return {txt:rk.length?rk.join(", "):"—"};}
   }else if(tbl==="links"){
     if(key==="rid")return {txt:row.risk,b:true};
     if(key==="risk"){const r=riskById(row.risk);return {txt:r?r.label:"—"};}
@@ -8571,11 +8574,12 @@ function dxCellFor(tbl,key,row,bstyle){
         const fill=hex.slice(1).toUpperCase(),mode=f.color_mode||"both";
         return mode==="hex"?{txt:hex,center:true}:mode==="swatch"?{fill,txt:" ",center:true}:{txt:hex,fill,center:true};}
       if(f.type==="image")return dxCfImageCell((row.custom||{})[f.code]);
+      if(f.type==="reference"&&refIsEntity(f.object_type)&&npill){const runs=dxRefPills(f,(row.custom||{})[f.code]);if(runs)return {runs};}
       const v=cfDisplayTxt(f,(row.custom||{})[f.code]);return {txt:v||"—"};}
   }
   return {txt:"—"};
 }
-function dxReportTable(tbl,colKeys,rows,cw,bstyle){
+function dxReportTable(tbl,colKeys,rows,cw,bstyle,npill){
   cw=cw||DX_CW;
   const cm=colMap(tbl),keys=(colKeys||[]).filter(k=>cm[k]&&cm[k].pinned!=="last");
   if(!keys.length)return dxP(dxRun("—",{color:"7A8699"}),{sa:120});
@@ -8583,10 +8587,10 @@ function dxReportTable(tbl,colKeys,rows,cw,bstyle){
   const widths=wts.map(w=>Math.max(700,Math.round(cw*w/sum)));
   const centered={initial:1,residual:1,evolution:1,status:1};
   const header=keys.map(k=>({txt:cm[k].label,b:true,fill:"EEF2F8",center:!!centered[k]}));
-  const data=rows.length?rows.map(row=>keys.map(k=>dxCellFor(tbl,k,row,bstyle))):[keys.map((k,i)=>({txt:i===0?"—":"",center:i===0}))];
+  const data=rows.length?rows.map(row=>keys.map(k=>dxCellFor(tbl,k,row,bstyle,npill))):[keys.map((k,i)=>({txt:i===0?"—":"",center:i===0}))];
   return dxTbl([header].concat(data),widths);
 }
-function dxPlanTable(list,cw){return dxReportTable("measures",["id","measure","status","resp","due"],list,cw);}
+function dxPlanTable(list,cw,bstyle,npill){return dxReportTable("measures",["id","measure","status","resp","due"],list,cw,bstyle,npill);}
 /* Deux panneaux Initial/Résiduel côte à côte (miroir Word de riskEvalPanelsHTML) : une table à
    2 colonnes, chaque cellule contenant l'en-tête (criticité + score), la vraisemblance/gravité, puis
    les champs personnalisés de cotation propres à la phase. */
@@ -8902,9 +8906,9 @@ async function buildDocx(){
            :await addSvgImage(buildRadarExportSVG(rc,RISKS,{noTitle:true}).svg);
       return out;
     },
-    risks_table:s=>heading(t("risks_title"))+(nR?dxReportTable("risks",s.columns,RISKS,CW):dxP(dxRun(t("risks_empty"),{color:"7A8699"}),{sa:120})),
-    measures_table:s=>heading(t("measures_title"))+(nM?dxReportTable("measures",s.columns,MEAS,CW):dxP(dxRun(t("measures_empty"),{color:"7A8699"}),{sa:120})),
-    links_table:s=>heading(t("links_title"))+(TRs.length?dxReportTable("links",s.columns,TRs,CW):dxP(dxRun("—",{color:"7A8699"}),{sa:120})),
+    risks_table:s=>heading(t("risks_title"))+(nR?dxReportTable("risks",s.columns,RISKS,CW,null,true):dxP(dxRun(t("risks_empty"),{color:"7A8699"}),{sa:120})),
+    measures_table:s=>heading(t("measures_title"))+(nM?dxReportTable("measures",s.columns,MEAS,CW,null,true):dxP(dxRun(t("measures_empty"),{color:"7A8699"}),{sa:120})),
+    links_table:s=>heading(t("links_title"))+(TRs.length?dxReportTable("links",s.columns,TRs,CW,null,true):dxP(dxRun("—",{color:"7A8699"}),{sa:120})),
     risks_detail:()=>{
       if(!nR)return "";
       let out=heading(t("rp_risk_details"));
@@ -8946,7 +8950,7 @@ async function buildDocx(){
     action_plan:s=>{
       let out=heading(t("tab_plan"));
       if(!nM){out+=dxP(dxRun(t("measures_empty"),{color:"7A8699"}),{sa:120});return out;}
-      planGroups(MEAS,s.view).forEach(g=>{if(g.label)out+=h3(g.label);out+=dxPlanTable(g.measures,CW);});
+      planGroups(MEAS,s.view).forEach(g=>{if(g.label)out+=h3(g.label);out+=dxPlanTable(g.measures,CW,null,true);});
       return out;
     }
   };
