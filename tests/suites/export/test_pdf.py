@@ -26,7 +26,10 @@ def test_native_word_to_pdf(app):
 
 def test_template_word_to_pdf(app):
     app.load("ebios-objets.rae.json")
-    tpl = FIXTURES / "word-templates" / "modele-boucle-paragraphes.docx"
+    # Gabarit qui se résout ENTIÈREMENT contre ebios-objets (boucles d'objets, cf_notes) :
+    # la lane PDF prouve ainsi la conversion d'un rapport réellement substitué, et non d'un
+    # document truffé de balises littérales (cf. lot9-modele validé par test_objects_template_lot9).
+    tpl = FIXTURES / "word-templates" / "lot9-modele.docx"
     b64 = base64.b64encode(tpl.read_bytes()).decode()
     out_b64 = app.js(r"""
       async (b64) => {
