@@ -3281,7 +3281,7 @@ document.querySelectorAll(".view").forEach(v=>{
 
 /* Ouverture sur un onglet/sous-onglet via ?tab=<onglet>[.<sous-onglet>]
    (ex. ?tab=matrices.traj, ?tab=settings.grid, ?tab=plan). Token inconnu -> ignoré. */
-const VIEW_TOKENS=["presentation","risks","measures","links","matrices","radars","stats","plan","report","settings"];
+const VIEW_TOKENS=["presentation","risks","measures","links","objects","matrices","radars","stats","plan","report","settings"];
 /* Sous-onglets : boutons à deux états. `aria-pressed` reflète la classe .active
    (le motif « tab » complet imposerait de câbler des tabpanels pour chaque sous-vue). */
 function syncSegAria(){document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.classList.contains("active")?"true":"false"));}

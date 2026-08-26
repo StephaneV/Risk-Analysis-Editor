@@ -419,6 +419,8 @@ Une **valeur calculée** est un champ **dérivé** : au lieu d'être saisie, ell
 
 Dans les onglets *Champs*, *Base* et *Objets liés*, une **petite icône** rappelle le **type** de chaque champ (nombre, texte, date, échelle, calcul…) pour composer la formule d'un coup d'œil. Une fonction insérée **entoure** le texte sélectionné le cas échéant : sélectionner `cf.cout` puis cliquer *ROUND* donne `ROUND(cf.cout)`.
 
+![Éditeur d'un champ « valeur calculée » : la formule et son picker d'insertion (onglets et chips)](images/guide-28-champ-calcule.png)
+
 **Les fonctions disponibles** (liste blanche) : agrégats **SUM, AVERAGE, MEDIAN, MIN, MAX, COUNT** ; arithmétique **ROUND, ROUNDUP, ROUNDDOWN, INT, ABS, MOD, POWER, SQRT** ; logique **IF, AND, OR, NOT** ; texte **CONCAT, LEN** (et l'opérateur `&`) ; dates **TODAY, DATE, YEAR, MONTH, DAY, EDATE, DATEDIF**. Opérateurs `+ − * / ^` et comparaisons `= <> < <= > >=`. Toute référence ou fonction inconnue est signalée à la saisie.
 
 > **Compter les valeurs d'un champ multivalué.** Un champ *liste à cocher*, *étiquettes* ou *référence* multiple est vu comme une **liste** : `COUNT(cf.<code>)` en donne le **nombre de valeurs** (0 s'il est vide). En contexte texte, la liste s'écrit valeurs jointes par « , ».
@@ -463,9 +465,13 @@ Les types se créent dans *Paramètres › Types d'objets* (bouton **« + Ajoute
 
 Chaque **attribut** se décrit exactement comme un champ personnalisé (voir §14) : un **code**, un **libellé**, un **type** parmi les dix disponibles — plus le type **« Référence à un objet »**, qui permet à un objet d'en **référencer un autre** (mono ou multivalué). Un attribut peut même **cibler son propre type** (auto-référence, par ex. un bien support qui en supporte un autre) ; l'outil l'autorise en signalant simplement le risque de **boucles**.
 
+![Éditeur d'un type d'objet](images/guide-27-type-objet.png)
+
 ### Créer et gérer les instances
 
 Les **instances** se gèrent dans l'onglet **Objets** (bouton **« + Ajouter une instance »**). Le formulaire de saisie est **généré automatiquement** à partir des attributs du type. À l'enregistrement, l'instance reçoit un **identifiant automatique** (plus petit numéro libre du type) et son **libellé** reflète la valeur de l'attribut désigné. Le badge de l'onglet compte les instances. Un type **sans attribut** reste utilisable : ses instances n'ont qu'un identifiant.
+
+![L'onglet Objets : un sous-onglet par type, avec le tableau des instances](images/guide-26-objets.png)
 
 Chaque type d'objet s'affiche dans une **carte** avec le tableau de ses instances. Trois commodités :
 

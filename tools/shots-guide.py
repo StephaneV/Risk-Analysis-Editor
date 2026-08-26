@@ -11,7 +11,7 @@ ORIGIN = os.environ.get("SHOTS_ORIGIN", "http://localhost:4599")
 BASE = ORIGIN + "/app/risk-analysis-editor.html"
 MAX_H = 1400     # hauteur maximale d'une capture : au-dela, l'image est coupee (recadrage)
 FADE  = 120      # hauteur du degrade de fondu applique au bas des captures coupees
-DEMO = "?file=../examples/demo-aipd-sst.rae.json&lang=fr"
+DEMO = "?file=../examples/demo-aipd-sst-objets.rae.json&lang=fr"
 OUT  = "docs/images/"
 
 def fondu_bas(im):
@@ -32,7 +32,7 @@ def fondu_bas(im):
 SHOTS = [
     ("guide-01-accueil",            "?lang=fr",
         "(async()=>{try{await rcTx('readwrite',s=>s.clear());"
-        "await rcTx('readwrite',s=>s.put({id:'a',name:'demo-aipd-sst.rae.json',title:'Analyse de risques — volet AIPD (sante au travail)',at:Date.now(),handle:{name:'x'}}));"
+        "await rcTx('readwrite',s=>s.put({id:'a',name:'demo-aipd-sst-objets.rae.json',title:'Analyse de risques — volet AIPD (sante au travail, avec objets)',at:Date.now(),handle:{name:'x'}}));"
         "await rcTx('readwrite',s=>s.put({id:'b',name:'audit-si-2026.rae.json',title:'Audit SI 2026 — Cartographie EBIOS RM',at:Date.now()-2000,handle:{name:'y'}}));"
         "await renderStartRecents();}catch(e){}})()", True,  940),
     ("guide-02-presentation",       DEMO+"&tab=presentation",   None, True,  940),
@@ -69,6 +69,22 @@ SHOTS = [
         "radarState.dim=radarBestDim();renderRadars();", True,  980),
     ("guide-25-parametres-radars",  DEMO+"&tab=settings.radars",
         "setParamMode('radars')", True,  1180),
+    # --- Objets & références (§15) et champ « valeur calculée » (§14) ---
+    ("guide-26-objets",             DEMO+"&tab=objects",        None, True,  940),
+    ("guide-27-type-objet",         DEMO+"&tab=settings.objtypes",
+        "setParamMode('objtypes');openObjectTypeModal(0)", False, 1120),
+    # Éditeur d'un champ « valeur calculée » : on met en avant le PICKER d'insertion de la
+    # formule (onglets champs/dérivés/objets liés/fonctions/opérateurs + chips) en faisant
+    # défiler la modale pour le centrer.
+    ("guide-28-champ-calcule",      DEMO+"&tab=settings.fields",
+        "openCustomFieldModal(null);"
+        "var st=document.getElementById('cfType');st.value='computed';st.dispatchEvent(new Event('change',{bubbles:true}));"
+        "document.getElementById('cfCode').value='score_pondere';"
+        "document.getElementById('cfLab').value='Score pondéré';"
+        "var rt=document.getElementById('cfResultType');if(rt){rt.value='integer';rt.dispatchEvent(new Event('change',{bubbles:true}));}"
+        "var e=document.getElementById('cfExpr');if(e){e.value='score_initial * 2';e.dispatchEvent(new Event('input',{bubbles:true}));}"
+        "document.getElementById('cfCalcPicker').scrollIntoView({block:'center'});",
+        False, 1120),
 ]
 
 def run():
