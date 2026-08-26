@@ -8334,11 +8334,31 @@ function buildXlsx(){
       .concat(cfL.map(f=>cfCell(f,(tr.custom||{})[f.code]))));
   });
   const lkXml=sheetXML(lk,{widths:[11,40,11,40,36].concat(cfL.map(()=>20)),freeze:true,filter:lkHead.length});
+  // --- Objets (une feuille par type d'objet renseigné) ---
+  const objSheets=[];
+  objectTypes().forEach(ot=>{
+    const insts=objectsOfType(ot.code); if(!insts.length)return;
+    const attrs=ot.attributes||[];
+    const objCell=(a,inst)=>{
+      if(a.type==="computed"){const v=cfObjAttrText(a,ot,inst);
+        return (a.result_type==="integer"||a.result_type==="float")?numOr(v):s(v,TXT);}
+      return cfCell(a,(inst.values||{})[a.code]);   // références → codes/libellés, tags joints, images en texte (comme les cf risque/mesure)
+    };
+    const objHead=[t("rp_obj_id")].concat(attrs.map(cfLabel));
+    const rows=[objHead.map(h=>s(h,HDR))];
+    insts.forEach(inst=>rows.push([s(inst.id,BOLD)].concat(attrs.map(a=>objCell(a,inst)))));
+    const widths=[14].concat(attrs.map(a=>a.type==="textarea"?50:(a.type==="text"?30:20)));
+    objSheets.push([otLabel(ot),sheetXML(rows,{widths,freeze:true,filter:objHead.length})]);
+  });
   // --- Assemblage du classeur ---
   const cleanNm=nm=>String(nm||"").replace(/[\\\/\?\*\[\]:]/g," ").slice(0,31)||"Feuille";
-  const sheets=[[t("rp_summary"),synXml],[t("tab_risks"),rkXml],[t("tab_measures"),msXml],[t("tab_links"),lkXml]];
+  const usedNm=new Set();
+  const uniqNm=nm=>{let base=cleanNm(nm),name=base,k=2;   // Excel : noms de feuille uniques (insensible à la casse)
+    while(usedNm.has(name.toLowerCase())){const suf=" ("+k+")";name=base.slice(0,31-suf.length)+suf;k++;}
+    usedNm.add(name.toLowerCase());return name;};
+  const sheets=[[t("rp_summary"),synXml],[t("tab_risks"),rkXml],[t("tab_measures"),msXml],[t("tab_links"),lkXml]].concat(objSheets);
   const wb=XMLD+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="'+OD_REL+'"><sheets>'+
-    sheets.map((sh,i)=>'<sheet name="'+escX(cleanNm(sh[0]))+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join("")+'</sheets></workbook>';
+    sheets.map((sh,i)=>'<sheet name="'+escX(uniqNm(sh[0]))+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join("")+'</sheets></workbook>';
   const wbRels=XMLD+'<Relationships '+RELS_XMLNS+'>'+
     sheets.map((sh,i)=>'<Relationship Id="rId'+(i+1)+'" Type="'+OD_REL+'/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join("")+
     '<Relationship Id="rIdS" Type="'+OD_REL+'/styles" Target="styles.xml"/></Relationships>';

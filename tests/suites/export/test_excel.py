@@ -33,3 +33,17 @@ def test_xlsx_contains_risk_label(app):
     # les chaînes sont dans sharedStrings.xml (ou inline dans une feuille)
     blob = b"".join(v for k, v in parts.items() if k.startswith("xl/"))
     assert b"Fuite de donn" in blob  # un libellé de risque de la démo
+
+
+def test_xlsx_includes_object_sheets(app):
+    """Une feuille par type d'objet renseigné (id + attributs), en plus des 4 feuilles fixes."""
+    app.load("ebios-objets.rae.json")
+    parts = ooxml.open_pkg(base64.b64decode(app.js(XLSX_B64)))
+    exports.save("export-excel-ebios-objets.xlsx", base64.b64decode(app.js(XLSX_B64)))
+    wb = parts["xl/workbook.xml"].decode("utf-8")
+    # 4 feuilles fixes (Synthèse, Risques, Mesures, Liens) + 5 types d'objet de la démo
+    assert wb.count("<sheet ") == 9, f"nombre de feuilles inattendu :\n{wb}"
+    assert "Valeur m" in wb, "aucune feuille pour le type d'objet « Valeur métier »"
+    # une instance d'objet et la valeur d'un de ses attributs
+    blob = b"".join(v for k, v in parts.items() if k.startswith("xl/"))
+    assert b"VM1" in blob and b"Gestion de la relation client" in blob, "instance d'objet absente de l'export"
