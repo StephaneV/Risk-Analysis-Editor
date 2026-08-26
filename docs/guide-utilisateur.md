@@ -480,9 +480,12 @@ Le type de champ **« Référence à un objet »** est disponible partout où l'
 - comme **champ personnalisé** d'une *analyse*, d'un *risque*, d'une *mesure* ou d'un *lien* (voir §14) ;
 - comme **attribut** d'un type d'objet (objet → objet, décrit ci-dessus).
 
-À la définition, on choisit le **type d'objet ciblé** et si la référence est **simple** (une instance) ou **multiple** (plusieurs). À la saisie, un sélecteur propose les instances existantes ; l'option **« ＋ créer »** permet de **créer une instance à la volée** sans quitter la fiche. Les valeurs référencées s'affichent sous forme de **pastilles** portant le libellé de l'instance.
+À la définition, on choisit la **cible** — un **type d'objet**, ou bien les **Risques** ou les **Mesures** de l'analyse — et si la référence est **simple** (une instance) ou **multiple** (plusieurs). À la saisie, un sélecteur propose les éléments existants ; pour un type d'objet, l'option **« ＋ créer »** permet de **créer une instance à la volée** sans quitter la fiche.
 
-> ℹ️ Une référence pointe toujours vers l'**instance**, pas vers une copie : renommez l'instance dans l'onglet Objets et son libellé se met à jour partout où elle est référencée.
+- Une référence vers un **objet** s'affiche en **pastille portant le libellé** de l'instance.
+- Une référence vers un **risque** ou une **mesure** s'affiche en **pastille de code R*n* / M*n*** (avec le libellé en **infobulle** au survol), **cliquable** pour ouvrir la fiche visée — exactement comme les colonnes *Mesures* du registre des risques et *Risques couverts* du registre des mesures. Ces pastilles sont reprises telles quelles dans le **rapport Word**.
+
+> ℹ️ Une référence pointe toujours vers l'**élément** (instance, risque ou mesure), pas vers une copie : renommez-le et son libellé se met à jour partout où il est référencé.
 
 ### Intégrité référentielle
 
@@ -540,7 +543,7 @@ Le CSV est idéal pour préparer ou retravailler les données dans un tableur, p
 Le menu **Fichier** propose deux exports bureautiques, générés **localement et hors-ligne** (le contenu de l'analyse n'est pas transmis à un service distant) :
 
 - **Exporter en Word (.docx)** — suit la **même configuration** que le rapport (voir [§13](#13-le-rapport) : sections, ordre, colonnes, périmètre, orientation) et y ajoute une **page de garde**, une **table des matières** et un **en-tête / pied de page natifs** (avec numéros de page). Cartouche, présentation, synthèse, grille, **matrices en images**, registres et fiches détaillées. Prêt à fondre dans un gabarit d'entreprise. Également accessible via le bouton *⭳ Word* de l'onglet Rapport.
-- **Exporter en Excel (.xlsx)** — un classeur à quatre feuilles (**Synthèse / Risques / Mesures / Liens**), avec cellules typées (vraies dates et nombres), couleurs de criticité et de statut, en-têtes figés et filtres automatiques.
+- **Exporter en Excel (.xlsx)** — un classeur avec les feuilles **Synthèse / Risques / Mesures / Liens**, **plus une feuille par type d'objet** (une ligne par instance, une colonne par attribut), avec cellules typées (vraies dates et nombres), couleurs de criticité et de statut, en-têtes figés et filtres automatiques.
 
 ### Exporter avec un modèle Word (gabarit personnalisé)
 

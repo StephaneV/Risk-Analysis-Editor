@@ -73,7 +73,7 @@ le type). Le type d'un attribut peut être `reference` (→ objet↔objet).
   "object_type": "bien_support", "multiple": true, "required": false, "label": {"fr": "Biens supports"} }
 ```
 
-- `object_type` : **un** type d'objet ciblé (mono-type au départ, cf. §11).
+- `object_type` : **un** type d'objet ciblé (mono-type au départ, cf. §11). **Évolution post-v1** : la cible peut aussi être une **entité de l'analyse** via une sentinelle `"@risks"` ou `"@measures"` — la référence pointe alors vers un risque ou une mesure (par leur `id`), et non vers une instance d'objet.
 - `multiple` : mono- ou multi-valeur. `required` : obligatoire ou non.
 - **Valeur** stockée dans l'entité : `risk.custom.biens = "BS1"` (mono) ou `["BS1","BS3"]` (multi) —
   on réutilise le stockage `custom{}` existant (pas de nouvelle structure côté entités).
@@ -89,7 +89,9 @@ le type). Le type d'un attribut peut être `reference` (→ objet↔objet).
   à la volée.
 - **Lecture/validation** (`cfReadValue`, `cfValidate`, `cfPresent`) : id(s) ; requis = au moins une.
 - **Affichage** (`cfDisplay`/`cfDisplayHTML`) : le **`name_attr`** de chaque instance, rendu en
-  **pastille** (réutilise le style des pastilles de mesure `measurePill`).
+  **pastille** (réutilise le style des pastilles de mesure `measurePill`). Pour une cible
+  `"@risks"`/`"@measures"`, la pastille porte le **code R*n*/M*n*** (libellé en infobulle) et
+  ouvre la fiche visée — dans l'application comme dans le rapport Word.
 - **Cibles autorisées** (entité) : les **5 cibles** actuelles — `analysis`, `risk`, `cotation`,
   `measure`, `link`. Objet→objet : via un attribut de type `reference` (auto-référence autorisée
   avec avertissement, cf. §11).

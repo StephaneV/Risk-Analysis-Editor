@@ -228,7 +228,7 @@ Le format permet de **définir des champs supplémentaires** rattachés à l'ana
 | `target` | chaîne | O | Objet rattaché : `"analysis"`, `"risk"`, `"cotation"` (évaluation initiale/résiduelle d'un risque), `"measure"` ou `"link"` (lien risque↔mesure, cf. `treatments`). |
 | `label` | objet | O | Libellé affiché, par langue : `{ "fr": "…", "en": "…" }`. À l'affichage : langue courante, repli sur `fr` puis sur `code`. |
 | `type` | chaîne | O | `"boolean"`, `"integer"`, `"float"`, `"date"`, `"text"` (une ligne), `"textarea"` (multi-lignes), `"url"` (lien web `http(s)://`), `"email"` (adresse électronique), `"tel"` (numéro de téléphone, format international permissif), `"regexp"` (texte contrôlé par le motif `pattern`), `"color"` (couleur, stockée en hex `#RRGGBB` ; affichage réglé par `color_mode` : `both` pastille + hex (défaut), `swatch` pastille seule, `hex` valeur), `"image"` (image embarquée en *data-URI*, affichée en vignette ; les matricielles trop grandes sont réduites), `"select"` (liste, choix unique), `"checklist"` (liste, choix multiple), `"tags"` (étiquettes colorées, choix unique ou multiple), `"scale"` (échelle : niveaux à valeur numérique, §4.6.5), `"progress"` (barre de progression 0–100 %), `"reference"` (référence vers une ou plusieurs instances d'objet, §4.7), `"computed"` (valeur calculée par une expression, §4.6.6). |
-| `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : `code` du type d'objet ciblé (`object_types[].code`, §4.7). La valeur stockée est alors l'`id` d'une instance (ou un tableau d'`id` si `multiple`). |
+| `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : cible de la référence. Soit le `code` d'un **type d'objet** (`object_types[].code`, §4.7) — la valeur stockée est alors l'`id` d'une instance ; soit une **entité de l'analyse** via une valeur sentinelle : `"@risks"` (les risques) ou `"@measures"` (les mesures) — la valeur stockée est alors l'`id` d'un risque (`risks[].id`) ou d'une mesure (`measures[].id`). Tableau d'`id` si `multiple`. |
 | `required` | booléen | F | Si `true`, une valeur est obligatoire (bloquant à la saisie). |
 | `filterable` | booléen | F | Si `true`, le champ alimente une liste de filtrage dans les vues qui affichent l'objet ciblé. **Réservé aux types à valeurs fermées** (`select`, `checklist`, `tags`, `boolean`, `reference`) **et aux cibles `risk`, `measure`, `link`** ; ignoré ailleurs. Cf. § *Filtrage par champ personnalisé*. |
 | `pattern` | chaîne | F | Type `regexp` uniquement : expression régulière (syntaxe JavaScript) que la valeur doit respecter **en totalité** (ancrage implicite). Motif absent ou non compilable : aucun contrôle de format. |
@@ -401,8 +401,8 @@ Un attribut se décrit **exactement comme un champ personnalisé** (§4.6.1) —
 |---|---|---|---|
 | `code` | chaîne | O | Identifiant de l'attribut, **unique** dans le type. Sert de clé dans `objects[].values`. |
 | `label` | objet | O | Libellé multilingue. |
-| `type` | chaîne | O | Mêmes types qu'un champ personnalisé (§4.6.1) **plus** `"reference"` (objet → objet). |
-| `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : `code` du type ciblé. Peut être **le type courant** (auto-référence — attention aux boucles). |
+| `type` | chaîne | O | Mêmes types qu'un champ personnalisé (§4.6.1) **plus** `"reference"` (objet → objet, ou objet → risque/mesure). |
+| `object_type` | chaîne | Cond. | **Obligatoire** pour le type `reference` : `code` du type ciblé (peut être **le type courant** — auto-référence, attention aux boucles), ou une sentinelle d'entité de l'analyse `"@risks"` / `"@measures"` (cf. §4.6.1). |
 | `multiple` | booléen | F | Type `tags` ou `reference` : plusieurs valeurs autorisées. |
 | *(autres)* | — | F | `required`, `pattern`, `min`/`max`, `min_items`/`max_items`, `items` (pour `select`/`checklist`/`tags`), `help`, `description`, `palette`, `colors`, `step`, `order` — voir §4.6.1. |
 
