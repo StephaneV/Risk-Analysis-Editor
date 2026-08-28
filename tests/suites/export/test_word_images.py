@@ -217,3 +217,41 @@ def test_object_computed_attr_is_recomputed(app):
     assert "SRV2:calc=10;" in res["text"], res["text"]
     assert res["braces"] == 0, "balise non résolue"
     assert not res["warns"], res["warns"]
+
+
+# --- Alerte hors-plage d'un champ calculé sur | badge -----------------------------
+# La valeur calculée hors de [min,max] devient une pastille de la couleur d'alerte
+# quand « | badge » est appliqué ; en plage → texte simple (aucune pastille).
+OBJ_ALERT_JS = r"""
+async (tplB64)=>{
+  const b64ToU8=b64=>{const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;};
+  analyse.object_types=[{code:'srv',prefix:'SRV',name_attr:'nom',label:{fr:'Serveur'},attributes:[
+    {code:'niveau',type:'scale',label:{fr:'Niveau'},items:[{value:1,label:'Bas'},{value:2,label:'Moyen'},{value:3,label:'Haut'}]},
+    {code:'calc',type:'computed',label:{fr:'×10'},expression:'=cf.niveau*10',result_type:'integer',alert:{max:20,color:'#c0505a'}}]}];
+  analyse.objects=[{id:'SRV1',type:'srv',values:{niveau:3}},{id:'SRV2',type:'srv',values:{niveau:1}}]; // 30 (alerte) / 10 (ok)
+  analyse.risks=[];analyse.measures=[];analyse.treatments=[];
+  const parts=fflate.unzipSync(b64ToU8(tplB64));
+  tmplWarnings.length=0;
+  const blob=await tmplRender(parts);
+  const doc=fflate.strFromU8(fflate.unzipSync(new Uint8Array(await blob.arrayBuffer()))["word/document.xml"]);
+  const text=(doc.match(/<w:t[^>]*>([^<]*)<\/w:t>/g)||[]).map(m=>m.replace(/<[^>]+>/g,'')).join('');
+  return {text, alertFills:(doc.match(/w:fill="C0505A"/g)||[]).length, braces:(doc.match(/\{\{/g)||[]).length, warns:tmplWarnings.slice()};
+}
+"""
+
+
+def test_object_computed_alert_badge(app):
+    """{{ object.attr.<calc> | badge }} : la valeur hors plage (SRV1=30 > 20) reçoit une
+    pastille de la couleur d'alerte (C0505A) ; la valeur en plage (SRV2=10) reste en texte
+    simple → exactement une pastille d'alerte."""
+    app.load("vide.rae.json")
+    tpl = _docx(
+        _p('{{#each objects type="srv" sort="id"}}')
+        + _p('{{ object.id }}={{ object.attr.calc | badge }};')
+        + _p('{{/each}}')
+    )
+    res = app.js(OBJ_ALERT_JS, tpl)
+    assert "30" in res["text"] and "10" in res["text"], res["text"]
+    assert res["alertFills"] == 1, f"une seule pastille d'alerte attendue, {res['alertFills']}"
+    assert res["braces"] == 0, "balise non résolue"
+    assert not res["warns"], res["warns"]

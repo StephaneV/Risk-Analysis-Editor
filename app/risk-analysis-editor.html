@@ -9224,6 +9224,15 @@ function tmplEvolution(risk){
   const i=scoreOf(ia.probability,ia.severity),r=scoreOf(ev.probability,ev.severity);
   return t("tmpl_evo_"+(r<i?"reduced":r>i?"worsened":"unchanged"));
 }
+// Descripteur d'un champ/attribut CALCULÉ : valeur recalculée ; si elle sort de la plage
+// d'alerte, étiquette colorée (clabel) → pastille avec « | badge » (couleur d'alerte),
+// comme la criticité/les tags. Sinon texte simple. Aligné sur cfComputedDisplayHTML (vue web).
+function tmplComputedDesc(f,target,entity){
+  const r=cfComputedValue(f,target,entity);
+  if(!r.ok)return {kind:"text",value:"#ERR"};
+  const txt=cfComputedText(f,r),col=cfComputedAlertColor(f,r);
+  return col?{kind:"clabel",value:txt,color:col}:{kind:"text",value:txt};
+}
 function tmplRiskField(risk,rest){switch(rest[0]){
   case "id":return {kind:"text",value:risk.id};
   case "label":return {kind:"text",value:risk.label};
@@ -9235,7 +9244,7 @@ function tmplRiskField(risk,rest){switch(rest[0]){
   case "residual": case "net":return tmplAssess(risk,"residual",rest[1]);
   case "evolution":return {kind:"text",value:tmplEvolution(risk)};
   case "cf":{const f=tmplCfField("risk",rest[1])||tmplCfField("cotation",rest[1]);
-    if(f&&f.type==="computed"&&f.target==="risk")return {kind:"text",value:cfComputedDisplay(f,"risk",risk)};
+    if(f&&f.type==="computed"&&f.target==="risk")return tmplComputedDesc(f,"risk",risk);
     return f?{kind:"cf",value:(risk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   default:return {unknown:true};}}
 function tmplMeasureField(m,rest){switch(rest[0]){
@@ -9250,7 +9259,7 @@ function tmplMeasureField(m,rest){switch(rest[0]){
   case "comment":return {kind:"md",value:m.comment};
   case "overdue":return {kind:"bool",value:isOverdue(m)};
   case "cf":{const f=tmplCfField("measure",rest[1]);
-    if(f&&f.type==="computed")return {kind:"text",value:cfComputedDisplay(f,"measure",m)};
+    if(f&&f.type==="computed")return tmplComputedDesc(f,"measure",m);
     return f?{kind:"cf",value:(m.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   default:return {unknown:true};}}
 function tmplLinkField(lk,rest){switch(rest[0]){
@@ -9258,7 +9267,7 @@ function tmplLinkField(lk,rest){switch(rest[0]){
   case "risk_id":return {kind:"text",value:lk.risk};
   case "measure_id":return {kind:"text",value:lk.measure};
   case "cf":{const f=tmplCfField("link",rest[1]);
-    if(f&&f.type==="computed")return {kind:"text",value:cfComputedDisplay(f,"link",lk)};
+    if(f&&f.type==="computed")return tmplComputedDesc(f,"link",lk);
     return f?{kind:"cf",value:(lk.custom||{})[rest[1]],field:f}:{unknown:true,reason:"cf",detail:"cf."+rest[1]};}
   case "risk":return tmplRiskField(riskById(lk.risk)||{},rest.slice(1));
   case "measure":return tmplMeasureField(measureById(lk.measure)||{},rest.slice(1));
@@ -9306,7 +9315,7 @@ function tmplObjectField(inst,rest){                 // instance d'objet dans un
     case "type":return {kind:"text",value:otLabel(objectTypeByCode(inst.type))};
     case "type_code":return {kind:"text",value:inst.type};
     case "attr":{const a=objectTypeAttr(inst.type,rest[1]);
-      if(a&&a.type==="computed")return {kind:"text",value:cfComputedDisplay(a,objectTypeByCode(inst.type),inst)};   // recalcul (jamais stocké), aligné sur object.attributes / risk.cf
+      if(a&&a.type==="computed")return tmplComputedDesc(a,objectTypeByCode(inst.type),inst);   // recalcul (jamais stocké) + alerte, aligné sur object.attributes / risk.cf
       return a?{kind:"cf",value:(inst.values||{})[rest[1]],field:a}:{unknown:true,reason:"field",detail:"attr."+(rest[1]||"")};}
     default:return {unknown:true};}}
 function tmplObjTypeField(ot,rest){                   // définition de type d'objet
@@ -9363,7 +9372,7 @@ function tmplResolveValue(path,ctx){
   const md=analyse.metadata||{};
   if(head==="analysis"){
     if(p[1]==="cf"){const code=p.slice(2).join("."),f=tmplCfField("analysis",code);
-      if(f&&f.type==="computed")return {kind:"text",value:cfComputedDisplay(f,"analysis",analyse)};
+      if(f&&f.type==="computed")return tmplComputedDesc(f,"analysis",analyse);
       return f?{kind:"cf",value:(analyse.custom||{})[code],field:f}:{unknown:true,reason:"cf",detail:"analysis.cf."+code};}
     switch(p[1]){
       case "title":return {kind:"text",value:md.title};
