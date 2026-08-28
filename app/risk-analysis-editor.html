@@ -9306,6 +9306,7 @@ function tmplObjectField(inst,rest){                 // instance d'objet dans un
     case "type":return {kind:"text",value:otLabel(objectTypeByCode(inst.type))};
     case "type_code":return {kind:"text",value:inst.type};
     case "attr":{const a=objectTypeAttr(inst.type,rest[1]);
+      if(a&&a.type==="computed")return {kind:"text",value:cfComputedDisplay(a,objectTypeByCode(inst.type),inst)};   // recalcul (jamais stocké), aligné sur object.attributes / risk.cf
       return a?{kind:"cf",value:(inst.values||{})[rest[1]],field:a}:{unknown:true,reason:"field",detail:"attr."+(rest[1]||"")};}
     default:return {unknown:true};}}
 function tmplObjTypeField(ot,rest){                   // définition de type d'objet

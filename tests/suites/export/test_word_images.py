@@ -178,3 +178,42 @@ def test_image_sizing_emu(res):
     assert exts[0] == {"cx": 1440000, "cy": 720000}, "width=4cm → 1440000×720000"
     assert exts[1] == {"cx": 720000, "cy": 360000}, "height=1cm → 720000×360000"
     assert exts[2] == {"cx": 720000, "cy": 360000}, "width=4+height=1 (boîte max) → 720000×360000"
+
+
+# --- Attribut d'objet CALCULÉ : object.attr.<calc> doit être RECALCULÉ ------------
+# Régression : le résolveur direct object.attr lisait autrefois la valeur stockée
+# (vide pour un attribut calculé, jamais persisté) → colonne vide. Il doit recalculer,
+# comme risk.cf.<calc>, object.attributes et {{ object_notes }}.
+OBJ_CALC_JS = r"""
+async (tplB64)=>{
+  const b64ToU8=b64=>{const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;};
+  analyse.object_types=[{code:'srv',prefix:'SRV',name_attr:'nom',label:{fr:'Serveur'},attributes:[
+    {code:'nom',type:'text',label:{fr:'Nom'}},
+    {code:'niveau',type:'scale',label:{fr:'Niveau'},items:[{value:1,label:'Bas'},{value:2,label:'Moyen'},{value:3,label:'Haut'}]},
+    {code:'calc',type:'computed',label:{fr:'Niveau ×10'},expression:'=cf.niveau*10',result_type:'integer'}]}];
+  analyse.objects=[{id:'SRV1',type:'srv',values:{nom:'A',niveau:3}},{id:'SRV2',type:'srv',values:{nom:'B',niveau:1}}];
+  analyse.risks=[];analyse.measures=[];analyse.treatments=[];
+  const parts=fflate.unzipSync(b64ToU8(tplB64));
+  tmplWarnings.length=0;
+  const blob=await tmplRender(parts);
+  const doc=fflate.strFromU8(fflate.unzipSync(new Uint8Array(await blob.arrayBuffer()))["word/document.xml"]);
+  const text=(doc.match(/<w:t[^>]*>([^<]*)<\/w:t>/g)||[]).map(m=>m.replace(/<[^>]+>/g,'')).join('');
+  return {text, braces:(doc.match(/\{\{/g)||[]).length, warns:tmplWarnings.slice()};
+}
+"""
+
+
+def test_object_computed_attr_is_recomputed(app):
+    """{{ object.attr.<calc> }} rend la valeur RECALCULÉE (jamais stockée) — objet SRV1
+    niveau=3 → calc=30, SRV2 niveau=1 → calc=10 ; 0 balise résiduelle, 0 avertissement."""
+    app.load("vide.rae.json")
+    tpl = _docx(
+        _p('{{#each objects type="srv" sort="id"}}')
+        + _p('{{ object.id }}:calc={{ object.attr.calc }};')
+        + _p('{{/each}}')
+    )
+    res = app.js(OBJ_CALC_JS, tpl)
+    assert "SRV1:calc=30;" in res["text"], res["text"]
+    assert "SRV2:calc=10;" in res["text"], res["text"]
+    assert res["braces"] == 0, "balise non résolue"
+    assert not res["warns"], res["warns"]
