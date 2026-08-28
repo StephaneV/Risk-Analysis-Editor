@@ -258,7 +258,7 @@ la date locale est légitime.)*
 | **Filtre** | Si `filterable` **et** résultat discret : **booléen** (Oui/Non) ou **alerte** définie (« En alerte » / « Hors alerte »), sous forme de liste de choix. Un résultat continu (numérique/date sans alerte) n'est pas proposé au filtre. (Lot F.) |
 | **Statistiques** | Bloc **« agrégat numérique »** : tuiles effectif renseigné / moyenne / somme / min / max (lot F). Les calculés de cible *analyse* restent en **tuiles d'indicateurs** (lot E). |
 | **Rapport / Word / CSV** | Valeur **matérialisée** au moment de l'export (colonne, cartouche, `field_values`…). |
-| **Modèles Word** | `{{ risk.cf.<code> }}` rend la valeur calculée ; utilisable en `{{#if}}` et tri. |
+| **Modèles Word** | `{{ risk.cf.<code> }}` — et `{{ object.attr.<code> }}` pour un attribut d'objet calculé — rend la valeur **recalculée** (jamais la valeur stockée) ; utilisable en `{{#if}}` et tri. Une valeur **hors plage d'alerte** se rend en **pastille** de la couleur d'alerte avec `| badge` (§3.11). |
 | **Éditeur** | Zone *expression* (sans Markdown) avec **validation en direct**, choix *result_type*, et **pickers** d'insertion des jetons au curseur (champs perso, **champs de base/dérivés** de la cible, fonctions, opérateurs ; une fonction entoure la sélection). Les options **non pertinentes selon le `result_type` sont masquées** (décimales → `number` ; unité → `number`/`integer` ; alerte → `number`/`integer`/`date`) ; la case **« obligatoire » est masquée** (sans objet). |
 | **Disponibilité** | Comme **champ personnalisé** (cibles `analysis`/`risk`/`cotation`/`measure`/`link`) **et** comme **attribut d'un type d'objet** (l'expression réfère alors aux autres attributs de l'instance). |
 | **Schéma / i18n** | `computed` ajouté à `CF_TYPES` et à `objectAttribute`, au schéma JSON (contrainte `computed ⇒ expression`), au dictionnaire FR/EN/IT. |
@@ -297,7 +297,9 @@ Les deux bornes sont **indépendantes et facultatives** ; on combine ainsi quatr
 | `{ max: b }` | `valeur > b` | **plafond** : alerter au-dessus de `b`. |
 | `{ min: a, max: b }` | `valeur < a` **ou** `valeur > b` | **plage tolérée** `[a, b]` : alerter en dehors. |
 
-S'applique en fiche (aperçu lecture seule), en colonne de registre et dans le rapport.
+S'applique en fiche (aperçu lecture seule), en colonne de registre et dans le rapport. Dans un
+**modèle Word**, la valeur en alerte se rend en **pastille colorée** (couleur d'alerte) avec le format
+`| badge` — et en **texte simple** sinon (valeur en plage, ou balise sans `| badge`).
 
 **Exemples :**
 

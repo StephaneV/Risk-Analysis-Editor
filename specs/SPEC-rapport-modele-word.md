@@ -211,7 +211,7 @@ Champs d'un objet (frame `object`, résolus par `tmplObjectField`) :
 | `object.id` | `id` | identifiant (ex. `VM1`) |
 | `object.label` | *(dérivé)* | valeur de l'attribut-nom (`name_attr`), repli id (`objectLabel`) |
 | `object.type` · `object.type_code` | *(via `object_types`)* | libellé du type · code du type |
-| `object.attr.<code>` | `values.<code>` | valeur d'un **attribut** — **déréférencée** si référence, libellés pour select/tags, dates formatées |
+| `object.attr.<code>` | `values.<code>` | valeur d'un **attribut** — **déréférencée** si référence, libellés pour select/tags, dates formatées ; un attribut **calculé** est **recalculé** (jamais lu dans `values`, où il n'est pas stocké), comme `risk.cf.<calculé>` et le chemin réflexif `object.attributes` — alerte hors plage en **pastille** avec `| badge` (§5) |
 
 **Types d'objets (schéma)** — collection `object_types`, frame **`type`** (résolu par `tmplObjTypeField`) :
 `type.code`, `type.label`, `type.id_prefix`, `type.name_attr`, `type.count` (nombre d'instances), et la
@@ -385,8 +385,8 @@ dépassement).
 | `percent` | ajoute « % » (barres de progression) |
 | `upper` / `lower` | casse |
 | `default="—"` | valeur de repli si vide |
-| `swatch` | **couleur** (`*.color`, hex) → **pastille carrée** (`■`) ; **tags** / **étiquette colorée** (statut, criticité) → pastille + libellé |
-| `badge` | **tags** / **étiquette colorée** (statut de mesure, criticité initiale/résiduelle) → **puce colorée**, style au choix (ci-dessous) |
+| `swatch` | **couleur** (`*.color`, hex) → **pastille carrée** (`■`) ; **tags** / **étiquette colorée** (statut, criticité, **champ calculé hors plage d'alerte**) → pastille + libellé |
+| `badge` | **tags** / **étiquette colorée** (statut de mesure, criticité initiale/résiduelle, **champ calculé hors plage d'alerte** — couleur d'alerte) → **puce colorée**, style au choix (ci-dessous) |
 
 **Styles de badge.** Un `| badge` **sans valeur** prend le **défaut du rapport** `tmplReport.badge` —
 initialisé depuis `reportCfg().badge_style` (config `extensions.display.report.badge_style`, défaut
@@ -406,10 +406,12 @@ tableaux clé en main ; par tableau (`{{ table … badge="…" }}` → `dxReport
 
 `swatch` / `badge` sont des **rendus enrichis** : la substitution reconstruit le run en une séquence de
 runs colorés (couleur de texte `w:color` pour la pastille, fond `w:shd` pour le badge), en héritant du
-`rPr` de base. Ils s'appliquent aux champs **tags**, au **statut** de mesure (`STATUS_COLORS`) et à la
-**criticité** (`kind:"clabel"` — étiquette colorée). Le format par défaut d'un `*.color` reste le **code
-hex**, celui d'un `tags`/statut/criticité, le **texte**. Une valeur multi-étiquettes produit une pastille
-par valeur. Sur une valeur non pertinente, repli en texte simple.
+`rPr` de base. Ils s'appliquent aux champs **tags**, au **statut** de mesure (`STATUS_COLORS`), à la
+**criticité** et aux **champs/attributs calculés hors plage d'alerte** (`tmplComputedDesc` →
+`kind:"clabel"` — étiquette de la couleur d'alerte ; un calculé **en plage** reste du texte). Le format par
+défaut d'un `*.color` reste le **code hex**, celui d'un `tags`/statut/criticité/calculé-en-alerte, le
+**texte**. Une valeur multi-étiquettes produit une pastille par valeur. Sur une valeur non pertinente,
+repli en texte simple.
 
 Le rendu **image** (matrice, radar) passe par les **blocs** du §4, pas par un format de valeur.
 
