@@ -550,6 +550,8 @@
   .cf-chips{display:inline-flex;flex-wrap:wrap;gap:4px;vertical-align:middle}
   .cf-chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;
     color:var(--tagfg,#fff);background:var(--tagc,#888);white-space:nowrap}
+  /* Référence à un objet : libellé possiblement long → ellipsis, libellé complet en infobulle (title). */
+  .cf-chip.cf-chip-ref{display:inline-block;max-width:240px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:help}
   .cf-progress{display:inline-flex;align-items:center;gap:8px;min-width:120px;max-width:220px;vertical-align:middle}
   .cf-progress-track{flex:1;height:8px;min-width:60px;background:var(--panel-2);border:1px solid var(--border);border-radius:20px;overflow:hidden}
   .cf-progress-track>span{display:block;height:100%;background:var(--pc,var(--accent))}
@@ -12407,7 +12409,8 @@ function cfDisplayHTML(f,v,rich){
     // Vers un risque / une mesure : pastille Rn / Mn (code + infobulle du libellé), comme dans les registres.
     if(f.object_type===REF_RISK)return '<span class="pill-list">'+arr.map(id=>riskPill(id)).join("")+'</span>';
     if(f.object_type===REF_MEASURE)return '<span class="pill-list">'+arr.map(id=>measurePill(id)).join("")+'</span>';
-    return '<span class="cf-chips">'+arr.map(id=>'<span class="cf-chip" style="--tagc:#5b7089;--tagfg:#fff">'+esc(refLabel(f.object_type,id))+'</span>').join("")+'</span>';}
+    return '<span class="cf-chips">'+arr.map(id=>{const lbl=refLabel(f.object_type,id);
+      return '<span class="cf-chip cf-chip-ref" style="--tagc:#5b7089;--tagfg:#fff" title="'+esc(lbl)+'">'+esc(lbl)+'</span>';}).join("")+'</span>';}
   if(f.type==="color"){const hex=/^#[0-9a-fA-F]{6}$/.test(v)?v:String(v),mode=f.color_mode||"both";
     const sw='<span class="cf-swatch" title="'+esc(hex)+'" style="background:'+esc(hex)+'"></span>';
     return mode==="hex"?esc(hex):mode==="swatch"?sw:(sw+'<span class="cf-swatch-hex">'+esc(hex)+'</span>');}
