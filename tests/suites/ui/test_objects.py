@@ -48,6 +48,48 @@ def test_open_instance_modal(app):
     app.close_modals()
 
 
+# Ouvre la fiche d'une instance d'un type possédant un attribut « textarea ».
+OPEN_TEXTAREA_INSTANCE = r"""
+() => {
+  for (const ot of (analyse.object_types || [])) {
+    if ((ot.attributes || []).some(a => a.type === 'textarea')) {
+      const inst = objectsOfType(ot.code)[0];
+      if (inst) { openObjectModal(ot.code, inst.id); return ot.code; }
+    }
+  }
+  return null;
+}
+"""
+
+# Règle une valeur Markdown dans la première textarea d'attribut de la fiche, bascule en
+# aperçu, et renvoie si la couleur et le surlignage sont bien rendus.
+PREVIEW_RENDERS_MD = r"""
+() => {
+  const ta = document.querySelector('body > .modal-bg.open .md-wrap textarea[data-cfv]');
+  if (!ta || !ta._mdSetMode) return false;
+  ta.value = 'Texte [rouge]{.red} et ==surligné==.';
+  ta._mdSetMode(true);
+  const html = ta.closest('.md-wrap').querySelector('.md-preview').innerHTML;
+  return /color:#d64545/.test(html) && /<mark>/.test(html);
+}
+"""
+
+
+def test_instance_textarea_supports_markdown(app):
+    """Les attributs « texte multi-lignes » de la fiche d'instance ont l'aperçu/édition
+    Markdown (enveloppe .md-wrap + bascule) — comme les descriptions de risque/mesure."""
+    app.load("ebios-objets.rae.json")
+    code = app.js(OPEN_TEXTAREA_INSTANCE)
+    assert code, "aucun type d'objet avec attribut textarea + instance dans la fixture"
+    enhanced = app.js(
+        "document.querySelectorAll('body > .modal-bg.open .md-wrap textarea[data-cfv]').length"
+    )
+    assert enhanced >= 1, "attribut textarea non équipé du Markdown dans la fiche d'instance"
+    assert app.js(PREVIEW_RENDERS_MD), "l'aperçu Markdown ne rend pas couleur/surlignage"
+    assert not app.console_errors()
+    app.close_modals()
+
+
 def test_open_object_type_editor(app):
     app.load("ebios-objets.rae.json")
     app.js("openObjectTypeModal(0)")   # index dans object_types, pas le code

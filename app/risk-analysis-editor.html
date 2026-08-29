@@ -13841,6 +13841,7 @@ function pushModal(title,bodyHtml,buttons,opts){
   (buttons||[]).forEach(b=>{const btn=document.createElement("button");btn.className="btn"+(b.cls?" "+b.cls:"");btn.textContent=b.label;btn.onclick=()=>b.onClick(api);foot.appendChild(btn);});
   modal.querySelector(".x").onclick=entry.close;
   bg.addEventListener("mousedown",e=>{if(e.target===bg)entry.close();});
+  enhanceTextareas(modal.querySelector(".body"));   // hauteur auto + aperçu Markdown (ex. attributs texte des instances)
   refreshInert();focusFirstIn(bg);
   return api;
 }
