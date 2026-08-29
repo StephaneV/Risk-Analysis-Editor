@@ -90,6 +90,31 @@ def test_instance_textarea_supports_markdown(app):
     app.close_modals()
 
 
+# Modale « loupe » d'une cellule écrêtée : elle doit AFFICHER le HTML rendu de la cellule
+# (Markdown mis en forme), et non un textContent qui effacerait la mise en forme.
+CLIP_MAGNIFIER_MD = r"""
+() => {
+  const d = document.createElement('div');
+  d.className = 'cell-clip'; d.setAttribute('data-label', 'Desc');
+  d.innerHTML = mdToHTML('Texte [rouge]{.red}, ==surligné== et **gras**.');
+  document.body.appendChild(d);
+  showClipText(d);
+  const m = [...document.querySelectorAll('.modal')].pop();
+  const html = m.querySelector('.clip-view').innerHTML;
+  d.remove();
+  return { color: /color:#d64545/.test(html), mark: /<mark>/.test(html), bold: /<strong>/.test(html) };
+}
+"""
+
+
+def test_clip_magnifier_preserves_markdown(app):
+    """La modale loupe (cellule tronquée) conserve la mise en forme Markdown de la cellule."""
+    app.load("ebios-objets.rae.json")
+    r = app.js(CLIP_MAGNIFIER_MD)
+    assert r["color"] and r["mark"] and r["bold"], f"mise en forme perdue dans la loupe : {r}"
+    app.close_modals()
+
+
 def test_open_object_type_editor(app):
     app.load("ebios-objets.rae.json")
     app.js("openObjectTypeModal(0)")   # index dans object_types, pas le code

@@ -555,7 +555,7 @@
   /* Cellule de texte longue : écrêtée à 3 lignes ; si tronquée (.is-clipped) → curseur loupe. */
   .cell-clip{max-width:340px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
   .cell-clip.is-clipped{cursor:zoom-in}
-  .clip-view{white-space:pre-wrap;overflow-wrap:anywhere;max-height:60vh;overflow:auto;line-height:1.55}
+  .clip-view{overflow-wrap:anywhere;max-height:60vh;overflow:auto;line-height:1.55}
   .cf-progress{display:inline-flex;align-items:center;gap:8px;min-width:120px;max-width:220px;vertical-align:middle}
   .cf-progress-track{flex:1;height:8px;min-width:60px;background:var(--panel-2);border:1px solid var(--border);border-radius:20px;overflow:hidden}
   .cf-progress-track>span{display:block;height:100%;background:var(--pc,var(--accent))}
@@ -7383,8 +7383,10 @@ function markClippedCells(root){
   });
 }
 function showClipText(clip){
-  const label=clip.getAttribute("data-label")||"", full=clip.textContent||"";
-  pushModal(label,'<div class="clip-view">'+esc(full).replace(/\n/g,"<br>")+'</div>',
+  // On reprend le HTML DÉJÀ rendu de la cellule (Markdown compris : couleur, gras, surlignage…),
+  // et non son textContent qui effacerait la mise en forme. Ce HTML est déjà échappé/sûr.
+  const label=clip.getAttribute("data-label")||"";
+  pushModal(label,'<div class="clip-view md">'+clip.innerHTML+'</div>',
     [{label:t("btn_close"),cls:"ghost",onClick:a=>a.close()}]);
 }
 let _clipTimer=null;
