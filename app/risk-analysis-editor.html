@@ -5839,8 +5839,14 @@ function attachTip(el,r,kind){
     else{head=t("tip_unchanged");ev=r.initial_assessment;}
     const sc=scoreOf(ev.probability,ev.severity),c=critFor(sc);
     const cote=head+' · '+t("abbr_prob")+ev.probability+' × '+t("abbr_grav")+ev.severity+' = '+sc+' ('+c.label+')';
-    return {html:'<b>'+esc(r.id)+' — '+esc(r.label)+'</b><br><span class="t-cat">'+esc(r.category||"")+'</span><br>'+esc(cote),
-            text:r.id+" — "+r.label+(r.category?" ("+r.category+")":"")+". "+cote};
+    // Risque non réduit : pas de flèche (donc pas d'infobulle de flèche) → on liste ici les mesures liées, s'il y en a.
+    let extraHtml="",extraText="";
+    if(kind==="unchanged"){const mes=measuresOfRisk(r.id);
+      if(mes.length){const rows=mes.map(id=>{const m=measureById(id);return {id:id,label:m?m.label:"",badge:(m&&m.status?" "+statusBadge(m.status):"")};});
+        extraHtml='<br><span class="t-cat">'+esc(t("linked_measures_label"))+'</span><br>'+rows.map(x=>"• "+esc(x.id)+(x.label?" · "+esc(x.label):"")+x.badge).join("<br>");
+        extraText=". "+t("linked_measures_label")+" "+rows.map(x=>x.id+(x.label?" · "+x.label:"")).join(", ");}}
+    return {html:'<b>'+esc(r.id)+' — '+esc(r.label)+'</b><br><span class="t-cat">'+esc(r.category||"")+'</span><br>'+esc(cote)+extraHtml,
+            text:r.id+" — "+r.label+(r.category?" ("+r.category+")":"")+". "+cote+extraText};
   };
   const show=(x,y)=>{tip.innerHTML=build().html;tip.style.opacity=1;tip.style.left=x+"px";tip.style.top=y+"px";};
   el.addEventListener("mousemove",e=>{if(_dragging){tip.style.opacity=0;return;}show(e.clientX+14,e.clientY+14);});
