@@ -11879,6 +11879,19 @@ function renderObjectTypes(){
   });
 }
 /* Modale d'un TYPE d'objet (empilable). Les attributs sont édités par-dessus (openAttrModal). */
+/* Préfixe d'ID proposé depuis le libellé : initiales des mots significatifs, en majuscules
+   (« Valeur métier » → VM, « Exigence du socle de sécurité » → ESS). Reste éditable. */
+function otPrefixFromLabel(label){
+  const stop={de:1,du:1,des:1,la:1,le:1,les:1,l:1,d:1,un:1,une:1,et:1,en:1,"à":1,au:1,aux:1,sur:1,pour:1,par:1};
+  const base=String(label||"").normalize("NFD").replace(/[̀-ͯ]/g,"");   // sans accents
+  const words=base.split(/[\s'’\-]+/).filter(w=>w&&!stop[w.toLowerCase()]);
+  let p;
+  if(words.length>=2)p=words.slice(0,2).map(w=>w[0]).join("");   // ≥2 mots : 2 premières initiales
+  else if(words.length===1)p=words[0].slice(0,2);                // 1 mot : 2 premiers caractères
+  else p=base;                                                   // repli
+  p=p.toUpperCase().replace(/[^A-Z0-9]/g,"");
+  return p.slice(0,2);   // 2 caractères si possible
+}
 function openObjectTypeModal(idx){
   const isNew=idx==null;
   const draft=isNew?{code:"",label:{},id_prefix:"",name_attr:"",attributes:[]}:JSON.parse(JSON.stringify(objectTypes()[idx]));
@@ -11894,7 +11907,7 @@ function openObjectTypeModal(idx){
     '<div class="grid2">'+
       '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="otLabel" value="'+esc(draft.label[lang]||"")+'"></label>'+
       '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="otCode" value="'+esc(draft.code||"")+'"></label>'+
-      '<label class="field"><span class="lab">'+esc(t("ot_prefix"))+REQ+'</span><input id="otPrefix" value="'+esc(draft.id_prefix||"")+'" placeholder="BS"></label>'+
+      '<label class="field"><span class="lab">'+esc(t("ot_prefix"))+REQ+'</span><input id="otPrefix" value="'+esc(draft.id_prefix||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("ot_name_attr"))+'</span><select id="otNameAttr">'+nameAttrOptions()+'</select><span class="hint">'+esc(t("ot_name_attr_help"))+'</span></label>'+
     '</div>'+
     '<h3>'+esc(t("ot_attributes"))+'</h3>'+
@@ -11921,7 +11934,10 @@ function openObjectTypeModal(idx){
       otReindex();markDirty();renderObjectTypes();a.close();
     }}
   ]);
-  document.getElementById("otLabel").addEventListener("blur",e=>{const c=document.getElementById("otCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
+  document.getElementById("otLabel").addEventListener("blur",e=>{
+    const c=document.getElementById("otCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");
+    const p=document.getElementById("otPrefix");if(!p.value.trim())p.value=otPrefixFromLabel(e.target.value);
+  });
   document.getElementById("otAddAttr").addEventListener("click",()=>{readForm();openAttrModal(null,draft.attributes,rerenderAttrs,draft.code);});
   document.getElementById("otAttrsTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;readForm();const A=draft.attributes;
     if(b.dataset.oaEdit!=null)return openAttrModal(+b.dataset.oaEdit,A,rerenderAttrs,draft.code);
