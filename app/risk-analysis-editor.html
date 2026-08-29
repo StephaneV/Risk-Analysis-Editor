@@ -552,6 +552,10 @@
     color:var(--tagfg,#fff);background:var(--tagc,#888);white-space:nowrap}
   /* Référence à un objet : libellé possiblement long → ellipsis, libellé complet en infobulle (title). */
   .cf-chip.cf-chip-ref{display:inline-block;max-width:240px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:help}
+  /* Cellule de texte longue : écrêtée à 3 lignes ; si tronquée (.is-clipped) → curseur loupe. */
+  .cell-clip{max-width:340px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+  .cell-clip.is-clipped{cursor:zoom-in}
+  .clip-view{white-space:pre-wrap;overflow-wrap:anywhere;max-height:60vh;overflow:auto;line-height:1.55}
   .cf-progress{display:inline-flex;align-items:center;gap:8px;min-width:120px;max-width:220px;vertical-align:middle}
   .cf-progress-track{flex:1;height:8px;min-width:60px;background:var(--panel-2);border:1px solid var(--border);border-radius:20px;overflow:hidden}
   .cf-progress-track>span{display:block;height:100%;background:var(--pc,var(--accent))}
@@ -7227,9 +7231,9 @@ function riskPill(id){const rr=riskById(id);
 function builtinCols(table){
   if(table==="risks")return [
     {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:r=>rowGripHTML("risks",r.id)+'<span class="id-badge">'+esc(r.id)+'</span>'},
-    {key:"risk",label:t("th_risk"),sort:"risk",cell:r=>'<b>'+esc(r.label)+'</b>'},
-    {key:"cat",label:t("th_category"),sort:"cat",cell:r=>'<span class="muted">'+esc(r.category||"—")+'</span>'},
-    {key:"owner",label:t("f_owner"),sort:"owner",def:false,cell:r=>'<span class="muted">'+esc(r.owner||"—")+'</span>'},
+    {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:r=>'<b>'+esc(r.label)+'</b>'},
+    {key:"cat",label:t("th_category"),sort:"cat",text:true,cell:r=>'<span class="muted">'+esc(r.category||"—")+'</span>'},
+    {key:"owner",label:t("f_owner"),sort:"owner",def:false,text:true,cell:r=>'<span class="muted">'+esc(r.owner||"—")+'</span>'},
     {key:"initial",label:t("th_initial"),sort:"initial",cell:r=>riskCellTag(r,"i")},
     {key:"residual",label:t("th_residual"),sort:"residual",cell:r=>riskCellTag(r,"r")},
     {key:"measures",label:t("th_measures"),cell:r=>{const m=measuresOfRisk(r.id);return m.length?'<span class="pill-list">'+m.map(id=>measurePill(id)).join("")+'</span>':'<span class="muted">—</span>';}},
@@ -7237,25 +7241,26 @@ function builtinCols(table){
   ];
   if(table==="measures")return [
     {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:m=>rowGripHTML("measures",m.id)+'<span class="id-badge">'+esc(m.id)+'</span>'},
-    {key:"measure",label:t("th_measure"),sort:"measure",cell:m=>'<b>'+esc(m.label)+'</b>'},
+    {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:m=>'<b>'+esc(m.label)+'</b>'},
     {key:"type",label:t("th_type"),sort:"type",cell:m=>'<span class="muted">'+(m.type?esc(typeLabel(m.type)):"—")+'</span>'},
     {key:"status",label:t("th_status"),sort:"status",cell:m=>statusBadge(m.status)},
-    {key:"resp",label:t("th_responsible"),sort:"resp",cell:m=>'<span class="muted">'+esc(m.responsible||"—")+'</span>'},
+    {key:"resp",label:t("th_responsible"),sort:"resp",text:true,cell:m=>'<span class="muted">'+esc(m.responsible||"—")+'</span>'},
     {key:"due",label:t("f_due_date"),sort:"due",def:false,cell:m=>'<span class="muted">'+esc(fmtDate(m.due_date)||"—")+'</span>'},
     {key:"cost",label:t("f_cost"),sort:"cost",def:false,cell:m=>'<span class="muted">'+(m.cost!=null&&m.cost!==""?esc(m.cost):"—")+'</span>'},
     {key:"covered",label:t("th_covered_risks"),cell:m=>{const rk=risksOfMeasure(m.id);return rk.length?'<span class="pill-list">'+rk.map(id=>riskPill(id)).join("")+'</span>':'<span class="muted">—</span>';}},
   ];
   return [ // links (le champ « custom » vit dans l'objet treatment)
     {key:"rid",label:t("th_risk_id"),pinned:"first",sort:"rid",cell:x=>'<span class="id-badge">'+esc(x.risk)+'</span>'},
-    {key:"risk",label:t("th_risk"),sort:"risk",cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
+    {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
     {key:"mid",label:t("th_measure_id"),sort:"mid",cell:x=>'<span class="id-badge">'+esc(x.measure)+'</span>'},
-    {key:"measure",label:t("th_measure"),sort:"measure",cell:x=>{const m=measureById(x.measure);return esc(m?m.label:"—");}},
-    {key:"notes",label:t("f_notes"),sort:"notes",cell:x=>esc(mdToText(x.comment)||"—")},
+    {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:x=>{const m=measureById(x.measure);return esc(m?m.label:"—");}},
+    {key:"notes",label:t("f_notes"),sort:"notes",text:true,cell:x=>esc(mdToText(x.comment)||"—")},
   ];
 }
+function cfIsTextCol(f){return f&&(f.type==="text"||f.type==="textarea"||(f.type==="computed"&&(f.result_type||"number")==="text"));}
 function cfCols(table){
   return customFieldsFor(cfTargetOf(table)).map(f=>({
-    key:"cf:"+f.code, label:cfLabel(f), cf:f, def:table==="links",
+    key:"cf:"+f.code, label:cfLabel(f), cf:f, def:table==="links", text:cfIsTextCol(f),
     sort:cfColSortable(f)?("cf:"+f.code):null,
     cell:row=>{const dv=f.type==="computed"?cfComputedDisplayHTML(f,cfTargetOf(table),row):cfDisplayHTML(f,(row.custom||{})[f.code]);return dv||'<span class="muted">—</span>';}
   }));
@@ -7336,9 +7341,41 @@ function renderColHead(table,trEl,tableElId,stKey){
 function renderColRow(table,row){
   return effectiveCols(table).map(c=>{
     if(c.pinned==="last")return actionCell(table,row);
-    return '<td data-col="'+esc(c.key)+'">'+c.cell(row)+'</td>';
+    const inner=c.cell(row);
+    if(c.text)return '<td data-col="'+esc(c.key)+'"><div class="cell-clip" data-label="'+esc(c.label||"")+'">'+inner+'</div></td>';
+    return '<td data-col="'+esc(c.key)+'">'+inner+'</td>';
   }).join("");
 }
+/* Cellules de texte écrêtées (.cell-clip) : après rendu, on marque celles réellement tronquées
+   (.is-clipped → curseur loupe). Clic = voir le texte complet en modale ; double-clic = éditer
+   (temporisation ~250 ms pour distinguer). N'intervient que sur les cellules effectivement tronquées. */
+function markClippedCells(root){
+  if(!root)return;
+  root.querySelectorAll(".cell-clip").forEach(el=>{
+    el.classList.toggle("is-clipped", el.scrollHeight>el.clientHeight+1 || el.scrollWidth>el.clientWidth+1);
+  });
+}
+function showClipText(clip){
+  const label=clip.getAttribute("data-label")||"", full=clip.textContent||"";
+  pushModal(label,'<div class="clip-view">'+esc(full).replace(/\n/g,"<br>")+'</div>',
+    [{label:t("btn_close"),cls:"ghost",onClick:a=>a.close()}]);
+}
+let _clipTimer=null;
+function clipRowClick(e){   // vrai si clic sur une cellule tronquée (→ voir), pris en charge
+  const clip=e.target.closest&&e.target.closest(".cell-clip.is-clipped");if(!clip)return false;
+  if(_clipTimer)clearTimeout(_clipTimer);
+  _clipTimer=setTimeout(()=>{_clipTimer=null;showClipText(clip);},250);   // annulé si un double-clic suit
+  return true;
+}
+function clipRowDblClick(e,editFn){   // double-clic sur une cellule tronquée → éditer
+  const clip=e.target.closest&&e.target.closest(".cell-clip.is-clipped");if(!clip)return false;
+  if(_clipTimer){clearTimeout(_clipTimer);_clipTimer=null;}
+  editFn();return true;
+}
+// Les largeurs de colonnes changent avec la fenêtre : on re-marque les cellules tronquées des tables VISIBLES.
+let _clipRz=null;
+window.addEventListener("resize",()=>{if(_clipRz)clearTimeout(_clipRz);
+  _clipRz=setTimeout(()=>{document.querySelectorAll("#risksTable,#measuresTable,#objectsBody,#linkDetailsArea").forEach(el=>{if(el.offsetParent!==null)markClippedCells(el);});},150);});
 function actionCell(table,row){
   if(table==="risks")return '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(row.id)+'"'+a11y("a11y_edit_risk",row.id)+'>✎</button><button class="btn icon sm" data-dup-r="'+esc(row.id)+'"'+a11y("a11y_dup_risk",row.id)+'>⧉</button><button class="btn icon sm" data-del-r="'+esc(row.id)+'"'+a11y("a11y_del_risk",row.id)+'>🗑</button></div></td>';
   if(table==="measures")return '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(row.id)+'"'+a11y("a11y_edit_measure",row.id)+'>✎</button><button class="btn icon sm" data-dup-m="'+esc(row.id)+'"'+a11y("a11y_dup_measure",row.id)+'>⧉</button><button class="btn icon sm" data-del-m="'+esc(row.id)+'"'+a11y("a11y_del_measure",row.id)+'>🗑</button></div></td>';
@@ -7592,9 +7629,11 @@ function renderRisks(){
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.dataset.rid=r.id;
     tr.innerHTML=renderColRow("risks",r);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
+    tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openRiskModal(r.id,null,td&&td.dataset.col));});
     tb.appendChild(tr);
   });
+  markClippedCells(tb);
 }
 document.getElementById("btnAddRisk").addEventListener("click",()=>openRiskModal(null));
 document.getElementById("btnImportRisks").addEventListener("click",()=>openImportModal("risks"));
@@ -7766,9 +7805,11 @@ function renderMeasures(){
     const tr=document.createElement("tr");tr.style.cursor="pointer";
     tr.dataset.rid=m.id;
     tr.innerHTML=renderColRow("measures",m);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
+    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
+    tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openMeasureModal(m.id,null,td&&td.dataset.col));});
     tb.appendChild(tr);
   });
+  markClippedCells(tb);
 }
 document.getElementById("btnAddMeasure").addEventListener("click",()=>openMeasureModal(null));
 document.getElementById("btnImportMeasures").addEventListener("click",()=>openImportModal("measures"));
@@ -8119,6 +8160,7 @@ function renderLinkDetails(){
     row.innerHTML=renderColRow("links",tr);
     tbody.appendChild(row);
   });
+  markClippedCells(tbody);
 }
 document.getElementById("fltLinkQ").addEventListener("input",renderLinkDetails);
 document.getElementById("linkDetailsArea").addEventListener("click",e=>{
@@ -8143,9 +8185,15 @@ document.getElementById("linkDetailsArea").addEventListener("click",e=>{
       });
     },{danger:true});return;}
   if(e.target.closest("a[href],[data-open-m],[data-open-r]"))return;   // lien URL / pastille R·M : action propre, sans ouvrir la fiche
+  if(clipRowClick(e))return;   // cellule texte tronquée : clic = voir (double-clic = éditer)
   const row=e.target.closest(".linkrow");if(!row)return;
   const td=e.target.closest("td[data-col]");
   openLinkModal(row.dataset.r,row.dataset.m,td&&td.dataset.col);
+});
+document.getElementById("linkDetailsArea").addEventListener("dblclick",e=>{
+  const row=e.target.closest(".linkrow");if(!row)return;
+  const td=e.target.closest("td[data-col]");
+  clipRowDblClick(e,()=>openLinkModal(row.dataset.r,row.dataset.m,td&&td.dataset.col));
 });
 
 // Modale d'édition d'un lien : Notes (comment) + champs personnalisés de cible « link ».
@@ -12123,7 +12171,8 @@ function objTypeCardHTML(ot){
       attrs.map(a=>hdr("cf:"+a.code,cfLabel(a))).join("")+'<th></th></tr></thead><tbody>';
     insts.forEach(inst=>{
       h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
-        attrs.map(a=>'<td data-col="cf:'+esc(a.code)+'">'+(a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):cfDisplayHTML(a,(inst.values||{})[a.code],true))+'</td>').join("")+
+        attrs.map(a=>{const inner=(a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):cfDisplayHTML(a,(inst.values||{})[a.code],true));
+          return '<td data-col="cf:'+esc(a.code)+'">'+(cfIsTextCol(a)?'<div class="cell-clip" data-label="'+esc(cfLabel(a))+'">'+inner+'</div>':inner)+'</td>';}).join("")+
         '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
         '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
     });
@@ -12151,6 +12200,7 @@ function renderObjects(){
   }
   host.insertAdjacentHTML("beforeend", objTypeCardHTML(objectTypeByCode(objMode)||types[0]));
   syncSegAria();
+  markClippedCells(host);
 }
 /* Modale d'une INSTANCE. onSaved(id) : rappelé après enregistrement (création à la volée, Lot 4). */
 function openObjectModal(typeCode,id,onSaved,focusCol){
@@ -12200,10 +12250,17 @@ document.getElementById("view-objects").addEventListener("click",e=>{
   }
   // Clic sur une ligne d'instance → édition, focus sur l'attribut de la cellule cliquée.
   if(e.target.closest("a[href],[data-open-m],[data-open-r]"))return;   // lien URL / pastille R·M : action propre, sans ouvrir la fiche
+  if(clipRowClick(e))return;   // cellule texte tronquée : clic = voir (double-clic = éditer)
   const row=e.target.closest("tr[data-obj-row]");if(!row)return;
   const inst=objectById(row.dataset.objRow);if(!inst)return;
   const td=e.target.closest("td[data-col]");
   openObjectModal(inst.type,inst.id,null,td&&td.dataset.col);
+});
+document.getElementById("view-objects").addEventListener("dblclick",e=>{
+  const row=e.target.closest("tr[data-obj-row]");if(!row)return;
+  const inst=objectById(row.dataset.objRow);if(!inst)return;
+  const td=e.target.closest("td[data-col]");
+  clipRowDblClick(e,()=>openObjectModal(inst.type,inst.id,null,td&&td.dataset.col));
 });
 
 /* ----- Champs personnalisés : contrôles de saisie, lecture, validation ----- */
