@@ -1378,7 +1378,7 @@
     <div class="card ppanel" data-pmode="fields" style="display:none">
       <div class="caption" data-i18n="cf_caption">Définissez des champs supplémentaires rattachés à l'analyse, aux risques ou aux mesures.</div>
       <div class="table-scroll"><table id="cfTable"><caption class="sr-only" data-i18n="cf_section">Champs personnalisés</caption>
-        <thead><tr><th data-i18n="cf_target">Cible</th><th data-i18n="cf_code">Code</th><th data-i18n="th_label">Libellé</th><th data-i18n="th_type">Type</th><th data-i18n="cf_required">Obligatoire</th><th data-i18n="cf_filterable">Utilisable comme filtre</th><th></th></tr></thead>
+        <thead><tr><th data-i18n="cf_target">Cible</th><th data-i18n="cf_code">Code</th><th data-i18n="th_label">Libellé</th><th data-i18n="th_type">Type</th><th data-i18n="cf_required">Obligatoire</th><th data-i18n="cf_filterable">Utilisable comme filtre</th><th data-i18n="cf_hidden">Masqué</th><th></th></tr></thead>
         <tbody id="cfBody"></tbody>
       </table></div>
       <div class="empty" id="cfEmpty" style="display:none" data-i18n="cf_none">Aucun champ personnalisé défini.</div>
@@ -1827,6 +1827,9 @@ const I18N = {
     cf_filterable:"Utilisable comme filtre",
     cf_filterable_help:"Ajoute une liste de filtrage dans les vues concernées. Réservé aux types à valeurs fermées, aux références, et aux valeurs calculées booléennes ou dotées d'une alerte — sur les champs rattachés aux risques, aux mesures ou aux liens.",
     cf_filterable_na:"Sans objet : réservé aux types à valeurs fermées et aux références, hors champs de l'analyse.",
+    cf_hide_table:"Masquer en mode tableau",
+    cf_hide_table_help:"Le champ reste visible dans les fiches et à l'édition ; il n'apparaît pas comme colonne dans les vues tableau (utile pour un calcul intermédiaire ou pour alléger l'affichage).",
+    cf_hidden:"Masqué",
     cf_filt_alert_on:"En alerte", cf_filt_alert_off:"Hors alerte",
     "cf_t.analysis":"Analyse","cf_t.risk":"Risque","cf_t.cotation":"Évaluation du risque","cf_t.measure":"Mesure","cf_t.link":"Lien",
     "cft.boolean":"Oui / Non","cft.integer":"Nombre entier","cft.float":"Nombre décimal","cft.date":"Date","cft.text":"Texte (une ligne)","cft.textarea":"Texte (multi-lignes)","cft.select":"Liste déroulante","cft.checklist":"Liste à cocher","cft.tags":"Tags (couleur)","cft.scale":"Échelle (valeur numérique)","cft.computed":"Valeur calculée","cft.progress":"Barre de progression","cft.url":"URL","cft.email":"Email","cft.tel":"Téléphone","cft.regexp":"Texte contrôlé (regexp)","cft.color":"Couleur","cft.image":"Image","cft.reference":"Référence à un objet",
@@ -2215,6 +2218,9 @@ const I18N = {
     cf_filterable:"Usable as a filter",
     cf_filterable_help:"Adds a filter list to the relevant views. Restricted to closed-value types, references, and computed values that are boolean or have an alert — on risk, measure or link fields.",
     cf_filterable_na:"Not applicable: restricted to closed-value types and references, excluding analysis fields.",
+    cf_hide_table:"Hide in table view",
+    cf_hide_table_help:"The field stays visible in cards and when editing; it is not shown as a column in table views (useful for an intermediate calculation or to declutter).",
+    cf_hidden:"Hidden",
     cf_filt_alert_on:"In alert", cf_filt_alert_off:"Not in alert",
     "cf_t.analysis":"Analysis","cf_t.risk":"Risk","cf_t.cotation":"Risk assessment","cf_t.measure":"Measure","cf_t.link":"Link",
     "cft.boolean":"Yes / No","cft.integer":"Integer","cft.float":"Decimal","cft.date":"Date","cft.text":"Text (single line)","cft.textarea":"Text (multi-line)","cft.select":"Dropdown list","cft.checklist":"Checklist","cft.tags":"Tags (color)","cft.scale":"Scale (numeric value)","cft.computed":"Computed value","cft.progress":"Progress bar","cft.url":"URL","cft.email":"Email","cft.tel":"Phone","cft.regexp":"Constrained text (regexp)","cft.color":"Color","cft.image":"Image","cft.reference":"Object reference",
@@ -2603,6 +2609,9 @@ const I18N = {
     cf_filterable:"Utilizzabile come filtro",
     cf_filterable_help:"Aggiunge un elenco di filtro nelle viste interessate. Riservato ai tipi a valori chiusi, ai riferimenti e ai valori calcolati booleani o dotati di un avviso — sui campi di rischio, misura o collegamento.",
     cf_filterable_na:"Non applicabile: riservato ai tipi a valori chiusi e ai riferimenti, esclusi i campi dell'analisi.",
+    cf_hide_table:"Nascondi nella vista tabella",
+    cf_hide_table_help:"Il campo resta visibile nelle schede e in modifica; non appare come colonna nelle viste tabella (utile per un calcolo intermedio o per alleggerire).",
+    cf_hidden:"Nascosto",
     cf_filt_alert_on:"In avviso", cf_filt_alert_off:"Non in avviso",
     "cf_t.analysis":"Analisi","cf_t.risk":"Rischio","cf_t.cotation":"Valutazione del rischio","cf_t.measure":"Misura","cf_t.link":"Collegamento",
     "cft.boolean":"Sì / No","cft.integer":"Numero intero","cft.float":"Numero decimale","cft.date":"Data","cft.text":"Testo (una riga)","cft.textarea":"Testo (multi-riga)","cft.select":"Elenco a discesa","cft.checklist":"Elenco a scelta multipla","cft.tags":"Tag (colore)","cft.scale":"Scala (valore numerico)","cft.computed":"Valore calcolato","cft.progress":"Barra di avanzamento","cft.url":"URL","cft.email":"Email","cft.tel":"Telefono","cft.regexp":"Testo vincolato (regexp)","cft.color":"Colore","cft.image":"Immagine","cft.reference":"Riferimento a un oggetto",
@@ -7259,7 +7268,7 @@ function builtinCols(table){
 }
 function cfIsTextCol(f){return f&&(f.type==="text"||f.type==="textarea"||(f.type==="computed"&&(f.result_type||"number")==="text"));}
 function cfCols(table){
-  return customFieldsFor(cfTargetOf(table)).map(f=>({
+  return customFieldsFor(cfTargetOf(table)).filter(f=>!f.hide_table).map(f=>({
     key:"cf:"+f.code, label:cfLabel(f), cf:f, def:table==="links", text:cfIsTextCol(f),
     sort:cfColSortable(f)?("cf:"+f.code):null,
     cell:row=>{const dv=f.type==="computed"?cfComputedDisplayHTML(f,cfTargetOf(table),row):cfDisplayHTML(f,(row.custom||{})[f.code]);return dv||'<span class="muted">—</span>';}
@@ -11660,6 +11669,7 @@ function renderCustomFields(){
       '<td>'+(cfFilterFlagApplies(f.target,f.type)
         ? (f.filterable?'✓':'<span class="muted">—</span>')
         : '<span class="muted" title="'+esc(t("cf_filterable_na"))+'">·</span>')+'</td>'+
+      '<td>'+(f.hide_table?'✓':'<span class="muted">—</span>')+'</td>'+
       '<td><div class="actions">'+
         '<button class="btn icon sm" data-cf-up="'+i+'"'+(i===0?" disabled":"")+a11y("a11y_move_up",cfLabel(f))+'>▲</button>'+
         '<button class="btn icon sm" data-cf-down="'+i+'"'+(i===list.length-1?" disabled":"")+a11y("a11y_move_down",cfLabel(f))+'>▼</button>'+
@@ -11776,6 +11786,10 @@ function openCustomFieldModal(idx){
         '<input type="checkbox" id="cfFilterable" style="width:16px;height:16px;flex:none"'+(f.filterable?" checked":"")+'> '+
         esc(t("cf_filterable"))+'</label>'+
         '<span class="hint">'+esc(t("cf_filterable_help"))+'</span></label>'+
+      '<label class="field full"><label style="display:flex;align-items:center;gap:8px;font-size:13px">'+
+        '<input type="checkbox" id="cfHideTable" style="width:16px;height:16px;flex:none"'+(f.hide_table?" checked":"")+'> '+
+        esc(t("cf_hide_table"))+'</label>'+
+        '<span class="hint">'+esc(t("cf_hide_table_help"))+'</span></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="cfLab" aria-required="true" value="'+esc(f.label[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_help"))+'</span><input id="cfHelpTxt" value="'+esc(f.help[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_description"))+'</span><textarea id="cfDescTxt">'+esc((f.description&&f.description[lang])||"")+'</textarea></label>'+
@@ -11807,6 +11821,8 @@ function openCustomFieldModal(idx){
     // Filtrable : enregistré seulement s'il a un sens pour ce type, et seulement s'il est vrai.
     const fc=document.getElementById("cfFilterable");
     if(fc&&fc.checked&&cfFilterFlagApplies(target,type))obj.filterable=true;
+    const ht=document.getElementById("cfHideTable");
+    if(ht&&ht.checked)obj.hide_table=true;   // masqué en vue tableau (colonne retirée)
     const helpVal=val("cfHelpTxt").trim(),help=Object.assign({},f.help);
     if(helpVal)help[lang]=helpVal;else delete help[lang];if(Object.keys(help).length)obj.help=help;
     const descVal=val("cfDescTxt").trim(),desc=Object.assign({},f.description||{});
@@ -11963,9 +11979,9 @@ function openObjectTypeModal(idx){
   const nameAttrOptions=()=>'<option value="">'+esc(t("ot_name_attr_none"))+'</option>'+
     draft.attributes.map(a=>'<option value="'+esc(a.code)+'"'+(a.code===draft.name_attr?" selected":"")+'>'+esc(cfLabel(a))+' ('+esc(a.code)+')</option>').join("");
   const attrsRows=()=>draft.attributes.length
-    ? draft.attributes.map((a,i)=>'<tr><td><b>'+esc(cfLabel(a))+'</b> <span class="muted">'+esc(a.code)+'</span></td><td class="muted">'+esc(cfTypeLabelOf(a))+'</td><td>'+(a.required?'✓':'<span class="muted">—</span>')+'</td>'+
+    ? draft.attributes.map((a,i)=>'<tr><td><b>'+esc(cfLabel(a))+'</b> <span class="muted">'+esc(a.code)+'</span></td><td class="muted">'+esc(cfTypeLabelOf(a))+'</td><td>'+(a.required?'✓':'<span class="muted">—</span>')+'</td><td>'+(a.hide_table?'✓':'<span class="muted">—</span>')+'</td>'+
         '<td><div class="actions"><button class="btn icon sm" data-oa-up="'+i+'"'+(i===0?" disabled":"")+'>▲</button><button class="btn icon sm" data-oa-down="'+i+'"'+(i===draft.attributes.length-1?" disabled":"")+'>▼</button><button class="btn icon sm" data-oa-edit="'+i+'">✎</button><button class="btn icon sm" data-oa-del="'+i+'">🗑</button></div></td></tr>').join("")
-    : '<tr><td colspan="4" class="muted">'+esc(t("ot_none_attr"))+'</td></tr>';
+    : '<tr><td colspan="5" class="muted">'+esc(t("ot_none_attr"))+'</td></tr>';
   const body=
     '<div id="otMsg" style="color:var(--danger);font-size:12.5px;min-height:1em"></div>'+
     '<div class="grid2">'+
@@ -11975,7 +11991,7 @@ function openObjectTypeModal(idx){
       '<label class="field full"><span class="lab">'+esc(t("ot_name_attr"))+'</span><select id="otNameAttr">'+nameAttrOptions()+'</select><span class="hint">'+esc(t("ot_name_attr_help"))+'</span></label>'+
     '</div>'+
     '<h3>'+esc(t("ot_attributes"))+'</h3>'+
-    '<div class="table-scroll"><table id="otAttrsTable"><tbody id="otAttrs">'+attrsRows()+'</tbody></table></div>'+
+    '<div class="table-scroll"><table id="otAttrsTable"><thead><tr><th>'+esc(t("th_label"))+'</th><th>'+esc(t("th_type"))+'</th><th>'+esc(t("cf_required"))+'</th><th>'+esc(t("cf_hidden"))+'</th><th></th></tr></thead><tbody id="otAttrs">'+attrsRows()+'</tbody></table></div>'+
     '<button class="btn ghost sm" id="otAddAttr" type="button" style="margin-top:8px">'+esc(t("ot_add_attr"))+'</button>';
   const readForm=()=>{
     const lv=document.getElementById("otLabel").value.trim(); if(lv)draft.label[lang]=lv;else delete draft.label[lang];
@@ -12022,6 +12038,7 @@ function openAttrModal(idx,list,onSave,selfType){
       '<label class="field"><span class="lab">'+esc(t("cf_code"))+REQ+'</span><input id="cfCode" value="'+esc(f.code)+'"></label>'+
       '<label class="field"><span class="lab">'+esc(t("th_type"))+'</span><select id="cfType">'+opt(CF_TYPES,f.type,cfTypeLabel)+'</select></label>'+
       '<label class="field" id="cfReqWrap"><span class="lab">&nbsp;</span><label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:6px"><input type="checkbox" id="cfReq" style="width:16px;height:16px;flex:none"'+(f.required?" checked":"")+'> '+esc(t("cf_required"))+'</label></label>'+
+      '<label class="field full"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="cfHideTable" style="width:16px;height:16px;flex:none"'+(f.hide_table?" checked":"")+'> '+esc(t("cf_hide_table"))+'</label><span class="hint">'+esc(t("cf_hide_table_help"))+'</span></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_label"))+REQ+'</span><input id="cfLab" value="'+esc(f.label[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_help"))+'</span><input id="cfHelpTxt" value="'+esc(f.help[lang]||"")+'"></label>'+
       '<label class="field full"><span class="lab">'+esc(t("cf_description"))+'</span><textarea id="cfDescTxt">'+esc((f.description&&f.description[lang])||"")+'</textarea></label>'+
@@ -12050,6 +12067,7 @@ function openAttrModal(idx,list,onSave,selfType){
       const labVal=val("cfLab").trim(),label=Object.assign({},f.label);if(labVal)label[lang]=labVal;else delete label[lang];
       if(!Object.keys(label).length){showMsg(t("cf_err_label"));return;}
       const obj={code,type,required:document.getElementById("cfReq").checked,label};
+      {const ht=document.getElementById("cfHideTable");if(ht&&ht.checked)obj.hide_table=true;}   // masqué en vue tableau
       const helpVal=val("cfHelpTxt").trim(),help=Object.assign({},f.help);if(helpVal)help[lang]=helpVal;else delete help[lang];if(Object.keys(help).length)obj.help=help;
       const descVal=val("cfDescTxt").trim(),desc=Object.assign({},f.description||{});if(descVal)desc[lang]=descVal;else delete desc[lang];if(Object.keys(desc).length)obj.description=desc;
       const kind=cfBoundKind(type);
@@ -12155,7 +12173,7 @@ function syncStickyOffsets(){
 const OBJ_SEG_MAX=8;
 let objMode=null;
 function objTypeCardHTML(ot){
-  const insts=objSortedInstances(ot), attrs=ot.attributes||[], st=objSort[ot.code]||{};
+  const insts=objSortedInstances(ot), attrs=(ot.attributes||[]).filter(a=>!a.hide_table), st=objSort[ot.code]||{};   // colonnes masquées exclues de la vue tableau
   const hdr=(col,label,cls)=>{const ind=st.col===col?(st.dir<0?" ▼":" ▲"):"";
     return '<th'+(cls?' class="'+cls+'"':'')+' data-objsort="'+esc(col)+'" data-ot="'+esc(ot.code)+'" style="cursor:pointer;user-select:none">'+esc(label)+'<span class="sort-ind">'+ind+'</span></th>';};
   let h='<div class="card">'+
