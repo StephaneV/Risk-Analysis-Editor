@@ -691,6 +691,7 @@
   .cbx-opt[aria-selected="true"] .cbx-n{color:#dbe6ff}
   /* La portion correspondante est soulignée en plus d'être colorée : la couleur seule ne
      doit pas porter l'information (WCAG 1.4.1). */
+  mark{background:rgba(224,185,58,.35);color:inherit;padding:0 .18em;border-radius:3px}   /* surlignage Markdown ==texte==, compatible clair/sombre */
   .cbx-opt mark{background:transparent;color:var(--accent);font-weight:700;text-decoration:underline}
   .cbx-opt[aria-selected="true"] mark{color:#fff}
   .cf-progress-val{font-size:13px;font-weight:700;min-width:46px;text-align:right}
@@ -2710,6 +2711,11 @@ function markDirty(){dirty=true;isFresh=false;startDismissed=true;refreshFileSta
    balises produites ici sont émises. Les URL sont filtrées (http/https/mailto).
    ============================================================ */
 function mdUrl(u){u=String(u||"").trim();return /^(https?:\/\/|mailto:|#|\.{0,2}\/)/i.test(u)?u:"";}
+/* Couleurs de texte Markdown (span Pandoc [texte]{.nom}) — noms anglais alignés sur la palette
+   « vives » de l'app. Liste blanche : seule une couleur connue produit un style, sinon le texte
+   est rendu sans couleur (jamais de style arbitraire → pas d'injection HTML). */
+const MD_COLORS={red:"#d64545",orange:"#e6862e",yellow:"#e0b93a",green:"#2e9e5b",teal:"#2bb3a3",
+  blue:"#4c7dff",purple:"#7a5cff",cyan:"#5aa8c0",pink:"#c05aa8",gray:"#7a8699",grey:"#7a8699"};
 function mdInline(s){
   const codes=[];
   s=s.replace(/`([^`]+)`/g,(m,c)=>{codes.push(c);return "\u0000C"+(codes.length-1)+"\u0000";});
@@ -2719,6 +2725,9 @@ function mdInline(s){
   s=s.replace(/\*\*([^*\n]+)\*\*/g,"<strong>$1</strong>").replace(/__([^_\n]+)__/g,"<strong>$1</strong>");
   s=s.replace(/(^|[^*\w])\*([^*\n]+)\*/g,"$1<em>$2</em>").replace(/(^|[^_\w])_([^_\n]+)_/g,"$1<em>$2</em>");
   s=s.replace(/~~([^~\n]+)~~/g,"<del>$1</del>");
+  s=s.replace(/==([^=\n]+)==/g,"<mark>$1</mark>");                                                    // surlignage ==texte==
+  s=s.replace(/\[([^\]]+)\]\{\.([a-zA-Z][\w-]*)\}/g,(m,tx,cls)=>{const c=MD_COLORS[cls.toLowerCase()];  // span Pandoc coloré [texte]{.red}
+    return c?'<span style="color:'+c+'">'+tx+'</span>':tx;});
   return s.replace(/\u0000C(\d+)\u0000/g,(m,i)=>"<code>"+codes[+i]+"</code>");
 }
 const MD_LI=/^([ \t]*)([-*+]|\d+[.)])[ \t]+([\s\S]*)$/;
