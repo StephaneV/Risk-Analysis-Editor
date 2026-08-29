@@ -1543,6 +1543,9 @@ const I18N = {
     hp_sec_matrix:"Matrices, liens & plan d'action", hp_drag:"Déplacer une pastille (matrices) ou une carte (kanban)",
     hp_ctrl_arrows:"Déplacer au clavier la pastille ou la carte sélectionnée", hp_space:"Cocher/décocher dans la grille des associations",
     hp_arrows:"Se déplacer dans les onglets et la grille des associations",
+    hp_sec_md:"Markdown (descriptions, notes)", hp_md_emph:"Gras, italique, barré",
+    hp_md_code:"Code, lien", hp_md_color:"Couleur du texte : red, orange, yellow, green, teal, blue, purple, cyan, pink, gray",
+    hp_md_hl:"Surlignage", hp_md_block:"Titre, liste, citation",
     hp_k_esc:"Échap", hp_k_space:"Espace", hp_k_click:"Clic", hp_k_drag:"Glisser",
     a11y_row_grip:"Déplacer la ligne {0}", hp_row_reorder:"Réordonner les lignes par la poignée (sans tri actif) — Ctrl+↑/↓ au clavier",
     modal_discard_q:"Abandonner les modifications ?", modal_keep:"Continuer la saisie", modal_discard_btn:"Abandonner",
@@ -1939,6 +1942,9 @@ const I18N = {
     hp_sec_matrix:"Matrices, links & action plan", hp_drag:"Move a chip (matrices) or a card (kanban)",
     hp_ctrl_arrows:"Move the selected chip or card with the keyboard", hp_space:"Check/uncheck in the associations grid",
     hp_arrows:"Navigate the tabs and the associations grid",
+    hp_sec_md:"Markdown (descriptions, notes)", hp_md_emph:"Bold, italic, strikethrough",
+    hp_md_code:"Code, link", hp_md_color:"Text colour: red, orange, yellow, green, teal, blue, purple, cyan, pink, gray",
+    hp_md_hl:"Highlight", hp_md_block:"Heading, list, quote",
     hp_k_esc:"Esc", hp_k_space:"Space", hp_k_click:"Click", hp_k_drag:"Drag",
     a11y_row_grip:"Move row {0}", hp_row_reorder:"Reorder rows with the handle (when unsorted) — Ctrl+↑/↓ with the keyboard",
     modal_discard_q:"Discard your changes?", modal_keep:"Keep editing", modal_discard_btn:"Discard",
@@ -2330,6 +2336,9 @@ const I18N = {
     hp_sec_matrix:"Matrici, collegamenti e piano d'azione", hp_drag:"Sposta una pastiglia (matrici) o una scheda (kanban)",
     hp_ctrl_arrows:"Sposta con la tastiera la pastiglia o la scheda selezionata", hp_space:"Seleziona/deseleziona nella griglia delle associazioni",
     hp_arrows:"Naviga tra le schede e nella griglia delle associazioni",
+    hp_sec_md:"Markdown (descrizioni, note)", hp_md_emph:"Grassetto, corsivo, barrato",
+    hp_md_code:"Codice, link", hp_md_color:"Colore del testo: red, orange, yellow, green, teal, blue, purple, cyan, pink, gray",
+    hp_md_hl:"Evidenziazione", hp_md_block:"Titolo, elenco, citazione",
     hp_k_esc:"Esc", hp_k_space:"Spazio", hp_k_click:"Clic", hp_k_drag:"Trascina",
     a11y_row_grip:"Sposta la riga {0}", hp_row_reorder:"Riordina le righe con la maniglia (senza ordinamento attivo) — Ctrl+↑/↓ da tastiera",
     modal_discard_q:"Abbandonare le modifiche?", modal_keep:"Continua la modifica", modal_discard_btn:"Abbandona",
@@ -7541,7 +7550,8 @@ function openHelpModal(){
     sec("hp_sec_file")+row("Ctrl+S","hp_save")+row("Ctrl+Maj+S","hp_save_as")+row("Ctrl+O","hp_open")+row("📄 ⭢","hp_drop")+
     sec("hp_sec_nav")+row(t("hp_k_esc"),"hp_esc")+row("?","hp_help")+row("URL","hp_url")+
     sec("hp_sec_tables")+row(t("hp_k_click"),"hp_sort")+row(t("hp_k_drag"),"hp_reorder")+row("⠿","hp_row_reorder")+row("⚙","hp_cols")+row("R1 · M4","hp_pill")+
-    sec("hp_sec_matrix")+row(t("hp_k_drag"),"hp_drag")+row("Ctrl+←↑→↓","hp_ctrl_arrows")+row(t("hp_k_space"),"hp_space")+row("←↑→↓","hp_arrows"),
+    sec("hp_sec_matrix")+row(t("hp_k_drag"),"hp_drag")+row("Ctrl+←↑→↓","hp_ctrl_arrows")+row(t("hp_k_space"),"hp_space")+row("←↑→↓","hp_arrows")+
+    sec("hp_sec_md")+row("**g** *i* ~~b~~","hp_md_emph")+row("`code` [t](url)","hp_md_code")+row("[texte]{.red}","hp_md_color")+row("==texte==","hp_md_hl")+row("#  -  >","hp_md_block"),
     [{label:t("btn_ok"),onClick:api=>api.close()}]);
 }
 /* ---------- Réordonnancement des lignes (Risques / Mesures) ----------
@@ -9764,7 +9774,47 @@ function tmplLoopIterations(name,attrs,ctx){
 /* ---- Formats enrichis (couleur / tags) : descripteurs -> runs Word colorés ---- */
 // Renvoie une liste de descripteurs {type:text|square|badge,…} si un format enrichi (swatch/badge)
 // s'applique, sinon null (rendu texte classique). Couleur -> carré ; tags -> badge (fond) ou carré+texte.
+/* Markdown inline -> descripteurs de runs Word (gras/italique/barré/code/couleur/surlignage) avec
+   sauts de ligne. Réutilise mdInline (même rendu que l'app) puis parcourt le HTML produit. Les
+   marqueurs de bloc en début de ligne (titres, puces, citations) sont retirés — comme mdToText —
+   mais les retours à la ligne sont conservés (repli enrichi du rendu Word, jadis aplati sur une ligne). */
+function mdInlineToDescs(src){
+  const HL="FFF2A8";   // surlignage ==…== -> ombrage jaune clair
+  const out=[], lines=String(src==null?"":src).split(/\r?\n/);
+  lines.forEach((raw,idx)=>{
+    if(idx>0)out.push({type:"break"});
+    if(/^\s*([-*_])\s*(\1\s*){2,}$/.test(raw))return;   // filet horizontal -> simple ligne vide
+    const line=raw.replace(/^\s{0,3}#{1,6}\s+/,"").replace(/^\s*>\s?/,"")
+      .replace(/^\s*([-*+]|\d+[.)])\s+/,"").replace(/^\s*\[([ xX])\]\s+/,"");
+    if(!line)return;
+    const html=mdInline(esc(line));
+    let dom=null; try{dom=new DOMParser().parseFromString("<x>"+html+"</x>","text/html");}catch(e){}
+    const root=dom&&dom.querySelector("x");
+    if(!root){out.push({type:"run",text:line});return;}
+    (function walk(node,fmt){
+      node.childNodes.forEach(n=>{
+        if(n.nodeType===3){if(n.nodeValue)out.push(Object.assign({type:"run",text:n.nodeValue},fmt));return;}
+        if(n.nodeType!==1)return;
+        const tag=n.tagName.toLowerCase(),f=Object.assign({},fmt);
+        if(tag==="strong"||tag==="b")f.b=true;
+        else if(tag==="em"||tag==="i")f.i=true;
+        else if(tag==="del")f.del=true;
+        else if(tag==="code")f.mono=true;
+        else if(tag==="mark")f.fill=HL;
+        else if(tag==="span"){const m=/color:\s*#([0-9a-fA-F]{6})/.exec(n.getAttribute("style")||"");if(m)f.color=m[1];}
+        else if(tag==="br"){out.push({type:"break"});return;}
+        else if(tag==="img"){const a=n.getAttribute("alt")||"";if(a)out.push(Object.assign({type:"run",text:a},f));return;}
+        walk(n,f);   // a / span / strong… : on conserve le texte + le format cumulé
+      });
+    })(root,{});
+  });
+  return out;
+}
 function tmplRichParts(res,mods){
+  if(res.kind==="md"){const d=mdInlineToDescs(res.value);return d.length?d:null;}   // Markdown -> runs formatés (couleur/surlignage/gras…)
+  // Champs texte / texte multi-lignes : rendus en Markdown (comme dans l'app), sauf demande explicite de puce/pastille.
+  if(res.kind==="cf"&&res.field&&(res.field.type==="text"||res.field.type==="textarea")&&!(mods&&(mods.swatch||mods.badge))){
+    const d=mdInlineToDescs(res.value);return d.length?d:null;}
   if(res.kind==="cf"&&res.field&&res.field.type==="image")return (res.value&&tmplCfImg[res.value])?[{type:"image",uri:res.value,mods:mods||{}}]:null;
   if(res.kind==="cf"&&res.field&&res.field.type==="color"){const v=res.value,hex=/^#[0-9a-fA-F]{6}$/.test(v||"")?v:null;
     if(!hex)return null;const mode=res.field.color_mode||"both";if(mode==="hex")return null;   // texte hexa via le chemin par défaut
@@ -9798,6 +9848,18 @@ function tmplRunXml(baseInner,text,color,fill){
   if(fill!=null)inner+='<w:shd w:val="clear" w:color="auto" w:fill="'+fill+'"/>';
   if(color!=null)inner+='<w:color w:val="'+color+'"/>';
   return '<w:r><w:rPr>'+inner+'</w:rPr>'+dxT(text)+'</w:r>';
+}
+// Run à partir d'un descripteur Markdown {text,b,i,del,mono,color,fill} : ajoute les propriétés au
+// rPr de base (en évitant les doublons pour les propriétés qu'on (re)définit).
+function tmplRunFmt(baseInner,d){
+  let inner=baseInner||"";
+  if(d.b){inner=inner.replace(/<w:b\/>/g,"")+"<w:b/>";}
+  if(d.i){inner=inner.replace(/<w:i\/>/g,"")+"<w:i/>";}
+  if(d.del){inner=inner.replace(/<w:strike\/>/g,"")+"<w:strike/>";}
+  if(d.mono){inner=inner.replace(/<w:rFonts\b[^>]*\/>/g,"")+'<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>';}
+  if(d.fill!=null){inner=inner.replace(/<w:shd\b[^>]*\/>/g,"")+'<w:shd w:val="clear" w:color="auto" w:fill="'+d.fill+'"/>';}
+  if(d.color!=null){inner=inner.replace(/<w:color\b[^>]*\/>/g,"")+'<w:color w:val="'+d.color+'"/>';}
+  return '<w:r><w:rPr>'+inner+'</w:rPr>'+dxT(d.text||"")+'</w:r>';
 }
 // Badge « chip » (défaut) : vrai texte, fond coloré + marge intérieure (espaces insécables ombrés)
 // + fine bordure d'une teinte plus sombre. Plus soigné que le simple surlignage, texte réel.
@@ -9837,6 +9899,8 @@ function tmplRunFromDesc(baseInner,d){
     const dim=tmplImgEmu(d.mods,im.w,im.h,360);
     return dxDrawingRun(rid,1000+n,dim.cx,dim.cy);
   }
+  if(d.type==="break")return '<w:r><w:rPr>'+(baseInner||"")+'</w:rPr><w:br/></w:r>';   // saut de ligne Markdown
+  if(d.type==="run")return tmplRunFmt(baseInner,d);                                     // texte Markdown formaté
   if(d.type==="square")return tmplRunXml(baseInner,"■",d.fill,null);
   if(d.type==="badge"){
     if(d.style==="pill")return tmplBlocksAllowed?tmplBadgePillRun(d.text,d.fill,d.fg):tmplBadgeChipRun(baseInner,d.text,d.fg,d.fill);   // pastille (repli chip hors corps)

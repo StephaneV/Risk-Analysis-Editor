@@ -152,7 +152,12 @@ L'onglet **Présentation** rassemble les **métadonnées documentaires** de l'an
 
 Si des **champs personnalisés rattachés à l'analyse** ont été définis (dans la démo : *Référentiels*, *Périmètre*), leurs valeurs se saisissent également ici, dans un bloc dédié.
 
-> **Champs en Markdown.** La description (et les zones de **notes** des fiches de risque, de mesure et de lien) accepte une mise en forme **Markdown** simple : titres, **gras**, *italique*, listes, liens… Lorsqu'un champ contient déjà du texte, il s'affiche par défaut sous forme d'**aperçu** mis en forme ; **double-cliquez** dessus pour passer en **édition**, et double-cliquez de nouveau — ou utilisez l'icône **œil** — pour revenir à l'aperçu.
+> **Champs en Markdown.** La description (et les zones de **notes** des fiches de risque, de mesure et de lien, ainsi que les champs de type *texte multi-lignes*) accepte une mise en forme **Markdown** simple : titres, **gras**, *italique*, ~~barré~~, `code`, listes, liens, **couleur de texte** et **surlignage**. Lorsqu'un champ contient déjà du texte, il s'affiche par défaut sous forme d'**aperçu** mis en forme ; **double-cliquez** dessus pour passer en **édition**, et double-cliquez de nouveau — ou utilisez l'icône **œil** — pour revenir à l'aperçu.
+>
+> - **Couleur de texte** — notation *span* Pandoc `[texte]{.couleur}`, avec des noms de couleur anglais : `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple`, `cyan`, `pink`, `gray`. Une couleur inconnue laisse le texte sans couleur.
+> - **Surlignage** — `==texte==`.
+> - Cette mise en forme (couleur, surlignage, gras, italique…) est **également rendue dans l'export Word**. Le **HTML brut n'est jamais interprété** (échappé), pour la sécurité.
+> - Un aide-mémoire de ces syntaxes figure dans **Aide & raccourcis** (touche `?`).
 
 > **Particularité de cet onglet :** les saisies ne sont appliquées qu'après un clic sur **Valider** (bouton local en bas de l'onglet), afin de ne pas marquer l'analyse comme « modifiée » à chaque frappe sur une métadonnée. Le bouton *Annuler* rétablit les valeurs précédentes.
 

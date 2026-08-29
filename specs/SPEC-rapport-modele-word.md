@@ -643,7 +643,7 @@ n'est jamais utilisé** : seul compte le filtre déclaré dans le modèle.
 ## 9. Rendu et styles
 
 - **Valeurs inline** : héritent de la **mise en forme du modèle** à l'emplacement de la balise.
-- **Texte enrichi** (`description`, `comment`) : Markdown → paragraphes Word (via `mdDocxBlocks`).
+- **Texte enrichi** (`description`, `comment`, `metadata.description`, aides et descriptions, valeurs `text`/`textarea`) : le **Markdown inline** est rendu en **runs Word** — **gras**, *italique*, ~~barré~~, `code`, **couleur de texte** (`[texte]{.nom}`) et **surlignage** (`==texte==`) — les retours à la ligne deviennent des sauts de ligne (`<w:br/>`). Les runs **héritent** de la mise en forme du modèle à l'emplacement de la balise. Les marqueurs de **bloc** (titres, puces, citations) sont retirés (rendu inline, pas de reconstruction de listes/tableaux). Le **HTML brut reste échappé** ; la couleur suit la même **liste blanche** de noms que l'application.
 - **Images** (matrice, radar) : insérées à l'emplacement, largeur ajustée à la page (ou `width=`),
   rasterisées depuis le SVG (réutilise `addSvgImage`).
 - **Tableaux** injectés : mise en forme **neutre** par défaut (v1) ; option `style="TableStyleName"` pour

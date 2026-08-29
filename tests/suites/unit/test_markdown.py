@@ -32,3 +32,47 @@ def test_image_javascript_url_filtered(app):
     out = app.js(MD, "![alt](javascript:alert(1))")
     assert "javascript:" not in out
     assert "<img" not in out
+
+
+# --- Couleur de texte (span Pandoc [texte]{.nom}) et surlignage ==texte== ---
+
+def test_color_span_known(app):
+    assert '<span style="color:#d64545">urgent</span>' in app.js(MD, "[urgent]{.red}")
+
+
+def test_color_span_unknown_is_plain(app):
+    out = app.js(MD, "[texte]{.banana}")
+    assert "texte" in out and "<span" not in out and "banana" not in out   # classe inconnue -> texte sans couleur
+
+
+def test_highlight(app):
+    assert "<mark>important</mark>" in app.js(MD, "==important==")
+
+
+def test_color_span_no_injection(app):
+    # La classe est bornée à [a-zA-Z][\w-]* : un style/attribut arbitraire ne matche pas.
+    out = app.js(MD, "[x]{.red;background:url(y)}")
+    assert "<span" not in out
+    assert "background:url" in out            # reste littéral
+
+
+def test_color_and_bold_combined(app):
+    assert '<span style="color:#d64545"><strong>alerte</strong></span>' in app.js(MD, "[**alerte**]{.red}")
+
+
+# --- Rendu Word : Markdown inline -> descripteurs de runs -> XML de run ---
+
+def test_md_inline_descs(app):
+    descs = app.js("s => mdInlineToDescs(s)", "[r]{.red} ==h== **b**")
+    assert "d64545" in [d.get("color") for d in descs]
+    assert "FFF2A8" in [d.get("fill") for d in descs]
+    assert True in [d.get("b") for d in descs]
+
+
+def test_md_word_run_xml(app):
+    xml = app.js("s => mdInlineToDescs(s).map(d => tmplRunFromDesc('', d)).join('')",
+                 "[r]{.red} ==h== **b**\nligne2")
+    assert '<w:color w:val="d64545"/>' in xml    # couleur
+    assert 'w:fill="FFF2A8"' in xml              # surlignage (ombrage)
+    assert "<w:b/>" in xml                        # gras
+    assert "<w:br/>" in xml                       # saut de ligne

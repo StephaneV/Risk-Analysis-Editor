@@ -46,7 +46,9 @@ Le format est indépendant de toute méthodologie particulière (ISO 27005, EBIO
 - Les **identifiants** (`id`) sont des chaînes non vides, uniques dans leur collection, stables dans le temps (voir §7).
 - Dans les tableaux de champs ci-dessous : **O** = obligatoire, **F** = facultatif.
 - Les clés inconnues d'un lecteur doivent être **ignorées silencieusement** (tolérance ascendante), jamais rejetées.
-- Les **champs de texte libre multi-lignes** (`description` et `comment` des risques, mesures et liens, `metadata.description`, valeurs des champs personnalisés de type `textarea`) peuvent contenir du **Markdown** (sous-ensemble étendu : titres, gras/italique/barré, code, liens, listes, cases à cocher, citations, tableaux). Le stockage reste du **texte brut** : la mise en forme est appliquée à l'affichage. Un lecteur qui ne gère pas le Markdown peut afficher le texte tel quel sans perte de sens. Le **HTML brut n'est pas interprété** (il doit être échappé à l'affichage).
+- Les **champs de texte libre multi-lignes** (`description` et `comment` des risques, mesures et liens, `metadata.description`, valeurs des champs personnalisés de type `text`/`textarea`) peuvent contenir du **Markdown** (sous-ensemble étendu : titres, gras/italique/barré, code, liens, listes, cases à cocher, citations, tableaux, **couleur de texte**, **surlignage**). Le stockage reste du **texte brut** : la mise en forme est appliquée à l'affichage. Un lecteur qui ne gère pas le Markdown peut afficher le texte tel quel sans perte de sens. Le **HTML brut n'est pas interprété** (il doit être échappé à l'affichage).
+  - **Couleur de texte** — *span* Pandoc `[texte]{.couleur}`, où `couleur` appartient à une **liste blanche** de noms anglais alignés sur la palette de l'application : `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple`, `cyan`, `pink`, `gray`/`grey`. Un nom inconnu rend le texte **sans couleur** (jamais de style CSS arbitraire).
+  - **Surlignage** — `==texte==` (rendu `<mark>` à l'écran, ombrage clair en Word).
 
 ---
 
