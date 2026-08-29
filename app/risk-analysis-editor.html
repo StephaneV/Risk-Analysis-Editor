@@ -1838,6 +1838,7 @@ const I18N = {
     cf_pal_colors:"Couleurs de la palette", cf_pal_add_color:"+ Ajouter une couleur", cf_err_colors:"Ajoutez au moins une couleur à la palette.",
     "pal.accent":"Couleur unique (accent)","pal.red-green":"Rouge → Vert","pal.red-orange-green":"Rouge → Orange → Vert","pal.red-orange-yellow-green":"Rouge → Orange → Jaune → Vert","pal.white-black":"Blanc → Noir","pal.custom":"Personnalisée",
     "tagpal.vives":"Vives","tagpal.pastel":"Pastel","tagpal.office":"Office","tagpal.daltonien":"Daltonien-friendly","tagpal.chaudes":"Chaudes","tagpal.froides":"Froides","tagpal.gris":"Nuances de gris","tagpal.bleu_vert":"Bleu à Vert","tagpal.jaune_orange":"Jaune à Orange","tagpal.rouge_violet":"Rouge à Violet","tagpalgrp.qualitative":"Qualitatives","tagpalgrp.sequential":"Séquentielles","cf_tagpal_custom_hint":"Couleurs libres (aucune attribution automatique)",
+    "scalepal.rouge-vert":"Rouge → vert (mauvais → bon)","scalepal.vert-rouge":"Vert → rouge (bon → mauvais)",
     cf_label:"Libellé", cf_help:"Aide", cf_description:"Description", md_preview:"Aperçu", md_edit:"Éditer", md_supports:"Markdown pris en charge", md_dblclick_edit:"Double-cliquez pour éditer",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Longueur min", cf_maxlen:"Longueur max", cf_minitems:"Items min", cf_maxitems:"Items max",
     cf_items:"Items de la liste", cf_item_add:"+ Ajouter un item", cf_item_code:"Code", cf_item_value:"Valeur", cf_item_label:"Libellé",
@@ -2225,6 +2226,7 @@ const I18N = {
     cf_pal_colors:"Palette colors", cf_pal_add_color:"+ Add a color", cf_err_colors:"Add at least one color to the palette.",
     "pal.accent":"Single color (accent)","pal.red-green":"Red → Green","pal.red-orange-green":"Red → Orange → Green","pal.red-orange-yellow-green":"Red → Orange → Yellow → Green","pal.white-black":"White → Black","pal.custom":"Custom",
     "tagpal.vives":"Vivid","tagpal.pastel":"Pastel","tagpal.office":"Office","tagpal.daltonien":"Colorblind-friendly","tagpal.chaudes":"Warm","tagpal.froides":"Cool","tagpal.gris":"Grayscale","tagpal.bleu_vert":"Blue to Green","tagpal.jaune_orange":"Yellow to Orange","tagpal.rouge_violet":"Red to Violet","tagpalgrp.qualitative":"Qualitative","tagpalgrp.sequential":"Sequential","cf_tagpal_custom_hint":"Free colours (no automatic assignment)",
+    "scalepal.rouge-vert":"Red → green (bad → good)","scalepal.vert-rouge":"Green → red (good → bad)",
     cf_label:"Label", cf_help:"Help", cf_description:"Description", md_preview:"Preview", md_edit:"Edit", md_supports:"Supports Markdown", md_dblclick_edit:"Double-click to edit",
     cf_min:"Minimum", cf_max:"Maximum", cf_minlen:"Min length", cf_maxlen:"Max length", cf_minitems:"Min items", cf_maxitems:"Max items",
     cf_items:"List items", cf_item_add:"+ Add an item", cf_item_code:"Code", cf_item_value:"Value", cf_item_label:"Label",
@@ -2612,6 +2614,7 @@ const I18N = {
     cf_pal_colors:"Colori della tavolozza", cf_pal_add_color:"+ Aggiungi un colore", cf_err_colors:"Aggiungi almeno un colore alla tavolozza.",
     "pal.accent":"Colore unico (accento)","pal.red-green":"Rosso → Verde","pal.red-orange-green":"Rosso → Arancione → Verde","pal.red-orange-yellow-green":"Rosso → Arancione → Giallo → Verde","pal.white-black":"Bianco → Nero","pal.custom":"Personalizzata",
     "tagpal.vives":"Vivaci","tagpal.pastel":"Pastello","tagpal.office":"Office","tagpal.daltonien":"Adatta ai daltonici","tagpal.chaudes":"Calde","tagpal.froides":"Fredde","tagpal.gris":"Scala di grigi","tagpal.bleu_vert":"Blu a Verde","tagpal.jaune_orange":"Giallo ad Arancione","tagpal.rouge_violet":"Rosso a Viola","tagpalgrp.qualitative":"Qualitative","tagpalgrp.sequential":"Sequenziali","cf_tagpal_custom_hint":"Colori liberi (nessuna assegnazione automatica)",
+    "scalepal.rouge-vert":"Rosso → verde (male → bene)","scalepal.vert-rouge":"Verde → rosso (bene → male)",
     cf_label:"Etichetta", cf_help:"Aiuto", cf_description:"Descrizione", md_preview:"Anteprima", md_edit:"Modifica", md_supports:"Markdown supportato", md_dblclick_edit:"Doppio clic per modificare",
     cf_min:"Minimo", cf_max:"Massimo", cf_minlen:"Lunghezza min", cf_maxlen:"Lunghezza max", cf_minitems:"Elementi min", cf_maxitems:"Elementi max",
     cf_items:"Elementi dell'elenco", cf_item_add:"+ Aggiungi un elemento", cf_item_code:"Codice", cf_item_value:"Valore", cf_item_label:"Etichetta",
@@ -6811,6 +6814,7 @@ function filterBarDef(cle){return FILTER_BARS.filter(b=>b.cle===cle)[0];}
    dans CHIP_REG, que les gestionnaires d'évènements consultent au moment du clic. */
 function cfChoiceColor(f,v){
   if(f.type==="computed")return v==="alert"?((f.alert&&f.alert.color)||"#c0505a"):null;
+  if(f.type==="scale"){const it=(f.items||[]).find(x=>String(x.value)===String(v));return (it&&it.color)||null;}
   if(f.type!=="tags")return null;
   const it=(f.items||[]).find(x=>x.code===v);
   return (it&&it.color)||null;
@@ -11661,6 +11665,9 @@ function cfTypeOptsHTML(f){
       '<label class="field"><span class="lab">'+esc(t("cf_step"))+'</span><input type="number" id="cfStep" min="1" max="100" step="1" value="'+(f.step!=null?f.step:10)+'"></label>'+
       '<div class="field full" id="cfCustomColors" style="display:'+(pal==="custom"?"block":"none")+'"><span class="lab">'+esc(t("cf_pal_colors"))+'</span><div id="cfColors">'+cfColorsRowsHTML(f.colors)+'</div><button class="btn ghost sm" id="cfColorAdd" type="button">'+esc(t("cf_pal_add_color"))+'</button></div>'+
       '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfPalettePreview" class="cf-pal-preview" style="background:'+palettePreviewBg(progressColors(f))+'"></div></div>';}
+  if(f.type==="scale"){const sp=scalePaletteId(f);
+    return '<label class="field"><span class="lab">'+esc(t("cf_palette"))+'</span><select id="cfScalePalette">'+scalePaletteOptions(sp)+'</select></label>'+
+      '<div class="field full"><span class="lab">'+esc(t("cf_palette_preview"))+'</span><div id="cfScalePalettePreview">'+scalePalettePreviewHTML(sp)+'</div></div>';}
   if(f.type==="reference"){
     const opt=(val,lab)=>'<option value="'+esc(val)+'"'+(val===f.object_type?" selected":"")+'>'+esc(lab)+'</option>';
     // Cibles possibles : risques et mesures de l'analyse (toujours), puis les types d'objets définis.
@@ -11763,6 +11770,7 @@ function openCustomFieldModal(idx){
     if(type==="color"){const m=val("cfColorMode");obj.color_mode=["hex","swatch","both"].indexOf(m)>=0?m:"both";}
     if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;
       const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
+    if(type==="scale"){const sp=val("cfScalePalette");obj.palette=SCALE_GRADIENTS.hasOwnProperty(sp)?sp:"custom";}
     if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";
       if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){modalMsg(t("cf_err_colors"));return false;}obj.colors=cols;}
       const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
@@ -11846,8 +11854,8 @@ function openCustomFieldModal(idx){
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
   document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};
     if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}
-    f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
-  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
+    f.items.push(nit);if(f.type==="scale")scaleReapplyPaletteFromDOM(f);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
+  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);if(f.type==="scale")scaleReapplyPaletteFromDOM(f);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
 }
 
 /* ============================================================
@@ -11994,6 +12002,7 @@ function openAttrModal(idx,list,onSave,selfType){
       if(type==="regexp"){const pat=val("cfPattern").trim();if(pat){try{new RegExp(pat);}catch(e){showMsg(t("cf_err_pattern"));return;}obj.pattern=pat;}}
       if(type==="color"){const m=val("cfColorMode");obj.color_mode=["hex","swatch","both"].indexOf(m)>=0?m:"both";}
       if(type==="tags"){obj.multiple=document.getElementById("cfMultiple").checked;const tp=val("cfTagPalette");obj.palette=(tp==="custom"||TAG_PALETTES.hasOwnProperty(tp))?tp:"vives";}
+      if(type==="scale"){const sp=val("cfScalePalette");obj.palette=SCALE_GRADIENTS.hasOwnProperty(sp)?sp:"custom";}
       if(type==="progress"){const pal=val("cfPalette");obj.palette=(pal==="custom"||PROGRESS_PALETTES.hasOwnProperty(pal))?pal:"accent";if(obj.palette==="custom"){const cols=cfCustomColorsFromDOM();if(!cols.length){showMsg(t("cf_err_colors"));return;}obj.colors=cols;}const stp=parseInt(val("cfStep"),10);obj.step=(!isNaN(stp)&&stp>0&&stp<=100)?stp:10;}
       if(type==="reference"){const oty=val("cfObjectType");if(!oty){showMsg(t("cf_err_ref_type"));return;}obj.object_type=oty;const m=document.getElementById("cfMultiple");obj.multiple=!!(m&&m.checked);if(selfType&&oty===selfType)toast(t("cf_ref_self_warn"));}
       if(type==="computed"){
@@ -12031,8 +12040,8 @@ function openAttrModal(idx,list,onSave,selfType){
   if(document.getElementById("cfCalcChips"))cfCalcPickerFill();   // à l'ouverture (édition d'un attribut calculé)
   cfCalcSyncEditor();
   document.getElementById("cfLab").addEventListener("blur",e=>{const c=document.getElementById("cfCode");if(!c.value.trim())c.value=slug(e.target.value).replace(/-/g,"_");});
-  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}f.items.push(nit);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
-  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
+  document.getElementById("cfItemAdd").addEventListener("click",()=>{syncItems();const nit={code:"",label:{}};if(f.type==="tags"){const ts=document.getElementById("cfTagPalette"),pid=ts?ts.value:tagPaletteId(f);if(pid!=="custom"&&TAG_PALETTES[pid])nit.color=tagPaletteColor(pid,f.items.length);}f.items.push(nit);if(f.type==="scale")scaleReapplyPaletteFromDOM(f);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
+  document.getElementById("cfItems").addEventListener("click",e=>{const d=e.target.closest("[data-cfi-del]");if(!d)return;syncItems();f.items.splice(+d.dataset.cfiDel,1);if(f.type==="scale")scaleReapplyPaletteFromDOM(f);document.getElementById("cfItems").innerHTML=cfItemsRows(f);});
 }
 document.getElementById("btnAddOT").addEventListener("click",()=>openObjectTypeModal(null));
 document.getElementById("otTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const list=objectTypes();
@@ -12327,6 +12336,35 @@ function tagPalettePreviewHTML(pid){const arr=TAG_PALETTES[pid];
 function tagRecolorItemsDOM(palId){if(palId==="custom")return;
   [...document.querySelectorAll('#cfItems [data-cfi]')].forEach((r,i)=>{const c=r.querySelector('[data-if=color]');if(c)c.value=tagPaletteColor(palId,i);});}
 function updateTagPalettePreview(palId){const prev=document.getElementById("cfTagPalettePreview");if(prev)prev.innerHTML=tagPalettePreviewHTML(palId);}
+/* Palettes des champs « échelle » : dégradés séquentiels rouge↔vert PASSANT par l'orange et le
+   jaune, appliqués par RANG du niveau (interpolation sur le nombre réel de niveaux). Chaque niveau
+   reçoit une couleur stockée (it.color), éditable ; « personnalisé » = couleurs libres. */
+const SCALE_GRADIENTS={
+  "rouge-vert":["#d64545","#e6862e","#e0b93a","#2e9e5b"],   // rang 0 rouge → rang max vert
+  "vert-rouge":["#2e9e5b","#e0b93a","#e6862e","#d64545"]    // rang 0 vert → rang max rouge
+};
+// Interpolation en TSL (teinte par le chemin le plus court, saturation/luminosité conservées) —
+// comme l'aperçu du dégradé. L'interpolation RVB donnerait des tons ternes (olive) entre jaune et vert.
+function lerpHslHex(c1,c2,t){const a=rgbToHsl.apply(null,hexToRgb(c1)),b=rgbToHsl.apply(null,hexToRgb(c2));
+  let dh=b[0]-a[0];if(dh>180)dh-=360;else if(dh<-180)dh+=360;
+  return hslToHex(((a[0]+dh*t)%360+360)%360, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t);}
+function gradientHex(colors,p){if(!colors||!colors.length)return "#4c7dff";if(colors.length===1)return colors[0];
+  p=Math.max(0,Math.min(1,p));const seg=1/(colors.length-1),i=Math.min(colors.length-2,Math.floor(p/seg)),t=(p-i*seg)/seg;
+  return lerpHslHex(colors[i],colors[i+1],t);}
+function scalePaletteId(f){return (f&&f.palette&&SCALE_GRADIENTS.hasOwnProperty(f.palette))?f.palette:"custom";}
+function scalePaletteColorAt(pid,i,n){const g=SCALE_GRADIENTS[pid];if(!g)return "#4c7dff";return gradientHex(g,n<=1?0:i/(n-1));}
+function scalePaletteOptions(cur){
+  return ["rouge-vert","vert-rouge"].map(id=>'<option value="'+id+'"'+(id===cur?" selected":"")+'>'+esc(t("scalepal."+id))+'</option>').join("")+
+    '<option value="custom"'+(cur==="custom"?" selected":"")+'>'+esc(t("pal.custom"))+'</option>';}
+function scalePalettePreviewHTML(pid){const g=SCALE_GRADIENTS[pid];
+  return g?'<div class="cf-pal-preview" style="background:'+palettePreviewBg(g)+'"></div>'
+          :'<span class="hint">'+esc(t("cf_tagpal_custom_hint"))+'</span>';}
+function scaleRecolorItemsDOM(pid){if(pid==="custom"||!SCALE_GRADIENTS[pid])return;
+  const rows=[...document.querySelectorAll('#cfItems [data-cfi]')],n=rows.length;
+  rows.forEach((r,i)=>{const c=r.querySelector('[data-if=color]');if(c)c.value=scalePaletteColorAt(pid,i,n);});}
+function updateScalePalettePreview(pid){const prev=document.getElementById("cfScalePalettePreview");if(prev)prev.innerHTML=scalePalettePreviewHTML(pid);}
+function scaleReapplyPaletteFromDOM(f){const sel=document.getElementById("cfScalePalette"),pid=sel?sel.value:scalePaletteId(f);
+  if(pid==="custom"||!SCALE_GRADIENTS[pid])return;const n=f.items.length;f.items.forEach((it,i)=>{it.color=scalePaletteColorAt(pid,i,n);});}
 // Fond CSS d'aperçu depuis un tableau de couleurs (aplat si 1 couleur, accent si vide).
 function palettePreviewBg(colors){
   if(!colors||!colors.length)return "var(--accent)";if(colors.length===1)return colors[0];
@@ -12904,6 +12942,7 @@ document.addEventListener("input",e=>{const r=e.target;
 document.addEventListener("change",e=>{const el=e.target;if(!el)return;
   if(el.id==="cfPalette"){const cc=document.getElementById("cfCustomColors");if(cc)cc.style.display=el.value==="custom"?"block":"none";updatePalettePreview();}
   else if(el.id==="cfTagPalette"){tagRecolorItemsDOM(el.value);updateTagPalettePreview(el.value);}
+  else if(el.id==="cfScalePalette"){scaleRecolorItemsDOM(el.value);updateScalePalettePreview(el.value);}
   else if(el.matches&&el.matches('#cfColors [data-cfcv]'))updatePalettePreview();});
 document.addEventListener("click",e=>{
   const add=e.target.closest&&e.target.closest("#cfColorAdd");
