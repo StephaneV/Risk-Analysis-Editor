@@ -1641,6 +1641,7 @@ const I18N = {
     a11y_edit_link:"Modifier le lien {0} – {1}",
     a11y_del_link:"Supprimer le lien {0} – {1}",
     a11y_edit_field:"Modifier le champ « {0} »",
+    a11y_view_instances:"Voir les instances de « {0} »",
     a11y_del_field:"Supprimer le champ « {0} »",
     a11y_move_up:"Déplacer « {0} » vers le haut",
     a11y_move_down:"Déplacer « {0} » vers le bas",
@@ -2029,6 +2030,7 @@ const I18N = {
     a11y_edit_link:"Edit link {0} – {1}",
     a11y_del_link:"Delete link {0} – {1}",
     a11y_edit_field:"Edit field \"{0}\"",
+    a11y_view_instances:"View instances of \"{0}\"",
     a11y_del_field:"Delete field \"{0}\"",
     a11y_move_up:"Move \"{0}\" up",
     a11y_move_down:"Move \"{0}\" down",
@@ -2415,6 +2417,7 @@ const I18N = {
     a11y_edit_link:"Modifica il collegamento {0} – {1}",
     a11y_del_link:"Elimina il collegamento {0} – {1}",
     a11y_edit_field:"Modifica il campo «{0}»",
+    a11y_view_instances:"Vedi le istanze di «{0}»",
     a11y_del_field:"Elimina il campo «{0}»",
     a11y_move_up:"Sposta «{0}» in alto",
     a11y_move_down:"Sposta «{0}» in basso",
@@ -11867,6 +11870,7 @@ function renderObjectTypes(){
       '<td>'+((ot.attributes||[]).length)+'</td>'+
       '<td>'+objectsOfType(ot.code).length+'</td>'+
       '<td><div class="actions">'+
+        '<button class="btn icon sm" data-ot-view="'+i+'"'+a11y("a11y_view_instances",otLabel(ot))+'>👁</button>'+
         '<button class="btn icon sm" data-ot-up="'+i+'"'+(i===0?" disabled":"")+a11y("a11y_move_up",otLabel(ot))+'>▲</button>'+
         '<button class="btn icon sm" data-ot-down="'+i+'"'+(i===list.length-1?" disabled":"")+a11y("a11y_move_down",otLabel(ot))+'>▼</button>'+
         '<button class="btn icon sm" data-ot-edit="'+i+'"'+a11y("a11y_edit_field",otLabel(ot))+'>✎</button>'+
@@ -12016,6 +12020,7 @@ function openAttrModal(idx,list,onSave,selfType){
 }
 document.getElementById("btnAddOT").addEventListener("click",()=>openObjectTypeModal(null));
 document.getElementById("otTable").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const list=objectTypes();
+  if(b.dataset.otView!=null){const ot=list[+b.dataset.otView];if(ot){activateView("objects");setObjMode(ot.code);}return;}
   if(b.dataset.otEdit!=null)return openObjectTypeModal(+b.dataset.otEdit);
   if(b.dataset.otDel!=null)return deleteObjectType(+b.dataset.otDel);
   if(b.dataset.otUp!=null){const i=+b.dataset.otUp;if(i>0){[list[i-1],list[i]]=[list[i],list[i-1]];otReindex();markDirty();renderObjectTypes();}return;}
