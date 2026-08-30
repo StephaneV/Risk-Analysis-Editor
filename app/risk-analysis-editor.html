@@ -9324,7 +9324,9 @@ function tmplComputedDesc(f,target,entity){
   const r=cfComputedValue(f,target,entity);
   if(!r.ok)return {kind:"text",value:"#ERR"};
   const txt=cfComputedText(f,r),col=cfComputedAlertColor(f,r);
-  return col?{kind:"clabel",value:txt,color:col}:{kind:"text",value:txt};
+  if(col)return {kind:"clabel",value:txt,color:col};
+  if((f.result_type||"number")==="text")return {kind:"md",value:txt};   // résultat texte -> Markdown (aligné sur la vue web)
+  return {kind:"text",value:txt};
 }
 function tmplRiskField(risk,rest){switch(rest[0]){
   case "id":return {kind:"text",value:risk.id};
@@ -11667,6 +11669,7 @@ function cfComputedDisplayHTML(f,target,entity){
   const r=cfComputedValue(f,target,entity);
   if(!r.ok)return '<span class="cf-calc-err" title="'+esc(r.error||"")+'" style="color:#c0505a;cursor:help">#ERR</span>';
   const txt=cfComputedText(f,r);if(txt==="")return "";
+  if((f.result_type||"number")==="text")return mdInline(esc(txt)).replace(/\n/g,"<br>");   // résultat texte : Markdown inline (valeur « unique », aligné sur le rendu Word)
   const col=cfComputedAlertColor(f,r);
   return col?'<span style="color:'+esc(col)+';font-weight:600">'+esc(txt)+'</span>':esc(txt);
 }

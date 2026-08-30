@@ -46,3 +46,30 @@ def test_cycle_detected(app):
       return cfComputedValue(f, 'risk', analyse.risks[0]);
     }""")
     assert r["ok"] is False and r["error"]
+
+
+# Champ calculé à résultat texte : la valeur est rendue en Markdown (inline) à l'écran
+# et exportée en runs Markdown côté Word (kind:"md").
+COMPUTED_TEXT_MD = r"""
+() => {
+  const f = { type:'computed', result_type:'text', code:'_mdt', label:{fr:'T'},
+              expression:'"[rouge]{.red} et ==surl== et **g**"' };
+  const web = cfComputedDisplayHTML(f, 'analysis', analyse);
+  const desc = tmplComputedDesc(f, 'analysis', analyse);
+  return {
+    color: /color:#d64545/.test(web),
+    mark: /<mark>/.test(web),
+    bold: /<strong>/.test(web),
+    inline: !/<p>/.test(web),        // rendu inline (pas de bloc <p>)
+    wordKind: desc.kind
+  };
+}
+"""
+
+
+def test_computed_text_result_supports_markdown(app):
+    app.load("tous-types-champs.rae.json")
+    r = app.js(COMPUTED_TEXT_MD)
+    assert r["color"] and r["mark"] and r["bold"], f"Markdown non rendu (web) : {r}"
+    assert r["inline"], "le résultat texte doit être rendu inline (sans <p>)"
+    assert r["wordKind"] == "md", "l'export Word doit traiter le calculé texte comme du Markdown"
