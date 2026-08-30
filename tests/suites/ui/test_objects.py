@@ -299,3 +299,64 @@ def test_object_density_per_type(app):
     assert r["storedFirst"] == "dense", "densité du 1er type non mémorisée sous objects.<code>"
     assert r["storedSecond"] is None, "densité écrite pour le 2e type alors qu'il est en Confort"
     assert not app.console_errors()
+
+
+# Modèle de placement des colonnes (piste 2, fondation Maître·détail) : défauts par type, verrous
+# (ID/libellé/Actions), stockage view/detail. Helpers non encore consommés par le rendu.
+PLACEMENT = r"""
+() => {
+  const code = 'source_risque', tk = 'objects.' + code;
+  const ot = objectTypeByCode(code), na = ot.name_attr;
+  const snap = () => JSON.parse(JSON.stringify((analyse.extensions.display||{}).detail||{}));
+  const out = {};
+  // Défauts par type : verbeux (text/textarea/computed-text) → détail ; sauf le libellé (verrouillé).
+  out.defaultDetail = detailColKeys(tk).sort();
+  out.defaultInline = inlineColKeys(tk);
+  out.labelKey = labelColKey(tk);
+  out.labelLockedInline = colPlacement(tk, 'cf:' + na);         // libellé texte mais verrouillé → inline
+  out.labelIsVerbose = regColumns(tk).find(c => c.key === 'cf:' + na).verbose;
+  // Déplacer un champ détail → en ligne, puis retour.
+  const d0 = detailColKeys(tk)[0];
+  setColPlacement(tk, d0, 'inline');
+  out.afterInline = { placement: colPlacement(tk, d0), stored: snap()[tk] || null };
+  setColPlacement(tk, d0, 'detail');
+  out.afterDetail = { placement: colPlacement(tk, d0), storedHasKey: (snap()[tk] || []).indexOf(d0) >= 0 };
+  // Verrou : tenter de reléguer le libellé au détail est ignoré.
+  setColPlacement(tk, 'cf:' + na, 'detail');
+  out.labelStillInline = colPlacement(tk, 'cf:' + na);
+  // Vue mémorisée par table.
+  out.viewDefault = tableView(tk);
+  setTableView(tk, 'master_detail'); out.viewSet = tableView(tk);
+  out.viewStored = ((analyse.extensions.display||{}).view||{})[tk];
+  setTableView(tk, 'table'); out.viewReset = tableView(tk);
+  out.viewKeyCleared = ((analyse.extensions.display||{}).view||{})[tk] === undefined;
+  // Risques : le libellé (risk) est verrouillé en ligne.
+  out.risksLabelKey = labelColKey('risks');
+  out.risksLabelPlacement = colPlacement('risks', 'risk');
+  return out;
+}
+"""
+
+
+def test_column_placement_model(app):
+    app.load("ebios-objets.rae.json")
+    r = app.js(PLACEMENT)
+    # Défauts par type : les deux attributs verbeux (motivation, objectif_vise) partent au détail ;
+    # le libellé (nom), pourtant texte, reste en ligne car verrouillé.
+    assert r["labelKey"] == "cf:nom"
+    assert r["labelIsVerbose"] is True and r["labelLockedInline"] == "inline"
+    assert "cf:nom" not in r["defaultDetail"], "le libellé ne doit jamais partir au détail"
+    assert "cf:motivation" in r["defaultDetail"] and "cf:objectif_vise" in r["defaultDetail"]
+    assert "cf:nom" in r["defaultInline"] and "cf:categorie" in r["defaultInline"]
+    # Bascule détail ↔ en ligne + stockage.
+    assert r["afterInline"]["placement"] == "inline"
+    assert r["afterDetail"]["placement"] == "detail" and r["afterDetail"]["storedHasKey"]
+    # Verrou du libellé.
+    assert r["labelStillInline"] == "inline", "le libellé ne doit pas pouvoir passer au détail"
+    # Vue mémorisée par table.
+    assert r["viewDefault"] == "table" and r["viewSet"] == "master_detail"
+    assert r["viewStored"] == "master_detail"
+    assert r["viewReset"] == "table" and r["viewKeyCleared"], "retour à 'table' doit purger la clé"
+    # Risques : libellé verrouillé en ligne.
+    assert r["risksLabelKey"] == "risk" and r["risksLabelPlacement"] == "inline"
+    assert not app.console_errors()

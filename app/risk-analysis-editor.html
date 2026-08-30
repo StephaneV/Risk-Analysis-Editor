@@ -7376,6 +7376,64 @@ document.addEventListener("click",e=>{const btn=e.target.closest(".density-seg [
   const seg=btn.closest(".density-seg");if(seg)seg.querySelectorAll("[data-density]").forEach(x=>x.classList.toggle("active",x.dataset.density===v));
   syncSegAria();scheduleRegSizing();
 });
+/* ── Modèle de placement des colonnes (piste 2 — fondation de la vue Maître·détail) ───────────────
+   Chaque colonne d'un registre a un placement : "inline" (en ligne) | "detail" (au tiroir de la
+   ligne dépliée) | "hidden" (masquée). « Masqué » réutilise le mécanisme existant (colonne hors
+   colOrder, ou attribut hide_table). « En ligne » vs « En détail » est mémorisé par table dans
+   extensions.display.detail (liste des clés reléguées au détail, dans l'ordre des colonnes).
+   Verrous : ID (épinglé 1er, hors de cette liste), attribut de LIBELLÉ et Actions restent toujours
+   « en ligne ». Défaut « zéro config » : les colonnes VERBEUSES (texte, texte long, calculé‑texte)
+   partent « en détail », les autres « en ligne ». Ces helpers ne sont pas encore consommés par le
+   rendu (étape 3) ; ils constituent le contrat testé du modèle. */
+function regViewStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.view=d.view||{};}
+function tableView(table){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.view;const x=v&&v[table];return (x==="master_detail"||x==="cards")?x:"table";}
+function setTableView(table,val){if(val==="table"){const s=regViewStore();delete s[table];}else regViewStore()[table]=val;markDirty();}
+function regDetailStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.detail=d.detail||{};}
+function savedDetailCols(table){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.detail;const a=v&&v[table];return Array.isArray(a)?a:null;}
+/* Clé de la colonne « libellé » verrouillée en ligne (risques/mesures : le libellé ; objets :
+   l'attribut name_attr du type ; liens : aucune — rid/mid sont déjà courts). */
+function labelColKey(table){
+  if(table==="risks")return "risk";
+  if(table==="measures")return "measure";
+  if(table.indexOf("objects.")===0){const ot=objectTypeByCode(table.slice(8)),na=ot&&ot.name_attr;return na?("cf:"+na):null;}
+  return null;
+}
+function colLocked(table,key){const c=colMap(table)[key];if(c&&(c.pinned==="first"||c.pinned==="last"))return true;return key===labelColKey(table);}
+/* Descripteurs des colonnes VISIBLES d'un registre, hors ID (épinglé) et Actions : unifie le moteur
+   de colonnes (risques/mesures/liens, via colOrder) et les attributs d'un type d'objet.
+   {key,label,verbose,locked}. */
+function regColumns(table){
+  if(table.indexOf("objects.")===0){
+    const ot=objectTypeByCode(table.slice(8)); if(!ot)return [];
+    const na=ot.name_attr;
+    return (ot.attributes||[]).filter(a=>!a.hide_table).map(a=>({key:"cf:"+a.code,label:cfLabel(a),verbose:cfIsTextCol(a),locked:a.code===na}));
+  }
+  const first=pinnedFirstKey(table);
+  return colOrder(table).filter(k=>k!==first).map(k=>{const c=colMap(table)[k];
+    return {key:k,label:c?c.label:k,verbose:!!(c&&(c.cf?cfIsTextCol(c.cf):c.detail===true)),locked:colLocked(table,k)};});
+}
+/* Ensemble des clés « en détail » : choix utilisateur (display.detail, verrous exclus) sinon défaut
+   par type (colonnes verbeuses non verrouillées). */
+function detailColSet(table){
+  const cols=regColumns(table),byKey={};cols.forEach(c=>byKey[c.key]=c);
+  const saved=savedDetailCols(table),s=new Set();
+  if(saved){saved.forEach(k=>{const c=byKey[k];if(c&&!c.locked)s.add(k);});return s;}
+  cols.forEach(c=>{if(c.verbose&&!c.locked)s.add(c.key);});return s;
+}
+function colPlacement(table,key){const c=regColumns(table).find(x=>x.key===key);if(!c)return "hidden";if(c.locked)return "inline";return detailColSet(table).has(key)?"detail":"inline";}
+function inlineColKeys(table){const s=detailColSet(table);return regColumns(table).filter(c=>c.locked||!s.has(c.key)).map(c=>c.key);}
+function detailColKeys(table){const s=detailColSet(table);return regColumns(table).filter(c=>!c.locked&&s.has(c.key)).map(c=>c.key);}
+/* Déplace une colonne entre « en ligne » et « en détail » (les verrous et « masqué » sont hors de
+   ce setter — « masqué » passe par le mécanisme hide_table/colOrder existant). Mémorise la liste
+   des clés « en détail » dans l'ordre des colonnes ; vide ⇒ suppression de la clé (pas de config vide). */
+function setColPlacement(table,key,placement){
+  const c=regColumns(table).find(x=>x.key===key); if(!c||c.locked)return;
+  const cur=new Set(detailColKeys(table));
+  if(placement==="detail")cur.add(key); else cur.delete(key);
+  const ordered=regColumns(table).filter(x=>cur.has(x.key)).map(x=>x.key);
+  const st=regDetailStore(); if(ordered.length)st[table]=ordered; else delete st[table];
+  markDirty();
+}
 // Lecture seule : ne crée aucun objet (évite de polluer le fichier avec un columns:{} vide).
 function savedColOrder(table){
   const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.columns;

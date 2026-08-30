@@ -139,16 +139,18 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
     "measures": "compact",              // "compact" | "dense" ; "comfortable" (défaut) n'est pas écrit
     "objects.source_risque": "dense"
   },
-  "view":   { "objects.source_risque": "master_detail" },   // à venir : "table" | "master_detail" | "cards"
-  "detail": { "objects.source_risque": ["desc","obj","motiv","just","res"] }  // à venir : colonnes « en détail »
+  "view":   { "objects.source_risque": "master_detail" },   // piste 2 (modèle) : "table" | "master_detail" | "cards"
+  "detail": { "objects.source_risque": ["motivation","objectif_vise"] }  // piste 2 (modèle) : colonnes « en détail »
 }
 ```
 
 - `columns` (existant) = **ordre** des colonnes non masquées, par table.
 - `density` (piste 1) = densité par table ; seule une valeur non‑défaut est écrite (retour à
   *Confort* ⇒ suppression de la clé).
-- `detail` (à venir) = colonnes **En détail** ; tout ce qui est dans `columns` et hors `detail`
-  est **En ligne**. `view` (à venir) = mémoire de la vue par table.
+- `detail` (piste 2, modèle) = clés des colonnes **En détail** (dans l'ordre des colonnes) ; tout
+  le reste des colonnes visibles non verrouillées est **En ligne**. `view` (piste 2, modèle) =
+  mémoire de la vue par table. Défaut (clé absente) : colonnes verbeuses → détail (§4.3), vue
+  `table`. Verrous ID/libellé/Actions jamais écrits dans `detail`.
 - La **pleine largeur** : `extensions.display.full_width` (booléen global) — à confirmer vs par table.
 - Rétro‑compat : absence de ces clés ⇒ défauts (`view:"table"`, *Confort*, split par type §4.3).
   Aucune écriture de config vide dans le fichier (lecture paresseuse, comme l'existant).
@@ -179,9 +181,11 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
    conteneur qui remplit la fenêtre (défilement interne) ; ombres de bord latérales continues et
    conditionnelles ; contrôle de densité Confort/Compact/Dense mémorisé par table
    (`display.density`). S'applique à Risques, Mesures, Liens et chaque type d'objet.
-2. **Modèle de placement** — état `view`/`detail` dans `extensions.display` ;
-   helpers (colonnes en ligne / en détail) + défauts par type ; verrous ID/libellé/actions.
-3. **Vue Maître·détail** (piste 2) — rendu colonnes clés + tiroir de détail (Markdown, texte complet) ;
+2. **Modèle de placement** — ✅ *fait* : stockage `display.view` / `display.detail` par table ;
+   helpers `regColumns` / `inlineColKeys` / `detailColKeys` / `colPlacement` / `setColPlacement`
+   (unifiant le moteur de colonnes et les attributs d'objet) ; défauts par type (verbeux → détail) ;
+   verrous ID/libellé/Actions. Non encore consommé par le rendu (piste 3).
+3. **Vue Maître·détail** (piste 2 UI) — rendu colonnes clés + tiroir de détail (Markdown, texte complet) ;
    chevron ; préservation tri/drag/glisser‑ligne.
 4. **⚙ Colonnes 3 états** — contrôle En ligne/En détail/Masqué + préréglages.
 5. **Vue Cartes** (piste 3) — grille de fiches + bascule de vue.
