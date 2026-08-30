@@ -325,9 +325,12 @@
   .obj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
   .obj-card{border:1px solid var(--border);border-radius:11px;background:var(--panel);padding:12px 14px;cursor:pointer;transition:border-color .12s,box-shadow .12s}
   .obj-card:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(20,40,80,.08)}
-  .obj-card .oc-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
-  .obj-card .oc-title{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .obj-card .oc-head .actions{display:flex;gap:6px;flex:none}
+  /* En-tête de fiche sur deux lignes (option E) : ligne 1 = pastille ID (gauche) + actions (droite),
+     ligne 2 = titre pleine largeur (peut passer à la ligne, non tronqué). */
+  .obj-card .oc-head{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+  .obj-card .oc-toprow{display:flex;align-items:center;gap:9px}
+  .obj-card .oc-toprow .actions{margin-left:auto;display:flex;gap:6px;flex:none}
+  .obj-card .oc-title{font-weight:600;font-size:14.5px;line-height:1.3;overflow-wrap:anywhere}
   /* Champs empilés (libellé au-dessus, valeur pleine largeur) : une valeur large — liste de pastilles
      d'une référence multi-valeurs, texte long — dispose ainsi de toute la largeur de la fiche et
      s'enroule sans rogner ni déborder. min-width:0 pour autoriser le rétrécissement du contenu. */
@@ -7749,8 +7752,9 @@ function colCardsHTML(table,list){
   let h='<div class="obj-cards">';
   list.forEach(row=>{
     h+='<div class="obj-card reg-card" data-regrow="1">'+
-      '<div class="oc-head">'+colRowIdBadge(table,row)+'<span class="oc-title">'+esc(colRowTitle(table,row))+'</span>'+
-        '<div class="actions">'+actionButtons(table,row)+'</div></div>';
+      '<div class="oc-head"><div class="oc-toprow">'+colRowIdBadge(table,row)+
+        '<div class="actions">'+actionButtons(table,row)+'</div></div>'+
+        '<span class="oc-title">'+esc(colRowTitle(table,row))+'</span></div>';
     if(inlineCols.length)h+='<div class="oc-pairs">'+inlineCols.map(c=>'<div class="oc-pair"><span class="oc-k">'+esc(c.label||"")+'</span><span class="oc-v">'+c.cell(row)+'</span></div>').join("")+'</div>';
     if(detailCols.length)h+='<div class="oc-blocks">'+detailCols.map(c=>'<div class="oc-block"><span class="oc-k">'+esc(c.label||"")+'</span><div class="oc-v">'+c.cell(row)+'</div></div>').join("")+'</div>';
     h+='</div>';
@@ -12842,9 +12846,9 @@ function objCardsGridHTML(ot,dkey,insts){
   insts.forEach(inst=>{
     const label=objectLabel(inst), title=(label&&label!==inst.id)?'<span class="oc-title">'+esc(label)+'</span>':'';
     h+='<div class="obj-card" data-obj-row="'+esc(inst.id)+'">'+
-      '<div class="oc-head"><span class="id-badge">'+esc(inst.id)+'</span>'+title+
+      '<div class="oc-head"><div class="oc-toprow"><span class="id-badge">'+esc(inst.id)+'</span>'+
         '<div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",label)+'>✎</button>'+
-        '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",label)+'>🗑</button></div></div>';
+        '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",label)+'>🗑</button></div></div>'+title+'</div>';
     const pairs=pairAttrs.filter(a=>!objAttrIsEmpty(a,ot,inst));
     if(pairs.length)h+='<div class="oc-pairs">'+pairs.map(a=>'<div class="oc-pair"><span class="oc-k">'+esc(cfLabel(a))+'</span><span class="oc-v">'+objAttrCellInner(a,ot,inst)+'</span></div>').join("")+'</div>';
     const blocks=blockAttrs.filter(a=>!objAttrIsEmpty(a,ot,inst));
