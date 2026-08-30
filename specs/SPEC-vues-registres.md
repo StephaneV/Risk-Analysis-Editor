@@ -195,7 +195,10 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
    Masqué) ; « Masqué » = `hide_table`, « En ligne » / « En détail » = placement (`display.detail`).
    ID et attribut de libellé verrouillés « En ligne ». *Préréglages et extension à Risques / Mesures /
    Liens : à suivre.*
-5. **Vue Cartes** (piste 3) — grille de fiches + bascule de vue.
+5. **Vue Cartes** (piste 3) — ✅ *fait (Objets)* : « Cartes » ajouté au sélecteur de vue ; grille de
+   fiches (en-tête ID + libellé + actions, colonnes « en ligne » en paires, colonnes « en détail » en
+   blocs texte complet + Markdown, champs vides masqués) ; clic‑fiche ouvre l'éditeur ; densité masquée
+   (sans objet en cartes) ; le ⚙ pilote toujours le placement. Tri par le menu « Trier par » (étape 6).
 6. **Menu « Trier par »** — tri des champs de détail / en cartes.
 7. **Pleine largeur** (piste 5) — option + bouton d'en‑tête.
 

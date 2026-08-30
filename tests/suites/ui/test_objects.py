@@ -485,3 +485,60 @@ def test_object_column_manager_3states(app):
     # Clic dehors ferme.
     assert r["closedOnOutside"], "le popover ne se ferme pas au clic dehors"
     assert not app.console_errors()
+
+
+# Vue Cartes (§6, piste 3) : grille de fiches. En-tête (ID + libellé + actions), colonnes « en ligne »
+# en paires, colonnes « en détail » en blocs (texte complet). Densité masquée ; clic-fiche ouvre la
+# fiche. Champs vides masqués.
+CARDS = r"""
+() => {
+  const code = 'source_risque', tk = 'objects.' + code, ot = objectTypeByCode(code);
+  setObjMode(code);
+  const inst = objectsOfType(code)[0];
+  inst.values.activite = '';   // champ « en ligne » vidé → doit être absent des paires de sa fiche
+  const vseg = document.querySelector('#view-objects .view-seg');
+  vseg.querySelector('[data-view-mode="cards"]').click();
+  const out = {
+    stored: ((analyse.extensions.display||{}).view||{})[tk],
+    hasCardsBtn: [...vseg.querySelectorAll('button')].some(b => b.dataset.viewMode === 'cards'),
+    densityHidden: !document.querySelector('#view-objects .density-seg'),
+    gearPresent: !!document.querySelector('#view-objects .objcolgear'),
+    cardCount: document.querySelectorAll('#view-objects .obj-card').length,
+    nInst: objectsOfType(code).length
+  };
+  const card = document.querySelector('#view-objects .obj-card[data-obj-row="' + inst.id + '"]');
+  out.cardId = card.querySelector('.id-badge').textContent;
+  out.cardTitle = card.querySelector('.oc-title') ? card.querySelector('.oc-title').textContent : null;
+  out.pairs = [...card.querySelectorAll('.oc-pairs .oc-k')].map(k => k.textContent);
+  out.blocks = [...card.querySelectorAll('.oc-blocks .oc-k')].map(k => k.textContent);
+  // Non-régression overflow : aucune valeur / pastille ne doit déborder de sa fiche (réf. multi-valeurs).
+  let overflow = 0;
+  document.querySelectorAll('#view-objects .obj-card').forEach(c => {
+    const cr = c.getBoundingClientRect();
+    c.querySelectorAll('.oc-v, .oc-v .pill').forEach(el => { if (el.getBoundingClientRect().right > cr.right + 1) overflow++; });
+  });
+  out.overflow = overflow;
+  // clic sur la fiche (hors actions) ouvre la fiche d'édition
+  card.querySelector('.oc-head .oc-title, .oc-head .id-badge').click();
+  out.cardClickOpens = !!document.querySelector('body > .modal-bg.open');
+  return out;
+}
+"""
+
+
+def test_object_cards_view(app):
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(CARDS)
+    assert r["stored"] == "cards" and r["hasCardsBtn"], "vue Cartes non activée / bouton absent"
+    assert r["densityHidden"], "la densité devrait être masquée en vue Cartes"
+    assert r["gearPresent"], "le ⚙ Colonnes devrait rester en vue Cartes"
+    assert r["cardCount"] == r["nInst"], "une fiche par instance"
+    assert r["cardTitle"] == "Groupe cybercriminel (rançongiciel)", "titre = attribut de libellé"
+    # Paires = colonnes « en ligne » (hors libellé, hors champ vidé) ; blocs = colonnes « en détail ».
+    assert "Catégorie" in r["pairs"] and "Activité" not in r["pairs"], "champ vidé non masqué des paires"
+    assert "Motivation" in r["blocks"] and "Objectif visé" in r["blocks"]
+    assert r["overflow"] == 0, "des valeurs/pastilles débordent de leur fiche"
+    assert r["cardClickOpens"], "le clic sur une fiche n'ouvre pas l'éditeur"
+    app.close_modals()
+    assert not app.console_errors()

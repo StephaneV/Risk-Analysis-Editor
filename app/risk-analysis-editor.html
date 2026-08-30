@@ -316,6 +316,24 @@
   .md-detail .md-lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
   .md-detail .md-val{font-size:13px;overflow-wrap:anywhere}
   .md-detail .md-none{grid-column:1 / -1;color:var(--muted);font-size:12.5px;font-style:italic}
+  /* Vue Cartes : grille de fiches (en-tête ID + libellé + actions, puis paires « en ligne » et blocs
+     de détail). Lecture aérée ; pas d'en-têtes (tri par le menu « Trier par »). */
+  .obj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .obj-card{border:1px solid var(--border);border-radius:11px;background:var(--panel);padding:12px 14px;cursor:pointer;transition:border-color .12s,box-shadow .12s}
+  .obj-card:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(20,40,80,.08)}
+  .obj-card .oc-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .obj-card .oc-title{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .obj-card .oc-head .actions{display:flex;gap:6px;flex:none}
+  /* Champs empilés (libellé au-dessus, valeur pleine largeur) : une valeur large — liste de pastilles
+     d'une référence multi-valeurs, texte long — dispose ainsi de toute la largeur de la fiche et
+     s'enroule sans rogner ni déborder. min-width:0 pour autoriser le rétrécissement du contenu. */
+  .obj-card .oc-pairs,.obj-card .oc-blocks{display:flex;flex-direction:column;gap:9px}
+  .obj-card .oc-blocks{margin-top:9px}
+  .obj-card .oc-pair,.obj-card .oc-block{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .obj-card .oc-k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  .obj-card .oc-v{font-size:13px;overflow-wrap:anywhere;min-width:0}
+  .obj-card .oc-v p{margin:0}
+  .obj-card .oc-v p+p{margin-top:.4em}
   td .actions{display:flex;gap:6px;justify-content:flex-end}
   .id-badge{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
     padding:2px 8px;font-size:11px;font-weight:700;color:var(--muted)}
@@ -1886,7 +1904,7 @@ const I18N = {
     plan_unassigned:"Non assigné", plan_no_due:"Sans échéance",
     plan_empty:"Aucune mesure. Ajoutez des mesures dans l'onglet « Mesures ».",
     dens_label:"Densité", dens_comfortable:"Confort", dens_compact:"Compact", dens_dense:"Dense",
-    view_label:"Vue", view_table:"Tableau", view_master_detail:"Maître·détail",
+    view_label:"Vue", view_table:"Tableau", view_master_detail:"Maître·détail", view_cards:"Cartes",
     md_expand:"Déplier le détail", md_collapse:"Replier le détail", md_no_detail:"Aucune colonne en détail (toutes en ligne).",
     pl_inline:"En ligne", pl_detail:"En détail", pl_hidden:"Masqué", cols_pl_hint:"« En détail » : visible au tableau et dans le tiroir en vue Maître·détail.",
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
@@ -2284,7 +2302,7 @@ const I18N = {
     plan_unassigned:"Unassigned", plan_no_due:"No due date",
     plan_empty:"No measure. Add measures in the “Measures” tab.",
     dens_label:"Density", dens_comfortable:"Comfort", dens_compact:"Compact", dens_dense:"Dense",
-    view_label:"View", view_table:"Table", view_master_detail:"Master·detail",
+    view_label:"View", view_table:"Table", view_master_detail:"Master·detail", view_cards:"Cards",
     md_expand:"Expand details", md_collapse:"Collapse details", md_no_detail:"No columns in detail (all inline).",
     pl_inline:"Inline", pl_detail:"In detail", pl_hidden:"Hidden", cols_pl_hint:"“In detail”: visible in the table and in the master-detail drawer.",
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
@@ -2682,7 +2700,7 @@ const I18N = {
     plan_unassigned:"Non assegnato", plan_no_due:"Senza scadenza",
     plan_empty:"Nessuna misura. Aggiungi misure nella scheda « Misure ».",
     dens_label:"Densità", dens_comfortable:"Comodo", dens_compact:"Compatto", dens_dense:"Denso",
-    view_label:"Vista", view_table:"Tabella", view_master_detail:"Elenco·dettaglio",
+    view_label:"Vista", view_table:"Tabella", view_master_detail:"Elenco·dettaglio", view_cards:"Schede",
     md_expand:"Espandi il dettaglio", md_collapse:"Comprimi il dettaglio", md_no_detail:"Nessuna colonna in dettaglio (tutte in linea).",
     pl_inline:"In linea", pl_detail:"In dettaglio", pl_hidden:"Nascosto", cols_pl_hint:"« In dettaglio » : visibile nella tabella e nel riquadro elenco-dettaglio.",
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
@@ -7400,12 +7418,11 @@ function densitySegHTML(table){
   return '<div class="seg density-seg" role="group" aria-label="'+esc(t("dens_label"))+'">'+b("comfortable","dens_comfortable")+b("compact","dens_compact")+b("dense","dens_dense")+'</div>';
 }
 function applyRegDensity(tableEl,table){if(!tableEl)return;tableEl.classList.remove("compact","dense");const d=tableDensity(table);if(d!=="comfortable")tableEl.classList.add(d);}
-/* Sélecteur de vue (piste 2/3) : Tableau / Maître·détail. Mémorisé par table (setTableView).
-   Cartes viendra à la piste 3 (étape 5). */
+/* Sélecteur de vue (piste 2/3) : Tableau / Maître·détail / Cartes. Mémorisé par table (setTableView). */
 function viewSegHTML(table){
   const cur=tableView(table);
   const b=(v,lbl)=>'<button type="button" data-view-mode="'+v+'" data-vtable="'+esc(table)+'"'+(cur===v?' class="active"':'')+'>'+esc(t(lbl))+'</button>';
-  return '<div class="seg view-seg" role="group" aria-label="'+esc(t("view_label"))+'">'+b("table","view_table")+b("master_detail","view_master_detail")+'</div>';
+  return '<div class="seg view-seg" role="group" aria-label="'+esc(t("view_label"))+'">'+b("table","view_table")+b("master_detail","view_master_detail")+b("cards","view_cards")+'</div>';
 }
 function regTableElFor(table){
   if(table==="risks")return document.getElementById("risksTableEl");
@@ -12582,24 +12599,49 @@ function objDetailGridHTML(ot,inst,detailAttrs){
   if(!parts.length)parts.push('<div class="md-none">—</div>');
   return '<div class="md-detail">'+parts.join("")+'</div>';
 }
+/* Vue Cartes (§6) : grille de fiches. En-tête (ID + libellé + actions), puis les colonnes « en ligne »
+   (hors libellé) en paires, puis les colonnes « en détail » en blocs (texte complet + Markdown).
+   Champs vides masqués. Le libellé (name_attr) sert de titre. */
+function objCardsGridHTML(ot,dkey,insts){
+  const attrs=(ot.attributes||[]).filter(a=>!a.hide_table), abk={};attrs.forEach(a=>abk["cf:"+a.code]=a);
+  const na=ot.name_attr;
+  const pairAttrs=inlineColKeys(dkey).map(k=>abk[k]).filter(a=>a&&a.code!==na);   // « en ligne » sauf le libellé
+  const blockAttrs=detailColKeys(dkey).map(k=>abk[k]).filter(Boolean);
+  let h='<div class="obj-cards">';
+  insts.forEach(inst=>{
+    const label=objectLabel(inst), title=(label&&label!==inst.id)?'<span class="oc-title">'+esc(label)+'</span>':'';
+    h+='<div class="obj-card" data-obj-row="'+esc(inst.id)+'">'+
+      '<div class="oc-head"><span class="id-badge">'+esc(inst.id)+'</span>'+title+
+        '<div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",label)+'>✎</button>'+
+        '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",label)+'>🗑</button></div></div>';
+    const pairs=pairAttrs.filter(a=>!objAttrIsEmpty(a,ot,inst));
+    if(pairs.length)h+='<div class="oc-pairs">'+pairs.map(a=>'<div class="oc-pair"><span class="oc-k">'+esc(cfLabel(a))+'</span><span class="oc-v">'+objAttrCellInner(a,ot,inst)+'</span></div>').join("")+'</div>';
+    const blocks=blockAttrs.filter(a=>!objAttrIsEmpty(a,ot,inst));
+    if(blocks.length)h+='<div class="oc-blocks">'+blocks.map(a=>'<div class="oc-block"><span class="oc-k">'+esc(cfLabel(a))+'</span><div class="oc-v">'+objAttrCellInner(a,ot,inst)+'</div></div>').join("")+'</div>';
+    h+='</div>';
+  });
+  return h+'</div>';
+}
 function objTypeCardHTML(ot){
   const insts=objSortedInstances(ot), attrs=(ot.attributes||[]).filter(a=>!a.hide_table), st=objSort[ot.code]||{};   // colonnes masquées exclues de la vue tableau
   const dkey="objects."+ot.code;   // clé de densité / vue / placement par type d'objet
   const hdr=(col,label,cls)=>{const ind=st.col===col?(st.dir<0?" ▼":" ▲"):"";
     return '<th'+(cls?' class="'+cls+'"':'')+' data-objsort="'+esc(col)+'" data-ot="'+esc(ot.code)+'" style="cursor:pointer;user-select:none">'+esc(label)+'<span class="sort-ind">'+ind+'</span></th>';};
-  const dcls=tableDensity(dkey), view=tableView(dkey), md=view==="master_detail";
+  const dcls=tableDensity(dkey), view=tableView(dkey), md=view==="master_detail", cards=view==="cards";
   let h='<div class="card">'+
     '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px 14px;margin-bottom:8px;flex-wrap:wrap">'+
       '<h3 style="margin:0">'+esc(otLabel(ot))+' <span class="muted" style="font-weight:400">('+insts.length+')</span></h3>'+
       '<div class="inline" style="gap:6px;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end">'+
         (insts.length?viewSegHTML(dkey):'')+
-        (insts.length?densitySegHTML(dkey):'')+
+        (insts.length&&!cards?densitySegHTML(dkey):'')+   /* densité : sans objet en vue Cartes */
         (insts.length?'<button class="btn icon sm objcolgear" data-objcolgear="'+esc(ot.code)+'" title="'+esc(t("cols_menu_title"))+'" aria-haspopup="dialog">⚙</button>':'')+
         (insts.length?'<button class="btn ghost sm" data-obj-export="'+esc(ot.code)+'">'+esc(t("btn_export_csv"))+'</button>':'')+
         '<button class="btn ghost sm" data-obj-import="'+esc(ot.code)+'">'+esc(t("btn_import_csv"))+'</button>'+
         '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button>'+
       '</div></div>';
-  if(insts.length){
+  if(insts.length&&cards){
+    h+=objCardsGridHTML(ot,dkey,insts);
+  }else if(insts.length){
     const attrByKey={};attrs.forEach(a=>attrByKey["cf:"+a.code]=a);
     const inlineAttrs=md?inlineColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean):attrs;
     const detailAttrs=md?detailColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean):[];
@@ -12694,13 +12736,13 @@ document.getElementById("view-objects").addEventListener("click",e=>{
   // Clic sur une ligne d'instance → édition, focus sur l'attribut de la cellule cliquée.
   if(e.target.closest("a[href],[data-open-m],[data-open-r],.md-chev"))return;   // lien URL / pastille R·M / chevron : action propre, sans ouvrir la fiche
   if(clipRowClick(e))return;   // cellule texte tronquée : clic = voir (double-clic = éditer)
-  const row=e.target.closest("tr[data-obj-row]");if(!row)return;
+  const row=e.target.closest("[data-obj-row]");if(!row)return;   // ligne (tableau/maître·détail) ou fiche (cartes)
   const inst=objectById(row.dataset.objRow);if(!inst)return;
   const td=e.target.closest("td[data-col]");
   openObjectModal(inst.type,inst.id,null,td&&td.dataset.col);
 });
 document.getElementById("view-objects").addEventListener("dblclick",e=>{
-  const row=e.target.closest("tr[data-obj-row]");if(!row)return;
+  const row=e.target.closest("[data-obj-row]");if(!row)return;
   const inst=objectById(row.dataset.objRow);if(!inst)return;
   const td=e.target.closest("td[data-col]");
   clipRowDblClick(e,()=>openObjectModal(inst.type,inst.id,null,td&&td.dataset.col));
