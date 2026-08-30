@@ -146,3 +146,54 @@ def test_risks_view_selector_and_cards(app):
     assert app.modal_open(), "le clic sur une fiche n'ouvre pas l'éditeur"
     app.close_modals()
     assert not app.console_errors()
+
+
+# ⚙ Colonnes 3 états (colMap) : En ligne / En détail / Masqué + réordonnancement conservé. Le
+# placement pilote la vue Maître·détail. « Masqué » = colonne retirée du tableau.
+COLMENU_3S = r"""
+() => {
+  const gear = document.querySelector('#risksTableEl .colgear');
+  gear.click();
+  const menu = () => [...document.querySelectorAll('.col-menu')].find(m => m.style.display === 'block' && m.querySelector('.cm-row-3s'));
+  const out = { locked: [...menu().querySelectorAll('.cm-row.locked .cm-name')].map(x => x.textContent) };
+  const row = name => [...menu().querySelectorAll('.cm-row-3s')].find(r => r.querySelector('.cm-name').textContent.trim() === name);
+  // Catégorie → En détail
+  row('Catégorie').querySelector('[data-cstate="detail"]').click();
+  out.stillOpen = !!menu();
+  out.catPlacement = colPlacement('risks', 'cat');
+  out.hasReorderArrows = !!row('Initial').querySelector('.cm-arrow');
+  // Initial → Masqué
+  row('Initial').querySelector('[data-cstate="hidden"]').click();
+  out.initialHidden = colOrder('risks').indexOf('initial') < 0;
+  return out;
+}
+"""
+
+
+def test_risks_column_manager_3states(app):
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    r = app.js(COLMENU_3S)
+    assert "ID" in r["locked"] and "Actions" in r["locked"], "ID/Actions non verrouillés"
+    assert r["stillOpen"], "le ⚙ se ferme après un choix"
+    assert r["catPlacement"] == "detail", "En détail non appliqué"
+    assert r["hasReorderArrows"], "réordonnancement (flèches) non conservé"
+    assert r["initialHidden"], "Masqué ne retire pas la colonne du tableau"
+    # Le placement « en détail » descend au tiroir en Maître·détail.
+    app.js("document.querySelector('#view-risks .view-seg [data-view-mode=\"master_detail\"]').click()")
+    cols = app.js("[...document.querySelectorAll('#risksTableEl thead th')].map(th=>th.textContent.replace(/[▲▼📌⚙⠿]/g,'').trim()).filter(Boolean)")
+    assert "Catégorie" not in cols, "la colonne en détail reste en en-tête en Maître·détail"
+    assert not app.console_errors()
+
+
+def test_risks_sort_menu(app):
+    """Menu « Trier par » du registre Risques : tri par n'importe quel champ visible (listState)."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("document.querySelector('#view-risks .colsortbtn').click()")
+    rows = app.js("[...document.querySelector('.col-menu[style*=\"block\"] .cm-list').querySelectorAll('.srow')].map(r=>r.dataset.sort)")
+    assert "__none" in rows and "residual" in rows, f"champs de tri inattendus : {rows}"
+    app.js("[...document.querySelectorAll('.col-menu')].find(m=>m.style.display==='block'&&m.querySelector('.srow')).querySelector('.srow[data-sort=\"residual\"]').click()")
+    assert app.js("listState.risks.sort") == "residual" and app.js("listState.risks.dir") == 1
+    assert "Résiduel" in app.js("document.querySelector('#view-risks .colsortbtn').textContent")
+    assert not app.console_errors()

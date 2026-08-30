@@ -208,9 +208,12 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
    retirant la largeur maximale du contenu (`main`) ; booléen global `extensions.display.full_width`,
    mémorisé et appliqué à l'ouverture. Recalcule les registres après bascule.
 
-**Plan terminé** : les sept étapes de la Proposition B sont implémentées (vues Tableau / Maître·détail
-/ Cartes côté Objets ; cadre figé, pleine hauteur, ombres, densité et pleine largeur pour tous les
-registres). Extensions restantes hors plan initial : Maître·détail / Cartes / ⚙ 3 états / « Trier par »
-pour Risques / Mesures / Liens (mêmes helpers) ; préréglages de colonnes.
+**Plan terminé** : les sept étapes de la Proposition B sont implémentées. L'ensemble des vues
+(Tableau / Maître·détail / Cartes), du ⚙ Colonnes 3 états et du menu « Trier par » est désormais
+disponible **aussi pour Risques / Mesures / Liens** (mêmes helpers de placement) — pour ces registres,
+le ⚙ existant a été enrichi en 3 états (En ligne / En détail / Masqué) en conservant le
+réordonnancement (⠿ / flèches) et la réinitialisation ; l'ID et les Actions restent verrouillés (le
+libellé reste modifiable, contrairement aux objets où name_attr est verrouillé). Extension restante :
+préréglages de colonnes.
 
 Chaque étape est committée séparément, avec tests (pytest + Playwright, suites `ui`/`export`).

@@ -603,6 +603,9 @@
   .col-menu .cm-pl-b:first-child{border-left:none}
   .col-menu .cm-pl-b:hover{background:var(--panel-2);color:var(--text)}
   .col-menu .cm-pl-b.active{background:var(--accent);color:#fff}
+  .col-menu .cm-3s-top{display:flex;align-items:center;gap:8px}
+  .col-menu .cm-3s-top .cm-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .col-menu .cm-3s-top .cm-move{flex:none}
   /* Menu « Trier par » — lignes cliquables + indicateur de sens. */
   .col-menu .cm-row.srow{cursor:pointer}
   .col-menu .cm-row.srow.on{color:var(--accent);font-weight:600}
@@ -7467,6 +7470,7 @@ function mountView(sel,table){const m=document.querySelector(sel);if(m)m.innerHT
 function paintColRegistre(table,list,ctx){
   const view=tableView(table);
   if(ctx.viewMountSel)mountView(ctx.viewMountSel,table);
+  if(ctx.sortMountSel)mountSort(ctx.sortMountSel,table);
   if(ctx.densityMountSel)mountDensity(ctx.densityMountSel,table);
   const tb=document.querySelector(ctx.tbodySel);
   const scroll=document.querySelector(ctx.scrollSel);
@@ -7550,7 +7554,8 @@ function labelColKey(table){
   if(table.indexOf("objects.")===0){const ot=objectTypeByCode(table.slice(8)),na=ot&&ot.name_attr;return na?("cf:"+na):null;}
   return null;
 }
-function colLocked(table,key){const c=colMap(table)[key];if(c&&(c.pinned==="first"||c.pinned==="last"))return true;return key===labelColKey(table);}
+function colLocked(table,key){const c=colMap(table)[key];if(c&&(c.pinned==="first"||c.pinned==="last"))return true;
+  return table.indexOf("objects.")===0 && key===labelColKey(table);}   // libellé verrouillé pour les objets (name_attr) ; colMap : libellé modifiable
 /* Descripteurs des colonnes VISIBLES d'un registre, hors ID (épinglé) et Actions : unifie le moteur
    de colonnes (risques/mesures/liens, via colOrder) et les attributs d'un type d'objet.
    {key,label,verbose,locked}. */
@@ -7783,23 +7788,37 @@ function toggleColMenu(table,gear,tableElId,stKey){
   colMenu.style.left=Math.max(8,r.right-w)+"px";
 }
 function closeColMenu(){colMenu.style.display="none";colMenu._table=null;}
+/* État 3 positions d'une colonne colMap : "hidden" (hors colOrder) | "inline" | "detail" (placement).
+   « Masqué » réutilise colOrder/hide ; « En ligne » / « En détail » = placement (display.detail). */
+function colState(table,key){if(colOrder(table).indexOf(key)<0)return "hidden";return detailColKeys(table).indexOf(key)>=0?"detail":"inline";}
+function setColState(table,key,state){
+  if(state==="hidden"){toggleColumn(table,key,false);}
+  else{if(colOrder(table).indexOf(key)<0)toggleColumn(table,key,true);   // ré-affiche si masquée
+    setColPlacement(table,key,state==="detail"?"detail":"inline");}
+  rerenderTable(table);
+}
+function colStateSegHTML(table,key){
+  const cur=colState(table,key);
+  const b=(v,lbl)=>'<button type="button" class="cm-pl-b'+(cur===v?" active":"")+'" data-cstate="'+v+'">'+esc(t(lbl))+'</button>';
+  return '<div class="cm-pl">'+b("inline","pl_inline")+b("detail","pl_detail")+b("hidden","pl_hidden")+'</div>';
+}
 function buildColMenu(table){
-  const cols=allCols(table), order=colOrder(table), first=pinnedFirstKey(table);
-  const mids=order.filter(k=>k!==first);
+  const cols=allCols(table), order=colOrder(table), first=pinnedFirstKey(table), mids=order.filter(k=>k!==first);
   let h='<div class="cm-title">'+esc(t("cols_shown"))+'</div><div class="cm-list">';
   cols.forEach(c=>{
     if(c.pinned){
       h+='<div class="cm-row locked"><span class="cm-lock">🔒</span><span class="cm-name">'+esc(c.pinned==="last"?t("th_actions_col"):c.label)+'</span><span class="cm-pinned">'+esc(t("cols_pinned"))+'</span></div>';
+    }else if(colLocked(table,c.key)){   // attribut de libellé : verrouillé « en ligne »
+      h+='<div class="cm-row locked"><span class="cm-lock">🔒</span><span class="cm-name">'+esc(c.label)+'</span><span class="cm-pinned">'+esc(t("pl_inline"))+'</span></div>';
     }else{
       const on=order.indexOf(c.key)>=0, mi=mids.indexOf(c.key);
       const canUp=on&&mi>0, canDown=on&&mi>=0&&mi<mids.length-1;
-      h+='<div class="cm-row" data-key="'+esc(c.key)+'">'+
-         '<input type="checkbox" '+(on?"checked":"")+' aria-label="'+esc(c.label)+'">'+
-         '<span class="cm-name">'+esc(c.label)+'</span>'+
-         (c.cf?'<span class="cm-cf">'+esc(t("cols_cf"))+'</span>':'')+
-         '<span class="cm-move"><button class="cm-arrow" data-mv="up" '+(canUp?"":"disabled")+' aria-label="'+esc(t("cols_up"))+'">▲</button>'+
-         '<button class="cm-arrow" data-mv="down" '+(canDown?"":"disabled")+' aria-label="'+esc(t("cols_down"))+'">▼</button></span>'+
-         '</div>';
+      h+='<div class="cm-row cm-row-pl cm-row-3s" data-key="'+esc(c.key)+'">'+
+         '<div class="cm-3s-top"><span class="cm-name">'+esc(c.label)+'</span>'+
+           (c.cf?'<span class="cm-cf">'+esc(t("cols_cf"))+'</span>':'')+
+           '<span class="cm-move"><button class="cm-arrow" data-mv="up" '+(canUp?"":"disabled")+' aria-label="'+esc(t("cols_up"))+'">▲</button>'+
+           '<button class="cm-arrow" data-mv="down" '+(canDown?"":"disabled")+' aria-label="'+esc(t("cols_down"))+'">▼</button></span></div>'+
+         colStateSegHTML(table,c.key)+'</div>';
     }
   });
   h+='</div><div class="cm-foot"><span class="cm-hint">'+esc(t("cols_reorder_hint"))+'</span><button class="btn ghost sm" data-cm-reset>'+esc(t("cols_reset"))+'</button></div>';
@@ -7807,11 +7826,11 @@ function buildColMenu(table){
 }
 colMenu.addEventListener("click",e=>{
   const table=colMenu._table;if(!table)return;
-  if(e.target.closest("[data-cm-reset]")){resetColumns(table);buildColMenu(table);rerenderTable(table);return;}
+  if(e.target.closest("[data-cm-reset]")){e.stopPropagation();resetColumns(table);const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.detail;if(d)delete d[table];markDirty();buildColMenu(table);rerenderTable(table);return;}
+  const st=e.target.closest(".cm-pl-b[data-cstate]");
+  if(st){e.stopPropagation();const row=st.closest(".cm-row-3s");setColState(table,row.dataset.key,st.dataset.cstate);buildColMenu(table);return;}   // setColState re-rend la table
   const arrow=e.target.closest(".cm-arrow");
-  if(arrow&&!arrow.disabled){const row=arrow.closest(".cm-row");moveColumnStep(table,row.dataset.key,arrow.dataset.mv==="up"?-1:1);buildColMenu(table);rerenderTable(table);return;}
-  const row=e.target.closest(".cm-row[data-key]");
-  if(row){const cb=row.querySelector("input");if(e.target!==cb)cb.checked=!cb.checked;toggleColumn(table,row.dataset.key,cb.checked);buildColMenu(table);rerenderTable(table);}
+  if(arrow&&!arrow.disabled){e.stopPropagation();const row=arrow.closest(".cm-row");moveColumnStep(table,row.dataset.key,arrow.dataset.mv==="up"?-1:1);buildColMenu(table);rerenderTable(table);return;}
 });
 document.addEventListener("click",e=>{if(colMenu.style.display==="none")return;if(colMenu.contains(e.target)||e.target.closest(".colgear"))return;closeColMenu();});
 window.addEventListener("resize",closeColMenu);
@@ -7908,6 +7927,50 @@ objSortMenu.addEventListener("click",e=>{const otCode=objSortMenu._ot;if(!otCode
 document.addEventListener("click",e=>{const b=e.target.closest(".objsortbtn");if(!b)return;e.stopPropagation();toggleObjSortMenu(b.dataset.objsortbtn,b);});
 document.addEventListener("click",e=>{if(objSortMenu.style.display==="none")return;if(objSortMenu.contains(e.target)||e.target.closest(".objsortbtn"))return;closeObjSortMenu();});
 window.addEventListener("resize",closeObjSortMenu);
+
+/* ---- Menu « Trier par ▾ » des registres colMap (risks/measures/links) : tri par n'importe quel
+   champ (colonnes visibles, en ligne comme en détail). Réutilise listState[table].sort/dir (tri
+   tri-état par en-tête). Indispensable en Cartes / Maître·détail (champs du tiroir). ---- */
+function colSortLabel(table){
+  const st=listState[table]||{};
+  if(!st.sort)return esc(t("sort_by"))+' ▾';
+  const c=allCols(table).find(x=>x.sort===st.sort);
+  return esc(t("sort_by"))+' : '+esc(c?c.label:st.sort)+' '+(st.dir<0?'▼':'▲');
+}
+function colSortBtnHTML(table){return '<button type="button" class="btn ghost sm colsortbtn" data-colsortbtn="'+esc(table)+'" aria-haspopup="menu">'+colSortLabel(table)+'</button>';}
+function mountSort(sel,table){const m=document.querySelector(sel);if(m)m.innerHTML=colSortBtnHTML(table);}
+function colSortPick(table,sortKey){
+  const st=listState[table];
+  if(sortKey==="__none"){st.sort="";st.dir=1;}
+  else{if(st.sort===sortKey)st.dir=-st.dir;else{st.sort=sortKey;st.dir=1;}}
+  rerenderTable(table);
+}
+const colSortMenu=document.createElement("div");colSortMenu.className="col-menu";colSortMenu.style.display="none";document.body.appendChild(colSortMenu);
+function closeColSortMenu(){colSortMenu.style.display="none";colSortMenu._table=null;}
+function buildColSortMenu(table){
+  const st=listState[table]||{};
+  const row=(sortKey,label)=>{const on=(sortKey==="__none"&&!st.sort)||st.sort===sortKey;
+    const ind=on?(sortKey==="__none"?'✓':(st.dir<0?'▼':'▲')):'';
+    return '<div class="cm-row srow'+(on?' on':'')+'" data-sort="'+esc(sortKey)+'"><span class="cm-name">'+esc(label)+'</span><span class="cm-sind">'+ind+'</span></div>';};
+  let h='<div class="cm-title">'+esc(t("sort_by"))+'</div><div class="cm-list">';
+  h+=row("__none",t("sort_file_order"));
+  colOrder(table).map(k=>colMap(table)[k]).forEach(c=>{if(c&&c.sort)h+=row(c.sort,c.label);});   // colonnes visibles triables
+  h+='</div>';
+  colSortMenu.innerHTML=h;
+}
+function toggleColSortMenu(table,btn){
+  if(colSortMenu.style.display!=="none"&&colSortMenu._table===table){closeColSortMenu();return;}
+  colSortMenu._table=table;buildColSortMenu(table);colSortMenu.style.display="block";
+  const r=btn.getBoundingClientRect(),w=colSortMenu.offsetWidth;
+  colSortMenu.style.top=(r.bottom+6)+"px";colSortMenu.style.left=Math.max(8,r.left)+"px";
+}
+colSortMenu.addEventListener("click",e=>{const table=colSortMenu._table;if(!table)return;
+  const row=e.target.closest(".srow");if(!row)return;e.stopPropagation();
+  colSortPick(table,row.dataset.sort);closeColSortMenu();
+});
+document.addEventListener("click",e=>{const b=e.target.closest(".colsortbtn");if(!b)return;e.stopPropagation();toggleColSortMenu(b.dataset.colsortbtn,b);});
+document.addEventListener("click",e=>{if(colSortMenu.style.display==="none")return;if(colSortMenu.contains(e.target)||e.target.closest(".colsortbtn"))return;closeColSortMenu();});
+window.addEventListener("resize",closeColSortMenu);
 
 /* ============================================================
    PRODUCTIVITÉ & NAVIGATION TRANSVERSALE
@@ -8095,7 +8158,7 @@ function renderRisks(){
   // filtres de champ perso : sinon « 5 sur 5 » masquerait le fait que 12 fiches sont écartées.
   setFilterCount("risks",list.length,analyse.risks.length);
   paintColRegistre("risks",list,{
-    viewMountSel:"#view-risks .view-mount", densityMountSel:"#view-risks .density-mount",
+    viewMountSel:"#view-risks .view-mount", sortMountSel:"#view-risks .sort-mount", densityMountSel:"#view-risks .density-mount",
     tbodySel:"#risksTable", scrollSel:"#view-risks .table-scroll", cardsSel:"#view-risks .reg-cards-host",
     headTrSel:"#risksTableEl thead tr", tableElId:"risksTableEl", rid:r=>r.id,
     wireRow:(tr,r)=>{
@@ -8270,7 +8333,7 @@ function renderMeasures(){
   else emptyEl.style.display="none";
   setFilterCount("measures",list.length,analyse.measures.length);
   paintColRegistre("measures",list,{
-    viewMountSel:"#view-measures .view-mount", densityMountSel:"#view-measures .density-mount",
+    viewMountSel:"#view-measures .view-mount", sortMountSel:"#view-measures .sort-mount", densityMountSel:"#view-measures .density-mount",
     tbodySel:"#measuresTable", scrollSel:"#view-measures .table-scroll", cardsSel:"#view-measures .reg-cards-host",
     headTrSel:"#measuresTableEl thead tr", tableElId:"measuresTableEl", rid:m=>m.id,
     wireRow:(tr,m)=>{
@@ -8616,6 +8679,7 @@ function renderLinkDetails(){
   setFilterCount("details",list.length,analyse.treatments.length);
   list=list.slice().sort(linkCmp(st.sort));if(st.dir<0)list.reverse();
   mountView("#view-links .view-mount","links");
+  mountSort("#view-links .sort-mount","links");
   mountDensity("#view-links .density-mount","links");
   const view=tableView("links");
   area.innerHTML="";
