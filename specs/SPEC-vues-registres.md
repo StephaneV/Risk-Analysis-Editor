@@ -204,6 +204,13 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
    « Ordre d'origine » pour réinitialiser ; libellé du bouton reflétant le tri courant. Réutilise
    l'état objSort (non persisté, comme le tri par en‑tête). Indispensable en Cartes (aucun en‑tête)
    et en Maître·détail (champs du tiroir).
-7. **Pleine largeur** (piste 5) — option + bouton d'en‑tête.
+7. **Pleine largeur** (piste 5) — ✅ *fait* : bouton de bascule (⤢) dans l'en‑tête de l'application
+   retirant la largeur maximale du contenu (`main`) ; booléen global `extensions.display.full_width`,
+   mémorisé et appliqué à l'ouverture. Recalcule les registres après bascule.
+
+**Plan terminé** : les sept étapes de la Proposition B sont implémentées (vues Tableau / Maître·détail
+/ Cartes côté Objets ; cadre figé, pleine hauteur, ombres, densité et pleine largeur pour tous les
+registres). Extensions restantes hors plan initial : Maître·détail / Cartes / ⚙ 3 états / « Trier par »
+pour Risques / Mesures / Liens (mêmes helpers) ; préréglages de colonnes.
 
 Chaque étape est committée séparément, avec tests (pytest + Playwright, suites `ui`/`export`).

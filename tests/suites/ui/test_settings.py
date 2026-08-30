@@ -52,3 +52,45 @@ def test_add_custom_field_via_modal(app):
     app.click("#modalOk")   # « Créer »
     assert app.js("(analyse.custom_fields||[]).length") == before + 1
     assert not app.console_errors()
+
+
+# Pleine largeur (piste 5) : bouton de bascule dans l'en-tête ; retire la largeur max du contenu
+# (main), booléen global extensions.display.full_width, appliqué à l'ouverture.
+FULL_WIDTH = r"""
+() => {
+  const btn = document.getElementById('btnFullWidth');
+  const main = document.querySelector('main');
+  const out = { present: !!btn, before: getComputedStyle(main).maxWidth };
+  btn.click();
+  out.on = {
+    hasClass: main.classList.contains('full-width'),
+    maxW: getComputedStyle(main).maxWidth,
+    aria: btn.getAttribute('aria-pressed'),
+    stored: (analyse.extensions.display || {}).full_width
+  };
+  btn.click();
+  out.off = { hasClass: main.classList.contains('full-width'), stored: (analyse.extensions.display || {}).full_width };
+  // persistance à l'ouverture : recharger des données avec full_width déjà actif
+  const cur = JSON.parse(JSON.stringify(analyse));
+  cur.extensions = cur.extensions || {}; cur.extensions.display = cur.extensions.display || {};
+  cur.extensions.display.full_width = true;
+  applyLoadedData(cur, 'x.rae.json', false);
+  out.afterLoad = { hasClass: main.classList.contains('full-width'), active: btn.classList.contains('active') };
+  return out;
+}
+"""
+
+
+def test_full_width_toggle(app):
+    app.load("ebios.rae.json")
+    r = app.js(FULL_WIDTH)
+    assert r["present"], "bouton pleine largeur absent de l'en-tête"
+    assert r["before"] != "none", "le contenu devrait être borné par défaut"
+    # Activé : classe + max-width levée + aria + stockage.
+    assert r["on"]["hasClass"] and r["on"]["maxW"] == "none"
+    assert r["on"]["aria"] == "true" and r["on"]["stored"] is True
+    # Désactivé : classe retirée + clé purgée (pas de config vide).
+    assert not r["off"]["hasClass"] and r["off"]["stored"] is None
+    # Appliqué à l'ouverture d'une analyse déjà en pleine largeur.
+    assert r["afterLoad"]["hasClass"] and r["afterLoad"]["active"]
+    assert not app.console_errors()

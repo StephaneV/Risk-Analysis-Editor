@@ -127,6 +127,10 @@
   .tab .badge{background:var(--panel-3);border-radius:20px;padding:1px 8px;font-size:11px;margin-left:6px;color:var(--muted)}
 
   main{padding:22px 24px;max-width:1280px;margin:0 auto}
+  /* Pleine largeur (piste 5) : retire la largeur maximale du contenu pour exploiter les grands écrans.
+     Bascule mémorisée (extensions.display.full_width) via le bouton de l'en-tête. */
+  main.full-width{max-width:none}
+  #btnFullWidth.active{color:var(--accent);border-color:var(--accent)}
   .view{display:none}
   .view.active{display:block}
 
@@ -1092,6 +1096,7 @@
   <!-- État du fichier : pastille « modifié », nom, et marqueur de liaison — l'utilisateur
        doit savoir si « Enregistrer » écrit dans son fichier ou en télécharge une copie. -->
   <div class="filestate"><span class="dot" id="dirtyDot"></span><span id="fileLabel">nouvelle analyse</span><span class="linked" id="fileLinked" hidden>🔗</span></div>
+  <button class="btn ghost sm icon" id="btnFullWidth" aria-pressed="false" data-i18n-title="full_width_title" title="Pleine largeur">⤢</button>
   <select id="langSel" class="topsel" data-i18n-title="lang_title" title="Langue de l'interface">
     <option value="fr">🇫🇷 Français</option>
     <option value="en">🇬🇧 English</option>
@@ -1578,7 +1583,7 @@ const I18N = {
   fr:{
     brand:"Risk Analysis Editor", brand_sub:"· .rae.json",
     file_new:"nouvelle analyse", file_modified:"modifié",
-    theme_title:"Thème de l'application", lang_title:"Langue de l'interface",
+    theme_title:"Thème de l'application", lang_title:"Langue de l'interface", full_width_title:"Pleine largeur",
     theme_dark:"🌙 Sombre", theme_light:"☀️ Clair",
     transpose_short:"⇄ Transposer", transpose_top_title:"Transposer les axes (échanger horizontal / vertical)",
     btn_new:"Nouveau", btn_load:"Charger…", btn_save:"Enregistrer",
@@ -1982,7 +1987,7 @@ const I18N = {
   en:{
     brand:"Risk Analysis Editor", brand_sub:"· .rae.json",
     file_new:"new analysis", file_modified:"modified",
-    theme_title:"Application theme", lang_title:"Interface language",
+    theme_title:"Application theme", lang_title:"Interface language", full_width_title:"Full width",
     theme_dark:"🌙 Dark", theme_light:"☀️ Light",
     transpose_short:"⇄ Transpose", transpose_top_title:"Transpose axes (swap horizontal / vertical)",
     btn_new:"New", btn_load:"Load…", btn_save:"Save",
@@ -2381,7 +2386,7 @@ const I18N = {
   it:{
     brand:"Risk Analysis Editor", brand_sub:"· .rae.json",
     file_new:"nuova analisi", file_modified:"modificato",
-    theme_title:"Tema dell'applicazione", lang_title:"Lingua dell'interfaccia",
+    theme_title:"Tema dell'applicazione", lang_title:"Lingua dell'interfaccia", full_width_title:"Larghezza piena",
     theme_dark:"🌙 Scuro", theme_light:"☀️ Chiaro",
     transpose_short:"⇄ Trasponi", transpose_top_title:"Trasponi gli assi (scambia orizzontale / verticale)",
     btn_new:"Nuovo", btn_load:"Carica…", btn_save:"Salva",
@@ -3951,6 +3956,7 @@ function applyTableA11y(){
 function renderAll(){
   refreshFileState();
   applyContrastMode();
+  applyFullWidth();
   // Les barres de filtres avant les vues : leur contenu dépend des champs déclarés
   // filtrables, qui peuvent avoir changé (édition d'un champ, chargement d'un fichier).
   renderFilterBars();
@@ -5300,6 +5306,14 @@ function getGridStep(){const v=analyse.extensions&&analyse.extensions.display&&a
 function getPngScale(){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.png_scale;return (v==null||v<1)?1:+v;}
 function getShowGrid(){return !!(analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.show_grid);}
 function setDisplaySetting(k,v){analyse.extensions=analyse.extensions||{};analyse.extensions.display=analyse.extensions.display||{};analyse.extensions.display[k]=v;markDirty();}
+/* Pleine largeur (piste 5) : booléen global extensions.display.full_width, basculé depuis l'en-tête.
+   Retire la largeur maximale du contenu (main). Mémorisé, appliqué à l'ouverture (renderAll). */
+function isFullWidth(){return !!(analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.full_width);}
+function applyFullWidth(){const on=isFullWidth(),m=document.querySelector("main");if(m)m.classList.toggle("full-width",on);
+  const b=document.getElementById("btnFullWidth");if(b){b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false");}}
+function setFullWidth(on){const e=analyse.extensions=analyse.extensions||{},d=e.display=e.display||{};
+  if(on)d.full_width=true;else delete d.full_width;   // pas d'écriture de valeur par défaut
+  applyFullWidth();if(typeof scheduleRegSizing==="function")scheduleRegSizing();markDirty();}   // la largeur change → recalcul des registres
 /* Format d'affichage des dates (Paramètres › Affichage), mémorisé dans le fichier
    (extensions.display.date_format). Les dates sont stockées en ISO (AAAA-MM-JJ) ; seul
    l'affichage (listes, plan, rapport) change. Saisie, tri et exports CSV restent en ISO. */
@@ -14486,6 +14500,7 @@ function applyTheme(name){
 }
 document.getElementById("themeSel").addEventListener("change",e=>applyTheme(e.target.value));
 (function(){let th="light";try{th=localStorage.getItem("mar_theme")||"light";}catch(e){}applyTheme(th);})();
+document.getElementById("btnFullWidth").addEventListener("click",()=>setFullWidth(!isFullWidth()));
 
 /* ---------- Langue de l'interface ---------- */
 function applyStaticI18n(){
