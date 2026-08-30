@@ -251,13 +251,22 @@
   tbody tr:hover{background:var(--panel-2)}
   /* Registres — cadre figé (piste 1) : colonne ID (gauche) et colonne Actions (droite) restent
      visibles au défilement horizontal. Fond opaque + fine ombre de bord signalant le figement. */
-  .reg td:first-child,.reg th:first-child{position:sticky;left:0;z-index:2;background:var(--panel);box-shadow:6px 0 8px -8px rgba(20,30,55,.30)}
-  .reg td:last-child,.reg th:last-child{position:sticky;right:0;z-index:2;background:var(--panel);box-shadow:-6px 0 8px -8px rgba(20,30,55,.30)}
-  .reg thead th:first-child,.reg thead th:last-child{z-index:3}
+  .reg td:first-child,.reg th:first-child{position:sticky;left:0;background:var(--panel);box-shadow:6px 0 8px -8px rgba(20,30,55,.30)}
+  .reg td:last-child,.reg th:last-child{position:sticky;right:0;background:var(--panel);box-shadow:-6px 0 8px -8px rgba(20,30,55,.30)}
+  .reg tbody td:first-child,.reg tbody td:last-child{z-index:2}
+  /* En-tête figé (défilement vertical, dans le conteneur borné) + coins au-dessus des colonnes figées.
+     Les coins combinent l'ombre de bord (gauche/droite) ET le trait bas de l'en-tête : sans cela,
+     l'ombre de bord (plus spécifique) écraserait le box-shadow du trait et il manquerait sous ID/Actions. */
+  .reg thead th{position:sticky;top:0;z-index:4;background:var(--panel);box-shadow:inset 0 -1px 0 var(--border)}
+  .reg thead th:first-child{z-index:5;box-shadow:6px 0 8px -8px rgba(20,30,55,.30),inset 0 -1px 0 var(--border)}
+  .reg thead th:last-child{z-index:5;box-shadow:-6px 0 8px -8px rgba(20,30,55,.30),inset 0 -1px 0 var(--border)}
   .reg tbody tr:hover td:first-child,.reg tbody tr:hover td:last-child{background:var(--panel-2)}
   /* Le padding du conteneur fait partie du scrollport : le contenu défilé y percerait sous les
      colonnes figées (le figement colle au bord du padding). On l'annule pour les registres. */
   .table-scroll:has(> table.reg){padding:0;margin:0}
+  /* Registre qui remplit la hauteur : le conteneur défile en interne (hauteur posée par JS,
+     sizeRegScrollers), barre d'outils et en-tête toujours visibles. */
+  .table-scroll.reg-fill{overflow:auto}
   td .actions{display:flex;gap:6px;justify-content:flex-end}
   .id-badge{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
     padding:2px 8px;font-size:11px;font-weight:700;color:var(--muted)}
@@ -3301,6 +3310,7 @@ function activateView(view){
   if(view==="plan") renderPlan();
   if(view==="report") renderReport();
   applyTableA11y();
+  scheduleRegSizing();   // registre pleine hauteur : (re)dimensionne le conteneur de la vue affichée
 }
 document.getElementById("tabs").addEventListener("click",e=>{
   const tab=e.target.closest(".tab");if(!tab)return;
@@ -7673,6 +7683,7 @@ function renderRisks(){
     tb.appendChild(tr);
   });
   markClippedCells(tb);
+  scheduleRegSizing();
 }
 document.getElementById("btnAddRisk").addEventListener("click",()=>openRiskModal(null));
 document.getElementById("btnImportRisks").addEventListener("click",()=>openImportModal("risks"));
@@ -7849,6 +7860,7 @@ function renderMeasures(){
     tb.appendChild(tr);
   });
   markClippedCells(tb);
+  scheduleRegSizing();
 }
 document.getElementById("btnAddMeasure").addEventListener("click",()=>openMeasureModal(null));
 document.getElementById("btnImportMeasures").addEventListener("click",()=>openImportModal("measures"));
@@ -8187,10 +8199,11 @@ function renderLinkDetails(){
   list=list.slice().sort(linkCmp(st.sort));if(st.dir<0)list.reverse();
   // Tableau bâti en DOM pour réutiliser le moteur de colonnes (en-tête déplaçable + engrenage).
   area.innerHTML="";
+  const scroll=document.createElement("div");scroll.className="table-scroll";area.appendChild(scroll);
   const table=document.createElement("table");table.id="linkDetailsTableEl";table.className="reg";
   const thead=document.createElement("thead"),htr=document.createElement("tr");thead.appendChild(htr);
   const tbody=document.createElement("tbody");
-  table.appendChild(thead);table.appendChild(tbody);area.appendChild(table);
+  table.appendChild(thead);table.appendChild(tbody);scroll.appendChild(table);
   renderColHead("links",htr,"linkDetailsTableEl","links");
   const nbCols=effectiveCols("links").length;
   if(!list.length){tbody.innerHTML='<tr><td colspan="'+nbCols+'" class="muted">'+esc(t("flt_none"))+'</td></tr>';return;}
@@ -8200,6 +8213,7 @@ function renderLinkDetails(){
     tbody.appendChild(row);
   });
   markClippedCells(tbody);
+  scheduleRegSizing();
 }
 document.getElementById("fltLinkQ").addEventListener("input",renderLinkDetails);
 document.getElementById("linkDetailsArea").addEventListener("click",e=>{
@@ -12252,9 +12266,34 @@ function syncStickyOffsets(){
   const tb=document.querySelector(".topbar");
   document.documentElement.style.setProperty("--topbar-h",(tb?tb.offsetHeight:53)+"px");
 }
+/* Registre pleine hauteur : le conteneur de la table remplit la fenêtre et défile en interne
+   (barre d'outils + en-tête figé toujours visibles). On mesure le haut du conteneur (sous toute
+   la chrome au-dessus) et on pose une hauteur max jusqu'au bas du viewport. Recalcul au
+   redimensionnement, au changement d'onglet et après chaque rendu de registre. */
+function sizeRegScrollers(){
+  document.querySelectorAll(".table-scroll:has(> table.reg)").forEach(sc=>{
+    if(sc.offsetParent===null){sc.classList.remove("reg-fill");sc.style.maxHeight="";return;}   // vue masquée
+    sc.style.maxHeight="";   // hauteur naturelle : on mesure le haut du conteneur et la « traîne » en dessous
+    const rect=sc.getBoundingClientRect();
+    const docH=document.documentElement.scrollHeight;
+    // « Traîne » = espace réel occupé APRÈS le conteneur (padding/marges de carte, vue, appli) ; on
+    // le déduit pour remplir la fenêtre sans double défilement. documentElement.scrollHeight ne
+    // descend jamais sous la hauteur de la fenêtre : à hauteur naturelle,
+    //  - si le contenu déborde déjà la fenêtre (la page défile), scrollHeight reflète le vrai
+    //    contenu → traîne exacte ;
+    //  - sinon, tout tient : traîne = 0 (la max-height posée ne mordra pas, le conteneur se réduit
+    //    à sa taille naturelle → aucune scrollbar fantôme).
+    const tail=docH>window.innerHeight ? Math.max(0,Math.round(docH-(window.scrollY+rect.bottom))) : 0;
+    const h=Math.round(window.innerHeight-rect.top-tail-8);   // 8px de respiration en bas
+    if(h>=220){sc.classList.add("reg-fill");sc.style.maxHeight=h+"px";}
+    else{sc.classList.remove("reg-fill");sc.style.maxHeight="";}   // fenêtre trop courte → pas de conteneur borné
+  });
+}
+let _regRaf=0;
+function scheduleRegSizing(){if(_regRaf)return;_regRaf=requestAnimationFrame(()=>{_regRaf=0;sizeRegScrollers();});}
 (function(){const tb=document.querySelector(".topbar"),tabs=document.getElementById("tabs");
-  if(window.ResizeObserver){const ro=new ResizeObserver(syncStickyOffsets);if(tb)ro.observe(tb);if(tabs)ro.observe(tabs);}
-  window.addEventListener("resize",syncStickyOffsets);syncStickyOffsets();})();
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>{syncStickyOffsets();scheduleRegSizing();});if(tb)ro.observe(tb);if(tabs)ro.observe(tabs);}
+  window.addEventListener("resize",()=>{syncStickyOffsets();scheduleRegSizing();});syncStickyOffsets();})();
 /* Onglet Objets : sous-onglets (style Paramètres) — un type d'objet affiché à la fois.
    Jusqu'à OBJ_SEG_MAX types : segmented control ; au-delà : liste déroulante « Type : […] ». */
 const OBJ_SEG_MAX=8;
@@ -12306,6 +12345,7 @@ function renderObjects(){
   host.insertAdjacentHTML("beforeend", objTypeCardHTML(objectTypeByCode(objMode)||types[0]));
   syncSegAria();
   markClippedCells(host);
+  scheduleRegSizing();
 }
 /* Modale d'une INSTANCE. onSaved(id) : rappelé après enregistrement (création à la volée, Lot 4). */
 function openObjectModal(typeCode,id,onSaved,focusCol){

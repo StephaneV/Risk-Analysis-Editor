@@ -56,3 +56,41 @@ def test_registre_frozen_id_and_actions(app):
     assert r["reg"], "table du registre sans classe .reg"
     assert r["first"] == "sticky" and r["last"] == "sticky", "colonnes ID/Actions non figées"
     assert r["opaque"], "colonne figée sans fond opaque"
+
+
+# Registre pleine hauteur : le conteneur remplit la fenêtre et défile en interne (barre d'outils
+# + en-tête toujours visibles). L'en-tête est figé en haut (top:0) ; la page ne double-défile pas.
+FILL = r"""
+() => {
+  sizeRegScrollers();
+  const sc = document.querySelector('#view-risks .table-scroll');
+  if(!sc) return null;
+  const th = sc.querySelector('thead th'), csTh = getComputedStyle(th);
+  sc.scrollTop = 140;
+  const scr = sc.getBoundingClientRect(), thr = th.getBoundingClientRect();
+  return {
+    fill: sc.classList.contains('reg-fill'),
+    maxH: parseInt(sc.style.maxHeight) || 0,
+    canScroll: sc.scrollHeight > sc.clientHeight + 1,
+    theadPos: csTh.position,
+    theadTop: csTh.top,
+    headerStays: Math.abs(thr.top - scr.top) < 2,
+    pageScrolls: document.documentElement.scrollHeight > window.innerHeight + 2
+  };
+}
+"""
+
+
+def test_registre_fills_window_and_header_sticky(app):
+    app.page.set_viewport_size({"width": 1280, "height": 680})
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    r = app.js(FILL)
+    assert r, "conteneur de registre introuvable"
+    assert r["fill"], "le registre ne remplit pas la fenêtre (classe reg-fill absente)"
+    assert r["maxH"] >= 220, "hauteur du conteneur non bornée"
+    assert r["theadPos"] == "sticky" and r["theadTop"] == "0px", "en-tête non figé en haut"
+    assert not r["pageScrolls"], "la page défile au lieu du conteneur (double défilement)"
+    if r["canScroll"]:
+        assert r["headerStays"], "l'en-tête ne reste pas en haut au défilement interne"
+    assert not app.console_errors()

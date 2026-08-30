@@ -171,3 +171,42 @@ def test_modal_cleanup_no_phantom(app):
     # aucun champ fantôme de l'éditeur de type dans la modale d'instance
     assert app.js("!document.getElementById('otLabel')")
     app.close_modals()
+
+
+# Registre pleine hauteur (piste 1) : conteneur borné remplissant la fenêtre. Deux régressions
+# vérifiées ici : (1) aucune scrollbar fantôme quand le contenu tient (le conteneur se réduit à
+# sa taille naturelle) ; (2) le trait bas de l en-tête est présent aussi sous les colonnes figées
+# ID (gauche) et Actions (droite) — leur ombre de bord ne doit pas écraser le box-shadow du trait.
+OBJ_FILL = r"""
+() => {
+  sizeRegScrollers();
+  const sc = document.querySelector('#view-objects .table-scroll');
+  if(!sc) return null;
+  const ths = sc.querySelectorAll('thead th');
+  const first = ths[0], last = ths[ths.length-1];
+  const sh = el => getComputedStyle(el).boxShadow;
+  return {
+    fill: sc.classList.contains('reg-fill'),
+    vscroll: sc.scrollHeight > sc.clientHeight + 1,
+    pageScrolls: document.documentElement.scrollHeight > window.innerHeight + 2,
+    firstBorder: /inset/.test(sh(first)),
+    lastBorder: /inset/.test(sh(last)),
+    theadPos: getComputedStyle(ths[0]).position
+  };
+}
+"""
+
+
+def test_registre_fill_no_phantom_scrollbar_and_header_borders(app):
+    app.page.set_viewport_size({"width": 1280, "height": 1100})
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(OBJ_FILL)
+    assert r, "conteneur du registre objets introuvable"
+    assert r["fill"], "conteneur non borné (reg-fill absent)"
+    assert r["theadPos"] == "sticky", "en-tête non figé"
+    assert not r["vscroll"], "scrollbar fantôme : le conteneur ne se réduit pas au contenu court"
+    assert not r["pageScrolls"], "la page défile alors que le contenu tient dans la fenêtre"
+    assert r["firstBorder"], "trait bas d'en-tête manquant sous la colonne ID figée"
+    assert r["lastBorder"], "trait bas d'en-tête manquant sous la colonne Actions figée"
+    assert not app.console_errors()
