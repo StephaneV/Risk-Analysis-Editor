@@ -360,3 +360,77 @@ def test_column_placement_model(app):
     # Risques : libellé verrouillé en ligne.
     assert r["risksLabelKey"] == "risk" and r["risksLabelPlacement"] == "inline"
     assert not app.console_errors()
+
+
+# Vue Maître·détail (piste 2 UI, objets) : sélecteur de vue, colonnes en ligne réduites + chevron,
+# tiroir de détail (paires libellé→valeur, Markdown rendu, champs vides masqués), clic-ligne ≠ chevron.
+MASTER_DETAIL = r"""
+() => {
+  const code = 'source_risque', tk = 'objects.' + code, ot = objectTypeByCode(code);
+  setObjMode(code);
+  // instance connue : un champ détail avec Markdown, un autre vidé (doit être masqué du tiroir)
+  const inst = objectsOfType(code)[0];
+  inst.values.motivation = 'Mot [rouge]{.red} ==surli== **gras**';
+  inst.values.objectif_vise = '';
+  // bascule en Maître·détail
+  const vseg = document.querySelector('#view-objects .view-seg');
+  vseg.querySelector('[data-view-mode="master_detail"]').click();
+  const tbl = document.querySelector('#view-objects table.reg');
+  const out = {
+    stored: ((analyse.extensions.display||{}).view||{})[tk],
+    isMd: tbl.classList.contains('md'),
+    headerCols: [...tbl.querySelectorAll('thead th')].map(th => th.textContent.replace(/[▲▼]/g,'').trim()),
+    inlineKeys: inlineColKeys(tk), detailKeys: detailColKeys(tk),
+    nChev: tbl.querySelectorAll('.md-chev').length,
+    nInst: objectsOfType(code).length,
+    nDetailRows: tbl.querySelectorAll('tr.md-detail-row').length
+  };
+  // déplier la ligne de l'instance éditée
+  const row = tbl.querySelector('tr[data-obj-row="' + inst.id + '"]');
+  row.querySelector('.md-chev').click();
+  const detail = row.nextElementSibling;
+  out.detailOpen = row.classList.contains('md-open') && !detail.hidden;
+  const grid = detail.querySelector('.md-detail'), gh = grid.innerHTML;
+  out.mdColor = /color:#d64545/.test(gh); out.mdMark = /<mark>/.test(gh); out.mdBold = /<strong>/.test(gh);
+  out.labels = [...grid.querySelectorAll('.md-lbl')].map(x => x.textContent);
+  // Chevron dans sa propre colonne dédiée (comme la maquette) ; l'ID est une cellule distincte, et la
+  // colonne chevron comme l'ID restent figées à gauche.
+  const chevCell = row.querySelector('td.md-chev-col');
+  const idCell = row.querySelector('td[data-col="id"]');
+  out.chevOwnColumn = !!(chevCell && chevCell.querySelector('.md-chev'));
+  out.idHasNoChevron = idCell && !idCell.querySelector('.md-chev');
+  out.chevBtnBig = (() => { const b = tbl.querySelector('.md-chev').getBoundingClientRect(); return b.width >= 20 && b.height >= 20; })();
+  out.chevFrozen = getComputedStyle(chevCell).position === 'sticky';
+  out.idFrozen = getComputedStyle(idCell).position === 'sticky';
+  out.tableMdChev = tbl.classList.contains('md-haschev');
+  // clic sur la cellule ID de la ligne maître (hors chevron, non écrêtée) ouvre la fiche.
+  row.querySelector('td[data-col="id"]').click();
+  out.rowClickOpensModal = !!document.querySelector('body > .modal-bg.open');
+  return out;
+}
+"""
+
+
+def test_object_master_detail_view(app):
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(MASTER_DETAIL)
+    assert r["stored"] == "master_detail" and r["isMd"], "vue Maître·détail non activée"
+    # Colonnes en ligne = tout sauf les colonnes « en détail ».
+    assert "cf:motivation" not in r["inlineKeys"] and "cf:objectif_vise" not in r["inlineKeys"]
+    assert "cf:motivation" in r["detailKeys"] and "cf:objectif_vise" in r["detailKeys"]
+    # En-tête : ID + colonnes en ligne + Actions (les colonnes détail ne sont pas en en-tête).
+    assert "Motivation" not in r["headerCols"] and "Objectif visé" not in r["headerCols"]
+    assert r["nChev"] == r["nInst"] and r["nDetailRows"] == r["nInst"], "chevron/tiroir par instance"
+    # Tiroir : ouvert, Markdown rendu, champ vidé masqué (seul Motivation apparaît).
+    assert r["detailOpen"], "le tiroir ne s'ouvre pas"
+    assert r["mdColor"] and r["mdMark"] and r["mdBold"], "Markdown non rendu dans le tiroir"
+    assert r["labels"] == ["Motivation"], f"champ vide non masqué / libellés inattendus : {r['labels']}"
+    # Chevron : colonne dédiée, plus gros, ID distinct, chevron+ID figés.
+    assert r["chevOwnColumn"] and r["idHasNoChevron"], "le chevron doit être dans sa propre colonne"
+    assert r["chevBtnBig"], "chevron trop petit (< 20px)"
+    assert r["tableMdChev"] and r["chevFrozen"] and r["idFrozen"], "colonne chevron / ID non figées"
+    # Clic-ligne (hors chevron) ouvre la fiche.
+    assert r["rowClickOpensModal"], "le clic sur la ligne maître n'ouvre pas la fiche"
+    app.close_modals()
+    assert not app.console_errors()

@@ -287,8 +287,35 @@
      police) pour afficher plus de lignes. Défaut (Confort) = padding de base (9px 11px). */
   .reg.compact th,.reg.compact td{padding:5px 9px;font-size:12px}
   .reg.dense th,.reg.dense td{padding:2px 8px;font-size:11.5px}
-  .density-seg{flex:none}
-  .density-seg button{padding:6px 11px}
+  .density-seg,.view-seg{flex:none}
+  .density-seg button,.view-seg button{padding:6px 11px}
+  /* Vue Maître·détail : chevron de dépliage DANS la cellule ID (pour garder l'ID figé), tiroir de
+     détail (paires libellé→valeur) sous la ligne, à fond de surface distinct. */
+  /* Chevron : bouton bordé (comme la maquette). Le triangle est dessiné en CSS (bordures) plutôt
+     qu'avec le glyphe ▶, dont les métriques le décentrent dans le bouton. Centré géométriquement
+     (place-items:center) + léger décalage optique (le centre de masse d'un triangle est côté base). */
+  .reg .md-chev{width:24px;height:24px;border:1px solid var(--border);border-radius:6px;background:var(--panel);cursor:pointer;display:grid;place-items:center;padding:0;transition:transform .15s ease,border-color .12s}
+  .reg .md-chev::before{content:"";width:0;height:0;border:5px solid transparent;border-left:8px solid var(--muted);border-right:0;margin-left:2px;transition:border-color .12s}
+  .reg .md-chev:hover{border-color:var(--accent)}
+  .reg .md-chev:hover::before{border-left-color:var(--accent)}
+  .reg tr.md-open .md-chev{transform:rotate(90deg);border-color:var(--accent)}
+  .reg tr.md-open .md-chev::before{border-left-color:var(--accent)}
+  .reg td.md-chev-col,.reg th.md-chev-col{width:42px;min-width:42px;text-align:center;padding-left:10px;padding-right:0}
+  /* Colonne chevron figée à gauche (via le patron .reg td:first-child) ; l'ID reste figé juste à sa
+     droite (décalage = largeur réelle de la colonne chevron, posé en JS via --md-id-left). */
+  .reg.md-haschev td[data-col="id"]{position:sticky;left:var(--md-id-left,42px);background:var(--panel);z-index:2}
+  .reg.md-haschev thead th.md-id-col{position:sticky;left:var(--md-id-left,42px);background:var(--panel-2);z-index:5}
+  .reg.md-haschev tbody tr:hover td[data-col="id"]{background:var(--panel-2)}
+  /* L'ombre de bord passe au bord droit de l'ID (fin du bloc figé), pas au bord du chevron. */
+  .reg.md-haschev td.md-chev-col::after,.reg.md-haschev th.md-chev-col::after{display:none}
+  .reg.md-haschev td[data-col="id"]::after,.reg.md-haschev thead th.md-id-col::after{content:"";position:absolute;top:0;bottom:0;right:0;width:11px;transform:translateX(100%);background:linear-gradient(to right,rgba(20,30,55,.20),rgba(20,30,55,0));pointer-events:none;opacity:0}
+  .table-scroll.sh-left .reg.md-haschev td[data-col="id"]::after,.table-scroll.sh-left .reg.md-haschev thead th.md-id-col::after{opacity:1}
+  .reg tr.md-detail-row>td{position:static;background:var(--panel-2);padding:0;box-shadow:none;z-index:auto}
+  .reg tr.md-detail-row>td::after,.reg tr.md-detail-row>td::before{display:none}
+  .md-detail{display:grid;grid-template-columns:max-content 1fr;gap:7px 18px;align-items:baseline;padding:11px 16px 13px}
+  .md-detail .md-lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+  .md-detail .md-val{font-size:13px;overflow-wrap:anywhere}
+  .md-detail .md-none{grid-column:1 / -1;color:var(--muted);font-size:12.5px;font-style:italic}
   td .actions{display:flex;gap:6px;justify-content:flex-end}
   .id-badge{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
     padding:2px 8px;font-size:11px;font-weight:700;color:var(--muted)}
@@ -1851,6 +1878,8 @@ const I18N = {
     plan_unassigned:"Non assigné", plan_no_due:"Sans échéance",
     plan_empty:"Aucune mesure. Ajoutez des mesures dans l'onglet « Mesures ».",
     dens_label:"Densité", dens_comfortable:"Confort", dens_compact:"Compact", dens_dense:"Dense",
+    view_label:"Vue", view_table:"Tableau", view_master_detail:"Maître·détail",
+    md_expand:"Déplier le détail", md_collapse:"Replier le détail", md_no_detail:"Aucune colonne en détail (toutes en ligne).",
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
     flt_overdue_field:"En retard",
@@ -2246,6 +2275,8 @@ const I18N = {
     plan_unassigned:"Unassigned", plan_no_due:"No due date",
     plan_empty:"No measure. Add measures in the “Measures” tab.",
     dens_label:"Density", dens_comfortable:"Comfort", dens_compact:"Compact", dens_dense:"Dense",
+    view_label:"View", view_table:"Table", view_master_detail:"Master·detail",
+    md_expand:"Expand details", md_collapse:"Collapse details", md_no_detail:"No columns in detail (all inline).",
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
     flt_overdue_field:"Overdue",
@@ -2641,6 +2672,8 @@ const I18N = {
     plan_unassigned:"Non assegnato", plan_no_due:"Senza scadenza",
     plan_empty:"Nessuna misura. Aggiungi misure nella scheda « Misure ».",
     dens_label:"Densità", dens_comfortable:"Comodo", dens_compact:"Compatto", dens_dense:"Denso",
+    view_label:"Vista", view_table:"Tabella", view_master_detail:"Elenco·dettaglio",
+    md_expand:"Espandi il dettaglio", md_collapse:"Comprimi il dettaglio", md_no_detail:"Nessuna colonna in dettaglio (tutte in linea).",
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
     flt_overdue_field:"In ritardo",
@@ -7356,6 +7389,13 @@ function densitySegHTML(table){
   return '<div class="seg density-seg" role="group" aria-label="'+esc(t("dens_label"))+'">'+b("comfortable","dens_comfortable")+b("compact","dens_compact")+b("dense","dens_dense")+'</div>';
 }
 function applyRegDensity(tableEl,table){if(!tableEl)return;tableEl.classList.remove("compact","dense");const d=tableDensity(table);if(d!=="comfortable")tableEl.classList.add(d);}
+/* Sélecteur de vue (piste 2/3) : Tableau / Maître·détail. Mémorisé par table (setTableView).
+   Cartes viendra à la piste 3 (étape 5). */
+function viewSegHTML(table){
+  const cur=tableView(table);
+  const b=(v,lbl)=>'<button type="button" data-view-mode="'+v+'" data-vtable="'+esc(table)+'"'+(cur===v?' class="active"':'')+'>'+esc(t(lbl))+'</button>';
+  return '<div class="seg view-seg" role="group" aria-label="'+esc(t("view_label"))+'">'+b("table","view_table")+b("master_detail","view_master_detail")+'</div>';
+}
 function regTableElFor(table){
   if(table==="risks")return document.getElementById("risksTableEl");
   if(table==="measures")return document.getElementById("measuresTableEl");
@@ -7375,6 +7415,25 @@ document.addEventListener("click",e=>{const btn=e.target.closest(".density-seg [
   if(el)markClippedCells(el);   // le padding/police modifie l'écrêtage des cellules
   const seg=btn.closest(".density-seg");if(seg)seg.querySelectorAll("[data-density]").forEach(x=>x.classList.toggle("active",x.dataset.density===v));
   syncSegAria();scheduleRegSizing();
+});
+/* Clic sur le sélecteur de vue (délégué) : mémorise et re-rend le registre. Objets uniquement pour
+   l'instant (bénéficiaire principal ; risques/mesures/liens suivront). */
+document.addEventListener("click",e=>{const btn=e.target.closest(".view-seg [data-view-mode]");if(!btn)return;
+  const table=btn.dataset.vtable,v=btn.dataset.viewMode;
+  if(tableView(table)===v)return;
+  setTableView(table,v);
+  if(table.indexOf("objects.")===0)renderObjects();
+});
+/* Dépliage/repliage d'une ligne en vue Maître·détail (délégué). État non persisté. */
+document.addEventListener("click",e=>{const chev=e.target.closest(".md-chev");if(!chev)return;
+  e.stopPropagation();
+  const tr=chev.closest("tr"); if(!tr)return;
+  const detail=tr.nextElementSibling;
+  const open=tr.classList.toggle("md-open");
+  if(detail&&detail.classList.contains("md-detail-row")){detail.hidden=!open;}
+  chev.setAttribute("aria-expanded",open?"true":"false");
+  chev.setAttribute("aria-label",t(open?"md_collapse":"md_expand"));
+  scheduleRegSizing();
 });
 /* ── Modèle de placement des colonnes (piste 2 — fondation de la vue Maître·détail) ───────────────
    Chaque colonne d'un registre a un placement : "inline" (en ligne) | "detail" (au tiroir de la
@@ -12402,7 +12461,17 @@ function updateRegEdgeShadows(sc){
   sc.classList.toggle("sh-left",x>0);        // contenu caché à gauche → ombre de l'ID (à droite)
   sc.classList.toggle("sh-right",x<max-1);   // contenu caché à droite → ombre des Actions (à gauche) ; tolérance sous-pixel
 }
+/* Vue Maître·détail : l'ID est figé juste à droite de la colonne chevron. Son décalage doit égaler
+   la largeur RÉELLE de cette colonne (qui varie avec la densité) → posé en variable --md-id-left. */
+function syncMdChevOffset(){
+  document.querySelectorAll("table.reg.md-haschev").forEach(tbl=>{
+    if(tbl.offsetParent===null)return;
+    const cell=tbl.querySelector("thead th.md-chev-col")||tbl.querySelector("tbody td.md-chev-col");
+    if(cell)tbl.style.setProperty("--md-id-left",Math.round(cell.getBoundingClientRect().width)+"px");
+  });
+}
 function sizeRegScrollers(){
+  syncMdChevOffset();
   document.querySelectorAll(".table-scroll:has(> table.reg)").forEach(sc=>{
     if(sc.offsetParent===null){sc.classList.remove("reg-fill");sc.style.maxHeight="";return;}   // vue masquée
     if(!sc._edgeBound){sc.addEventListener("scroll",()=>updateRegEdgeShadows(sc),{passive:true});sc._edgeBound=true;}
@@ -12432,30 +12501,59 @@ function scheduleRegSizing(){if(_regRaf)return;_regRaf=requestAnimationFrame(()=
    Jusqu'à OBJ_SEG_MAX types : segmented control ; au-delà : liste déroulante « Type : […] ». */
 const OBJ_SEG_MAX=8;
 let objMode=null;
+/* Un attribut d'objet est « vide » (masqué du tiroir de détail) : valeur nulle/vide/liste vide,
+   ou champ calculé sans résultat. */
+function objAttrIsEmpty(a,ot,inst){
+  if(a.type==="computed"){const r=cfComputedValue(a,ot,inst);return !(r&&r.ok)||r.value==null||r.value==="";}
+  const v=(inst.values||{})[a.code];
+  if(v==null||v==="")return true;
+  if(Array.isArray(v))return v.length===0;
+  return false;
+}
+function objAttrCellInner(a,ot,inst){return a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):cfDisplayHTML(a,(inst.values||{})[a.code],true);}
+/* Tiroir de détail (vue Maître·détail) : grille libellé→valeur des colonnes « en détail », texte
+   complet + Markdown rendu ; champs vides masqués (§5). */
+function objDetailGridHTML(ot,inst,detailAttrs){
+  const parts=[];
+  detailAttrs.forEach(a=>{if(objAttrIsEmpty(a,ot,inst))return;
+    parts.push('<span class="md-lbl">'+esc(cfLabel(a))+'</span><div class="md-val">'+objAttrCellInner(a,ot,inst)+'</div>');});
+  if(!parts.length)parts.push('<div class="md-none">—</div>');
+  return '<div class="md-detail">'+parts.join("")+'</div>';
+}
 function objTypeCardHTML(ot){
   const insts=objSortedInstances(ot), attrs=(ot.attributes||[]).filter(a=>!a.hide_table), st=objSort[ot.code]||{};   // colonnes masquées exclues de la vue tableau
-  const dkey="objects."+ot.code;   // clé de densité par type d'objet
+  const dkey="objects."+ot.code;   // clé de densité / vue / placement par type d'objet
   const hdr=(col,label,cls)=>{const ind=st.col===col?(st.dir<0?" ▼":" ▲"):"";
     return '<th'+(cls?' class="'+cls+'"':'')+' data-objsort="'+esc(col)+'" data-ot="'+esc(ot.code)+'" style="cursor:pointer;user-select:none">'+esc(label)+'<span class="sort-ind">'+ind+'</span></th>';};
-  const dcls=tableDensity(dkey);
+  const dcls=tableDensity(dkey), view=tableView(dkey), md=view==="master_detail";
   let h='<div class="card">'+
-    '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px 14px;margin-bottom:8px;flex-wrap:wrap">'+
       '<h3 style="margin:0">'+esc(otLabel(ot))+' <span class="muted" style="font-weight:400">('+insts.length+')</span></h3>'+
-      '<div class="inline" style="gap:6px;flex:none">'+
+      '<div class="inline" style="gap:6px;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end">'+
+        (insts.length?viewSegHTML(dkey):'')+
         (insts.length?densitySegHTML(dkey):'')+
         (insts.length?'<button class="btn ghost sm" data-obj-export="'+esc(ot.code)+'">'+esc(t("btn_export_csv"))+'</button>':'')+
         '<button class="btn ghost sm" data-obj-import="'+esc(ot.code)+'">'+esc(t("btn_import_csv"))+'</button>'+
         '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button>'+
       '</div></div>';
   if(insts.length){
-    h+='<div class="table-scroll"><table class="reg'+(dcls!=="comfortable"?" "+dcls:"")+'"><thead><tr>'+hdr("id",t("obj_id"),"muted")+
-      attrs.map(a=>hdr("cf:"+a.code,cfLabel(a))).join("")+'<th></th></tr></thead><tbody>';
+    const attrByKey={};attrs.forEach(a=>attrByKey["cf:"+a.code]=a);
+    const inlineAttrs=md?inlineColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean):attrs;
+    const detailAttrs=md?detailColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean):[];
+    const hasDetail=md&&detailAttrs.length>0;
+    const nCols=(hasDetail?1:0)+1+inlineAttrs.length+1;   // [chevron] + ID + colonnes en ligne + Actions
+    const tblCls="reg"+(dcls!=="comfortable"?" "+dcls:"")+(md?" md":"")+(hasDetail?" md-haschev":"");
+    const chevTh=hasDetail?'<th class="md-chev-col"></th>':'';
+    h+='<div class="table-scroll"><table class="'+tblCls+'"><thead><tr>'+chevTh+hdr("id",t("obj_id"),hasDetail?"muted md-id-col":"muted")+
+      inlineAttrs.map(a=>hdr("cf:"+a.code,cfLabel(a))).join("")+'<th></th></tr></thead><tbody>';
     insts.forEach(inst=>{
-      h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
-        attrs.map(a=>{const inner=(a.type==="computed"?cfComputedDisplayHTML(a,ot,inst):cfDisplayHTML(a,(inst.values||{})[a.code],true));
+      const chevTd=hasDetail?'<td class="md-chev-col"><button class="md-chev" type="button" aria-expanded="false" aria-label="'+esc(t("md_expand"))+'"></button></td>':'';
+      h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer">'+chevTd+'<td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
+        inlineAttrs.map(a=>{const inner=objAttrCellInner(a,ot,inst);
           return '<td data-col="cf:'+esc(a.code)+'">'+(cfIsTextCol(a)?'<div class="cell-clip" data-label="'+esc(cfLabel(a))+'">'+inner+'</div>':inner)+'</td>';}).join("")+
         '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
         '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
+      if(hasDetail)h+='<tr class="md-detail-row" hidden><td colspan="'+nCols+'">'+objDetailGridHTML(ot,inst,detailAttrs)+'</td></tr>';
     });
     h+='</tbody></table></div>';
   }else h+='<div class="empty" style="display:block">'+esc(t("obj_none_type"))+'</div>';
@@ -12531,7 +12629,7 @@ document.getElementById("view-objects").addEventListener("click",e=>{
     return;
   }
   // Clic sur une ligne d'instance → édition, focus sur l'attribut de la cellule cliquée.
-  if(e.target.closest("a[href],[data-open-m],[data-open-r]"))return;   // lien URL / pastille R·M : action propre, sans ouvrir la fiche
+  if(e.target.closest("a[href],[data-open-m],[data-open-r],.md-chev"))return;   // lien URL / pastille R·M / chevron : action propre, sans ouvrir la fiche
   if(clipRowClick(e))return;   // cellule texte tronquée : clic = voir (double-clic = éditer)
   const row=e.target.closest("tr[data-obj-row]");if(!row)return;
   const inst=objectById(row.dataset.objRow);if(!inst)return;

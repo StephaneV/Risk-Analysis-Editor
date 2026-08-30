@@ -185,8 +185,11 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
    helpers `regColumns` / `inlineColKeys` / `detailColKeys` / `colPlacement` / `setColPlacement`
    (unifiant le moteur de colonnes et les attributs d'objet) ; défauts par type (verbeux → détail) ;
    verrous ID/libellé/Actions. Non encore consommé par le rendu (piste 3).
-3. **Vue Maître·détail** (piste 2 UI) — rendu colonnes clés + tiroir de détail (Markdown, texte complet) ;
-   chevron ; préservation tri/drag/glisser‑ligne.
+3. **Vue Maître·détail** (piste 2 UI) — ✅ *fait (Objets)* : sélecteur de vue Tableau/Maître·détail
+   par type d'objet ; colonnes « en ligne » réduites + chevron dans la cellule ID (ID reste figé) ;
+   tiroir de détail sous la ligne (paires libellé→valeur, Markdown rendu, texte complet, champs vides
+   masqués) ; tri par en‑tête conservé ; clic‑ligne ouvre la fiche, le chevron non. *Risques / Mesures
+   / Liens : à suivre (mêmes helpers ; peu de colonnes, besoin moindre).*
 4. **⚙ Colonnes 3 états** — contrôle En ligne/En détail/Masqué + préréglages.
 5. **Vue Cartes** (piste 3) — grille de fiches + bascule de vue.
 6. **Menu « Trier par »** — tri des champs de détail / en cartes.
