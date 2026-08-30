@@ -199,7 +199,11 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
    fiches (en-tête ID + libellé + actions, colonnes « en ligne » en paires, colonnes « en détail » en
    blocs texte complet + Markdown, champs vides masqués) ; clic‑fiche ouvre l'éditeur ; densité masquée
    (sans objet en cartes) ; le ⚙ pilote toujours le placement. Tri par le menu « Trier par » (étape 6).
-6. **Menu « Trier par »** — tri des champs de détail / en cartes.
+6. **Menu « Trier par »** — ✅ *fait (Objets)* : bouton « Trier par ▾ » dans la barre d'outils
+   (popover listant ID + tous les attributs, en ligne comme en détail) ; asc↔desc au re‑clic,
+   « Ordre d'origine » pour réinitialiser ; libellé du bouton reflétant le tri courant. Réutilise
+   l'état objSort (non persisté, comme le tri par en‑tête). Indispensable en Cartes (aucun en‑tête)
+   et en Maître·détail (champs du tiroir).
 7. **Pleine largeur** (piste 5) — option + bouton d'en‑tête.
 
 Chaque étape est committée séparément, avec tests (pytest + Playwright, suites `ui`/`export`).

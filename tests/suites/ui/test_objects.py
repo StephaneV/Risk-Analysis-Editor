@@ -542,3 +542,47 @@ def test_object_cards_view(app):
     assert r["cardClickOpens"], "le clic sur une fiche n'ouvre pas l'éditeur"
     app.close_modals()
     assert not app.console_errors()
+
+
+# Menu « Trier par ▾ » (§8) : tri par n'importe quel champ (ID + attributs, en ligne ET en détail),
+# indispensable en Cartes (aucun en-tête). Réutilise objSort ; asc↔desc ; réinitialisation.
+SORT_MENU = r"""
+() => {
+  const code = 'source_risque';
+  setObjMode(code);
+  document.querySelector('#view-objects .view-seg [data-view-mode="cards"]').click();
+  const btn = () => document.querySelector('#view-objects .objsortbtn');
+  const menu = () => [...document.querySelectorAll('.col-menu')].find(m => m.style.display === 'block' && m.querySelector('.srow'));
+  const pick = col => { btn().click(); menu().querySelector('.srow[data-col="' + col + '"]').click(); };
+  const out = { btnPresent: !!btn(), defaultLabel: btn().textContent.trim() };
+  btn().click();
+  out.rows = [...menu().querySelectorAll('.srow')].map(r => r.dataset.col);
+  menu().querySelector('.srow[data-col="cf:objectif_vise"]').click();   // tri par un champ DÉTAIL
+  out.menuClosedAfterPick = !menu();
+  out.afterDetailSort = { col: objSort[code].col, dir: objSort[code].dir, label: btn().textContent.trim() };
+  pick('cf:objectif_vise');   // re-clic → sens inversé
+  out.afterToggle = objSort[code].dir;
+  pick('__none');   // Ordre d'origine
+  out.afterReset = { sort: objSort[code] || null, label: btn().textContent.trim() };
+  return out;
+}
+"""
+
+
+def test_object_sort_menu(app):
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(SORT_MENU)
+    assert r["btnPresent"], "bouton « Trier par » absent"
+    assert r["defaultLabel"].startswith("Trier par"), "libellé par défaut inattendu"
+    # Le menu liste ID + tous les attributs (dont les champs « en détail »).
+    assert "id" in r["rows"] and "cf:categorie" in r["rows"] and "cf:objectif_vise" in r["rows"]
+    assert "__none" in r["rows"], "option « Ordre d'origine » manquante"
+    # Tri par un champ en détail (impossible via en-tête en cartes) + fermeture après choix.
+    assert r["menuClosedAfterPick"], "le menu ne se ferme pas après un choix"
+    assert r["afterDetailSort"]["col"] == "cf:objectif_vise" and r["afterDetailSort"]["dir"] == 1
+    assert "Objectif visé" in r["afterDetailSort"]["label"], "libellé du bouton non mis à jour"
+    # Re-clic → sens inversé, puis réinitialisation.
+    assert r["afterToggle"] == -1, "le second clic ne bascule pas en décroissant"
+    assert r["afterReset"]["sort"] is None, "« Ordre d'origine » ne réinitialise pas le tri"
+    assert not app.console_errors()

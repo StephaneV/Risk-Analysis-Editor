@@ -599,6 +599,10 @@
   .col-menu .cm-pl-b:first-child{border-left:none}
   .col-menu .cm-pl-b:hover{background:var(--panel-2);color:var(--text)}
   .col-menu .cm-pl-b.active{background:var(--accent);color:#fff}
+  /* Menu « Trier par » — lignes cliquables + indicateur de sens. */
+  .col-menu .cm-row.srow{cursor:pointer}
+  .col-menu .cm-row.srow.on{color:var(--accent);font-weight:600}
+  .col-menu .cm-sind{margin-left:auto;color:var(--accent);flex:none;font-size:11px}
 
   /* ---------- Aides à la sécurité et à la navigation ---------- */
   /* Bandeau d'avertissement (grille déjà cotée) : teinte ambre translucide, lisible sur les deux thèmes. */
@@ -1907,6 +1911,7 @@ const I18N = {
     view_label:"Vue", view_table:"Tableau", view_master_detail:"Maître·détail", view_cards:"Cartes",
     md_expand:"Déplier le détail", md_collapse:"Replier le détail", md_no_detail:"Aucune colonne en détail (toutes en ligne).",
     pl_inline:"En ligne", pl_detail:"En détail", pl_hidden:"Masqué", cols_pl_hint:"« En détail » : visible au tableau et dans le tiroir en vue Maître·détail.",
+    sort_by:"Trier par", sort_file_order:"Ordre d'origine",
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
     flt_overdue_field:"En retard",
@@ -2305,6 +2310,7 @@ const I18N = {
     view_label:"View", view_table:"Table", view_master_detail:"Master·detail", view_cards:"Cards",
     md_expand:"Expand details", md_collapse:"Collapse details", md_no_detail:"No columns in detail (all inline).",
     pl_inline:"Inline", pl_detail:"In detail", pl_hidden:"Hidden", cols_pl_hint:"“In detail”: visible in the table and in the master-detail drawer.",
+    sort_by:"Sort by", sort_file_order:"Original order",
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
     flt_overdue_field:"Overdue",
@@ -2703,6 +2709,7 @@ const I18N = {
     view_label:"Vista", view_table:"Tabella", view_master_detail:"Elenco·dettaglio", view_cards:"Schede",
     md_expand:"Espandi il dettaglio", md_collapse:"Comprimi il dettaglio", md_no_detail:"Nessuna colonna in dettaglio (tutte in linea).",
     pl_inline:"In linea", pl_detail:"In dettaglio", pl_hidden:"Nascosto", cols_pl_hint:"« In dettaglio » : visibile nella tabella e nel riquadro elenco-dettaglio.",
+    sort_by:"Ordina per", sort_file_order:"Ordine originale",
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
     flt_overdue_field:"In ritardo",
@@ -7743,6 +7750,48 @@ document.addEventListener("click",e=>{const g=e.target.closest(".objcolgear");if
 document.addEventListener("click",e=>{if(objColMenu.style.display==="none")return;if(objColMenu.contains(e.target)||e.target.closest(".objcolgear"))return;closeObjColMenu();});
 window.addEventListener("resize",closeObjColMenu);
 
+/* ---- Menu « Trier par ▾ » des OBJETS (§8) : tri par n'importe quel champ (ID + attributs, en
+   ligne comme en détail). Indispensable en Cartes (aucun en-tête) et en Maître·détail (champs du
+   tiroir). Réutilise l'état de tri objSort (non persisté, comme le tri par en-tête). ---- */
+function objSortMenuPick(otCode,col){
+  if(col==="__none"){delete objSort[otCode];}
+  else{const st=objSort[otCode];if(st&&st.col===col)st.dir=-st.dir;else objSort[otCode]={col:col,dir:1};}
+  renderObjects();
+}
+function objSortLabel(otCode){
+  const st=objSort[otCode];if(!st||!st.col)return esc(t("sort_by"))+' ▾';
+  const ot=objectTypeByCode(otCode);
+  const lbl=st.col==="id"?t("obj_id"):(()=>{const a=(ot.attributes||[]).find(x=>("cf:"+x.code)===st.col);return a?cfLabel(a):st.col;})();
+  return esc(t("sort_by"))+' : '+esc(lbl)+' '+(st.dir<0?'▼':'▲');
+}
+const objSortMenu=document.createElement("div");objSortMenu.className="col-menu";objSortMenu.style.display="none";document.body.appendChild(objSortMenu);
+function closeObjSortMenu(){objSortMenu.style.display="none";objSortMenu._ot=null;}
+function buildObjSortMenu(otCode){
+  const ot=objectTypeByCode(otCode);if(!ot){objSortMenu.innerHTML="";return;}
+  const st=objSort[otCode]||{};
+  const row=(col,label)=>{const on=st.col===col||(col==="__none"&&!st.col);
+    const ind=on?(col==="__none"?'✓':(st.dir<0?'▼':'▲')):'';
+    return '<div class="cm-row srow'+(on?' on':'')+'" data-col="'+esc(col)+'"><span class="cm-name">'+esc(label)+'</span><span class="cm-sind">'+ind+'</span></div>';};
+  let h='<div class="cm-title">'+esc(t("sort_by"))+'</div><div class="cm-list">';
+  h+=row("__none",t("sort_file_order"))+row("id",t("obj_id"));
+  (ot.attributes||[]).filter(a=>!a.hide_table).forEach(a=>{h+=row("cf:"+a.code,cfLabel(a));});
+  h+='</div>';
+  objSortMenu.innerHTML=h;
+}
+function toggleObjSortMenu(otCode,btn){
+  if(objSortMenu.style.display!=="none"&&objSortMenu._ot===otCode){closeObjSortMenu();return;}
+  objSortMenu._ot=otCode;buildObjSortMenu(otCode);objSortMenu.style.display="block";
+  const r=btn.getBoundingClientRect(),w=objSortMenu.offsetWidth;
+  objSortMenu.style.top=(r.bottom+6)+"px";objSortMenu.style.left=Math.max(8,r.left)+"px";
+}
+objSortMenu.addEventListener("click",e=>{const otCode=objSortMenu._ot;if(!otCode)return;
+  const row=e.target.closest(".srow");if(!row)return;e.stopPropagation();
+  objSortMenuPick(otCode,row.dataset.col);closeObjSortMenu();   // choix unique → renderObjects puis fermeture
+});
+document.addEventListener("click",e=>{const b=e.target.closest(".objsortbtn");if(!b)return;e.stopPropagation();toggleObjSortMenu(b.dataset.objsortbtn,b);});
+document.addEventListener("click",e=>{if(objSortMenu.style.display==="none")return;if(objSortMenu.contains(e.target)||e.target.closest(".objsortbtn"))return;closeObjSortMenu();});
+window.addEventListener("resize",closeObjSortMenu);
+
 /* ============================================================
    PRODUCTIVITÉ & NAVIGATION TRANSVERSALE
    Duplication de fiche, « Enregistrer et nouveau », pastilles R/M cliquables,
@@ -12634,6 +12683,7 @@ function objTypeCardHTML(ot){
       '<div class="inline" style="gap:6px;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end">'+
         (insts.length?viewSegHTML(dkey):'')+
         (insts.length&&!cards?densitySegHTML(dkey):'')+   /* densité : sans objet en vue Cartes */
+        (insts.length?'<button class="btn ghost sm objsortbtn" data-objsortbtn="'+esc(ot.code)+'" aria-haspopup="menu">'+objSortLabel(ot.code)+'</button>':'')+
         (insts.length?'<button class="btn icon sm objcolgear" data-objcolgear="'+esc(ot.code)+'" title="'+esc(t("cols_menu_title"))+'" aria-haspopup="dialog">⚙</button>':'')+
         (insts.length?'<button class="btn ghost sm" data-obj-export="'+esc(ot.code)+'">'+esc(t("btn_export_csv"))+'</button>':'')+
         '<button class="btn ghost sm" data-obj-import="'+esc(ot.code)+'">'+esc(t("btn_import_csv"))+'</button>'+
