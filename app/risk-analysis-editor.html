@@ -249,6 +249,15 @@
   th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
   th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
   tbody tr:hover{background:var(--panel-2)}
+  /* Registres — cadre figé (piste 1) : colonne ID (gauche) et colonne Actions (droite) restent
+     visibles au défilement horizontal. Fond opaque + fine ombre de bord signalant le figement. */
+  .reg td:first-child,.reg th:first-child{position:sticky;left:0;z-index:2;background:var(--panel);box-shadow:6px 0 8px -8px rgba(20,30,55,.30)}
+  .reg td:last-child,.reg th:last-child{position:sticky;right:0;z-index:2;background:var(--panel);box-shadow:-6px 0 8px -8px rgba(20,30,55,.30)}
+  .reg thead th:first-child,.reg thead th:last-child{z-index:3}
+  .reg tbody tr:hover td:first-child,.reg tbody tr:hover td:last-child{background:var(--panel-2)}
+  /* Le padding du conteneur fait partie du scrollport : le contenu défilé y percerait sous les
+     colonnes figées (le figement colle au bord du padding). On l'annule pour les registres. */
+  .table-scroll:has(> table.reg){padding:0;margin:0}
   td .actions{display:flex;gap:6px;justify-content:flex-end}
   .id-badge{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
     padding:2px 8px;font-size:11px;font-weight:700;color:var(--muted)}
@@ -1111,7 +1120,7 @@
       <div class="filterbar">
         <input type="search" id="fltRiskQ" data-i18n-label="flt_search_risks" data-i18n-ph="flt_search" placeholder="Rechercher…">
       </div>
-      <div class="table-scroll"><table id="risksTableEl">
+      <div class="table-scroll"><table id="risksTableEl" class="reg">
         <caption class="sr-only" data-i18n="risks_title">Registre des risques</caption>
         <thead><tr class="col-head-row"></tr></thead>
         <tbody id="risksTable"></tbody>
@@ -1133,7 +1142,7 @@
       <div class="filterbar">
         <input type="search" id="fltMeasureQ" data-i18n-label="flt_search_measures" data-i18n-ph="flt_search" placeholder="Rechercher…">
       </div>
-      <div class="table-scroll"><table id="measuresTableEl">
+      <div class="table-scroll"><table id="measuresTableEl" class="reg">
         <caption class="sr-only" data-i18n="measures_title">Mesures de maîtrise</caption>
         <thead><tr class="col-head-row"></tr></thead>
         <tbody id="measuresTable"></tbody>
@@ -8178,7 +8187,7 @@ function renderLinkDetails(){
   list=list.slice().sort(linkCmp(st.sort));if(st.dir<0)list.reverse();
   // Tableau bâti en DOM pour réutiliser le moteur de colonnes (en-tête déplaçable + engrenage).
   area.innerHTML="";
-  const table=document.createElement("table");table.id="linkDetailsTableEl";
+  const table=document.createElement("table");table.id="linkDetailsTableEl";table.className="reg";
   const thead=document.createElement("thead"),htr=document.createElement("tr");thead.appendChild(htr);
   const tbody=document.createElement("tbody");
   table.appendChild(thead);table.appendChild(tbody);area.appendChild(table);
@@ -12263,7 +12272,7 @@ function objTypeCardHTML(ot){
         '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button>'+
       '</div></div>';
   if(insts.length){
-    h+='<div class="table-scroll"><table><thead><tr>'+hdr("id",t("obj_id"),"muted")+
+    h+='<div class="table-scroll"><table class="reg"><thead><tr>'+hdr("id",t("obj_id"),"muted")+
       attrs.map(a=>hdr("cf:"+a.code,cfLabel(a))).join("")+'<th></th></tr></thead><tbody>';
     insts.forEach(inst=>{
       h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+
