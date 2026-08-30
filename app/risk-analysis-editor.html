@@ -251,15 +251,31 @@
   tbody tr:hover{background:var(--panel-2)}
   /* Registres — cadre figé (piste 1) : colonne ID (gauche) et colonne Actions (droite) restent
      visibles au défilement horizontal. Fond opaque + fine ombre de bord signalant le figement. */
-  .reg td:first-child,.reg th:first-child{position:sticky;left:0;background:var(--panel);box-shadow:6px 0 8px -8px rgba(20,30,55,.30)}
-  .reg td:last-child,.reg th:last-child{position:sticky;right:0;background:var(--panel);box-shadow:-6px 0 8px -8px rgba(20,30,55,.30)}
+  /* border-collapse:collapse recouvre les box-shadow latérales des cellules figées avec le fond des
+     cellules voisines : les ombres deviennent invisibles. En mode separate (espacement nul, rendu
+     identique — les cellules n'ont qu'une bordure basse), les ombres s'affichent correctement. */
+  table.reg{border-collapse:separate;border-spacing:0}
+  /* Colonnes figées : fond opaque + ombre de bord CONTINUE du côté du contenu qui défile.
+     L'ombre est un dégradé pleine hauteur porté par un pseudo-élément (top:0;bottom:0), et non un
+     box-shadow par cellule : sinon chaque cellule projette une ombre qui s'estompe en haut/bas et
+     laisse des « festons » plus clairs aux jointures de lignes. Les bandes des cellules s'abîtent
+     verticalement → ombre homogène. Uniquement à gauche/droite (pas d'ombre sous l'en-tête). */
+  .reg td:first-child,.reg th:first-child{position:sticky;left:0;background:var(--panel)}
+  .reg td:last-child,.reg th:last-child{position:sticky;right:0;background:var(--panel)}
   .reg tbody td:first-child,.reg tbody td:last-child{z-index:2}
-  /* En-tête figé (défilement vertical, dans le conteneur borné) + coins au-dessus des colonnes figées.
-     Les coins combinent l'ombre de bord (gauche/droite) ET le trait bas de l'en-tête : sans cela,
-     l'ombre de bord (plus spécifique) écraserait le box-shadow du trait et il manquerait sous ID/Actions. */
-  .reg thead th{position:sticky;top:0;z-index:4;background:var(--panel);box-shadow:inset 0 -1px 0 var(--border)}
-  .reg thead th:first-child{z-index:5;box-shadow:6px 0 8px -8px rgba(20,30,55,.30),inset 0 -1px 0 var(--border)}
-  .reg thead th:last-child{z-index:5;box-shadow:-6px 0 8px -8px rgba(20,30,55,.30),inset 0 -1px 0 var(--border)}
+  .reg td:first-child::after,.reg th:first-child::after{content:"";position:absolute;top:0;bottom:0;right:0;width:11px;transform:translateX(100%);background:linear-gradient(to right,rgba(20,30,55,.20),rgba(20,30,55,0));pointer-events:none;opacity:0}
+  .reg td:last-child::before,.reg th:last-child::before{content:"";position:absolute;top:0;bottom:0;left:0;width:11px;transform:translateX(-100%);background:linear-gradient(to left,rgba(20,30,55,.20),rgba(20,30,55,0));pointer-events:none;opacity:0}
+  /* Les ombres sont masquées par défaut et affichées SEULEMENT si du contenu passe réellement sous la
+     colonne figée (classes posées par JS, updateRegEdgeShadows) : sh-left ⇒ contenu caché à gauche
+     (ombre de l'ID, à droite) ; sh-right ⇒ contenu caché à droite (ombre des Actions, à gauche). Ce
+     défaut « masqué » évite le flash « affiché puis masqué » à la composition d'un onglet. */
+  .table-scroll.sh-left table.reg td:first-child::after,.table-scroll.sh-left table.reg th:first-child::after{opacity:1}
+  .table-scroll.sh-right table.reg td:last-child::before,.table-scroll.sh-right table.reg th:last-child::before{opacity:1}
+  /* En-tête figé : bande de surface distincte (repère, comme la maquette). Le trait bas vient de la
+     bordure de base (th,td border-bottom) — visible depuis le passage en border-collapse:separate.
+     Aucune ombre sur l'en-tête : seules les ombres latérales (colonnes figées) sont conservées. */
+  .reg thead th{position:sticky;top:0;z-index:4;background:var(--panel-2)}
+  .reg thead th:first-child,.reg thead th:last-child{z-index:5;background:var(--panel-2)}
   .reg tbody tr:hover td:first-child,.reg tbody tr:hover td:last-child{background:var(--panel-2)}
   /* Le padding du conteneur fait partie du scrollport : le contenu défilé y percerait sous les
      colonnes figées (le figement colle au bord du padding). On l'annule pour les registres. */
@@ -7968,6 +7984,7 @@ function setLinkMode(m){
   document.querySelectorAll("#linksSeg button").forEach(b=>b.classList.toggle("active",b.dataset.mode===m));
   document.querySelectorAll("#view-links .lpanel").forEach(p=>{p.style.display=(p.dataset.lmode===m)?"":"none";});
   syncSegAria();
+  sizeRegScrollers();   // re-borne le registre du panneau qui devient visible (Détails) — sinon scrollbar perdue
 }
 document.getElementById("linksSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setLinkMode(b.dataset.mode);});
 
@@ -12270,9 +12287,19 @@ function syncStickyOffsets(){
    (barre d'outils + en-tête figé toujours visibles). On mesure le haut du conteneur (sous toute
    la chrome au-dessus) et on pose une hauteur max jusqu'au bas du viewport. Recalcul au
    redimensionnement, au changement d'onglet et après chaque rendu de registre. */
+/* Ombres de bord « conditionnelles » : visibles seulement si du contenu passe sous la colonne figée.
+   at-start ⇒ rien de caché à gauche (ombre ID masquée) ; at-end ⇒ rien de caché à droite (ombre
+   Actions masquée). Sans débordement horizontal, les deux sont vraies → aucune ombre. */
+function updateRegEdgeShadows(sc){
+  const max=sc.scrollWidth-sc.clientWidth, x=sc.scrollLeft;
+  sc.classList.toggle("sh-left",x>0);        // contenu caché à gauche → ombre de l'ID (à droite)
+  sc.classList.toggle("sh-right",x<max-1);   // contenu caché à droite → ombre des Actions (à gauche) ; tolérance sous-pixel
+}
 function sizeRegScrollers(){
   document.querySelectorAll(".table-scroll:has(> table.reg)").forEach(sc=>{
     if(sc.offsetParent===null){sc.classList.remove("reg-fill");sc.style.maxHeight="";return;}   // vue masquée
+    if(!sc._edgeBound){sc.addEventListener("scroll",()=>updateRegEdgeShadows(sc),{passive:true});sc._edgeBound=true;}
+    updateRegEdgeShadows(sc);
     sc.style.maxHeight="";   // hauteur naturelle : on mesure le haut du conteneur et la « traîne » en dessous
     const rect=sc.getBoundingClientRect();
     const docH=document.documentElement.scrollHeight;

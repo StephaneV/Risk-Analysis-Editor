@@ -184,14 +184,21 @@ OBJ_FILL = r"""
   if(!sc) return null;
   const ths = sc.querySelectorAll('thead th');
   const first = ths[0], last = ths[ths.length-1];
-  const sh = el => getComputedStyle(el).boxShadow;
+  const bodyFirst = sc.querySelector('tbody td:first-child');
+  const bodyLast = sc.querySelector('tbody td:last-child');
+  const grad = (el,pseudo) => getComputedStyle(el, pseudo).backgroundImage;   // dégradé d'ombre de bord
   return {
     fill: sc.classList.contains('reg-fill'),
     vscroll: sc.scrollHeight > sc.clientHeight + 1,
     pageScrolls: document.documentElement.scrollHeight > window.innerHeight + 2,
-    firstBorder: /inset/.test(sh(first)),
-    lastBorder: /inset/.test(sh(last)),
-    theadPos: getComputedStyle(ths[0]).position
+    headerBorder: getComputedStyle(first).borderBottomWidth,      // trait bas = bordure (pas d'ombre)
+    headerShadow: getComputedStyle(first).boxShadow,              // doit être 'none' (aucune ombre sur l'en-tête)
+    theadPos: getComputedStyle(ths[0]).position,
+    borderCollapse: getComputedStyle(sc.querySelector('table')).borderCollapse,
+    headerBg: getComputedStyle(first).backgroundColor,
+    bodyStickyBg: bodyFirst ? getComputedStyle(bodyFirst).backgroundColor : null,
+    edgeLeft: /gradient/.test(grad(bodyFirst, '::after')),        // ombre de bord droite de la colonne ID
+    edgeRight: /gradient/.test(grad(bodyLast, '::before'))        // ombre de bord gauche de la colonne Actions
   };
 }
 """
@@ -207,6 +214,51 @@ def test_registre_fill_no_phantom_scrollbar_and_header_borders(app):
     assert r["theadPos"] == "sticky", "en-tête non figé"
     assert not r["vscroll"], "scrollbar fantôme : le conteneur ne se réduit pas au contenu court"
     assert not r["pageScrolls"], "la page défile alors que le contenu tient dans la fenêtre"
-    assert r["firstBorder"], "trait bas d'en-tête manquant sous la colonne ID figée"
-    assert r["lastBorder"], "trait bas d'en-tête manquant sous la colonne Actions figée"
+    assert r["headerBorder"] != "0px", "trait bas d'en-tête manquant"
+    # Profondeur du cadre figé (comme la maquette) : bande d'en-tête distincte du corps.
+    assert r["headerBg"] != r["bodyStickyBg"], "en-tête sans bande de surface distincte (pas d'effet de profondeur)"
+    # Ombres UNIQUEMENT latérales : dégradé pleine hauteur (pseudo-élément) sur ID/Actions, aucune sur l'en-tête.
+    assert r["edgeLeft"], "ombre de bord absente à droite de la colonne ID"
+    assert r["edgeRight"], "ombre de bord absente à gauche de la colonne Actions"
+    assert r["headerShadow"] == "none", "l'en-tête ne doit plus porter d'ombre (seules les latérales sont conservées)"
+    # border-collapse:collapse recouvrirait les ombres latérales : les tables .reg doivent être en separate.
+    assert r["borderCollapse"] == "separate", "table de registre en border-collapse:collapse (ombres masquées)"
+    assert not app.console_errors()
+
+
+# Ombres de bord conditionnelles : elles n'apparaissent que si du contenu passe sous la colonne
+# figée. Début de défilement → rien de caché à gauche (ombre ID masquée) ; fin → rien à droite
+# (ombre Actions masquée). Sans débordement horizontal, les deux sont masquées.
+EDGE = r"""
+() => {
+  sizeRegScrollers();
+  const sc = document.querySelector('#view-objects .table-scroll');
+  if(!sc) return null;
+  const maxX = sc.scrollWidth - sc.clientWidth;
+  const res = { overflowsX: maxX > 1 };
+  // sh-left = ombre de l'ID (contenu caché à gauche) ; sh-right = ombre des Actions (contenu à droite).
+  sc.scrollLeft = 0; updateRegEdgeShadows(sc);
+  res.startLeft = sc.classList.contains('sh-left');
+  res.startRight = sc.classList.contains('sh-right');
+  if (maxX > 1) {
+    sc.scrollLeft = maxX; updateRegEdgeShadows(sc);
+    res.endLeft = sc.classList.contains('sh-left');
+    res.endRight = sc.classList.contains('sh-right');
+  }
+  return res;
+}
+"""
+
+
+def test_registre_edge_shadows_conditional(app):
+    app.page.set_viewport_size({"width": 760, "height": 820})
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(EDGE)
+    assert r, "conteneur du registre objets introuvable"
+    assert r["overflowsX"], "le scénario de test ne déborde pas horizontalement"
+    # début : ombre ID masquée (rien à gauche), ombre Actions visible (contenu caché à droite)
+    assert not r["startLeft"] and r["startRight"], "état de début incorrect"
+    # fin : ombre ID visible (contenu caché à gauche), ombre Actions masquée (rien à droite)
+    assert r["endLeft"] and not r["endRight"], "état de fin incorrect"
     assert not app.console_errors()
