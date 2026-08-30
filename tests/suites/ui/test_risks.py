@@ -130,3 +130,19 @@ def test_registre_density(app):
     assert r["stored"] == "dense", "densité non mémorisée dans extensions.display.density"
     assert r["active"] == "dense", "bouton actif non synchronisé après re-rendu"
     assert not app.console_errors()
+
+
+def test_risks_view_selector_and_cards(app):
+    """Registre Risques : sélecteur de vue (Tableau/Maître·détail/Cartes) + vue Cartes."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    modes = app.js("[...document.querySelectorAll('#view-risks .view-seg button')].map(b=>b.dataset.viewMode).join(',')")
+    assert modes == "table,master_detail,cards", f"sélecteur de vue inattendu : {modes}"
+    app.js("document.querySelector('#view-risks .view-seg [data-view-mode=\"cards\"]').click()")
+    n = app.js("document.querySelectorAll('#view-risks .reg-cards-host .obj-card').length")
+    assert n == app.js("analyse.risks.length"), "une fiche par risque"
+    assert app.js("document.querySelector('#view-risks .table-scroll').hidden"), "le tableau devrait être masqué en Cartes"
+    app.js("document.querySelector('#view-risks .obj-card .oc-title').click()")
+    assert app.modal_open(), "le clic sur une fiche n'ouvre pas l'éditeur"
+    app.close_modals()
+    assert not app.console_errors()

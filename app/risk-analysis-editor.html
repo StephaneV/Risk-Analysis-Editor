@@ -1206,6 +1206,8 @@
       <div class="card-head">
         <div><h2 data-i18n="risks_title">Registre des risques</h2><div class="caption" style="margin:0" data-i18n="risks_caption">Cliquez sur un risque pour l'éditer.</div></div>
         <div class="spacer" style="flex:1"></div>
+        <span class="view-mount" style="margin-right:8px"></span>
+        <span class="sort-mount" style="margin-right:8px"></span>
         <span class="density-mount" style="margin-right:8px"></span>
         <button class="btn ghost" id="btnImportRisks" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
         <button class="btn ghost" id="btnExportRisks" style="margin-right:8px" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
@@ -1219,6 +1221,7 @@
         <thead><tr class="col-head-row"></tr></thead>
         <tbody id="risksTable"></tbody>
       </table></div>
+      <div class="reg-cards-host" data-reg="risks" hidden></div>
       <div class="empty" id="risquesEmpty" style="display:none" data-i18n="risks_empty">Aucun risque. Cliquez sur « Ajouter un risque ».</div>
     </div>
   </section>
@@ -1229,6 +1232,8 @@
       <div class="card-head">
         <div><h2 data-i18n="measures_title">Mesures de maîtrise</h2><div class="caption" style="margin:0" data-i18n="measures_caption">Actions réduisant la probabilité et/ou la gravité des risques.</div></div>
         <div class="spacer" style="flex:1"></div>
+        <span class="view-mount" style="margin-right:8px"></span>
+        <span class="sort-mount" style="margin-right:8px"></span>
         <span class="density-mount" style="margin-right:8px"></span>
         <button class="btn ghost" id="btnImportMeasures" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
         <button class="btn ghost" id="btnExportMeasures" style="margin-right:8px" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
@@ -1242,6 +1247,7 @@
         <thead><tr class="col-head-row"></tr></thead>
         <tbody id="measuresTable"></tbody>
       </table></div>
+      <div class="reg-cards-host" data-reg="measures" hidden></div>
       <div class="empty" id="mesuresEmpty" style="display:none" data-i18n="measures_empty">Aucune mesure. Cliquez sur « Ajouter une mesure ».</div>
     </div>
   </section>
@@ -1285,7 +1291,7 @@
         <div class="cross" id="crossArea"></div>
       </div>
       <div class="lpanel" data-lmode="details" style="display:none">
-        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-label="flt_search_links" data-i18n-ph="flt_search" placeholder="Rechercher…"><span style="flex:1"></span><span class="density-mount"></span></div>
+        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-label="flt_search_links" data-i18n-ph="flt_search" placeholder="Rechercher…"><span style="flex:1"></span><span class="view-mount" style="margin-right:8px"></span><span class="sort-mount" style="margin-right:8px"></span><span class="density-mount"></span></div>
         <div id="linkDetailsArea"></div>
       </div>
     </div>
@@ -7410,7 +7416,7 @@ function builtinCols(table){
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
     {key:"mid",label:t("th_measure_id"),sort:"mid",cell:x=>'<span class="id-badge">'+esc(x.measure)+'</span>'},
     {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:x=>{const m=measureById(x.measure);return esc(m?m.label:"—");}},
-    {key:"notes",label:t("f_notes"),sort:"notes",text:true,cell:x=>esc(mdToText(x.comment)||"—")},
+    {key:"notes",label:t("f_notes"),sort:"notes",text:true,detail:true,cell:x=>esc(mdToText(x.comment)||"—")},
   ];
 }
 function cfIsTextCol(f){return f&&(f.type==="text"||f.type==="textarea"||(f.type==="computed"&&(f.result_type||"number")==="text"));}
@@ -7454,16 +7460,54 @@ function regTableElFor(table){
 }
 /* Remplit le point de montage de densité d'une vue (barres d'outils statiques risks/measures/links). */
 function mountDensity(sel,table){const m=document.querySelector(sel);if(m)m.innerHTML=densitySegHTML(table);}
+function mountView(sel,table){const m=document.querySelector(sel);if(m)m.innerHTML=viewSegHTML(table);}
+/* Rendu générique d'un registre colMap (risks/measures/links) selon la vue courante (Tableau /
+   Maître·détail / Cartes). Réutilise le moteur de colonnes + le modèle de placement. `ctx` fournit
+   les sélecteurs DOM et les comportements par ligne (rid, wireRow). */
+function paintColRegistre(table,list,ctx){
+  const view=tableView(table);
+  if(ctx.viewMountSel)mountView(ctx.viewMountSel,table);
+  if(ctx.densityMountSel)mountDensity(ctx.densityMountSel,table);
+  const tb=document.querySelector(ctx.tbodySel);
+  const scroll=document.querySelector(ctx.scrollSel);
+  const cardsHost=document.querySelector(ctx.cardsSel);
+  if(view==="cards"){
+    if(scroll)scroll.hidden=true;
+    if(cardsHost){cardsHost.hidden=false;cardsHost.innerHTML=list.length?colCardsHTML(table,list):"";
+      if(!cardsHost._wired){cardsHost._wired=true;cardsHost.addEventListener("click",e=>{
+        if(e.target.closest("button,a[href],[data-open-m],[data-open-r]"))return;
+        const card=e.target.closest(".reg-card");if(!card)return;
+        const ed=card.querySelector("[data-edit-r],[data-edit-m],[data-edit-l]");if(ed)ed.click();   // réutilise la délégation d'édition
+      });}}
+    if(tb)tb.innerHTML="";
+  }else{
+    if(scroll)scroll.hidden=false;
+    if(cardsHost){cardsHost.hidden=true;cardsHost.innerHTML="";}
+    if(tb)tb.innerHTML="";
+    const headTr=document.querySelector(ctx.headTrSel);
+    if(headTr)renderColHead(table,headTr,ctx.tableElId,table,view);
+    applyRegClasses(document.getElementById(ctx.tableElId),table,view);
+    const chev=view==="master_detail"&&hasColDetail(table), nCols=colsForView(table,view).length+(chev?1:0);
+    list.forEach(row=>{
+      const tr=document.createElement("tr");tr.style.cursor="pointer";tr.dataset.rid=ctx.rid(row);
+      tr.innerHTML=renderColRow(table,row,view);
+      ctx.wireRow(tr,row);
+      tb.appendChild(tr);
+      if(chev){const dr=document.createElement("tr");dr.className="md-detail-row";dr.hidden=true;
+        dr.innerHTML='<td colspan="'+nCols+'">'+colDetailGridHTML(table,row)+'</td>';tb.appendChild(dr);}
+    });
+    if(tb)markClippedCells(tb);
+  }
+  scheduleRegSizing();
+}
 /* Clic sur le contrôle de densité (délégué) : mémorise, applique la classe à la table, met à jour le
    contrôle, et re-borne le conteneur (les hauteurs de ligne changent). */
 document.addEventListener("click",e=>{const btn=e.target.closest(".density-seg [data-density]");if(!btn)return;
   const table=btn.dataset.dtable,v=btn.dataset.density;
+  if(tableDensity(table)===v)return;
   setTableDensity(table,v);
-  const el=regTableElFor(table);
-  applyRegDensity(el,table);
-  if(el)markClippedCells(el);   // le padding/police modifie l'écrêtage des cellules
-  const seg=btn.closest(".density-seg");if(seg)seg.querySelectorAll("[data-density]").forEach(x=>x.classList.toggle("active",x.dataset.density===v));
-  syncSegAria();scheduleRegSizing();
+  // Re-rendu : applique densité + classes de vue (md), remet le contrôle actif, re-borne le conteneur.
+  if(table.indexOf("objects.")===0)renderObjects();else rerenderTable(table);
 });
 /* Clic sur le sélecteur de vue (délégué) : mémorise et re-rend le registre. Objets uniquement pour
    l'instant (bénéficiaire principal ; risques/mesures/liens suivront). */
@@ -7471,7 +7515,7 @@ document.addEventListener("click",e=>{const btn=e.target.closest(".view-seg [dat
   const table=btn.dataset.vtable,v=btn.dataset.viewMode;
   if(tableView(table)===v)return;
   setTableView(table,v);
-  if(table.indexOf("objects.")===0)renderObjects();
+  if(table.indexOf("objects.")===0)renderObjects();else rerenderTable(table);
 });
 /* Dépliage/repliage d'une ligne en vue Maître·détail (délégué). État non persisté. */
 document.addEventListener("click",e=>{const chev=e.target.closest(".md-chev");if(!chev)return;
@@ -7586,9 +7630,11 @@ function rerenderTable(table){if(table==="risks")renderRisks();else if(table==="
 
 /* Construit la ligne d'en-tête (thead > tr) : identifiant épinglé, colonnes déplaçables,
    puis l'engrenage du menu dans la cellule Actions. tableElId sert au tri et aux repères. */
-function renderColHead(table,trEl,tableElId,stKey){
+function renderColHead(table,trEl,tableElId,stKey,view){
   trEl.innerHTML="";
-  effectiveCols(table).forEach(c=>{
+  const md=view==="master_detail", chev=md&&hasColDetail(table);
+  if(chev){const th=document.createElement("th");th.className="md-chev-col";trEl.appendChild(th);}   // colonne du chevron
+  colsForView(table,view).forEach(c=>{
     const th=document.createElement("th");
     if(c.pinned==="last"){
       th.className="colhead-actions";
@@ -7598,7 +7644,7 @@ function renderColHead(table,trEl,tableElId,stKey){
     }
     if(c.sort){th.dataset.sort=c.sort;}
     if(c.pinned==="first"){
-      th.className="col-pinned";
+      th.className="col-pinned"+(chev?" md-id-col":"");   // en Maître·détail, l'ID est figé à droite du chevron
       th.innerHTML='<span class="thlabel"><span class="pin" title="'+esc(t("cols_pinned"))+'">📌</span>'+esc(c.label)+'</span>'+(c.sort?'<span class="sort-ind"></span>':'');
     }else{
       th.className="col-move";th.draggable=true;th.dataset.col=c.key;
@@ -7609,8 +7655,10 @@ function renderColHead(table,trEl,tableElId,stKey){
   });
   updateSortInd(tableElId,listState[stKey]);
 }
-function renderColRow(table,row){
-  return effectiveCols(table).map(c=>{
+function renderColRow(table,row,view){
+  const md=view==="master_detail", chev=md&&hasColDetail(table);
+  const lead=chev?'<td class="md-chev-col"><button class="md-chev" type="button" aria-expanded="false" aria-label="'+esc(t("md_expand"))+'"></button></td>':'';
+  return lead+colsForView(table,view).map(c=>{
     if(c.pinned==="last")return actionCell(table,row);
     const inner=c.cell(row);
     if(c.text)return '<td data-col="'+esc(c.key)+'"><div class="cell-clip" data-label="'+esc(c.label||"")+'">'+inner+'</div></td>';
@@ -7649,11 +7697,66 @@ function clipRowDblClick(e,editFn){   // double-clic sur une cellule tronquée �
 let _clipRz=null;
 window.addEventListener("resize",()=>{if(_clipRz)clearTimeout(_clipRz);
   _clipRz=setTimeout(()=>{document.querySelectorAll("#risksTable,#measuresTable,#objectsBody,#linkDetailsArea").forEach(el=>{if(el.offsetParent!==null)markClippedCells(el);});},150);});
-function actionCell(table,row){
-  if(table==="risks")return '<td><div class="actions"><button class="btn icon sm" data-edit-r="'+esc(row.id)+'"'+a11y("a11y_edit_risk",row.id)+'>✎</button><button class="btn icon sm" data-dup-r="'+esc(row.id)+'"'+a11y("a11y_dup_risk",row.id)+'>⧉</button><button class="btn icon sm" data-del-r="'+esc(row.id)+'"'+a11y("a11y_del_risk",row.id)+'>🗑</button></div></td>';
-  if(table==="measures")return '<td><div class="actions"><button class="btn icon sm" data-edit-m="'+esc(row.id)+'"'+a11y("a11y_edit_measure",row.id)+'>✎</button><button class="btn icon sm" data-dup-m="'+esc(row.id)+'"'+a11y("a11y_dup_measure",row.id)+'>⧉</button><button class="btn icon sm" data-del-m="'+esc(row.id)+'"'+a11y("a11y_del_measure",row.id)+'>🗑</button></div></td>';
+function actionButtons(table,row){
+  if(table==="risks")return '<button class="btn icon sm" data-edit-r="'+esc(row.id)+'"'+a11y("a11y_edit_risk",row.id)+'>✎</button><button class="btn icon sm" data-dup-r="'+esc(row.id)+'"'+a11y("a11y_dup_risk",row.id)+'>⧉</button><button class="btn icon sm" data-del-r="'+esc(row.id)+'"'+a11y("a11y_del_risk",row.id)+'>🗑</button>';
+  if(table==="measures")return '<button class="btn icon sm" data-edit-m="'+esc(row.id)+'"'+a11y("a11y_edit_measure",row.id)+'>✎</button><button class="btn icon sm" data-dup-m="'+esc(row.id)+'"'+a11y("a11y_dup_measure",row.id)+'>⧉</button><button class="btn icon sm" data-del-m="'+esc(row.id)+'"'+a11y("a11y_del_measure",row.id)+'>🗑</button>';
   const key=esc(row.risk)+'|'+esc(row.measure);
-  return '<td><div class="actions"><button class="btn icon sm" data-edit-l="'+key+'"'+a11y("a11y_edit_link",row.risk,row.measure)+'>✎</button><button class="btn icon sm" data-del-l="'+key+'"'+a11y("a11y_del_link",row.risk,row.measure)+'>🗑</button></div></td>';
+  return '<button class="btn icon sm" data-edit-l="'+key+'"'+a11y("a11y_edit_link",row.risk,row.measure)+'>✎</button><button class="btn icon sm" data-del-l="'+key+'"'+a11y("a11y_del_link",row.risk,row.measure)+'>🗑</button>';
+}
+function actionCell(table,row){return '<td><div class="actions">'+actionButtons(table,row)+'</div></td>';}
+/* ---- Vues Maître·détail / Cartes pour les registres colMap (risks/measures/links) ----
+   Réutilisent les objets colonne (c.cell / c.label) et le modèle de placement (piste 2). */
+function hasColDetail(table){return detailColKeys(table).length>0;}
+/* Colonnes affichées en en-tête/lignes selon la vue. Maître·détail : ID (épinglé) + colonnes en
+   ligne + Actions (le détail descend au tiroir). Tableau : toutes les colonnes visibles. */
+function colsForView(table,view){
+  if(view!=="master_detail")return effectiveCols(table);
+  const map=colMap(table), first=pinnedFirstKey(table), arr=[];
+  if(first&&map[first])arr.push(map[first]);
+  inlineColKeys(table).forEach(k=>{if(map[k])arr.push(map[k]);});
+  if(map["__act"])arr.push(map["__act"]);
+  return arr;
+}
+/* Tiroir de détail (Maître·détail) : paires libellé→valeur des colonnes « en détail ». */
+function colDetailGridHTML(table,row){
+  const map=colMap(table),parts=[];
+  detailColKeys(table).forEach(k=>{const c=map[k];if(!c)return;
+    parts.push('<span class="md-lbl">'+esc(c.label||"")+'</span><div class="md-val">'+c.cell(row)+'</div>');});
+  if(!parts.length)parts.push('<div class="md-none">—</div>');
+  return '<div class="md-detail">'+parts.join("")+'</div>';
+}
+/* Titre d'une fiche (vue Cartes) selon le registre. */
+function colRowTitle(table,row){
+  if(table==="risks"||table==="measures")return row.label||"";
+  const r=riskById(row.risk),m=measureById(row.measure);
+  return (r?r.label:row.risk)+' – '+(m?m.label:row.measure);
+}
+/* Vue Cartes d'un registre colMap : grille de fiches (ID + titre + actions, colonnes en ligne en
+   paires, colonnes en détail en blocs). Réutilise la présentation des cartes d'objets (.obj-cards). */
+function colRowIdBadge(table,row){
+  const id=table==="links"?esc(row.risk)+' · '+esc(row.measure):esc(row.id);
+  return '<span class="id-badge">'+id+'</span>';
+}
+function colCardsHTML(table,list){
+  const map=colMap(table), lk=labelColKey(table);   // le libellé sert de titre → hors des paires
+  const inlineCols=inlineColKeys(table).filter(k=>k!==lk).map(k=>map[k]).filter(Boolean);
+  const detailCols=detailColKeys(table).map(k=>map[k]).filter(Boolean);
+  let h='<div class="obj-cards">';
+  list.forEach(row=>{
+    h+='<div class="obj-card reg-card" data-regrow="1">'+
+      '<div class="oc-head">'+colRowIdBadge(table,row)+'<span class="oc-title">'+esc(colRowTitle(table,row))+'</span>'+
+        '<div class="actions">'+actionButtons(table,row)+'</div></div>';
+    if(inlineCols.length)h+='<div class="oc-pairs">'+inlineCols.map(c=>'<div class="oc-pair"><span class="oc-k">'+esc(c.label||"")+'</span><span class="oc-v">'+c.cell(row)+'</span></div>').join("")+'</div>';
+    if(detailCols.length)h+='<div class="oc-blocks">'+detailCols.map(c=>'<div class="oc-block"><span class="oc-k">'+esc(c.label||"")+'</span><div class="oc-v">'+c.cell(row)+'</div></div>').join("")+'</div>';
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+/* Classe de la table selon densité + vue (Maître·détail → md / md-haschev). */
+function applyRegClasses(tableEl,table,view){
+  if(!tableEl)return;
+  const d=tableDensity(table), md=view==="master_detail", chev=md&&hasColDetail(table);
+  tableEl.className="reg"+(d!=="comfortable"?" "+d:"")+(md?" md":"")+(chev?" md-haschev":"");
 }
 
 /* ---- Glisser-déposer des en-têtes ---- */
@@ -7975,8 +8078,7 @@ document.addEventListener("keydown",e=>{
    VUE RISQUES
    ============================================================ */
 function renderRisks(){
-  const st=listState.risks, tb=document.getElementById("risksTable");tb.innerHTML="";
-  renderColHead("risks",document.querySelector("#risksTableEl thead tr"),"risksTableEl","risks");
+  const st=listState.risks;
   // Les filtres par champ perso s'appliquent avant les filtres propres à la vue : le
   // compteur « n sur N » compare alors ce qui est affiché à ce qui reste filtrable ici.
   const all=visibleRisks();   // le filtre par catégorie est servi par une puce de la barre
@@ -7992,22 +8094,19 @@ function renderRisks(){
   // Comparaison au total réel de l'analyse, et non au sous-ensemble déjà réduit par les
   // filtres de champ perso : sinon « 5 sur 5 » masquerait le fait que 12 fiches sont écartées.
   setFilterCount("risks",list.length,analyse.risks.length);
-  list.forEach(r=>{
-    const tr=document.createElement("tr");tr.style.cursor="pointer";
-    tr.dataset.rid=r.id;
-    tr.innerHTML=renderColRow("risks",r);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
-    tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openRiskModal(r.id,null,td&&td.dataset.col));});
-    tb.appendChild(tr);
+  paintColRegistre("risks",list,{
+    viewMountSel:"#view-risks .view-mount", densityMountSel:"#view-risks .density-mount",
+    tbodySel:"#risksTable", scrollSel:"#view-risks .table-scroll", cardsSel:"#view-risks .reg-cards-host",
+    headTrSel:"#risksTableEl thead tr", tableElId:"risksTableEl", rid:r=>r.id,
+    wireRow:(tr,r)=>{
+      tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,.md-chev,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
+      tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openRiskModal(r.id,null,td&&td.dataset.col));});
+    }
   });
-  mountDensity("#view-risks .density-mount","risks");
-  applyRegDensity(document.getElementById("risksTableEl"),"risks");   // avant markClippedCells (le padding change l'écrêtage)
-  markClippedCells(tb);
-  scheduleRegSizing();
 }
 document.getElementById("btnAddRisk").addEventListener("click",()=>openRiskModal(null));
 document.getElementById("btnImportRisks").addEventListener("click",()=>openImportModal("risks"));
-document.getElementById("risksTable").addEventListener("click",e=>{
+document.getElementById("view-risks").addEventListener("click",e=>{   // niveau vue : couvre le tableau ET les cartes
   const ed=e.target.closest("[data-edit-r]");const dl=e.target.closest("[data-del-r]");
   const dp=e.target.closest("[data-dup-r]");if(dp){duplicateRisk(dp.dataset.dupR);return;}
   if(ed)openRiskModal(ed.dataset.editR);
@@ -8158,8 +8257,7 @@ function measurePill(id){
 }
 const TYPES=["technical","organizational","preventive","detective","corrective","deterrent"];
 function renderMeasures(){
-  const st=listState.measures, tb=document.getElementById("measuresTable");tb.innerHTML="";
-  renderColHead("measures",document.querySelector("#measuresTableEl thead tr"),"measuresTableEl","measures");
+  const st=listState.measures;
   const all=visibleMeasures();   // type et statut sont servis par des puces de la barre
   const q=normV(st.q);
   let list=all.filter(m=>{
@@ -8171,18 +8269,15 @@ function renderMeasures(){
   if(!list.length){emptyEl.style.display="block";emptyEl.textContent=all.length?t("flt_none"):t("measures_empty");}
   else emptyEl.style.display="none";
   setFilterCount("measures",list.length,analyse.measures.length);
-  list.forEach(m=>{
-    const tr=document.createElement("tr");tr.style.cursor="pointer";
-    tr.dataset.rid=m.id;
-    tr.innerHTML=renderColRow("measures",m);
-    tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
-    tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openMeasureModal(m.id,null,td&&td.dataset.col));});
-    tb.appendChild(tr);
+  paintColRegistre("measures",list,{
+    viewMountSel:"#view-measures .view-mount", densityMountSel:"#view-measures .density-mount",
+    tbodySel:"#measuresTable", scrollSel:"#view-measures .table-scroll", cardsSel:"#view-measures .reg-cards-host",
+    headTrSel:"#measuresTableEl thead tr", tableElId:"measuresTableEl", rid:m=>m.id,
+    wireRow:(tr,m)=>{
+      tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,.md-chev,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
+      tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openMeasureModal(m.id,null,td&&td.dataset.col));});
+    }
   });
-  mountDensity("#view-measures .density-mount","measures");
-  applyRegDensity(document.getElementById("measuresTableEl"),"measures");
-  markClippedCells(tb);
-  scheduleRegSizing();
 }
 document.getElementById("btnAddMeasure").addEventListener("click",()=>openMeasureModal(null));
 document.getElementById("btnImportMeasures").addEventListener("click",()=>openImportModal("measures"));
@@ -8204,7 +8299,7 @@ function bindSort(tableId,stKey,render){const el=document.getElementById(tableId
     render();});}
 bindSort("risksTableEl","risks",renderRisks);
 bindSort("measuresTableEl","measures",renderMeasures);
-document.getElementById("measuresTable").addEventListener("click",e=>{
+document.getElementById("view-measures").addEventListener("click",e=>{   // niveau vue : couvre le tableau ET les cartes
   const ed=e.target.closest("[data-edit-m]");const dl=e.target.closest("[data-del-m]");
   const dp=e.target.closest("[data-dup-m]");if(dp){duplicateMeasure(dp.dataset.dupM);return;}
   if(ed)openMeasureModal(ed.dataset.editM);
@@ -8520,23 +8615,30 @@ function renderLinkDetails(){
     return normV(hay).indexOf(q)>=0;});
   setFilterCount("details",list.length,analyse.treatments.length);
   list=list.slice().sort(linkCmp(st.sort));if(st.dir<0)list.reverse();
-  // Tableau bâti en DOM pour réutiliser le moteur de colonnes (en-tête déplaçable + engrenage).
+  mountView("#view-links .view-mount","links");
+  mountDensity("#view-links .density-mount","links");
+  const view=tableView("links");
   area.innerHTML="";
+  if(view==="cards"){
+    area.innerHTML='<div class="reg-cards-host" data-reg="links">'+(list.length?colCardsHTML("links",list):'<div class="empty">'+esc(t("flt_none"))+'</div>')+'</div>';
+    markClippedCells(area);scheduleRegSizing();return;
+  }
+  // Tableau (ou Maître·détail) bâti en DOM pour réutiliser le moteur de colonnes.
   const scroll=document.createElement("div");scroll.className="table-scroll";area.appendChild(scroll);
-  const table=document.createElement("table");table.id="linkDetailsTableEl";table.className="reg";
+  const table=document.createElement("table");table.id="linkDetailsTableEl";applyRegClasses(table,"links",view);
   const thead=document.createElement("thead"),htr=document.createElement("tr");thead.appendChild(htr);
   const tbody=document.createElement("tbody");
   table.appendChild(thead);table.appendChild(tbody);scroll.appendChild(table);
-  renderColHead("links",htr,"linkDetailsTableEl","links");
-  const nbCols=effectiveCols("links").length;
-  if(!list.length){tbody.innerHTML='<tr><td colspan="'+nbCols+'" class="muted">'+esc(t("flt_none"))+'</td></tr>';return;}
+  renderColHead("links",htr,"linkDetailsTableEl","links",view);
+  const chev=view==="master_detail"&&hasColDetail("links"), nCols=colsForView("links",view).length+(chev?1:0);
+  if(!list.length){tbody.innerHTML='<tr><td colspan="'+nCols+'" class="muted">'+esc(t("flt_none"))+'</td></tr>';scheduleRegSizing();return;}
   list.forEach(tr=>{
     const row=document.createElement("tr");row.className="linkrow";row.dataset.r=tr.risk;row.dataset.m=tr.measure;row.style.cursor="pointer";
-    row.innerHTML=renderColRow("links",tr);
+    row.innerHTML=renderColRow("links",tr,view);
     tbody.appendChild(row);
+    if(chev){const dr=document.createElement("tr");dr.className="md-detail-row";dr.hidden=true;
+      dr.innerHTML='<td colspan="'+nCols+'">'+colDetailGridHTML("links",tr)+'</td>';tbody.appendChild(dr);}
   });
-  mountDensity("#view-links .density-mount","links");
-  applyRegDensity(table,"links");
   markClippedCells(tbody);
   scheduleRegSizing();
 }
@@ -8562,7 +8664,9 @@ document.getElementById("linkDetailsArea").addEventListener("click",e=>{
         markDirty();renderLinks();renderRisks();renderMeasures();updateBadges();toast(t("toast_restored"));
       });
     },{danger:true});return;}
-  if(e.target.closest("a[href],[data-open-m],[data-open-r]"))return;   // lien URL / pastille R·M : action propre, sans ouvrir la fiche
+  if(e.target.closest("a[href],[data-open-m],[data-open-r],.md-chev"))return;   // lien URL / pastille R·M / chevron : action propre, sans ouvrir la fiche
+  const card=e.target.closest(".reg-card");   // vue Cartes : clic sur une fiche → réutilise le bouton d'édition
+  if(card){const ed=card.querySelector("[data-edit-l]");if(ed)ed.click();return;}
   if(clipRowClick(e))return;   // cellule texte tronquée : clic = voir (double-clic = éditer)
   const row=e.target.closest(".linkrow");if(!row)return;
   const td=e.target.closest("td[data-col]");

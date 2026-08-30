@@ -30,3 +30,16 @@ def test_create_measure_via_modal(app):
     app.click("#modalOk")
     assert app.js("analyse.measures.length") == before + 1
     assert not app.console_errors()
+
+
+def test_measures_cards_view(app):
+    """Registre Mesures : vue Cartes (fiche par mesure, clic ouvre l'éditeur)."""
+    app.load("ebios.rae.json")
+    app.goto("measures")
+    app.js("document.querySelector('#view-measures .view-seg [data-view-mode=\"cards\"]').click()")
+    assert app.js("document.querySelectorAll('#view-measures .reg-cards-host .obj-card').length") == app.js("analyse.measures.length")
+    assert app.js("document.querySelector('#view-measures .table-scroll').hidden")
+    app.js("document.querySelector('#view-measures .obj-card [data-edit-m]').click()")
+    assert app.modal_open()
+    app.close_modals()
+    assert not app.console_errors()

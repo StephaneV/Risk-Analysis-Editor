@@ -48,3 +48,20 @@ def test_links_details_scrollbar_survives_subtab_switch(app):
     assert r["first"]["fill"] and r["first"]["maxH"], "Détails non borné au premier affichage"
     assert r["second"]["fill"] and r["second"]["maxH"], "Détails a perdu son cadre borné après l'aller-retour"
     assert not app.console_errors()
+
+
+def test_links_master_detail_view(app):
+    """Registre Liens : vue Maître·détail (chevron + tiroir « Notes » relégué au détail)."""
+    app.load("ebios.rae.json")
+    app.goto("links")
+    app.js("document.querySelector('#linksSeg [data-mode=\"details\"]').click()")
+    app.js("document.querySelector('#view-links .view-seg [data-view-mode=\"master_detail\"]').click()")
+    tbl = "#view-links table.reg"
+    assert app.js(f"document.querySelector('{tbl}').classList.contains('md-haschev')"), "Maître·détail non actif (pas de colonne détail ?)"
+    nlinks = app.js("visibleTreatments().length")
+    assert app.js(f"document.querySelectorAll('{tbl} .md-chev').length") == nlinks
+    # déplier un tiroir → libellé « Notes »
+    app.js(f"document.querySelector('{tbl} .md-chev').click()")
+    labels = app.js(f"[...document.querySelector('{tbl} tr.md-detail-row .md-detail').querySelectorAll('.md-lbl')].map(x=>x.textContent)")
+    assert any("ote" in l for l in labels), f"tiroir sans la colonne Notes : {labels}"
+    assert not app.console_errors()
