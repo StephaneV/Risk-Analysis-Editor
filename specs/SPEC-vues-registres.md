@@ -190,7 +190,11 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
    tiroir de détail sous la ligne (paires libellé→valeur, Markdown rendu, texte complet, champs vides
    masqués) ; tri par en‑tête conservé ; clic‑ligne ouvre la fiche, le chevron non. *Risques / Mesures
    / Liens : à suivre (mêmes helpers ; peu de colonnes, besoin moindre).*
-4. **⚙ Colonnes 3 états** — contrôle En ligne/En détail/Masqué + préréglages.
+4. **⚙ Colonnes 3 états** — ✅ *fait (Objets)* : bouton ⚙ dans la barre d'outils de chaque type
+   d'objet ouvrant un popover qui liste les attributs avec un contrôle 3 états (En ligne / En détail /
+   Masqué) ; « Masqué » = `hide_table`, « En ligne » / « En détail » = placement (`display.detail`).
+   ID et attribut de libellé verrouillés « En ligne ». *Préréglages et extension à Risques / Mesures /
+   Liens : à suivre.*
 5. **Vue Cartes** (piste 3) — grille de fiches + bascule de vue.
 6. **Menu « Trier par »** — tri des champs de détail / en cartes.
 7. **Pleine largeur** (piste 5) — option + bouton d'en‑tête.

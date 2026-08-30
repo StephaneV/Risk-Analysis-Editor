@@ -573,6 +573,14 @@
   .col-menu .cm-foot{display:flex;justify-content:space-between;align-items:center;
     border-top:1px solid var(--border);margin-top:6px;padding:8px 6px 3px}
   .col-menu .cm-hint{color:var(--muted);font-size:11px}
+  /* Contrôle 3 états (En ligne / En détail / Masqué) — gestionnaire de colonnes des objets. */
+  .col-menu .cm-row-pl{flex-direction:column;align-items:stretch;gap:6px;cursor:default}
+  .col-menu .cm-row-pl:hover{background:none}
+  .col-menu .cm-pl{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden}
+  .col-menu .cm-pl-b{flex:1;text-align:center;background:var(--panel);border:none;border-left:1px solid var(--border);color:var(--muted);font-size:11px;padding:5px 4px;cursor:pointer;white-space:nowrap}
+  .col-menu .cm-pl-b:first-child{border-left:none}
+  .col-menu .cm-pl-b:hover{background:var(--panel-2);color:var(--text)}
+  .col-menu .cm-pl-b.active{background:var(--accent);color:#fff}
 
   /* ---------- Aides à la sécurité et à la navigation ---------- */
   /* Bandeau d'avertissement (grille déjà cotée) : teinte ambre translucide, lisible sur les deux thèmes. */
@@ -1880,6 +1888,7 @@ const I18N = {
     dens_label:"Densité", dens_comfortable:"Confort", dens_compact:"Compact", dens_dense:"Dense",
     view_label:"Vue", view_table:"Tableau", view_master_detail:"Maître·détail",
     md_expand:"Déplier le détail", md_collapse:"Replier le détail", md_no_detail:"Aucune colonne en détail (toutes en ligne).",
+    pl_inline:"En ligne", pl_detail:"En détail", pl_hidden:"Masqué", cols_pl_hint:"« En détail » : visible au tableau et dans le tiroir en vue Maître·détail.",
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
     flt_overdue_field:"En retard",
@@ -2277,6 +2286,7 @@ const I18N = {
     dens_label:"Density", dens_comfortable:"Comfort", dens_compact:"Compact", dens_dense:"Dense",
     view_label:"View", view_table:"Table", view_master_detail:"Master·detail",
     md_expand:"Expand details", md_collapse:"Collapse details", md_no_detail:"No columns in detail (all inline).",
+    pl_inline:"Inline", pl_detail:"In detail", pl_hidden:"Hidden", cols_pl_hint:"“In detail”: visible in the table and in the master-detail drawer.",
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
     flt_overdue_field:"Overdue",
@@ -2674,6 +2684,7 @@ const I18N = {
     dens_label:"Densità", dens_comfortable:"Comodo", dens_compact:"Compatto", dens_dense:"Denso",
     view_label:"Vista", view_table:"Tabella", view_master_detail:"Elenco·dettaglio",
     md_expand:"Espandi il dettaglio", md_collapse:"Comprimi il dettaglio", md_no_detail:"Nessuna colonna in dettaglio (tutte in linea).",
+    pl_inline:"In linea", pl_detail:"In dettaglio", pl_hidden:"Nascosto", cols_pl_hint:"« In dettaglio » : visibile nella tabella e nel riquadro elenco-dettaglio.",
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
     flt_overdue_field:"In ritardo",
@@ -7664,6 +7675,57 @@ colMenu.addEventListener("click",e=>{
 document.addEventListener("click",e=>{if(colMenu.style.display==="none")return;if(colMenu.contains(e.target)||e.target.closest(".colgear"))return;closeColMenu();});
 window.addEventListener("resize",closeColMenu);
 
+/* ---- ⚙ Colonnes des OBJETS : contrôle 3 états par attribut (En ligne / En détail / Masqué) ----
+   « Masqué » = attribut.hide_table (mécanisme existant) ; « En ligne » / « En détail » = placement
+   (setColPlacement / display.detail). L'ID et l'attribut de LIBELLÉ (name_attr) sont verrouillés
+   « En ligne ». Objets n'ayant pas de moteur colMap, on agit directement sur ot.attributes. */
+function objColPlacement(ot,attr){if(attr.hide_table)return "hidden";return colPlacement("objects."+ot.code,"cf:"+attr.code);}
+function setObjColPlacement(otCode,attrCode,placement){
+  const ot=objectTypeByCode(otCode);if(!ot)return;
+  const attr=(ot.attributes||[]).find(a=>a.code===attrCode);if(!attr||attr.code===ot.name_attr)return;   // libellé verrouillé
+  if(placement==="hidden"){attr.hide_table=true;}
+  else{delete attr.hide_table;setColPlacement("objects."+otCode,"cf:"+attr.code,placement==="detail"?"detail":"inline");}
+  markDirty();renderObjects();
+}
+const objColMenu=document.createElement("div");objColMenu.className="col-menu";objColMenu.style.display="none";document.body.appendChild(objColMenu);
+function closeObjColMenu(){objColMenu.style.display="none";objColMenu._ot=null;}
+function toggleObjColMenu(otCode,gear){
+  if(objColMenu.style.display!=="none"&&objColMenu._ot===otCode){closeObjColMenu();return;}
+  objColMenu._ot=otCode;buildObjColMenu(otCode);objColMenu.style.display="block";
+  const r=gear.getBoundingClientRect(),w=objColMenu.offsetWidth;
+  objColMenu.style.top=(r.bottom+6)+"px";objColMenu.style.left=Math.max(8,r.right-w)+"px";
+}
+function objPlSegHTML(otCode,attr){
+  const cur=objColPlacement(objectTypeByCode(otCode),attr);
+  const b=(v,lbl)=>'<button type="button" class="cm-pl-b'+(cur===v?" active":"")+'" data-pl="'+v+'" aria-pressed="'+(cur===v)+'">'+esc(t(lbl))+'</button>';
+  return '<div class="cm-pl" data-code="'+esc(attr.code)+'">'+b("inline","pl_inline")+b("detail","pl_detail")+b("hidden","pl_hidden")+'</div>';
+}
+function buildObjColMenu(otCode){
+  const ot=objectTypeByCode(otCode);if(!ot){objColMenu.innerHTML="";return;}
+  let h='<div class="cm-title">'+esc(t("cols_shown"))+'</div><div class="cm-list">';
+  h+='<div class="cm-row locked"><span class="cm-lock">🔒</span><span class="cm-name">'+esc(t("obj_id"))+'</span><span class="cm-pinned">'+esc(t("cols_pinned"))+'</span></div>';
+  (ot.attributes||[]).forEach(a=>{
+    if(a.code===ot.name_attr){
+      h+='<div class="cm-row locked"><span class="cm-lock">🔒</span><span class="cm-name">'+esc(cfLabel(a))+'</span><span class="cm-pinned">'+esc(t("ot_name_attr"))+'</span></div>';
+    }else{
+      h+='<div class="cm-row cm-row-pl"><span class="cm-name">'+esc(cfLabel(a))+'</span>'+objPlSegHTML(otCode,a)+'</div>';
+    }
+  });
+  h+='</div><div class="cm-foot"><span class="cm-hint">'+esc(t("cols_pl_hint"))+'</span></div>';
+  objColMenu.innerHTML=h;
+}
+objColMenu.addEventListener("click",e=>{
+  const otCode=objColMenu._ot;if(!otCode)return;
+  const btn=e.target.closest(".cm-pl-b");if(!btn)return;
+  e.stopPropagation();   // buildObjColMenu remplace le contenu → sans ça, le « clic dehors » global fermerait le menu
+  const code=btn.closest(".cm-pl").dataset.code;
+  setObjColPlacement(otCode,code,btn.dataset.pl);   // renderObjects re-rend la carte
+  buildObjColMenu(otCode);                          // rafraîchit l'état actif du popover
+});
+document.addEventListener("click",e=>{const g=e.target.closest(".objcolgear");if(!g)return;e.stopPropagation();toggleObjColMenu(g.dataset.objcolgear,g);});
+document.addEventListener("click",e=>{if(objColMenu.style.display==="none")return;if(objColMenu.contains(e.target)||e.target.closest(".objcolgear"))return;closeObjColMenu();});
+window.addEventListener("resize",closeObjColMenu);
+
 /* ============================================================
    PRODUCTIVITÉ & NAVIGATION TRANSVERSALE
    Duplication de fiche, « Enregistrer et nouveau », pastilles R/M cliquables,
@@ -12532,6 +12594,7 @@ function objTypeCardHTML(ot){
       '<div class="inline" style="gap:6px;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end">'+
         (insts.length?viewSegHTML(dkey):'')+
         (insts.length?densitySegHTML(dkey):'')+
+        (insts.length?'<button class="btn icon sm objcolgear" data-objcolgear="'+esc(ot.code)+'" title="'+esc(t("cols_menu_title"))+'" aria-haspopup="dialog">⚙</button>':'')+
         (insts.length?'<button class="btn ghost sm" data-obj-export="'+esc(ot.code)+'">'+esc(t("btn_export_csv"))+'</button>':'')+
         '<button class="btn ghost sm" data-obj-import="'+esc(ot.code)+'">'+esc(t("btn_import_csv"))+'</button>'+
         '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button>'+

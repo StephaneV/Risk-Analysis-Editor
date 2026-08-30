@@ -434,3 +434,54 @@ def test_object_master_detail_view(app):
     assert r["rowClickOpensModal"], "le clic sur la ligne maître n'ouvre pas la fiche"
     app.close_modals()
     assert not app.console_errors()
+
+
+# ⚙ Colonnes des objets — contrôle 3 états (En ligne / En détail / Masqué). « Masqué » = hide_table ;
+# « En ligne » / « En détail » = placement. ID et attribut de libellé verrouillés. Popover : reste
+# ouvert après un clic, se ferme au clic dehors.
+OBJ_COLMENU = r"""
+() => {
+  const code = 'source_risque', ot = objectTypeByCode(code), tk = 'objects.' + code;
+  setObjMode(code);
+  const gear = document.querySelector('#view-objects .objcolgear');
+  const out = { gearPresent: !!gear };
+  gear.click();
+  const menu = () => [...document.querySelectorAll('.col-menu')].find(m => m.style.display === 'block' && m.querySelector('.cm-pl'));
+  out.opened = !!menu();
+  out.lockedNames = [...menu().querySelectorAll('.cm-row.locked .cm-name')].map(x => x.textContent);
+  // clic « Masqué » sur Catégorie (via l'UI) : reste ouvert + hide_table + hors table
+  const seg = c => [...menu().querySelectorAll('.cm-pl')].find(s => s.dataset.code === c);
+  seg('categorie').querySelector('[data-pl="hidden"]').click();
+  out.stillOpen = !!menu();
+  out.categorieHidden = !!ot.attributes.find(a => a.code === 'categorie').hide_table;
+  out.categorieActive = menu() && !!seg('categorie') ? '' : 'row-gone';  // la ligne existe toujours (attribut masqué reste listé)
+  out.categorieActiveState = seg('categorie').querySelector('.cm-pl-b.active').dataset.pl;
+  // « En détail » sur Ressources → au tiroir en Maître·détail
+  seg('ressources').querySelector('[data-pl="detail"]').click();
+  out.ressourcesPlacement = colPlacement(tk, 'cf:ressources');
+  // verrou : le libellé (name_attr) n'a pas de contrôle 3 états (ligne verrouillée)
+  out.labelHasSeg = !!seg(ot.name_attr);
+  // clic dehors ferme
+  document.body.click();
+  out.closedOnOutside = !menu();
+  return out;
+}
+"""
+
+
+def test_object_column_manager_3states(app):
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(OBJ_COLMENU)
+    assert r["gearPresent"] and r["opened"], "⚙ Colonnes objets absent / ne s'ouvre pas"
+    # ID et libellé verrouillés (listés sans contrôle 3 états).
+    assert "Id" in r["lockedNames"] and "Nom" in r["lockedNames"]
+    assert not r["labelHasSeg"], "l'attribut de libellé ne doit pas avoir de contrôle 3 états"
+    # Masqué = hide_table, popover reste ouvert, état actif reflété.
+    assert r["stillOpen"], "le popover se ferme après un clic (devrait rester ouvert)"
+    assert r["categorieHidden"] and r["categorieActiveState"] == "hidden"
+    # En détail = placement detail.
+    assert r["ressourcesPlacement"] == "detail"
+    # Clic dehors ferme.
+    assert r["closedOnOutside"], "le popover ne se ferme pas au clic dehors"
+    assert not app.console_errors()
