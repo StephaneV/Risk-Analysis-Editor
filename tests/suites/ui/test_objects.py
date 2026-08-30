@@ -262,3 +262,40 @@ def test_registre_edge_shadows_conditional(app):
     # fin : ombre ID visible (contenu caché à gauche), ombre Actions masquée (rien à droite)
     assert r["endLeft"] and not r["endRight"], "état de fin incorrect"
     assert not app.console_errors()
+
+
+# Densité par TYPE d'objet : mémorisée sous extensions.display.density["objects.<code>"], indépendante
+# d'un type à l'autre.
+OBJ_DENSITY = r"""
+() => {
+  const types = analyse.object_types.map(t => t.code);
+  const seg = () => document.querySelector('#view-objects .density-seg');
+  const tbl = () => document.querySelector('#view-objects table.reg');
+  setObjMode(types[0]);
+  seg().querySelector('[data-density="dense"]').click();
+  const firstCls = tbl().className;
+  setObjMode(types[1]);           // autre type : doit rester Confort (indépendant)
+  const secondCls = tbl().className;
+  const secondActive = seg().querySelector('button.active').getAttribute('data-density');
+  setObjMode(types[0]);           // retour : densité conservée
+  const backCls = tbl().className;
+  const dens = ((analyse.extensions||{}).display||{}).density||{};
+  return {
+    firstCls, secondCls, backCls, secondActive,
+    storedFirst: dens['objects.'+types[0]], storedSecond: dens['objects.'+types[1]]
+  };
+}
+"""
+
+
+def test_object_density_per_type(app):
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(OBJ_DENSITY)
+    assert "dense" in r["firstCls"], "densité non appliquée au 1er type"
+    assert r["secondCls"] == "reg", "densité du 1er type déteint sur le 2e (pas indépendante)"
+    assert r["secondActive"] == "comfortable", "2e type : contrôle non revenu à Confort"
+    assert "dense" in r["backCls"], "densité du 1er type non conservée au retour"
+    assert r["storedFirst"] == "dense", "densité du 1er type non mémorisée sous objects.<code>"
+    assert r["storedSecond"] is None, "densité écrite pour le 2e type alors qu'il est en Confort"
+    assert not app.console_errors()

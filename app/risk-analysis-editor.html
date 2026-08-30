@@ -283,6 +283,12 @@
   /* Registre qui remplit la hauteur : le conteneur défile en interne (hauteur posée par JS,
      sizeRegScrollers), barre d'outils et en-tête toujours visibles. */
   .table-scroll.reg-fill{overflow:auto}
+  /* Densité des registres (Confort / Compact / Dense) : réduit le padding des cellules (et un peu la
+     police) pour afficher plus de lignes. Défaut (Confort) = padding de base (9px 11px). */
+  .reg.compact th,.reg.compact td{padding:5px 9px;font-size:12px}
+  .reg.dense th,.reg.dense td{padding:2px 8px;font-size:11.5px}
+  .density-seg{flex:none}
+  .density-seg button{padding:6px 11px}
   td .actions{display:flex;gap:6px;justify-content:flex-end}
   .id-badge{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
     padding:2px 8px;font-size:11px;font-weight:700;color:var(--muted)}
@@ -1138,6 +1144,7 @@
       <div class="card-head">
         <div><h2 data-i18n="risks_title">Registre des risques</h2><div class="caption" style="margin:0" data-i18n="risks_caption">Cliquez sur un risque pour l'éditer.</div></div>
         <div class="spacer" style="flex:1"></div>
+        <span class="density-mount" style="margin-right:8px"></span>
         <button class="btn ghost" id="btnImportRisks" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
         <button class="btn ghost" id="btnExportRisks" style="margin-right:8px" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
         <button class="btn" id="btnAddRisk" data-i18n="btn_add_risk">+ Ajouter un risque</button>
@@ -1160,6 +1167,7 @@
       <div class="card-head">
         <div><h2 data-i18n="measures_title">Mesures de maîtrise</h2><div class="caption" style="margin:0" data-i18n="measures_caption">Actions réduisant la probabilité et/ou la gravité des risques.</div></div>
         <div class="spacer" style="flex:1"></div>
+        <span class="density-mount" style="margin-right:8px"></span>
         <button class="btn ghost" id="btnImportMeasures" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
         <button class="btn ghost" id="btnExportMeasures" style="margin-right:8px" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
         <button class="btn" id="btnAddMeasure" data-i18n="btn_add_measure">+ Ajouter une mesure</button>
@@ -1215,7 +1223,7 @@
         <div class="cross" id="crossArea"></div>
       </div>
       <div class="lpanel" data-lmode="details" style="display:none">
-        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-label="flt_search_links" data-i18n-ph="flt_search" placeholder="Rechercher…"></div>
+        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-label="flt_search_links" data-i18n-ph="flt_search" placeholder="Rechercher…"><span style="flex:1"></span><span class="density-mount"></span></div>
         <div id="linkDetailsArea"></div>
       </div>
     </div>
@@ -1842,6 +1850,7 @@ const I18N = {
     plan_progress:"Avancement", plan_overdue:"en retard", plan_overdue_n:"{0} en retard",
     plan_unassigned:"Non assigné", plan_no_due:"Sans échéance",
     plan_empty:"Aucune mesure. Ajoutez des mesures dans l'onglet « Mesures ».",
+    dens_label:"Densité", dens_comfortable:"Confort", dens_compact:"Compact", dens_dense:"Dense",
     flt_search:"Rechercher…", flt_cat_all:"Toutes les catégories", flt_type_all:"Tous les types",
     flt_status_all:"Tous les statuts", flt_resp_all:"Tous les responsables", flt_overdue:"En retard uniquement",
     flt_overdue_field:"En retard",
@@ -2236,6 +2245,7 @@ const I18N = {
     plan_progress:"Progress", plan_overdue:"overdue", plan_overdue_n:"{0} overdue",
     plan_unassigned:"Unassigned", plan_no_due:"No due date",
     plan_empty:"No measure. Add measures in the “Measures” tab.",
+    dens_label:"Density", dens_comfortable:"Comfort", dens_compact:"Compact", dens_dense:"Dense",
     flt_search:"Search…", flt_cat_all:"All categories", flt_type_all:"All types",
     flt_status_all:"All statuses", flt_resp_all:"All owners", flt_overdue:"Overdue only",
     flt_overdue_field:"Overdue",
@@ -2630,6 +2640,7 @@ const I18N = {
     plan_progress:"Avanzamento", plan_overdue:"in ritardo", plan_overdue_n:"{0} in ritardo",
     plan_unassigned:"Non assegnato", plan_no_due:"Senza scadenza",
     plan_empty:"Nessuna misura. Aggiungi misure nella scheda « Misure ».",
+    dens_label:"Densità", dens_comfortable:"Comodo", dens_compact:"Compatto", dens_dense:"Denso",
     flt_search:"Cerca…", flt_cat_all:"Tutte le categorie", flt_type_all:"Tutti i tipi",
     flt_status_all:"Tutti gli stati", flt_resp_all:"Tutti i responsabili", flt_overdue:"Solo in ritardo",
     flt_overdue_field:"In ritardo",
@@ -7333,6 +7344,38 @@ function colMap(table){const m={};allCols(table).forEach(c=>m[c.key]=c);return m
 function pinnedFirstKey(table){const c=allCols(table).find(x=>x.pinned==="first");return c?c.key:null;}
 function defaultColOrder(table){return allCols(table).filter(c=>c.pinned!=="last"&&c.def!==false).map(c=>c.key);}
 function colConfigStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.columns=d.columns||{};}
+/* Densité d'un registre (piste 1) : "comfortable" (défaut) | "compact" | "dense", mémorisée par table
+   sous extensions.display.density (même patron que .columns). Clé : "risks"/"measures"/"links" ou
+   "objects.<code>" par type d'objet. Lecture paresseuse (aucune écriture de config vide). */
+function densityStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.density=d.density||{};}
+function tableDensity(table){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.density;const x=v&&v[table];return (x==="compact"||x==="dense")?x:"comfortable";}
+function setTableDensity(table,val){if(val==="comfortable"){const s=densityStore();delete s[table];}else densityStore()[table]=val;markDirty();}
+function densitySegHTML(table){
+  const cur=tableDensity(table);
+  const b=(v,lbl)=>'<button type="button" data-density="'+v+'" data-dtable="'+esc(table)+'"'+(cur===v?' class="active"':'')+'>'+esc(t(lbl))+'</button>';
+  return '<div class="seg density-seg" role="group" aria-label="'+esc(t("dens_label"))+'">'+b("comfortable","dens_comfortable")+b("compact","dens_compact")+b("dense","dens_dense")+'</div>';
+}
+function applyRegDensity(tableEl,table){if(!tableEl)return;tableEl.classList.remove("compact","dense");const d=tableDensity(table);if(d!=="comfortable")tableEl.classList.add(d);}
+function regTableElFor(table){
+  if(table==="risks")return document.getElementById("risksTableEl");
+  if(table==="measures")return document.getElementById("measuresTableEl");
+  if(table==="links")return document.getElementById("linkDetailsTableEl");
+  if(table.indexOf("objects.")===0)return document.querySelector("#view-objects table.reg");   // carte du type affiché
+  return null;
+}
+/* Remplit le point de montage de densité d'une vue (barres d'outils statiques risks/measures/links). */
+function mountDensity(sel,table){const m=document.querySelector(sel);if(m)m.innerHTML=densitySegHTML(table);}
+/* Clic sur le contrôle de densité (délégué) : mémorise, applique la classe à la table, met à jour le
+   contrôle, et re-borne le conteneur (les hauteurs de ligne changent). */
+document.addEventListener("click",e=>{const btn=e.target.closest(".density-seg [data-density]");if(!btn)return;
+  const table=btn.dataset.dtable,v=btn.dataset.density;
+  setTableDensity(table,v);
+  const el=regTableElFor(table);
+  applyRegDensity(el,table);
+  if(el)markClippedCells(el);   // le padding/police modifie l'écrêtage des cellules
+  const seg=btn.closest(".density-seg");if(seg)seg.querySelectorAll("[data-density]").forEach(x=>x.classList.toggle("active",x.dataset.density===v));
+  syncSegAria();scheduleRegSizing();
+});
 // Lecture seule : ne crée aucun objet (évite de polluer le fichier avec un columns:{} vide).
 function savedColOrder(table){
   const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.columns;
@@ -7698,6 +7741,8 @@ function renderRisks(){
     tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openRiskModal(r.id,null,td&&td.dataset.col));});
     tb.appendChild(tr);
   });
+  mountDensity("#view-risks .density-mount","risks");
+  applyRegDensity(document.getElementById("risksTableEl"),"risks");   // avant markClippedCells (le padding change l'écrêtage)
   markClippedCells(tb);
   scheduleRegSizing();
 }
@@ -7875,6 +7920,8 @@ function renderMeasures(){
     tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openMeasureModal(m.id,null,td&&td.dataset.col));});
     tb.appendChild(tr);
   });
+  mountDensity("#view-measures .density-mount","measures");
+  applyRegDensity(document.getElementById("measuresTableEl"),"measures");
   markClippedCells(tb);
   scheduleRegSizing();
 }
@@ -8229,6 +8276,8 @@ function renderLinkDetails(){
     row.innerHTML=renderColRow("links",tr);
     tbody.appendChild(row);
   });
+  mountDensity("#view-links .density-mount","links");
+  applyRegDensity(table,"links");
   markClippedCells(tbody);
   scheduleRegSizing();
 }
@@ -12288,8 +12337,8 @@ function syncStickyOffsets(){
    la chrome au-dessus) et on pose une hauteur max jusqu'au bas du viewport. Recalcul au
    redimensionnement, au changement d'onglet et après chaque rendu de registre. */
 /* Ombres de bord « conditionnelles » : visibles seulement si du contenu passe sous la colonne figée.
-   at-start ⇒ rien de caché à gauche (ombre ID masquée) ; at-end ⇒ rien de caché à droite (ombre
-   Actions masquée). Sans débordement horizontal, les deux sont vraies → aucune ombre. */
+   sh-left ⇒ contenu caché à gauche (ombre de l'ID, à droite) ; sh-right ⇒ contenu caché à droite
+   (ombre des Actions, à gauche). Sans débordement horizontal, aucune des deux → aucune ombre. */
 function updateRegEdgeShadows(sc){
   const max=sc.scrollWidth-sc.clientWidth, x=sc.scrollLeft;
   sc.classList.toggle("sh-left",x>0);        // contenu caché à gauche → ombre de l'ID (à droite)
@@ -12327,18 +12376,21 @@ const OBJ_SEG_MAX=8;
 let objMode=null;
 function objTypeCardHTML(ot){
   const insts=objSortedInstances(ot), attrs=(ot.attributes||[]).filter(a=>!a.hide_table), st=objSort[ot.code]||{};   // colonnes masquées exclues de la vue tableau
+  const dkey="objects."+ot.code;   // clé de densité par type d'objet
   const hdr=(col,label,cls)=>{const ind=st.col===col?(st.dir<0?" ▼":" ▲"):"";
     return '<th'+(cls?' class="'+cls+'"':'')+' data-objsort="'+esc(col)+'" data-ot="'+esc(ot.code)+'" style="cursor:pointer;user-select:none">'+esc(label)+'<span class="sort-ind">'+ind+'</span></th>';};
+  const dcls=tableDensity(dkey);
   let h='<div class="card">'+
     '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">'+
       '<h3 style="margin:0">'+esc(otLabel(ot))+' <span class="muted" style="font-weight:400">('+insts.length+')</span></h3>'+
       '<div class="inline" style="gap:6px;flex:none">'+
+        (insts.length?densitySegHTML(dkey):'')+
         (insts.length?'<button class="btn ghost sm" data-obj-export="'+esc(ot.code)+'">'+esc(t("btn_export_csv"))+'</button>':'')+
         '<button class="btn ghost sm" data-obj-import="'+esc(ot.code)+'">'+esc(t("btn_import_csv"))+'</button>'+
         '<button class="btn ghost sm" data-obj-add="'+esc(ot.code)+'">'+esc(t("obj_add"))+'</button>'+
       '</div></div>';
   if(insts.length){
-    h+='<div class="table-scroll"><table class="reg"><thead><tr>'+hdr("id",t("obj_id"),"muted")+
+    h+='<div class="table-scroll"><table class="reg'+(dcls!=="comfortable"?" "+dcls:"")+'"><thead><tr>'+hdr("id",t("obj_id"),"muted")+
       attrs.map(a=>hdr("cf:"+a.code,cfLabel(a))).join("")+'<th></th></tr></thead><tbody>';
     insts.forEach(inst=>{
       h+='<tr data-obj-row="'+esc(inst.id)+'" style="cursor:pointer"><td class="muted" data-col="id">'+esc(inst.id)+'</td>'+

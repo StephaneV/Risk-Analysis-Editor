@@ -94,3 +94,39 @@ def test_registre_fills_window_and_header_sticky(app):
     if r["canScroll"]:
         assert r["headerStays"], "l'en-tête ne reste pas en haut au défilement interne"
     assert not app.console_errors()
+
+
+# Densité du registre (Confort / Compact / Dense) : classe sur la table, mémorisée par table,
+# préservée au re-rendu ; le padding des cellules diminue. Défaut = Confort (aucune classe).
+DENSITY = r"""
+(mode) => {
+  const seg = document.querySelector('#view-risks .density-seg');
+  if (!seg) return { error: 'contrôle de densité absent' };
+  const tbl = () => document.getElementById('risksTableEl');
+  const pad = () => getComputedStyle(tbl().querySelector('tbody td')).paddingTop;
+  const before = { cls: tbl().className, pad: pad(), active: seg.querySelector('button.active').textContent };
+  seg.querySelector('[data-density="'+mode+'"]').click();
+  renderRisks();   // re-rendu : la densité doit persister
+  const t = tbl();
+  return {
+    before,
+    hasClass: t.classList.contains(mode),
+    padShrunk: parseFloat(pad()) < parseFloat(before.pad),
+    stored: (((analyse.extensions||{}).display||{}).density||{}).risks,
+    active: document.querySelector('#view-risks .density-seg button.active').getAttribute('data-density')
+  };
+}
+"""
+
+
+def test_registre_density(app):
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    r = app.js(DENSITY, "dense")
+    assert not r.get("error"), r.get("error")
+    assert r["before"]["cls"] == "reg", "densité par défaut ≠ Confort (classe parasite)"
+    assert r["hasClass"], "la classe de densité n'est pas appliquée à la table après re-rendu"
+    assert r["padShrunk"], "le padding des cellules n'a pas diminué en mode Dense"
+    assert r["stored"] == "dense", "densité non mémorisée dans extensions.display.density"
+    assert r["active"] == "dense", "bouton actif non synchronisé après re-rendu"
+    assert not app.console_errors()

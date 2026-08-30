@@ -125,26 +125,33 @@ L'utilisateur peut tout redéfinir ; ses choix priment sur les défauts.
 
 ## 9. Stockage
 
-Sous `analyse.extensions.display`, **par table** (`risks`, `measures`, `links`) et **par type
-d'objet** (clé `objects.<code>`), en extension du format existant (`columns` = ordre) :
+Sous `analyse.extensions.display`, en **cartes parallèles indexées par table** (`risks`,
+`measures`, `links`) et **par type d'objet** (clé `objects.<code>`), dans le prolongement du
+format existant `display.columns[table]` (ordre des colonnes). Chaque aspect a sa propre carte —
+et non un objet unique par table — pour rester aligné sur `columns` déjà en place :
 
 ```json
 "display": {
-  "objects.source_risque": {
-    "view": "master_detail",          // "table" | "master_detail" | "cards" (défaut "table")
-    "columns": ["id","nom","profil","np","retenue","desc","obj","motiv","just","res","nm","na"],
-    "detail":  ["desc","obj","motiv","just","res","nm","na"],   // sous-ensemble relégué au tiroir
-    "density": "comfortable"          // "comfortable" | "compact" | "dense"
-  }
+  "columns": {
+    "objects.source_risque": ["id","nom","profil","np","retenue","desc","obj","motiv","just","res"]
+  },
+  "density": {                          // implémenté (piste 1)
+    "measures": "compact",              // "compact" | "dense" ; "comfortable" (défaut) n'est pas écrit
+    "objects.source_risque": "dense"
+  },
+  "view":   { "objects.source_risque": "master_detail" },   // à venir : "table" | "master_detail" | "cards"
+  "detail": { "objects.source_risque": ["desc","obj","motiv","just","res"] }  // à venir : colonnes « en détail »
 }
 ```
 
-- `columns` (existant) = **ordre** des colonnes non masquées.
-- `detail` = colonnes **En détail** ; tout ce qui est dans `columns` et hors `detail` est **En ligne**.
-- `view`, `density` : mémoire de la vue et de la densité par table.
+- `columns` (existant) = **ordre** des colonnes non masquées, par table.
+- `density` (piste 1) = densité par table ; seule une valeur non‑défaut est écrite (retour à
+  *Confort* ⇒ suppression de la clé).
+- `detail` (à venir) = colonnes **En détail** ; tout ce qui est dans `columns` et hors `detail`
+  est **En ligne**. `view` (à venir) = mémoire de la vue par table.
 - La **pleine largeur** : `extensions.display.full_width` (booléen global) — à confirmer vs par table.
-- Rétro‑compat : absence de ces clés ⇒ défauts (`view:"table"`, densité confortable, split par
-  type §4.3). Aucune écriture de config vide dans le fichier (lecture paresseuse, comme l'existant).
+- Rétro‑compat : absence de ces clés ⇒ défauts (`view:"table"`, *Confort*, split par type §4.3).
+  Aucune écriture de config vide dans le fichier (lecture paresseuse, comme l'existant).
 
 ## 10. Accessibilité & clavier
 
@@ -168,9 +175,11 @@ d'objet** (clé `objects.<code>`), en extension du format existant (`columns` = 
 
 ## 13. Plan d'implémentation (incrémental)
 
-1. **Cadre figé + densité** (piste 1) — CSS sticky (en‑tête/ID/actions) + ombres de bord ;
-   contrôle de densité ; conteneur de défilement ; s'applique à toutes les tables. *Autonome, testable.*
-2. **Modèle de placement** — état `view`/`detail`/`density` dans `extensions.display` ;
+1. **Cadre figé + densité** (piste 1) — ✅ *fait* : colonnes ID/Actions et en‑tête figés ;
+   conteneur qui remplit la fenêtre (défilement interne) ; ombres de bord latérales continues et
+   conditionnelles ; contrôle de densité Confort/Compact/Dense mémorisé par table
+   (`display.density`). S'applique à Risques, Mesures, Liens et chaque type d'objet.
+2. **Modèle de placement** — état `view`/`detail` dans `extensions.display` ;
    helpers (colonnes en ligne / en détail) + défauts par type ; verrous ID/libellé/actions.
 3. **Vue Maître·détail** (piste 2) — rendu colonnes clés + tiroir de détail (Markdown, texte complet) ;
    chevron ; préservation tri/drag/glisser‑ligne.
