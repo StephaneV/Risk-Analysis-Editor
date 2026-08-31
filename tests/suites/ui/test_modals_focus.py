@@ -31,16 +31,21 @@ def test_duplicate_id_rejected_and_marked(app):
     assert app.js("document.getElementById('modalMsg').textContent"), "message d'erreur absent"
 
 
-def test_cell_click_opens_modal(app):
-    """Clic sur une cellule de registre → ouverture de la fiche (D01)."""
+def test_cell_dblclick_opens_modal(app):
+    """Double-clic sur une cellule de registre → ouverture de la fiche ; simple-clic inerte (D01)."""
     app.load("ebios.rae.json")
     app.goto("risks")
-    app.js("""()=>{
+    r = app.js("""()=>{
       const tr = document.querySelector('#risksTable tr');
       const td = [...tr.querySelectorAll('td[data-col]')].find(td=>!td.querySelector('button,.pill,.row-grip'));
-      td.click();
+      const fire = t => td.dispatchEvent(new MouseEvent(t,{bubbles:true,cancelable:true,view:window}));
+      const open = () => !!document.querySelector('body > .modal-bg.open');
+      fire('click');    const single = open();
+      fire('dblclick'); const dbl = open();
+      return { single, dbl };
     }""")
-    assert app.modal_open(), "le clic sur une cellule n'a pas ouvert la fiche"
+    assert not r["single"], "un simple-clic sur une cellule ne doit plus ouvrir la fiche"
+    assert r["dbl"], "le double-clic sur une cellule n'a pas ouvert la fiche"
     app.close_modals()
 
 

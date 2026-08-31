@@ -165,8 +165,11 @@ def test_risks_view_selector_and_cards(app):
                   "const r={cls:c().className,shrunk:parseFloat(p())<parseFloat(p0)};"
                   "document.querySelector('#view-risks .density-seg [data-density=\"comfortable\"]').click();return r;})()")
     assert "dense" in dens["cls"] and dens["shrunk"], "la densité « dense » ne resserre pas les fiches en Cartes"
+    # Harmonisation clic : simple-clic n'ouvre rien ; double-clic ouvre l'éditeur.
     app.js("document.querySelector('#view-risks .obj-card .oc-title').click()")
-    assert app.modal_open(), "le clic sur une fiche n'ouvre pas l'éditeur"
+    assert not app.modal_open(), "un simple-clic sur une fiche ne doit plus ouvrir l'éditeur"
+    app.js("document.querySelector('#view-risks .obj-card .oc-title').dispatchEvent(new MouseEvent('dblclick',{bubbles:true}))")
+    assert app.modal_open(), "le double-clic sur une fiche n'ouvre pas l'éditeur"
     app.close_modals()
     assert not app.console_errors()
 
@@ -238,6 +241,27 @@ def test_risks_column_manager_3states(app):
     app.js("document.querySelector('#view-risks .view-seg [data-view-mode=\"master_detail\"]').click()")
     cols = app.js("[...document.querySelectorAll('#risksTableEl thead th')].map(th=>th.textContent.replace(/[▲▼📌⚙⠿]/g,'').trim()).filter(Boolean)")
     assert "Catégorie" not in cols, "la colonne en détail reste en en-tête en Maître·détail"
+    assert not app.console_errors()
+
+
+def test_registre_dblclick_edits_not_single(app):
+    """Harmonisation clic : en Tableau, un simple-clic sur un champ n'ouvre plus l'éditeur ; il faut un
+    double-clic (positionné sur le champ). Le simple-clic sur une cellule texte tronquée garde le zoom."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    r = app.js(r"""(() => {
+      const fire = (el,t) => el.dispatchEvent(new MouseEvent(t,{bubbles:true,cancelable:true,view:window}));
+      const open = () => !!document.querySelector('body > .modal-bg.open');
+      const close = () => [...document.querySelectorAll('body > .modal-bg')].forEach(m=>{ if(m.id!=='modalBg') m.remove(); const b=[...m.querySelectorAll('footer button')].find(x=>/Annuler|Fermer/i.test(x.textContent||'')); if(b) b.click(); });
+      document.querySelector('#view-risks .view-seg [data-view-mode="table"]').click();
+      const cell = document.querySelector('#risksTableEl tbody td[data-col="cat"]');
+      fire(cell,'click');    const single = open(); close();
+      fire(cell,'dblclick'); const dbl = open();    close();
+      return { single, dbl };
+    })()""")
+    assert not r["single"], "un simple-clic sur une cellule ne doit plus ouvrir l'éditeur"
+    assert r["dbl"], "le double-clic sur une cellule n'ouvre pas l'éditeur"
+    app.close_modals()
     assert not app.console_errors()
 
 

@@ -403,9 +403,11 @@ MASTER_DETAIL = r"""
   out.chevFrozen = getComputedStyle(chevCell).position === 'sticky';
   out.idFrozen = getComputedStyle(idCell).position === 'sticky';
   out.tableMdChev = tbl.classList.contains('md-haschev');
-  // clic sur la cellule ID de la ligne maître (hors chevron, non écrêtée) ouvre la fiche.
-  row.querySelector('td[data-col="id"]').click();
-  out.rowClickOpensModal = !!document.querySelector('body > .modal-bg.open');
+  // Harmonisation clic : simple-clic sur la ligne maître n'ouvre rien ; double-clic ouvre la fiche.
+  idCell.click();
+  out.rowSingleClickOpens = !!document.querySelector('body > .modal-bg.open');
+  idCell.dispatchEvent(new MouseEvent('dblclick', {bubbles:true}));
+  out.rowDblClickOpensModal = !!document.querySelector('body > .modal-bg.open');
   return out;
 }
 """
@@ -430,8 +432,9 @@ def test_object_master_detail_view(app):
     assert r["chevOwnColumn"] and r["idHasNoChevron"], "le chevron doit être dans sa propre colonne"
     assert r["chevBtnBig"], "chevron trop petit (< 20px)"
     assert r["tableMdChev"] and r["chevFrozen"] and r["idFrozen"], "colonne chevron / ID non figées"
-    # Clic-ligne (hors chevron) ouvre la fiche.
-    assert r["rowClickOpensModal"], "le clic sur la ligne maître n'ouvre pas la fiche"
+    # Clic-ligne (hors chevron) : simple-clic inerte, double-clic ouvre la fiche.
+    assert not r["rowSingleClickOpens"], "un simple-clic sur la ligne maître ne doit plus ouvrir la fiche"
+    assert r["rowDblClickOpensModal"], "le double-clic sur la ligne maître n'ouvre pas la fiche"
     app.close_modals()
     assert not app.console_errors()
 
@@ -531,9 +534,12 @@ CARDS = r"""
     c.querySelectorAll('.oc-v, .oc-v .pill').forEach(el => { if (el.getBoundingClientRect().right > cr.right + 1) overflow++; });
   });
   out.overflow = overflow;
-  // clic sur la fiche (hors actions) ouvre la fiche d'édition
-  card.querySelector('.oc-head .oc-title, .oc-head .id-badge').click();
-  out.cardClickOpens = !!document.querySelector('body > .modal-bg.open');
+  // Harmonisation clic : simple-clic sur la fiche n'ouvre rien ; double-clic ouvre la fiche d'édition.
+  const cardHit = card.querySelector('.oc-head .oc-title, .oc-head .id-badge');
+  cardHit.click();
+  out.cardSingleClickOpens = !!document.querySelector('body > .modal-bg.open');
+  cardHit.dispatchEvent(new MouseEvent('dblclick', {bubbles:true}));
+  out.cardDblClickOpens = !!document.querySelector('body > .modal-bg.open');
   return out;
 }
 """
@@ -553,7 +559,8 @@ def test_object_cards_view(app):
     assert "Catégorie" in r["pairs"] and "Activité" not in r["pairs"], "champ vidé non masqué des paires"
     assert "Motivation" in r["blocks"] and "Objectif visé" in r["blocks"]
     assert r["overflow"] == 0, "des valeurs/pastilles débordent de leur fiche"
-    assert r["cardClickOpens"], "le clic sur une fiche n'ouvre pas l'éditeur"
+    assert not r["cardSingleClickOpens"], "un simple-clic sur une fiche ne doit plus ouvrir l'éditeur"
+    assert r["cardDblClickOpens"], "le double-clic sur une fiche n'ouvre pas l'éditeur"
     app.close_modals()
     assert not app.console_errors()
 

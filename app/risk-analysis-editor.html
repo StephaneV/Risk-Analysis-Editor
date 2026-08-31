@@ -7549,11 +7549,14 @@ function paintColRegistre(table,list,ctx){
   if(view==="cards"){
     if(scroll)scroll.hidden=true;
     if(cardsHost){cardsHost.hidden=false;cardsHost.innerHTML=list.length?colCardsHTML(table,list):"";
-      if(!cardsHost._wired){cardsHost._wired=true;cardsHost.addEventListener("click",e=>{
-        if(e.target.closest("button,a[href],[data-open-m],[data-open-r]"))return;
-        const card=e.target.closest(".reg-card");if(!card)return;
-        const ed=card.querySelector("[data-edit-r],[data-edit-m],[data-edit-l]");if(ed)ed.click();   // réutilise la délégation d'édition
-      });}}
+      if(!cardsHost._wired){cardsHost._wired=true;
+        cardsHost.addEventListener("click",rowClickZoom);   // simple-clic : rien (pas d'écrêtage en cartes)
+        cardsHost.addEventListener("dblclick",e=>rowEditDbl(e,cel=>{   // double-clic : éditer, positionné sur la paire/bloc (data-col)
+          const card=e.target.closest(".reg-card");if(!card)return;
+          const ed=card.querySelector("[data-edit-r],[data-edit-m]");if(!ed)return;
+          ctx.editRow(ed.dataset.editR||ed.dataset.editM, cel&&cel.dataset.col);
+        }));
+      }}
     if(tb)tb.innerHTML="";
   }else{
     if(scroll)scroll.hidden=false;
@@ -7569,7 +7572,11 @@ function paintColRegistre(table,list,ctx){
       ctx.wireRow(tr,row);
       tb.appendChild(tr);
       if(chev){const dr=document.createElement("tr");dr.className="md-detail-row";dr.hidden=true;
-        dr.innerHTML='<td colspan="'+nCols+'">'+colDetailGridHTML(table,row)+'</td>';tb.appendChild(dr);}
+        dr.innerHTML='<td colspan="'+nCols+'">'+colDetailGridHTML(table,row)+'</td>';
+        const rid=ctx.rid(row);   // tiroir de détail : simple-clic = zoom si tronqué, double-clic = éditer (positionné)
+        dr.addEventListener("click",rowClickZoom);
+        dr.addEventListener("dblclick",e=>rowEditDbl(e,cel=>ctx.editRow(rid,cel&&cel.dataset.col)));
+        tb.appendChild(dr);}
     });
     if(tb)markClippedCells(tb);
   }
@@ -7773,10 +7780,21 @@ function clipRowClick(e){   // vrai si clic sur une cellule tronquée (→ voir)
   _clipTimer=setTimeout(()=>{_clipTimer=null;showClipText(clip);},250);   // annulé si un double-clic suit
   return true;
 }
-function clipRowDblClick(e,editFn){   // double-clic sur une cellule tronquée → éditer
-  const clip=e.target.closest&&e.target.closest(".cell-clip.is-clipped");if(!clip)return false;
+/* Comportement clic des registres (toutes vues : tableau, maître·détail ligne+détail, cartes) :
+   - simple-clic : ne fait RIEN, sauf sur une cellule texte tronquée → zoom (clipRowClick), ou une image
+     → lightbox (géré ailleurs, en capture) ;
+   - double-clic : ouvre la modale d'édition, positionnée sur le champ (cellule/paire portant data-col).
+   Éléments à action propre (boutons, liens, pastilles R·M, chevron, poignée, image) exclus des deux. */
+const ROW_IGNORE="button,a[href],.row-grip,.md-chev,[data-open-m],[data-open-r],.cf-img-thumb,.cf-image-preview img";
+function rowClickZoom(e){   // simple-clic : zoom si cellule tronquée, sinon rien
+  if(e.target.closest(ROW_IGNORE))return;
+  clipRowClick(e);
+}
+function rowEditDbl(e,editFn){   // double-clic : éditer (annule un zoom en attente, évite la sélection de mot)
+  if(e.target.closest(ROW_IGNORE))return;
   if(_clipTimer){clearTimeout(_clipTimer);_clipTimer=null;}
-  editFn();return true;
+  const sel=window.getSelection&&window.getSelection();if(sel&&sel.removeAllRanges)try{sel.removeAllRanges();}catch(_){}
+  editFn(e.target.closest("[data-col]"));   // passe la cellule/paire ciblée (ou null) pour positionner la modale
 }
 // Les largeurs de colonnes changent avec la fenêtre : on re-marque les cellules tronquées des tables VISIBLES.
 let _clipRz=null;
@@ -7811,7 +7829,7 @@ function colsForView(table,view){
 function colDetailGridHTML(table,row){
   const map=colMap(table),parts=[];
   detailColKeys(table).forEach(k=>{const c=map[k];if(!c)return;
-    parts.push('<span class="md-lbl">'+esc(c.label||"")+'</span><div class="md-val">'+c.cell(row)+'</div>');});
+    parts.push('<span class="md-lbl" data-col="'+esc(k)+'">'+esc(c.label||"")+'</span><div class="md-val" data-col="'+esc(k)+'">'+c.cell(row)+'</div>');});
   if(!parts.length)parts.push('<div class="md-none">—</div>');
   return '<div class="md-detail">'+parts.join("")+'</div>';
 }
@@ -7838,8 +7856,8 @@ function colCardsHTML(table,list){
       '<div class="oc-head"><div class="oc-toprow">'+colRowIdBadge(table,row)+
         '<div class="actions">'+actionButtons(table,row)+'</div></div>'+
         '<span class="oc-title">'+esc(colRowTitle(table,row))+'</span></div>';
-    if(inlineCols.length)h+='<div class="oc-pairs">'+inlineCols.map(c=>'<div class="oc-pair"><span class="oc-k">'+esc(c.label||"")+'</span><span class="oc-v">'+c.cell(row)+'</span></div>').join("")+'</div>';
-    if(detailCols.length)h+='<div class="oc-blocks">'+detailCols.map(c=>'<div class="oc-block"><span class="oc-k">'+esc(c.label||"")+'</span><div class="oc-v">'+c.cell(row)+'</div></div>').join("")+'</div>';
+    if(inlineCols.length)h+='<div class="oc-pairs">'+inlineCols.map(c=>'<div class="oc-pair" data-col="'+esc(c.key)+'"><span class="oc-k">'+esc(c.label||"")+'</span><span class="oc-v">'+c.cell(row)+'</span></div>').join("")+'</div>';
+    if(detailCols.length)h+='<div class="oc-blocks">'+detailCols.map(c=>'<div class="oc-block" data-col="'+esc(c.key)+'"><span class="oc-k">'+esc(c.label||"")+'</span><div class="oc-v">'+c.cell(row)+'</div></div>').join("")+'</div>';
     h+='</div>';
   });
   return h+'</div>';
@@ -8253,9 +8271,10 @@ function renderRisks(){
     viewMountSel:"#view-risks .view-mount", sortMountSel:"#view-risks .sort-mount", densityMountSel:"#view-risks .density-mount", colMountSel:"#view-risks .col-mount",
     tbodySel:"#risksTable", scrollSel:"#view-risks .table-scroll", cardsSel:"#view-risks .reg-cards-host",
     headTrSel:"#risksTableEl thead tr", tableElId:"risksTableEl", rid:r=>r.id,
-    wireRow:(tr,r)=>{
-      tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,.md-chev,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openRiskModal(r.id,null,td&&td.dataset.col);});
-      tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openRiskModal(r.id,null,td&&td.dataset.col));});
+    editRow:(id,col)=>openRiskModal(id,null,col),
+    wireRow:(tr,r)=>{   // simple-clic : zoom si tronqué, sinon rien ; double-clic : éditer (positionné sur le champ)
+      tr.addEventListener("click",rowClickZoom);
+      tr.addEventListener("dblclick",e=>rowEditDbl(e,cel=>openRiskModal(r.id,null,cel&&cel.dataset.col)));
     }
   });
 }
@@ -8428,9 +8447,10 @@ function renderMeasures(){
     viewMountSel:"#view-measures .view-mount", sortMountSel:"#view-measures .sort-mount", densityMountSel:"#view-measures .density-mount", colMountSel:"#view-measures .col-mount",
     tbodySel:"#measuresTable", scrollSel:"#view-measures .table-scroll", cardsSel:"#view-measures .reg-cards-host",
     headTrSel:"#measuresTableEl thead tr", tableElId:"measuresTableEl", rid:m=>m.id,
-    wireRow:(tr,m)=>{
-      tr.addEventListener("click",e=>{if(e.target.closest("button,a[href],.row-grip,.md-chev,[data-open-m],[data-open-r]"))return;if(clipRowClick(e))return;const td=e.target.closest("td[data-col]");openMeasureModal(m.id,null,td&&td.dataset.col);});
-      tr.addEventListener("dblclick",e=>{const td=e.target.closest("td[data-col]");clipRowDblClick(e,()=>openMeasureModal(m.id,null,td&&td.dataset.col));});
+    editRow:(id,col)=>openMeasureModal(id,null,col),
+    wireRow:(tr,m)=>{   // simple-clic : zoom si tronqué, sinon rien ; double-clic : éditer (positionné sur le champ)
+      tr.addEventListener("click",rowClickZoom);
+      tr.addEventListener("dblclick",e=>rowEditDbl(e,cel=>openMeasureModal(m.id,null,cel&&cel.dataset.col)));
     }
   });
 }
@@ -8794,6 +8814,7 @@ function renderLinkDetails(){
     row.innerHTML=renderColRow("links",tr,view);
     tbody.appendChild(row);
     if(chev){const dr=document.createElement("tr");dr.className="md-detail-row";dr.hidden=true;
+      dr.dataset.r=tr.risk;dr.dataset.m=tr.measure;   // pour l'édition au double-clic dans le tiroir
       dr.innerHTML='<td colspan="'+nCols+'">'+colDetailGridHTML("links",tr)+'</td>';tbody.appendChild(dr);}
   });
   markClippedCells(tbody);
@@ -8821,19 +8842,14 @@ document.getElementById("linkDetailsArea").addEventListener("click",e=>{
         markDirty();renderLinks();renderRisks();renderMeasures();updateBadges();toast(t("toast_restored"));
       });
     },{danger:true});return;}
-  if(e.target.closest("a[href],[data-open-m],[data-open-r],.md-chev"))return;   // lien URL / pastille R·M / chevron : action propre, sans ouvrir la fiche
-  const card=e.target.closest(".reg-card");   // vue Cartes : clic sur une fiche → réutilise le bouton d'édition
-  if(card){const ed=card.querySelector("[data-edit-l]");if(ed)ed.click();return;}
-  if(clipRowClick(e))return;   // cellule texte tronquée : clic = voir (double-clic = éditer)
-  const row=e.target.closest(".linkrow");if(!row)return;
-  const td=e.target.closest("td[data-col]");
-  openLinkModal(row.dataset.r,row.dataset.m,td&&td.dataset.col);
+  rowClickZoom(e);   // simple-clic : zoom si cellule tronquée, sinon rien
 });
-document.getElementById("linkDetailsArea").addEventListener("dblclick",e=>{
-  const row=e.target.closest(".linkrow");if(!row)return;
-  const td=e.target.closest("td[data-col]");
-  clipRowDblClick(e,()=>openLinkModal(row.dataset.r,row.dataset.m,td&&td.dataset.col));
-});
+document.getElementById("linkDetailsArea").addEventListener("dblclick",e=>rowEditDbl(e,cel=>{   // double-clic : éditer, positionné sur le champ (data-col)
+  const card=e.target.closest(".reg-card");
+  if(card){const ed=card.querySelector("[data-edit-l]");if(!ed)return;const[rid,mid]=ed.dataset.editL.split("|");openLinkModal(rid,mid,cel&&cel.dataset.col);return;}
+  const row=e.target.closest(".linkrow, .md-detail-row");if(!row||row.dataset.r==null)return;   // ligne maître ou tiroir de détail
+  openLinkModal(row.dataset.r,row.dataset.m,cel&&cel.dataset.col);
+}));
 
 // Modale d'édition d'un lien : Notes (comment) + champs personnalisés de cible « link ».
 function openLinkModal(rid,mid,focusCol){
@@ -12921,7 +12937,8 @@ function objAttrCellInner(a,ot,inst){return a.type==="computed"?cfComputedDispla
 function objDetailGridHTML(ot,inst,detailAttrs){
   const parts=[];
   detailAttrs.forEach(a=>{if(objAttrIsEmpty(a,ot,inst))return;
-    parts.push('<span class="md-lbl">'+esc(cfLabel(a))+'</span><div class="md-val">'+objAttrCellInner(a,ot,inst)+'</div>');});
+    const dc=esc("cf:"+a.code);
+    parts.push('<span class="md-lbl" data-col="'+dc+'">'+esc(cfLabel(a))+'</span><div class="md-val" data-col="'+dc+'">'+objAttrCellInner(a,ot,inst)+'</div>');});
   if(!parts.length)parts.push('<div class="md-none">—</div>');
   return '<div class="md-detail">'+parts.join("")+'</div>';
 }
@@ -12942,9 +12959,9 @@ function objCardsGridHTML(ot,dkey,insts){
         '<div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",label)+'>✎</button>'+
         '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",label)+'>🗑</button></div></div>'+title+'</div>';
     const pairs=pairAttrs.filter(a=>!objAttrIsEmpty(a,ot,inst));
-    if(pairs.length)h+='<div class="oc-pairs">'+pairs.map(a=>'<div class="oc-pair"><span class="oc-k">'+esc(cfLabel(a))+'</span><span class="oc-v">'+objAttrCellInner(a,ot,inst)+'</span></div>').join("")+'</div>';
+    if(pairs.length)h+='<div class="oc-pairs">'+pairs.map(a=>'<div class="oc-pair" data-col="cf:'+esc(a.code)+'"><span class="oc-k">'+esc(cfLabel(a))+'</span><span class="oc-v">'+objAttrCellInner(a,ot,inst)+'</span></div>').join("")+'</div>';
     const blocks=blockAttrs.filter(a=>!objAttrIsEmpty(a,ot,inst));
-    if(blocks.length)h+='<div class="oc-blocks">'+blocks.map(a=>'<div class="oc-block"><span class="oc-k">'+esc(cfLabel(a))+'</span><div class="oc-v">'+objAttrCellInner(a,ot,inst)+'</div></div>').join("")+'</div>';
+    if(blocks.length)h+='<div class="oc-blocks">'+blocks.map(a=>'<div class="oc-block" data-col="cf:'+esc(a.code)+'"><span class="oc-k">'+esc(cfLabel(a))+'</span><div class="oc-v">'+objAttrCellInner(a,ot,inst)+'</div></div>').join("")+'</div>';
     h+='</div>';
   });
   return h+'</div>';
@@ -12988,7 +13005,7 @@ function objTypeCardHTML(ot){
           return '<td data-col="cf:'+esc(a.code)+'">'+(cfIsTextCol(a)?'<div class="cell-clip" data-label="'+esc(cfLabel(a))+'">'+inner+'</div>':inner)+'</td>';}).join("")+
         '<td><div class="actions"><button class="btn icon sm" data-obj-edit="'+esc(inst.id)+'"'+a11y("a11y_edit_field",objectLabel(inst))+'>✎</button>'+
         '<button class="btn icon sm" data-obj-del="'+esc(inst.id)+'"'+a11y("a11y_del_field",objectLabel(inst))+'>🗑</button></div></td></tr>';
-      if(hasDetail)h+='<tr class="md-detail-row" hidden><td colspan="'+nCols+'">'+objDetailGridHTML(ot,inst,detailAttrs)+'</td></tr>';
+      if(hasDetail)h+='<tr class="md-detail-row" data-obj-row="'+esc(inst.id)+'" hidden><td colspan="'+nCols+'">'+objDetailGridHTML(ot,inst,detailAttrs)+'</td></tr>';
     });
     h+='</tbody></table></div>';
   }else h+='<div class="empty" style="display:block">'+esc(t("obj_none_type"))+'</div>';
@@ -13063,20 +13080,13 @@ document.getElementById("view-objects").addEventListener("click",e=>{
       confirmModal(msg,()=>{objRemoveRefId(inst.id);const arr=objectsAll(),i=arr.findIndex(o=>o.id===inst.id);if(i>=0)arr.splice(i,1);markDirty();renderAll();},{danger:true});return;}
     return;
   }
-  // Clic sur une ligne d'instance → édition, focus sur l'attribut de la cellule cliquée.
-  if(e.target.closest("a[href],[data-open-m],[data-open-r],.md-chev"))return;   // lien URL / pastille R·M / chevron : action propre, sans ouvrir la fiche
-  if(clipRowClick(e))return;   // cellule texte tronquée : clic = voir (double-clic = éditer)
-  const row=e.target.closest("[data-obj-row]");if(!row)return;   // ligne (tableau/maître·détail) ou fiche (cartes)
-  const inst=objectById(row.dataset.objRow);if(!inst)return;
-  const td=e.target.closest("td[data-col]");
-  openObjectModal(inst.type,inst.id,null,td&&td.dataset.col);
+  rowClickZoom(e);   // simple-clic : zoom si cellule tronquée, sinon rien
 });
-document.getElementById("view-objects").addEventListener("dblclick",e=>{
-  const row=e.target.closest("[data-obj-row]");if(!row)return;
+document.getElementById("view-objects").addEventListener("dblclick",e=>rowEditDbl(e,cel=>{   // double-clic : éditer, positionné sur l'attribut (data-col)
+  const row=e.target.closest("[data-obj-row]");if(!row)return;   // ligne (tableau/maître·détail ligne ou détail) ou fiche (cartes)
   const inst=objectById(row.dataset.objRow);if(!inst)return;
-  const td=e.target.closest("td[data-col]");
-  clipRowDblClick(e,()=>openObjectModal(inst.type,inst.id,null,td&&td.dataset.col));
-});
+  openObjectModal(inst.type,inst.id,null,cel&&cel.dataset.col);
+}));
 
 /* ----- Champs personnalisés : contrôles de saisie, lecture, validation ----- */
 /* Aide de la langue courante, sinon vide (aucune infobulle) — pas de repli. */
