@@ -124,7 +124,7 @@ def test_registre_density(app):
     app.goto("risks")
     r = app.js(DENSITY, "dense")
     assert not r.get("error"), r.get("error")
-    assert r["before"]["cls"] == "reg", "densité par défaut ≠ Confort (classe parasite)"
+    assert "compact" not in r["before"]["cls"] and "dense" not in r["before"]["cls"], "densité par défaut ≠ Confort (classe parasite)"
     assert r["hasClass"], "la classe de densité n'est pas appliquée à la table après re-rendu"
     assert r["padShrunk"], "le padding des cellules n'a pas diminué en mode Dense"
     assert r["stored"] == "dense", "densité non mémorisée dans extensions.display.density"
@@ -196,4 +196,73 @@ def test_risks_sort_menu(app):
     app.js("[...document.querySelectorAll('.col-menu')].find(m=>m.style.display==='block'&&m.querySelector('.srow')).querySelector('.srow[data-sort=\"residual\"]').click()")
     assert app.js("listState.risks.sort") == "residual" and app.js("listState.risks.dir") == 1
     assert "Résiduel" in app.js("document.querySelector('#view-risks .colsortbtn').textContent")
+    assert not app.console_errors()
+
+
+# Poignée de glissement dans sa propre colonne figée (pas de passage à la ligne avec l'ID) :
+# présente quand la liste n'est pas triée, absente une fois triée.
+GRIP_COL = r"""
+() => {
+  const tbl = () => document.getElementById('risksTableEl');
+  sizeRegScrollers();
+  const gripCol = tbl().querySelector('tbody td.reg-grip-col');
+  const idCol = tbl().querySelector('tbody td[data-col="id"]');
+  const gripTh = tbl().querySelector('thead th.reg-grip-col');
+  const out = {
+    hasLead: tbl().classList.contains('has-lead'),
+    gripFirst: tbl().querySelector('tbody tr').children[0].classList.contains('reg-grip-col'),
+    gripHasHandle: !!(gripCol && gripCol.querySelector('.row-grip')),
+    gripSticky: gripCol ? getComputedStyle(gripCol).position : null,
+    // l'en-tête de la poignée doit aussi être figé à gauche (sinon du blanc apparaît au défilement)
+    gripThSticky: gripTh && getComputedStyle(gripTh).position === 'sticky' && getComputedStyle(gripTh).left === '0px',
+    idSticky: getComputedStyle(idCol).position,
+    idLeft: parseInt(getComputedStyle(idCol).left) || 0
+  };
+  // Maître·détail (Catégorie en détail) : l'en-tête du chevron doit être figé à gauche (décalé de la poignée).
+  setColPlacement('risks', 'cat', 'detail');
+  document.querySelector('#view-risks .view-seg [data-view-mode="master_detail"]').click();
+  sizeRegScrollers();
+  const chevTh = tbl().querySelector('thead th.md-chev-col');
+  out.chevThStickyLeft = chevTh && getComputedStyle(chevTh).position === 'sticky' && parseInt(getComputedStyle(chevTh).left) > 0;
+  document.querySelector('#view-risks .view-seg [data-view-mode="table"]').click();
+  // trié → la poignée disparaît, l'ID redevient 1re colonne
+  listState.risks.sort = 'id'; listState.risks.dir = 1; renderRisks(); sizeRegScrollers();
+  out.sortedGrip = !!tbl().querySelector('.reg-grip-col');
+  out.sortedIdLeft = parseInt(getComputedStyle(tbl().querySelector('tbody td[data-col="id"]')).left) || 0;
+  return out;
+}
+"""
+
+
+def test_risks_grip_own_sticky_column(app):
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    r = app.js(GRIP_COL)
+    assert r["gripFirst"] and r["gripHasHandle"], "la poignée n'est pas dans sa propre 1re colonne"
+    assert r["gripSticky"] == "sticky" and r["idSticky"] == "sticky", "poignée / ID non figées"
+    assert r["gripThSticky"], "en-tête de la poignée non figé à gauche (blanc au défilement)"
+    assert r["chevThStickyLeft"], "en-tête du chevron non figé à gauche en Maître·détail (blanc au défilement)"
+    assert r["idLeft"] > 0, "l'ID n'est pas décalé à droite de la poignée (chevauchement)"
+    # Trié : plus de poignée, ID de nouveau figé à gauche (left 0).
+    assert not r["sortedGrip"], "la poignée subsiste alors que la liste est triée"
+    assert r["sortedIdLeft"] == 0, "ID non recollé à gauche une fois trié"
+    assert not app.console_errors()
+
+
+def test_md_hover_highlights_chevron_cell(app):
+    """En Maître·détail, la surbrillance de survol de la ligne couvre aussi la cellule figée du
+    chevron (fond opaque) — elle ne doit pas rester claire quand le reste de la ligne s'assombrit."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("setColPlacement('risks','cat','detail');"
+           "document.querySelector('#view-risks .view-seg [data-view-mode=\"master_detail\"]').click();")
+    app.page.hover("#risksTableEl tbody tr[data-rid]")
+    bgs = app.js("""() => {
+      const row = document.querySelector('#risksTableEl tbody tr[data-rid]');
+      return {
+        chev: getComputedStyle(row.querySelector('td.md-chev-col')).backgroundColor,
+        id: getComputedStyle(row.querySelector('td[data-col="id"]')).backgroundColor
+      };
+    }""")
+    assert bgs["chev"] == bgs["id"], f"cellule chevron sans surbrillance de survol : chev={bgs['chev']} id={bgs['id']}"
     assert not app.console_errors()

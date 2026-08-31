@@ -305,15 +305,27 @@
   .reg tr.md-open .md-chev{transform:rotate(90deg);border-color:var(--accent)}
   .reg tr.md-open .md-chev::before{border-left-color:var(--accent)}
   .reg td.md-chev-col,.reg th.md-chev-col{width:42px;min-width:42px;text-align:center;padding-left:10px;padding-right:0}
-  /* Colonne chevron figée à gauche (via le patron .reg td:first-child) ; l'ID reste figé juste à sa
-     droite (décalage = largeur réelle de la colonne chevron, posé en JS via --md-id-left). */
-  .reg.md-haschev td[data-col="id"]{position:sticky;left:var(--md-id-left,42px);background:var(--panel);z-index:2}
-  .reg.md-haschev thead th.md-id-col{position:sticky;left:var(--md-id-left,42px);background:var(--panel-2);z-index:5}
-  .reg.md-haschev tbody tr:hover td[data-col="id"]{background:var(--panel-2)}
-  /* L'ombre de bord passe au bord droit de l'ID (fin du bloc figé), pas au bord du chevron. */
-  .reg.md-haschev td.md-chev-col::after,.reg.md-haschev th.md-chev-col::after{display:none}
-  .reg.md-haschev td[data-col="id"]::after,.reg.md-haschev thead th.md-id-col::after{content:"";position:absolute;top:0;bottom:0;right:0;width:11px;transform:translateX(100%);background:linear-gradient(to right,rgba(20,30,55,.20),rgba(20,30,55,0));pointer-events:none;opacity:0}
-  .table-scroll.sh-left .reg.md-haschev td[data-col="id"]::after,.table-scroll.sh-left .reg.md-haschev thead th.md-id-col::after{opacity:1}
+  /* Colonne de la poignée de glissement (registres réordonnables) : figée à gauche, étroite ; ainsi
+     la poignée ne passe jamais à la ligne avec l'ID en fenêtre étroite. */
+  .reg td.reg-grip-col,.reg th.reg-grip-col{width:22px;min-width:22px;text-align:center;padding-left:5px;padding-right:0}
+  .reg .reg-grip-col .row-grip{margin:0}
+  /* Groupe figé gauche : [poignée] [chevron] ID. La 1re colonne est figée par le patron td:first-child ;
+     les suivantes reçoivent un décalage CUMULÉ (largeurs réelles mesurées : --reg-grip-w, --reg-chev-w). */
+  .reg.has-grip.md-haschev td.md-chev-col,.reg.has-grip.md-haschev thead th.md-chev-col{position:sticky;left:var(--reg-grip-w,0px);z-index:2}
+  .reg.has-grip.md-haschev td.md-chev-col{background:var(--panel)}
+  .reg.has-grip.md-haschev thead th.md-chev-col{background:var(--panel-2);z-index:5}
+  .reg.has-lead td[data-col="id"]{position:sticky;left:calc(var(--reg-grip-w,0px) + var(--reg-chev-w,0px));background:var(--panel);z-index:2}
+  .reg.has-lead thead th.col-pinned,.reg.has-lead thead th.md-id-col{position:sticky;left:calc(var(--reg-grip-w,0px) + var(--reg-chev-w,0px));background:var(--panel-2);z-index:5}
+  .reg.has-lead tbody tr:hover td[data-col="id"]{background:var(--panel-2)}
+  /* Les cellules figées poignée / chevron ont un fond opaque : la surbrillance de survol de la ligne
+     doit y être répétée, sinon elles restent claires quand le reste de la ligne s'assombrit.
+     La règle du chevron doit primer sur .reg.has-grip.md-haschev td.md-chev-col (spécificité plus haute). */
+  .reg tbody tr:hover td.reg-grip-col,.reg.md-haschev tbody tr:hover td.md-chev-col{background:var(--panel-2)}
+  /* L'ombre de bord passe au bord droit de l'ID (fin du bloc figé), pas au bord de la poignée/chevron. */
+  .reg.has-lead td:first-child::after,.reg.has-lead th:first-child::after{display:none}
+  .reg.has-grip.md-haschev td.md-chev-col::after,.reg.has-grip.md-haschev th.md-chev-col::after{display:none}
+  .reg.has-lead td[data-col="id"]::after,.reg.has-lead thead th.col-pinned::after,.reg.has-lead thead th.md-id-col::after{content:"";position:absolute;top:0;bottom:0;right:0;width:11px;transform:translateX(100%);background:linear-gradient(to right,rgba(20,30,55,.20),rgba(20,30,55,0));pointer-events:none;opacity:0}
+  .table-scroll.sh-left .reg.has-lead td[data-col="id"]::after,.table-scroll.sh-left .reg.has-lead thead th.col-pinned::after,.table-scroll.sh-left .reg.has-lead thead th.md-id-col::after{opacity:1}
   .reg tr.md-detail-row>td{position:static;background:var(--panel-2);padding:0;box-shadow:none;z-index:auto}
   .reg tr.md-detail-row>td::after,.reg tr.md-detail-row>td::before{display:none}
   .md-detail{display:grid;grid-template-columns:max-content 1fr;gap:7px 18px;align-items:baseline;padding:11px 16px 13px}
@@ -7398,7 +7410,7 @@ function riskPill(id){const rr=riskById(id);
 // Descripteurs des colonnes intégrées (hors Actions), par table.
 function builtinCols(table){
   if(table==="risks")return [
-    {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:r=>rowGripHTML("risks",r.id)+'<span class="id-badge">'+esc(r.id)+'</span>'},
+    {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:r=>'<span class="id-badge">'+esc(r.id)+'</span>'},   // poignée déportée dans sa propre colonne (reg-grip-col)
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:r=>'<b>'+esc(r.label)+'</b>'},
     {key:"cat",label:t("th_category"),sort:"cat",text:true,cell:r=>'<span class="muted">'+esc(r.category||"—")+'</span>'},
     {key:"owner",label:t("f_owner"),sort:"owner",def:false,text:true,cell:r=>'<span class="muted">'+esc(r.owner||"—")+'</span>'},
@@ -7408,7 +7420,7 @@ function builtinCols(table){
     {key:"evolution",label:t("th_evolution"),sort:"evolution",cell:r=>riskDeltaCell(r)},
   ];
   if(table==="measures")return [
-    {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:m=>rowGripHTML("measures",m.id)+'<span class="id-badge">'+esc(m.id)+'</span>'},
+    {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:m=>'<span class="id-badge">'+esc(m.id)+'</span>'},   // poignée déportée dans sa propre colonne (reg-grip-col)
     {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:m=>'<b>'+esc(m.label)+'</b>'},
     {key:"type",label:t("th_type"),sort:"type",cell:m=>'<span class="muted">'+(m.type?esc(typeLabel(m.type)):"—")+'</span>'},
     {key:"status",label:t("th_status"),sort:"status",cell:m=>statusBadge(m.status)},
@@ -7494,7 +7506,7 @@ function paintColRegistre(table,list,ctx){
     const headTr=document.querySelector(ctx.headTrSel);
     if(headTr)renderColHead(table,headTr,ctx.tableElId,table,view);
     applyRegClasses(document.getElementById(ctx.tableElId),table,view);
-    const chev=view==="master_detail"&&hasColDetail(table), nCols=colsForView(table,view).length+(chev?1:0);
+    const chev=view==="master_detail"&&hasColDetail(table), nCols=colsForView(table,view).length+(chev?1:0)+(hasRowGrip(table,view)?1:0);
     list.forEach(row=>{
       const tr=document.createElement("tr");tr.style.cursor="pointer";tr.dataset.rid=ctx.rid(row);
       tr.innerHTML=renderColRow(table,row,view);
@@ -7641,6 +7653,7 @@ function rerenderTable(table){if(table==="risks")renderRisks();else if(table==="
 function renderColHead(table,trEl,tableElId,stKey,view){
   trEl.innerHTML="";
   const md=view==="master_detail", chev=md&&hasColDetail(table);
+  if(hasRowGrip(table,view)){const th=document.createElement("th");th.className="reg-grip-col";trEl.appendChild(th);}   // colonne de la poignée de glissement
   if(chev){const th=document.createElement("th");th.className="md-chev-col";trEl.appendChild(th);}   // colonne du chevron
   colsForView(table,view).forEach(c=>{
     const th=document.createElement("th");
@@ -7665,8 +7678,9 @@ function renderColHead(table,trEl,tableElId,stKey,view){
 }
 function renderColRow(table,row,view){
   const md=view==="master_detail", chev=md&&hasColDetail(table);
-  const lead=chev?'<td class="md-chev-col"><button class="md-chev" type="button" aria-expanded="false" aria-label="'+esc(t("md_expand"))+'"></button></td>':'';
-  return lead+colsForView(table,view).map(c=>{
+  const gripTd=hasRowGrip(table,view)?'<td class="reg-grip-col">'+rowGripHTML(table,row.id)+'</td>':'';
+  const chevTd=chev?'<td class="md-chev-col"><button class="md-chev" type="button" aria-expanded="false" aria-label="'+esc(t("md_expand"))+'"></button></td>':'';
+  return gripTd+chevTd+colsForView(table,view).map(c=>{
     if(c.pinned==="last")return actionCell(table,row);
     const inner=c.cell(row);
     if(c.text)return '<td data-col="'+esc(c.key)+'"><div class="cell-clip" data-label="'+esc(c.label||"")+'">'+inner+'</div></td>';
@@ -7715,6 +7729,9 @@ function actionCell(table,row){return '<td><div class="actions">'+actionButtons(
 /* ---- Vues Maître·détail / Cartes pour les registres colMap (risks/measures/links) ----
    Réutilisent les objets colonne (c.cell / c.label) et le modèle de placement (piste 2). */
 function hasColDetail(table){return detailColKeys(table).length>0;}
+/* Poignée de glissement (réordonnancement des lignes) : registres risks/measures, non triés, hors
+   cartes. Elle occupe sa PROPRE colonne figée (pas de passage à la ligne avec l'ID en fenêtre étroite). */
+function hasRowGrip(table,view){return (table==="risks"||table==="measures") && view!=="cards" && !(listState[table]&&listState[table].sort);}
 /* Colonnes affichées en en-tête/lignes selon la vue. Maître·détail : ID (épinglé) + colonnes en
    ligne + Actions (le détail descend au tiroir). Tableau : toutes les colonnes visibles. */
 function colsForView(table,view){
@@ -7764,8 +7781,9 @@ function colCardsHTML(table,list){
 /* Classe de la table selon densité + vue (Maître·détail → md / md-haschev). */
 function applyRegClasses(tableEl,table,view){
   if(!tableEl)return;
-  const d=tableDensity(table), md=view==="master_detail", chev=md&&hasColDetail(table);
-  tableEl.className="reg"+(d!=="comfortable"?" "+d:"")+(md?" md":"")+(chev?" md-haschev":"");
+  const d=tableDensity(table), md=view==="master_detail", chev=md&&hasColDetail(table), grip=hasRowGrip(table,view);
+  // has-lead : une colonne (poignée et/ou chevron) précède l'ID → l'ID est figé avec décalage.
+  tableEl.className="reg"+(d!=="comfortable"?" "+d:"")+(md?" md":"")+(chev?" md-haschev":"")+(grip?" has-grip":"")+((grip||chev)?" has-lead":"");
 }
 
 /* ---- Glisser-déposer des en-têtes ---- */
@@ -12778,10 +12796,12 @@ function updateRegEdgeShadows(sc){
 /* Vue Maître·détail : l'ID est figé juste à droite de la colonne chevron. Son décalage doit égaler
    la largeur RÉELLE de cette colonne (qui varie avec la densité) → posé en variable --md-id-left. */
 function syncMdChevOffset(){
-  document.querySelectorAll("table.reg.md-haschev").forEach(tbl=>{
+  document.querySelectorAll("table.reg.has-lead").forEach(tbl=>{
     if(tbl.offsetParent===null)return;
-    const cell=tbl.querySelector("thead th.md-chev-col")||tbl.querySelector("tbody td.md-chev-col");
-    if(cell)tbl.style.setProperty("--md-id-left",Math.round(cell.getBoundingClientRect().width)+"px");
+    const grip=tbl.querySelector("thead th.reg-grip-col")||tbl.querySelector("tbody td.reg-grip-col");
+    const chev=tbl.querySelector("thead th.md-chev-col")||tbl.querySelector("tbody td.md-chev-col");
+    tbl.style.setProperty("--reg-grip-w",(grip?Math.round(grip.getBoundingClientRect().width):0)+"px");
+    tbl.style.setProperty("--reg-chev-w",(chev?Math.round(chev.getBoundingClientRect().width):0)+"px");
   });
 }
 function sizeRegScrollers(){
@@ -12883,7 +12903,7 @@ function objTypeCardHTML(ot){
     const detailAttrs=md?detailColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean):[];
     const hasDetail=md&&detailAttrs.length>0;
     const nCols=(hasDetail?1:0)+1+inlineAttrs.length+1;   // [chevron] + ID + colonnes en ligne + Actions
-    const tblCls="reg"+(dcls!=="comfortable"?" "+dcls:"")+(md?" md":"")+(hasDetail?" md-haschev":"");
+    const tblCls="reg"+(dcls!=="comfortable"?" "+dcls:"")+(md?" md":"")+(hasDetail?" md-haschev has-lead":"");
     const chevTh=hasDetail?'<th class="md-chev-col"></th>':'';
     h+='<div class="table-scroll"><table class="'+tblCls+'"><thead><tr>'+chevTh+hdr("id",t("obj_id"),hasDetail?"muted md-id-col":"muted")+
       inlineAttrs.map(a=>hdr("cf:"+a.code,cfLabel(a))).join("")+'<th></th></tr></thead><tbody>';
