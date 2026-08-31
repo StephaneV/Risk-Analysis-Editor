@@ -443,6 +443,9 @@ OBJ_COLMENU = r"""
 () => {
   const code = 'source_risque', ot = objectTypeByCode(code), tk = 'objects.' + code;
   setObjMode(code);
+  document.querySelector('#view-objects .view-seg [data-view-mode="table"]').click();   // vue Tableau
+  const heads = () => [...document.querySelectorAll('#view-objects table.reg thead th')].map(th => th.textContent.replace(/[▲▼📌⚙⠿]/g,'').trim()).filter(Boolean);
+  const ressLbl = cfLabel(ot.attributes.find(a => a.code === 'ressources'));
   const gear = document.querySelector('#view-objects .objcolgear');
   const out = { gearPresent: !!gear };
   gear.click();
@@ -456,9 +459,11 @@ OBJ_COLMENU = r"""
   out.categorieHidden = !!ot.attributes.find(a => a.code === 'categorie').hide_table;
   out.categorieActive = menu() && !!seg('categorie') ? '' : 'row-gone';  // la ligne existe toujours (attribut masqué reste listé)
   out.categorieActiveState = seg('categorie').querySelector('.cm-pl-b.active').dataset.pl;
-  // « En détail » sur Ressources → au tiroir en Maître·détail
+  // « En détail » sur Ressources → masqué du Tableau (et au tiroir en Maître·détail)
+  out.ressInTableBefore = heads().includes(ressLbl);
   seg('ressources').querySelector('[data-pl="detail"]').click();
   out.ressourcesPlacement = colPlacement(tk, 'cf:ressources');
+  out.ressInTableAfter = heads().includes(ressLbl);
   // verrou : le libellé (name_attr) n'a pas de contrôle 3 états (ligne verrouillée)
   out.labelHasSeg = !!seg(ot.name_attr);
   // clic dehors ferme
@@ -480,8 +485,9 @@ def test_object_column_manager_3states(app):
     # Masqué = hide_table, popover reste ouvert, état actif reflété.
     assert r["stillOpen"], "le popover se ferme après un clic (devrait rester ouvert)"
     assert r["categorieHidden"] and r["categorieActiveState"] == "hidden"
-    # En détail = placement detail.
+    # En détail = placement detail + colonne retirée de la vue Tableau.
     assert r["ressourcesPlacement"] == "detail"
+    assert r["ressInTableBefore"] and not r["ressInTableAfter"], "« En détail » doit masquer la colonne de la vue Tableau (objets)"
     # Clic dehors ferme.
     assert r["closedOnOutside"], "le popover ne se ferme pas au clic dehors"
     assert not app.console_errors()

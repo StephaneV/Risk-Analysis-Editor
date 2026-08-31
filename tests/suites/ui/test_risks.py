@@ -197,19 +197,23 @@ def test_risks_cards_ref_chip_no_overflow(app):
     assert not app.console_errors()
 
 
-# ⚙ Colonnes 3 états (colMap) : En ligne / En détail / Masqué + réordonnancement conservé. Le
-# placement pilote la vue Maître·détail. « Masqué » = colonne retirée du tableau.
+# ⚙ Colonnes 3 états (colMap) : En ligne / En détail / Masqué + réordonnancement conservé. Le ⚙ est
+# désormais dans la barre d'outils (visible en toutes vues). « En détail » quitte la vue Tableau (et la
+# colonne Maître·détail) et descend au tiroir ; « Masqué » = colonne retirée partout.
 COLMENU_3S = r"""
 () => {
-  const gear = document.querySelector('#risksTableEl .colgear');
+  const heads = () => [...document.querySelectorAll('#risksTableEl thead th')].map(th => th.textContent.replace(/[▲▼📌⚙⠿]/g, '').trim()).filter(Boolean);
+  const gear = document.querySelector('#view-risks .col-mount .colgear');
   gear.click();
   const menu = () => [...document.querySelectorAll('.col-menu')].find(m => m.style.display === 'block' && m.querySelector('.cm-row-3s'));
-  const out = { locked: [...menu().querySelectorAll('.cm-row.locked .cm-name')].map(x => x.textContent) };
+  const out = { locked: [...menu().querySelectorAll('.cm-row.locked .cm-name')].map(x => x.textContent), gearInHeader: !!document.querySelector('#risksTableEl .colgear') };
   const row = name => [...menu().querySelectorAll('.cm-row-3s')].find(r => r.querySelector('.cm-name').textContent.trim() === name);
-  // Catégorie → En détail
+  out.catInTableBefore = heads().includes('Catégorie');
+  // Catégorie → En détail (vue Tableau active) : doit quitter l'en-tête du tableau
   row('Catégorie').querySelector('[data-cstate="detail"]').click();
   out.stillOpen = !!menu();
   out.catPlacement = colPlacement('risks', 'cat');
+  out.catInTableAfter = heads().includes('Catégorie');
   out.hasReorderArrows = !!row('Initial').querySelector('.cm-arrow');
   // Initial → Masqué
   row('Initial').querySelector('[data-cstate="hidden"]').click();
@@ -224,8 +228,10 @@ def test_risks_column_manager_3states(app):
     app.goto("risks")
     r = app.js(COLMENU_3S)
     assert "ID" in r["locked"] and "Actions" in r["locked"], "ID/Actions non verrouillés"
+    assert not r["gearInHeader"], "le ⚙ ne doit plus être dans l'en-tête du tableau (déplacé en barre d'outils)"
     assert r["stillOpen"], "le ⚙ se ferme après un choix"
     assert r["catPlacement"] == "detail", "En détail non appliqué"
+    assert r["catInTableBefore"] and not r["catInTableAfter"], "« En détail » doit masquer la colonne de la vue Tableau"
     assert r["hasReorderArrows"], "réordonnancement (flèches) non conservé"
     assert r["initialHidden"], "Masqué ne retire pas la colonne du tableau"
     # Le placement « en détail » descend au tiroir en Maître·détail.

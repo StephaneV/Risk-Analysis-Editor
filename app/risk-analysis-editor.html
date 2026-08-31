@@ -1250,6 +1250,7 @@
         <span class="view-mount" style="margin-right:8px"></span>
         <span class="sort-mount" style="margin-right:8px"></span>
         <span class="density-mount" style="margin-right:8px"></span>
+        <span class="col-mount" style="margin-right:8px"></span>
         <button class="btn ghost" id="btnImportRisks" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
         <button class="btn ghost" id="btnExportRisks" style="margin-right:8px" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
         <button class="btn" id="btnAddRisk" data-i18n="btn_add_risk">+ Ajouter un risque</button>
@@ -1276,6 +1277,7 @@
         <span class="view-mount" style="margin-right:8px"></span>
         <span class="sort-mount" style="margin-right:8px"></span>
         <span class="density-mount" style="margin-right:8px"></span>
+        <span class="col-mount" style="margin-right:8px"></span>
         <button class="btn ghost" id="btnImportMeasures" style="margin-right:8px" data-i18n="btn_import_csv">⭱ Importer (CSV)</button>
         <button class="btn ghost" id="btnExportMeasures" style="margin-right:8px" data-i18n="btn_export_csv">⭳ Exporter (CSV)</button>
         <button class="btn" id="btnAddMeasure" data-i18n="btn_add_measure">+ Ajouter une mesure</button>
@@ -1332,7 +1334,7 @@
         <div class="cross" id="crossArea"></div>
       </div>
       <div class="lpanel" data-lmode="details" style="display:none">
-        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-label="flt_search_links" data-i18n-ph="flt_search" placeholder="Rechercher…"><span style="flex:1"></span><span class="view-mount" style="margin-right:8px"></span><span class="sort-mount" style="margin-right:8px"></span><span class="density-mount"></span></div>
+        <div class="filterbar"><input type="search" id="fltLinkQ" data-i18n-label="flt_search_links" data-i18n-ph="flt_search" placeholder="Rechercher…"><span style="flex:1"></span><span class="view-mount" style="margin-right:8px"></span><span class="sort-mount" style="margin-right:8px"></span><span class="density-mount" style="margin-right:8px"></span><span class="col-mount"></span></div>
         <div id="linkDetailsArea"></div>
       </div>
     </div>
@@ -7524,6 +7526,12 @@ function regTableElFor(table){
 /* Remplit le point de montage de densité d'une vue (barres d'outils statiques risks/measures/links). */
 function mountDensity(sel,table){const m=document.querySelector(sel);if(m)m.innerHTML=densitySegHTML(table);}
 function mountView(sel,table){const m=document.querySelector(sel);if(m)m.innerHTML=viewSegHTML(table);}
+/* ⚙ Colonnes dans la barre d'outils (comme les Objets) : visible dans toutes les vues, y compris Cartes
+   (où le tableau — et donc l'en-tête qui portait le ⚙ — est absent). */
+function mountColGear(sel,table,tableElId,stKey){const m=document.querySelector(sel);if(!m)return;
+  m.innerHTML='<button class="btn icon sm colgear" title="'+esc(t("cols_menu_title"))+'" aria-haspopup="dialog">⚙</button>';
+  m.querySelector(".colgear").addEventListener("click",e=>{e.stopPropagation();toggleColMenu(table,e.currentTarget,tableElId,stKey);});
+}
 /* Rendu générique d'un registre colMap (risks/measures/links) selon la vue courante (Tableau /
    Maître·détail / Cartes). Réutilise le moteur de colonnes + le modèle de placement. `ctx` fournit
    les sélecteurs DOM et les comportements par ligne (rid, wireRow). */
@@ -7532,6 +7540,7 @@ function paintColRegistre(table,list,ctx){
   if(ctx.viewMountSel)mountView(ctx.viewMountSel,table);
   if(ctx.sortMountSel)mountSort(ctx.sortMountSel,table);
   if(ctx.densityMountSel)mountDensity(ctx.densityMountSel,table);
+  if(ctx.colMountSel)mountColGear(ctx.colMountSel,table,ctx.tableElId,table);
   const tb=document.querySelector(ctx.tbodySel);
   const scroll=document.querySelector(ctx.scrollSel);
   const cardsHost=document.querySelector(ctx.cardsSel);
@@ -7703,9 +7712,8 @@ function renderColHead(table,trEl,tableElId,stKey,view){
   colsForView(table,view).forEach(c=>{
     const th=document.createElement("th");
     if(c.pinned==="last"){
+      // En-tête de la colonne Actions : le ⚙ Colonnes est désormais dans la barre d'outils (mountColGear).
       th.className="colhead-actions";
-      th.innerHTML='<button class="btn icon sm colgear" title="'+esc(t("cols_menu_title"))+'" aria-haspopup="dialog">⚙</button>';
-      th.querySelector(".colgear").addEventListener("click",e=>{e.stopPropagation();toggleColMenu(table,e.currentTarget,tableElId,stKey);});
       trEl.appendChild(th);return;
     }
     if(c.sort){th.dataset.sort=c.sort;}
@@ -7777,10 +7785,12 @@ function hasColDetail(table){return detailColKeys(table).length>0;}
 /* Poignée de glissement (réordonnancement des lignes) : registres risks/measures, non triés, hors
    cartes. Elle occupe sa PROPRE colonne figée (pas de passage à la ligne avec l'ID en fenêtre étroite). */
 function hasRowGrip(table,view){return (table==="risks"||table==="measures") && view!=="cards" && !(listState[table]&&listState[table].sort);}
-/* Colonnes affichées en en-tête/lignes selon la vue. Maître·détail : ID (épinglé) + colonnes en
-   ligne + Actions (le détail descend au tiroir). Tableau : toutes les colonnes visibles. */
+/* Colonnes affichées en en-tête/lignes (hors Cartes). Tableau ET Maître·détail montrent les mêmes
+   colonnes : ID (épinglé) + colonnes « en ligne » + Actions. Les colonnes « en détail » ne sont PAS
+   des colonnes : en Maître·détail elles descendent au tiroir, en Tableau elles sont masquées
+   (visibles seulement en Cartes et dans le tiroir Maître·détail). Le chevron n'est ajouté qu'en
+   Maître·détail par le moteur de rendu. */
 function colsForView(table,view){
-  if(view!=="master_detail")return effectiveCols(table);
   const map=colMap(table), first=pinnedFirstKey(table), arr=[];
   if(first&&map[first])arr.push(map[first]);
   inlineColKeys(table).forEach(k=>{if(map[k])arr.push(map[k]);});
@@ -8226,7 +8236,7 @@ function renderRisks(){
   // filtres de champ perso : sinon « 5 sur 5 » masquerait le fait que 12 fiches sont écartées.
   setFilterCount("risks",list.length,analyse.risks.length);
   paintColRegistre("risks",list,{
-    viewMountSel:"#view-risks .view-mount", sortMountSel:"#view-risks .sort-mount", densityMountSel:"#view-risks .density-mount",
+    viewMountSel:"#view-risks .view-mount", sortMountSel:"#view-risks .sort-mount", densityMountSel:"#view-risks .density-mount", colMountSel:"#view-risks .col-mount",
     tbodySel:"#risksTable", scrollSel:"#view-risks .table-scroll", cardsSel:"#view-risks .reg-cards-host",
     headTrSel:"#risksTableEl thead tr", tableElId:"risksTableEl", rid:r=>r.id,
     wireRow:(tr,r)=>{
@@ -8401,7 +8411,7 @@ function renderMeasures(){
   else emptyEl.style.display="none";
   setFilterCount("measures",list.length,analyse.measures.length);
   paintColRegistre("measures",list,{
-    viewMountSel:"#view-measures .view-mount", sortMountSel:"#view-measures .sort-mount", densityMountSel:"#view-measures .density-mount",
+    viewMountSel:"#view-measures .view-mount", sortMountSel:"#view-measures .sort-mount", densityMountSel:"#view-measures .density-mount", colMountSel:"#view-measures .col-mount",
     tbodySel:"#measuresTable", scrollSel:"#view-measures .table-scroll", cardsSel:"#view-measures .reg-cards-host",
     headTrSel:"#measuresTableEl thead tr", tableElId:"measuresTableEl", rid:m=>m.id,
     wireRow:(tr,m)=>{
@@ -8749,6 +8759,7 @@ function renderLinkDetails(){
   mountView("#view-links .view-mount","links");
   mountSort("#view-links .sort-mount","links");
   mountDensity("#view-links .density-mount","links");
+  mountColGear("#view-links .col-mount","links","linkDetailsTableEl","links");
   const view=tableView("links");
   area.innerHTML="";
   if(view==="cards"){
@@ -12946,9 +12957,11 @@ function objTypeCardHTML(ot){
     h+=objCardsGridHTML(ot,dkey,insts);
   }else if(insts.length){
     const attrByKey={};attrs.forEach(a=>attrByKey["cf:"+a.code]=a);
-    const inlineAttrs=md?inlineColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean):attrs;
-    const detailAttrs=md?detailColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean):[];
-    const hasDetail=md&&detailAttrs.length>0;
+    // Tableau ET Maître·détail : seules les colonnes « en ligne » sont des colonnes ; « en détail » est
+    // masqué en Tableau et descend au tiroir en Maître·détail (Cartes : géré par objCardsGridHTML).
+    const inlineAttrs=inlineColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean);
+    const detailAttrs=detailColKeys(dkey).map(k=>attrByKey[k]).filter(Boolean);
+    const hasDetail=md&&detailAttrs.length>0;   // tiroir de détail seulement en Maître·détail
     const nCols=(hasDetail?1:0)+1+inlineAttrs.length+1;   // [chevron] + ID + colonnes en ligne + Actions
     const tblCls="reg"+(dcls!=="comfortable"?" "+dcls:"")+(md?" md":"")+(hasDetail?" md-haschev has-lead":"");
     const chevTh=hasDetail?'<th class="md-chev-col"></th>':'';
