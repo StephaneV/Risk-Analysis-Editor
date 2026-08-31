@@ -358,6 +358,22 @@
   .obj-card .oc-v{font-size:13px;overflow-wrap:anywhere;min-width:0}
   .obj-card .oc-v p{margin:0}
   .obj-card .oc-v p+p{margin-top:.4em}
+  /* Densité en vue Cartes : resserre l'espacement (grille, marges, paires) et réduit un peu les tailles. */
+  .obj-cards.compact{gap:10px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .obj-cards.compact .obj-card{padding:9px 11px}
+  .obj-cards.compact .oc-head{gap:5px;margin-bottom:8px}
+  .obj-cards.compact .oc-pairs,.obj-cards.compact .oc-blocks{gap:6px}
+  .obj-cards.compact .oc-blocks{margin-top:6px}
+  .obj-cards.compact .oc-title{font-size:13.5px}
+  .obj-cards.compact .oc-v{font-size:12.5px}
+  .obj-cards.dense{gap:8px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .obj-cards.dense .obj-card{padding:7px 9px}
+  .obj-cards.dense .oc-head{gap:4px;margin-bottom:6px}
+  .obj-cards.dense .oc-pairs,.obj-cards.dense .oc-blocks{gap:4px}
+  .obj-cards.dense .oc-blocks{margin-top:4px}
+  .obj-cards.dense .oc-title{font-size:13px}
+  .obj-cards.dense .oc-k{font-size:10px}
+  .obj-cards.dense .oc-v{font-size:12px}
   td .actions{display:flex;gap:6px;justify-content:flex-end}
   .id-badge{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
     padding:2px 8px;font-size:11px;font-weight:700;color:var(--muted)}
@@ -7793,7 +7809,8 @@ function colCardsHTML(table,list){
   const map=colMap(table), lk=labelColKey(table);   // le libellé sert de titre → hors des paires
   const inlineCols=inlineColKeys(table).filter(k=>k!==lk).map(k=>map[k]).filter(Boolean);
   const detailCols=detailColKeys(table).map(k=>map[k]).filter(Boolean);
-  let h='<div class="obj-cards">';
+  const dcls=tableDensity(table);
+  let h='<div class="obj-cards'+(dcls!=="comfortable"?" "+dcls:"")+'">';
   list.forEach(row=>{
     h+='<div class="obj-card reg-card" data-regrow="1">'+
       '<div class="oc-head"><div class="oc-toprow">'+colRowIdBadge(table,row)+
@@ -12889,7 +12906,8 @@ function objCardsGridHTML(ot,dkey,insts){
   const na=ot.name_attr;
   const pairAttrs=inlineColKeys(dkey).map(k=>abk[k]).filter(a=>a&&a.code!==na);   // « en ligne » sauf le libellé
   const blockAttrs=detailColKeys(dkey).map(k=>abk[k]).filter(Boolean);
-  let h='<div class="obj-cards">';
+  const dcls=tableDensity(dkey);
+  let h='<div class="obj-cards'+(dcls!=="comfortable"?" "+dcls:"")+'">';
   insts.forEach(inst=>{
     const label=objectLabel(inst), title=(label&&label!==inst.id)?'<span class="oc-title">'+esc(label)+'</span>':'';
     h+='<div class="obj-card" data-obj-row="'+esc(inst.id)+'">'+
@@ -12915,7 +12933,7 @@ function objTypeCardHTML(ot){
       '<h3 style="margin:0">'+esc(otLabel(ot))+' <span class="muted" style="font-weight:400">('+insts.length+')</span></h3>'+
       '<div class="inline" style="gap:6px;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end">'+
         (insts.length?viewSegHTML(dkey):'')+
-        (insts.length&&!cards?densitySegHTML(dkey):'')+   /* densité : sans objet en vue Cartes */
+        (insts.length?densitySegHTML(dkey):'')+   /* densité : agit aussi sur la vue Cartes (espacement des fiches) */
         (insts.length?'<button class="btn ghost sm objsortbtn" data-objsortbtn="'+esc(ot.code)+'" aria-haspopup="menu">'+objSortLabel(ot.code)+'</button>':'')+
         (insts.length?'<button class="btn icon sm objcolgear" data-objcolgear="'+esc(ot.code)+'" title="'+esc(t("cols_menu_title"))+'" aria-haspopup="dialog">⚙</button>':'')+
         (insts.length?'<button class="btn ghost sm" data-obj-export="'+esc(ot.code)+'">'+esc(t("btn_export_csv"))+'</button>':'')+

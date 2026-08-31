@@ -158,6 +158,13 @@ def test_risks_view_selector_and_cards(app):
     n = app.js("document.querySelectorAll('#view-risks .reg-cards-host .obj-card').length")
     assert n == app.js("analyse.risks.length"), "une fiche par risque"
     assert app.js("document.querySelector('#view-risks .table-scroll').hidden"), "le tableau devrait être masqué en Cartes"
+    # Densité en Cartes : « dense » resserre les fiches (classe sur .obj-cards + padding réduit).
+    dens = app.js("(()=>{const c=()=>document.querySelector('#view-risks .obj-cards');"
+                  "const p=()=>getComputedStyle(document.querySelector('#view-risks .obj-card')).paddingTop;"
+                  "const p0=p();document.querySelector('#view-risks .density-seg [data-density=\"dense\"]').click();"
+                  "const r={cls:c().className,shrunk:parseFloat(p())<parseFloat(p0)};"
+                  "document.querySelector('#view-risks .density-seg [data-density=\"comfortable\"]').click();return r;})()")
+    assert "dense" in dens["cls"] and dens["shrunk"], "la densité « dense » ne resserre pas les fiches en Cartes"
     app.js("document.querySelector('#view-risks .obj-card .oc-title').click()")
     assert app.modal_open(), "le clic sur une fiche n'ouvre pas l'éditeur"
     app.close_modals()

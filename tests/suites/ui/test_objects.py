@@ -501,11 +501,18 @@ CARDS = r"""
   const out = {
     stored: ((analyse.extensions.display||{}).view||{})[tk],
     hasCardsBtn: [...vseg.querySelectorAll('button')].some(b => b.dataset.viewMode === 'cards'),
-    densityHidden: !document.querySelector('#view-objects .density-seg'),
+    densityShown: !!document.querySelector('#view-objects .density-seg'),
     gearPresent: !!document.querySelector('#view-objects .objcolgear'),
     cardCount: document.querySelectorAll('#view-objects .obj-card').length,
     nInst: objectsOfType(code).length
   };
+  // La densité agit sur les fiches : « dense » resserre l'espacement (classe sur .obj-cards), puis retour en confortable.
+  const dpad = () => getComputedStyle(document.querySelector('#view-objects .obj-card')).paddingTop;
+  const padComfort = dpad();
+  document.querySelector('#view-objects .density-seg [data-density="dense"]').click();
+  out.cardsDenseCls = !!document.querySelector('#view-objects .obj-cards.dense');
+  out.densePadShrunk = parseFloat(dpad()) < parseFloat(padComfort);
+  document.querySelector('#view-objects .density-seg [data-density="comfortable"]').click();
   const card = document.querySelector('#view-objects .obj-card[data-obj-row="' + inst.id + '"]');
   out.cardId = card.querySelector('.id-badge').textContent;
   out.cardTitle = card.querySelector('.oc-title') ? card.querySelector('.oc-title').textContent : null;
@@ -531,7 +538,8 @@ def test_object_cards_view(app):
     app.goto("objects")
     r = app.js(CARDS)
     assert r["stored"] == "cards" and r["hasCardsBtn"], "vue Cartes non activée / bouton absent"
-    assert r["densityHidden"], "la densité devrait être masquée en vue Cartes"
+    assert r["densityShown"], "la densité devrait être disponible en vue Cartes"
+    assert r["cardsDenseCls"] and r["densePadShrunk"], "la densité « dense » ne resserre pas les fiches"
     assert r["gearPresent"], "le ⚙ Colonnes devrait rester en vue Cartes"
     assert r["cardCount"] == r["nInst"], "une fiche par instance"
     assert r["cardTitle"] == "Groupe cybercriminel (rançongiciel)", "titre = attribut de libellé"
