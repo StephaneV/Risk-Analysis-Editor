@@ -292,11 +292,12 @@
   .reg.compact th,.reg.compact td{padding:5px 9px;font-size:12px}
   .reg.dense th,.reg.dense td{padding:2px 8px;font-size:11.5px}
   .density-seg,.view-seg{flex:none}
-  .view-seg button{padding:6px 11px}
-  /* Contrôle de densité en icônes (famille B) : traits horizontaux, tooltip « Affichage… » au survol. */
-  .density-seg button{padding:6px 9px;display:grid;place-items:center;line-height:0}
+  /* Contrôles densité & vue en icônes : tooltip explicite au survol (title/aria-label). */
+  .density-seg button,.view-seg button{padding:6px 9px;display:grid;place-items:center;line-height:0}
   .dens-ico{width:18px;height:18px;display:block}
   .dens-ico line{stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+  /* Icônes de vue (famille A, contour) : pictogramme de disposition. */
+  .view-ico{width:19px;height:19px;display:block;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
   /* Vue Maître·détail : chevron de dépliage DANS la cellule ID (pour garder l'ID figé), tiroir de
      détail (paires libellé→valeur) sous la ligne, à fond de surface distinct. */
   /* Chevron : bouton bordé (comme la maquette). Le triangle est dessiné en CSS (bordures) plutôt
@@ -1943,6 +1944,7 @@ const I18N = {
     dens_label:"Densité", dens_comfortable:"Confort", dens_compact:"Compact", dens_dense:"Dense",
     dens_tip_comfortable:"Affichage confortable", dens_tip_compact:"Affichage compact", dens_tip_dense:"Affichage dense",
     view_label:"Vue", view_table:"Tableau", view_master_detail:"Maître·détail", view_cards:"Cartes",
+    view_tip_table:"Vue Tableau", view_tip_master_detail:"Vue Maître·détail", view_tip_cards:"Vue Cartes",
     md_expand:"Déplier le détail", md_collapse:"Replier le détail", md_no_detail:"Aucune colonne en détail (toutes en ligne).",
     pl_inline:"En ligne", pl_detail:"En détail", pl_hidden:"Masqué", cols_pl_hint:"« En détail » : visible au tableau et dans le tiroir en vue Maître·détail.",
     sort_by:"Trier par", sort_file_order:"Ordre d'origine",
@@ -2343,6 +2345,7 @@ const I18N = {
     dens_label:"Density", dens_comfortable:"Comfort", dens_compact:"Compact", dens_dense:"Dense",
     dens_tip_comfortable:"Comfortable display", dens_tip_compact:"Compact display", dens_tip_dense:"Dense display",
     view_label:"View", view_table:"Table", view_master_detail:"Master·detail", view_cards:"Cards",
+    view_tip_table:"Table view", view_tip_master_detail:"Master·detail view", view_tip_cards:"Card view",
     md_expand:"Expand details", md_collapse:"Collapse details", md_no_detail:"No columns in detail (all inline).",
     pl_inline:"Inline", pl_detail:"In detail", pl_hidden:"Hidden", cols_pl_hint:"“In detail”: visible in the table and in the master-detail drawer.",
     sort_by:"Sort by", sort_file_order:"Original order",
@@ -2743,6 +2746,7 @@ const I18N = {
     dens_label:"Densità", dens_comfortable:"Comodo", dens_compact:"Compatto", dens_dense:"Denso",
     dens_tip_comfortable:"Visualizzazione comoda", dens_tip_compact:"Visualizzazione compatta", dens_tip_dense:"Visualizzazione densa",
     view_label:"Vista", view_table:"Tabella", view_master_detail:"Elenco·dettaglio", view_cards:"Schede",
+    view_tip_table:"Vista Tabella", view_tip_master_detail:"Vista Elenco·dettaglio", view_tip_cards:"Vista Schede",
     md_expand:"Espandi il dettaglio", md_collapse:"Comprimi il dettaglio", md_no_detail:"Nessuna colonna in dettaglio (tutte in linea).",
     pl_inline:"In linea", pl_detail:"In dettaglio", pl_hidden:"Nascosto", cols_pl_hint:"« In dettaglio » : visibile nella tabella e nel riquadro elenco-dettaglio.",
     sort_by:"Ordina per", sort_file_order:"Ordine originale",
@@ -7475,11 +7479,22 @@ function densitySegHTML(table){
   return '<div class="seg density-seg" role="group" aria-label="'+esc(t("dens_label"))+'">'+b("comfortable","dens_tip_comfortable")+b("compact","dens_tip_compact")+b("dense","dens_tip_dense")+'</div>';
 }
 function applyRegDensity(tableEl,table){if(!tableEl)return;tableEl.classList.remove("compact","dense");const d=tableDensity(table);if(d!=="comfortable")tableEl.classList.add(d);}
-/* Sélecteur de vue (piste 2/3) : Tableau / Maître·détail / Cartes. Mémorisé par table (setTableView). */
+/* Icônes de vue (famille A, contour) : pictogramme de disposition — grille (tableau),
+   volet liste + détail (maître·détail), grille 2×2 (cartes). */
+function viewIcoSVG(view){
+  const inner={
+    table:'<rect x="3" y="4.5" width="14" height="11" rx="1.8"/><line x1="3.5" y1="8" x2="16.5" y2="8"/><line x1="3.5" y1="11.7" x2="16.5" y2="11.7"/><line x1="10" y1="8" x2="10" y2="15.5"/>',
+    master_detail:'<rect x="3" y="4.5" width="14" height="11" rx="1.8"/><line x1="7.8" y1="4.7" x2="7.8" y2="15.3"/><line x1="4.6" y1="7.7" x2="6.3" y2="7.7"/><line x1="4.6" y1="10" x2="6.3" y2="10"/><line x1="4.6" y1="12.3" x2="6.3" y2="12.3"/><line x1="9.4" y1="8.2" x2="15.2" y2="8.2"/><line x1="9.4" y1="11.4" x2="13.4" y2="11.4"/>',
+    cards:'<rect x="3.2" y="4.6" width="5.5" height="5" rx="1.3"/><rect x="11.3" y="4.6" width="5.5" height="5" rx="1.3"/><rect x="3.2" y="10.4" width="5.5" height="5" rx="1.3"/><rect x="11.3" y="10.4" width="5.5" height="5" rx="1.3"/>'
+  }[view]||"";
+  return '<svg class="view-ico" viewBox="0 0 20 20" aria-hidden="true">'+inner+'</svg>';
+}
+/* Sélecteur de vue (piste 2/3) : Tableau / Maître·détail / Cartes, en icônes (famille A) + infobulle « Vue… ».
+   Mémorisé par table (setTableView). */
 function viewSegHTML(table){
   const cur=tableView(table);
-  const b=(v,lbl)=>'<button type="button" data-view-mode="'+v+'" data-vtable="'+esc(table)+'"'+(cur===v?' class="active"':'')+'>'+esc(t(lbl))+'</button>';
-  return '<div class="seg view-seg" role="group" aria-label="'+esc(t("view_label"))+'">'+b("table","view_table")+b("master_detail","view_master_detail")+b("cards","view_cards")+'</div>';
+  const b=(v,tip)=>'<button type="button" data-view-mode="'+v+'" data-vtable="'+esc(table)+'" title="'+esc(t(tip))+'" aria-label="'+esc(t(tip))+'"'+(cur===v?' class="active"':'')+'>'+viewIcoSVG(v)+'</button>';
+  return '<div class="seg view-seg" role="group" aria-label="'+esc(t("view_label"))+'">'+b("table","view_tip_table")+b("master_detail","view_tip_master_detail")+b("cards","view_tip_cards")+'</div>';
 }
 function regTableElFor(table){
   if(table==="risks")return document.getElementById("risksTableEl");

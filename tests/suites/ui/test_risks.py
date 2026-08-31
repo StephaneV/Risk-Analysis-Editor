@@ -147,6 +147,13 @@ def test_risks_view_selector_and_cards(app):
     app.goto("risks")
     modes = app.js("[...document.querySelectorAll('#view-risks .view-seg button')].map(b=>b.dataset.viewMode).join(',')")
     assert modes == "table,master_detail,cards", f"sélecteur de vue inattendu : {modes}"
+    # Icônes de vue (famille A, contour) + infobulle « Vue… » : chaque bouton porte une icône SVG et un title.
+    ico = app.js("(()=>{const b=v=>document.querySelector('#view-risks .view-seg [data-view-mode=\"'+v+'\"]');"
+                 "return {svg:['table','master_detail','cards'].every(v=>b(v).querySelector('svg.view-ico')),"
+                 "notext:['table','master_detail','cards'].every(v=>!b(v).textContent.trim()),"
+                 "tips:['table','master_detail','cards'].map(v=>b(v).title).join('|')};})()")
+    assert ico["svg"] and ico["notext"], "les boutons de vue devraient être des icônes SVG sans texte"
+    assert ico["tips"] == "Vue Tableau|Vue Maître·détail|Vue Cartes", f"infobulles de vue inattendues : {ico['tips']}"
     app.js("document.querySelector('#view-risks .view-seg [data-view-mode=\"cards\"]').click()")
     n = app.js("document.querySelectorAll('#view-risks .reg-cards-host .obj-card').length")
     assert n == app.js("analyse.risks.length"), "une fiche par risque"
