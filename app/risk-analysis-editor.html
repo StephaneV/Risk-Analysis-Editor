@@ -292,7 +292,11 @@
   .reg.compact th,.reg.compact td{padding:5px 9px;font-size:12px}
   .reg.dense th,.reg.dense td{padding:2px 8px;font-size:11.5px}
   .density-seg,.view-seg{flex:none}
-  .density-seg button,.view-seg button{padding:6px 11px}
+  .view-seg button{padding:6px 11px}
+  /* Contrôle de densité en icônes (famille B) : traits horizontaux, tooltip « Affichage… » au survol. */
+  .density-seg button{padding:6px 9px;display:grid;place-items:center;line-height:0}
+  .dens-ico{width:18px;height:18px;display:block}
+  .dens-ico line{stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
   /* Vue Maître·détail : chevron de dépliage DANS la cellule ID (pour garder l'ID figé), tiroir de
      détail (paires libellé→valeur) sous la ligne, à fond de surface distinct. */
   /* Chevron : bouton bordé (comme la maquette). Le triangle est dessiné en CSS (bordures) plutôt
@@ -1937,6 +1941,7 @@ const I18N = {
     plan_unassigned:"Non assigné", plan_no_due:"Sans échéance",
     plan_empty:"Aucune mesure. Ajoutez des mesures dans l'onglet « Mesures ».",
     dens_label:"Densité", dens_comfortable:"Confort", dens_compact:"Compact", dens_dense:"Dense",
+    dens_tip_comfortable:"Affichage confortable", dens_tip_compact:"Affichage compact", dens_tip_dense:"Affichage dense",
     view_label:"Vue", view_table:"Tableau", view_master_detail:"Maître·détail", view_cards:"Cartes",
     md_expand:"Déplier le détail", md_collapse:"Replier le détail", md_no_detail:"Aucune colonne en détail (toutes en ligne).",
     pl_inline:"En ligne", pl_detail:"En détail", pl_hidden:"Masqué", cols_pl_hint:"« En détail » : visible au tableau et dans le tiroir en vue Maître·détail.",
@@ -2336,6 +2341,7 @@ const I18N = {
     plan_unassigned:"Unassigned", plan_no_due:"No due date",
     plan_empty:"No measure. Add measures in the “Measures” tab.",
     dens_label:"Density", dens_comfortable:"Comfort", dens_compact:"Compact", dens_dense:"Dense",
+    dens_tip_comfortable:"Comfortable display", dens_tip_compact:"Compact display", dens_tip_dense:"Dense display",
     view_label:"View", view_table:"Table", view_master_detail:"Master·detail", view_cards:"Cards",
     md_expand:"Expand details", md_collapse:"Collapse details", md_no_detail:"No columns in detail (all inline).",
     pl_inline:"Inline", pl_detail:"In detail", pl_hidden:"Hidden", cols_pl_hint:"“In detail”: visible in the table and in the master-detail drawer.",
@@ -2735,6 +2741,7 @@ const I18N = {
     plan_unassigned:"Non assegnato", plan_no_due:"Senza scadenza",
     plan_empty:"Nessuna misura. Aggiungi misure nella scheda « Misure ».",
     dens_label:"Densità", dens_comfortable:"Comodo", dens_compact:"Compatto", dens_dense:"Denso",
+    dens_tip_comfortable:"Visualizzazione comoda", dens_tip_compact:"Visualizzazione compatta", dens_tip_dense:"Visualizzazione densa",
     view_label:"Vista", view_table:"Tabella", view_master_detail:"Elenco·dettaglio", view_cards:"Schede",
     md_expand:"Espandi il dettaglio", md_collapse:"Comprimi il dettaglio", md_no_detail:"Nessuna colonna in dettaglio (tutte in linea).",
     pl_inline:"In linea", pl_detail:"In dettaglio", pl_hidden:"Nascosto", cols_pl_hint:"« In dettaglio » : visibile nella tabella e nel riquadro elenco-dettaglio.",
@@ -7457,10 +7464,15 @@ function colConfigStore(){const e=analyse.extensions=analyse.extensions||{};cons
 function densityStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.density=d.density||{};}
 function tableDensity(table){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.density;const x=v&&v[table];return (x==="compact"||x==="dense")?x:"comfortable";}
 function setTableDensity(table,val){if(val==="comfortable"){const s=densityStore();delete s[table];}else densityStore()[table]=val;markDirty();}
+/* Icône de densité (famille B) : nombre de traits horizontaux croissant avec la densité (2 · 3 · 4). */
+function densIcoSVG(level){
+  const ys={comfortable:[7,13],compact:[5,10,15],dense:[4,8,12,16]}[level]||[5,10,15];
+  return '<svg class="dens-ico" viewBox="0 0 20 20" aria-hidden="true">'+ys.map(y=>'<line x1="4" y1="'+y+'" x2="16" y2="'+y+'"/>').join("")+'</svg>';
+}
 function densitySegHTML(table){
   const cur=tableDensity(table);
-  const b=(v,lbl)=>'<button type="button" data-density="'+v+'" data-dtable="'+esc(table)+'"'+(cur===v?' class="active"':'')+'>'+esc(t(lbl))+'</button>';
-  return '<div class="seg density-seg" role="group" aria-label="'+esc(t("dens_label"))+'">'+b("comfortable","dens_comfortable")+b("compact","dens_compact")+b("dense","dens_dense")+'</div>';
+  const b=(v,tip)=>'<button type="button" data-density="'+v+'" data-dtable="'+esc(table)+'" title="'+esc(t(tip))+'" aria-label="'+esc(t(tip))+'"'+(cur===v?' class="active"':'')+'>'+densIcoSVG(v)+'</button>';
+  return '<div class="seg density-seg" role="group" aria-label="'+esc(t("dens_label"))+'">'+b("comfortable","dens_tip_comfortable")+b("compact","dens_tip_compact")+b("dense","dens_tip_dense")+'</div>';
 }
 function applyRegDensity(tableEl,table){if(!tableEl)return;tableEl.classList.remove("compact","dense");const d=tableDensity(table);if(d!=="comfortable")tableEl.classList.add(d);}
 /* Sélecteur de vue (piste 2/3) : Tableau / Maître·détail / Cartes. Mémorisé par table (setTableView). */

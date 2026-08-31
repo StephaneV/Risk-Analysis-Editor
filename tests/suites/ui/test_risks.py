@@ -108,12 +108,18 @@ DENSITY = r"""
   seg.querySelector('[data-density="'+mode+'"]').click();
   renderRisks();   // re-rendu : la densité doit persister
   const t = tbl();
+  const btn = v => document.querySelector('#view-risks .density-seg [data-density="'+v+'"]');
   return {
     before,
     hasClass: t.classList.contains(mode),
     padShrunk: parseFloat(pad()) < parseFloat(before.pad),
     stored: (((analyse.extensions||{}).display||{}).density||{}).risks,
-    active: document.querySelector('#view-risks .density-seg button.active').getAttribute('data-density')
+    active: document.querySelector('#view-risks .density-seg button.active').getAttribute('data-density'),
+    // icônes famille B (2·3·4 traits) + infobulle « Affichage… »
+    lines: {comfortable: btn('comfortable').querySelectorAll('svg line').length,
+            compact: btn('compact').querySelectorAll('svg line').length,
+            dense: btn('dense').querySelectorAll('svg line').length},
+    tip: btn('dense').title, aria: btn('dense').getAttribute('aria-label')
   };
 }
 """
@@ -129,6 +135,9 @@ def test_registre_density(app):
     assert r["padShrunk"], "le padding des cellules n'a pas diminué en mode Dense"
     assert r["stored"] == "dense", "densité non mémorisée dans extensions.display.density"
     assert r["active"] == "dense", "bouton actif non synchronisé après re-rendu"
+    # Icônes famille B : nombre de traits croissant (2 · 3 · 4) + infobulle « Affichage… ».
+    assert r["lines"] == {"comfortable": 2, "compact": 3, "dense": 4}, f"icônes de densité inattendues : {r['lines']}"
+    assert r["tip"] == "Affichage dense" and r["aria"] == "Affichage dense", "infobulle/aria-label de densité incorrect"
     assert not app.console_errors()
 
 
