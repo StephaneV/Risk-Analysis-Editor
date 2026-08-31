@@ -241,6 +241,32 @@ def test_risks_column_manager_3states(app):
     assert not app.console_errors()
 
 
+def test_col_menu_preserves_scroll(app):
+    """Stabilité graphique : cliquer un bouton 3 états dans le menu ⚙ Colonnes reconstruit la liste
+    mais doit conserver la position de défilement (sinon la scrollbar saute en haut)."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.page.set_viewport_size({"width": 1000, "height": 460})   # viewport court → la liste déborde (scroll)
+    r = app.js(r"""(() => {
+      document.querySelector('#view-risks .col-mount .colgear').click();
+      const menu = document.querySelector('.col-menu');
+      let list = menu.querySelector('.cm-list');
+      const maxScroll = list.scrollHeight - list.clientHeight;
+      list.scrollTop = maxScroll;               // défiler tout en bas
+      const before = list.scrollTop;
+      const rows = [...menu.querySelectorAll('.cm-row-3s')];
+      const last = rows[rows.length - 1];       // une ligne visible en bas
+      const cur = last.querySelector('.cm-pl-b.active').dataset.cstate;
+      const target = cur === 'inline' ? 'detail' : 'inline';
+      last.querySelector('[data-cstate="' + target + '"]').click();   // reconstruit la liste
+      list = menu.querySelector('.cm-list');
+      return { maxScroll: Math.round(maxScroll), before: Math.round(before), after: Math.round(list.scrollTop) };
+    })()""")
+    assert r["maxScroll"] > 5, "la liste ne déborde pas (viewport trop grand) — test non pertinent"
+    assert abs(r["after"] - r["before"]) <= 2, f"position de défilement non conservée ({r['before']}→{r['after']})"
+    assert not app.console_errors()
+
+
 def test_risks_sort_menu(app):
     """Menu « Trier par » du registre Risques : tri par n'importe quel champ visible (listState)."""
     app.load("ebios.rae.json")

@@ -65,3 +65,15 @@ def test_links_master_detail_view(app):
     labels = app.js(f"[...document.querySelector('{tbl} tr.md-detail-row .md-detail').querySelectorAll('.md-lbl')].map(x=>x.textContent)")
     assert any("ote" in l for l in labels), f"tiroir sans la colonne Notes : {labels}"
     assert not app.console_errors()
+
+
+def test_links_last_detail_col_goes_inline(app):
+    """Régression : une colonne SEULE « en détail » (ex. Notes) doit pouvoir passer « En ligne » et le
+    rester — sans retomber sur le défaut auto qui la remettrait « en détail »."""
+    app.load("ebios.rae.json")
+    app.goto("links")
+    assert app.js("colState('links','notes')") == "detail", "Notes devrait être « en détail » par défaut"
+    app.js("setColState('links','notes','inline')")
+    assert app.js("colState('links','notes')") == "inline", "Notes ne reste pas « en ligne » (retour au défaut)"
+    assert app.js("Array.isArray(savedDetailCols('links'))"), "config détail vide non mémorisée explicitement"
+    assert not app.console_errors()

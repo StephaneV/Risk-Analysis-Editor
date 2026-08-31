@@ -43,3 +43,15 @@ def test_measures_cards_view(app):
     assert app.modal_open()
     app.close_modals()
     assert not app.console_errors()
+
+
+def test_measures_no_column_hidden_by_default(app):
+    """Régression : par défaut aucune colonne n'est « Masqué » ; l'auto place « En ligne » ou « En
+    détail ». Les colonnes secondaires (def:false : Échéance cible, Coût) passent « En détail »."""
+    app.load("ebios.rae.json")
+    app.goto("measures")
+    hidden = app.js("allCols('measures').filter(c=>!c.pinned&&colState('measures',c.key)==='hidden').map(c=>c.key)")
+    assert hidden == [], f"des colonnes sont Masquées par défaut : {hidden}"
+    assert app.js("colState('measures','due')") == "detail", "colonne secondaire 'due' devrait être « en détail »"
+    assert app.js("colState('measures','cost')") == "detail", "colonne secondaire 'cost' devrait être « en détail »"
+    assert not app.console_errors()

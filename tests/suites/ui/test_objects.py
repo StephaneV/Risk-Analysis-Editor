@@ -600,3 +600,21 @@ def test_object_sort_menu(app):
     assert r["afterToggle"] == -1, "le second clic ne bascule pas en décroissant"
     assert r["afterReset"]["sort"] is None, "« Ordre d'origine » ne réinitialise pas le tri"
     assert not app.console_errors()
+
+
+def test_object_all_detail_cols_can_go_inline(app):
+    """Régression : on doit pouvoir passer « En ligne » TOUTES les colonnes en détail d'un type,
+    y compris la dernière (config détail vide mémorisée, pas de retour au défaut auto)."""
+    app.load("ebios-objets.rae.json")
+    app.goto("objects")
+    r = app.js(r"""(() => {
+      const code = 'source_risque', tk = 'objects.' + code;
+      setObjMode(code);
+      const det = detailColKeys(tk).slice();                         // colonnes « en détail » par défaut
+      det.forEach(k => setObjColPlacement(code, k.slice(3), 'inline'));   // 'cf:xxx' -> 'xxx'
+      return { det, remaining: detailColKeys(tk), states: det.map(k => colPlacement(tk, k)) };
+    })()""")
+    assert len(r["det"]) >= 2, "le type de test doit avoir au moins 2 colonnes en détail par défaut"
+    assert r["remaining"] == [], "certaines colonnes restent « en détail » (retour au défaut auto)"
+    assert all(s == "inline" for s in r["states"]), "toutes les colonnes déplacées devraient être « en ligne »"
+    assert not app.console_errors()

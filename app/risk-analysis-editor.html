@@ -7480,7 +7480,9 @@ const ACTIONS_COL={key:"__act",pinned:"last",label:""};
 function allCols(table){return builtinCols(table).concat(cfCols(table)).concat([ACTIONS_COL]);}
 function colMap(table){const m={};allCols(table).forEach(c=>m[c.key]=c);return m;}
 function pinnedFirstKey(table){const c=allCols(table).find(x=>x.pinned==="first");return c?c.key:null;}
-function defaultColOrder(table){return allCols(table).filter(c=>c.pinned!=="last"&&c.def!==false).map(c=>c.key);}
+// Défaut : AUCUNE colonne masquée. L'auto ne choisit qu'entre « En ligne » et « En détail » (les
+// colonnes def:false, secondaires, passent « En détail » via detailColSet). « Masqué » = choix utilisateur.
+function defaultColOrder(table){return allCols(table).filter(c=>c.pinned!=="last").map(c=>c.key);}
 function colConfigStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.columns=d.columns||{};}
 /* Densité d'un registre (piste 1) : "comfortable" (défaut) | "compact" | "dense", mémorisée par table
    sous extensions.display.density (même patron que .columns). Clé : "risks"/"measures"/"links" ou
@@ -7644,7 +7646,12 @@ function detailColSet(table){
   const cols=regColumns(table),byKey={};cols.forEach(c=>byKey[c.key]=c);
   const saved=savedDetailCols(table),s=new Set();
   if(saved){saved.forEach(k=>{const c=byKey[k];if(c&&!c.locked)s.add(k);});return s;}
-  cols.forEach(c=>{if(c.verbose&&!c.locked)s.add(c.key);});return s;
+  // Défaut auto : « En détail » pour les colonnes verbeuses (texte long) ET les colonnes secondaires
+  // (def:false, jadis masquées) — jamais « Masqué ». Les autres restent « En ligne ».
+  const isObj=table.indexOf("objects.")===0, map=isObj?{}:colMap(table);
+  cols.forEach(c=>{const secondary=!isObj&&map[c.key]&&map[c.key].def===false;
+    if((c.verbose||secondary)&&!c.locked)s.add(c.key);});
+  return s;
 }
 function colPlacement(table,key){const c=regColumns(table).find(x=>x.key===key);if(!c)return "hidden";if(c.locked)return "inline";return detailColSet(table).has(key)?"detail":"inline";}
 function inlineColKeys(table){const s=detailColSet(table);return regColumns(table).filter(c=>c.locked||!s.has(c.key)).map(c=>c.key);}
@@ -7657,7 +7664,10 @@ function setColPlacement(table,key,placement){
   const cur=new Set(detailColKeys(table));
   if(placement==="detail")cur.add(key); else cur.delete(key);
   const ordered=regColumns(table).filter(x=>cur.has(x.key)).map(x=>x.key);
-  const st=regDetailStore(); if(ordered.length)st[table]=ordered; else delete st[table];
+  // Toujours mémoriser la liste, MÊME VIDE : une liste vide signifie « aucune colonne en détail »
+  // (choix explicite). Supprimer la clé ferait retomber sur le défaut auto — d'où l'impossibilité de
+  // passer « En ligne » la dernière (ou l'unique) colonne en détail.
+  regDetailStore()[table]=ordered;
   markDirty();
 }
 // Lecture seule : ne crée aucun objet (évite de polluer le fichier avec un columns:{} vide).
@@ -7881,6 +7891,7 @@ function colStateSegHTML(table,key){
   return '<div class="cm-pl">'+b("inline","pl_inline")+b("detail","pl_detail")+b("hidden","pl_hidden")+'</div>';
 }
 function buildColMenu(table){
+  const prevList=colMenu.querySelector(".cm-list"), prevTop=prevList?prevList.scrollTop:0;   // stabilité : conserver la position de défilement au re-rendu
   const cols=allCols(table), order=colOrder(table), first=pinnedFirstKey(table), mids=order.filter(k=>k!==first);
   let h='<div class="cm-title">'+esc(t("cols_shown"))+'</div><div class="cm-list">';
   cols.forEach(c=>{
@@ -7901,6 +7912,7 @@ function buildColMenu(table){
   });
   h+='</div><div class="cm-foot"><span class="cm-hint">'+esc(t("cols_reorder_hint"))+'</span><button class="btn ghost sm" data-cm-reset>'+esc(t("cols_reset"))+'</button></div>';
   colMenu.innerHTML=h;
+  const newList=colMenu.querySelector(".cm-list"); if(newList)newList.scrollTop=prevTop;   // restaure la position de défilement
 }
 colMenu.addEventListener("click",e=>{
   const table=colMenu._table;if(!table)return;
@@ -7940,6 +7952,7 @@ function objPlSegHTML(otCode,attr){
 }
 function buildObjColMenu(otCode){
   const ot=objectTypeByCode(otCode);if(!ot){objColMenu.innerHTML="";return;}
+  const prevList=objColMenu.querySelector(".cm-list"), prevTop=prevList?prevList.scrollTop:0;   // stabilité : conserver la position de défilement au re-rendu
   let h='<div class="cm-title">'+esc(t("cols_shown"))+'</div><div class="cm-list">';
   h+='<div class="cm-row locked"><span class="cm-lock">🔒</span><span class="cm-name">'+esc(t("obj_id"))+'</span><span class="cm-pinned">'+esc(t("cols_pinned"))+'</span></div>';
   (ot.attributes||[]).forEach(a=>{
@@ -7951,6 +7964,7 @@ function buildObjColMenu(otCode){
   });
   h+='</div><div class="cm-foot"><span class="cm-hint">'+esc(t("cols_pl_hint"))+'</span></div>';
   objColMenu.innerHTML=h;
+  const newList=objColMenu.querySelector(".cm-list"); if(newList)newList.scrollTop=prevTop;   // restaure la position de défilement
 }
 objColMenu.addEventListener("click",e=>{
   const otCode=objColMenu._ot;if(!otCode)return;
