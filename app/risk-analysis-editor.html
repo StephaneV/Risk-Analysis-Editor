@@ -7465,7 +7465,7 @@ function builtinCols(table){
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
     {key:"mid",label:t("th_measure_id"),sort:"mid",cell:x=>'<span class="id-badge">'+esc(x.measure)+'</span>'},
     {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:x=>{const m=measureById(x.measure);return esc(m?m.label:"—");}},
-    {key:"notes",label:t("f_notes"),sort:"notes",text:true,detail:true,cell:x=>esc(mdToText(x.comment)||"—")},
+    {key:"notes",label:t("f_notes"),sort:"notes",text:true,detail:true,cell:x=>x.comment?mdToHTML(x.comment):'<span class="muted">—</span>'},   // Markdown rendu (tableau écrêté + loupe, tiroir, cartes)
   ];
 }
 function cfIsTextCol(f){return f&&(f.type==="text"||f.type==="textarea"||(f.type==="computed"&&(f.result_type||"number")==="text"));}

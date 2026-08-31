@@ -77,3 +77,44 @@ def test_links_last_detail_col_goes_inline(app):
     assert app.js("colState('links','notes')") == "inline", "Notes ne reste pas « en ligne » (retour au défaut)"
     assert app.js("Array.isArray(savedDetailCols('links'))"), "config détail vide non mémorisée explicitement"
     assert not app.console_errors()
+
+
+NOTES_MD = r"""
+() => {
+  const tr = analyse.treatments[0];
+  tr.comment = 'Texte **gras**, [rouge]{.red}, ==surligné== :\n- un\n- deux';
+  setLinkMode('details');
+  const out = {};
+  // Tableau : Notes « en ligne », cellule écrêtée avec HTML rendu
+  setColState('links', 'notes', 'inline');
+  document.querySelector('#view-links .view-seg [data-view-mode="table"]').click();
+  const cell = document.querySelector('#linkDetailsTableEl tbody td[data-col="notes"] .cell-clip');
+  out.table = cell ? cell.innerHTML : '';
+  // Maître·détail : tiroir
+  setColState('links', 'notes', 'detail');
+  document.querySelector('#view-links .view-seg [data-view-mode="master_detail"]').click();
+  const chev = document.querySelector('#linkDetailsTableEl tbody .md-chev'); if (chev) chev.click();
+  const drawer = document.querySelector('#linkDetailsTableEl .md-detail .md-val');
+  out.drawer = drawer ? drawer.innerHTML : '';
+  // Cartes : bloc « en détail »
+  document.querySelector('#view-links .view-seg [data-view-mode="cards"]').click();
+  const block = [...document.querySelectorAll('#view-links .oc-blocks .oc-block')]
+    .find(b => /./.test((b.querySelector('.oc-v') || {}).innerHTML || ''));
+  out.card = block ? block.querySelector('.oc-v').innerHTML : '';
+  return out;
+}
+"""
+
+
+def test_links_notes_render_markdown(app):
+    """Le champ Notes (comment) des Liens rend le Markdown dans les trois vues (Tableau écrêté, tiroir
+    Maître·détail, Cartes) — et non plus du texte brut."""
+    app.load("ebios.rae.json")
+    app.goto("links")
+    r = app.js(NOTES_MD)
+    for view in ("table", "drawer", "card"):
+        html = r[view]
+        assert "<strong>" in html, f"gras Markdown non rendu ({view}) : {html[:80]}"
+        assert "<mark>" in html, f"surlignage Markdown non rendu ({view})"
+        assert "<li>" in html, f"liste Markdown non rendue ({view})"
+    assert not app.console_errors()
