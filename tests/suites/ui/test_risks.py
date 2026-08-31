@@ -171,6 +171,32 @@ def test_risks_view_selector_and_cards(app):
     assert not app.console_errors()
 
 
+def test_risks_cards_ref_chip_no_overflow(app):
+    """Non-régression : en vue Cartes densité « dense », une pastille de référence à un objet au
+    libellé long (.cf-chip-ref) ne doit pas déborder de sa fiche (max-width plafonné au conteneur)."""
+    app.load("ebios.rae.json")
+    app.goto("risks")
+    app.js("document.querySelector('#view-risks .view-seg [data-view-mode=\"cards\"]').click();"
+           "document.querySelector('#view-risks .density-seg [data-density=\"dense\"]').click();")
+    r = app.js(r"""(() => {
+      const card = document.querySelector('#view-risks .obj-card');
+      const long = 'Serveur applicatif et base de données métiers hébergé en salle serveur centralisée';
+      const w = document.createElement('div'); w.className = 'oc-v';
+      w.innerHTML = '<span class="cf-chips"><span class="cf-chip cf-chip-ref" title="x">' + long + '</span></span>';
+      card.appendChild(w);
+      const chip = w.querySelector('.cf-chip-ref');
+      const cr = card.getBoundingClientRect(), ch = chip.getBoundingClientRect();
+      const res = { overRight: Math.round(ch.right - cr.right), scrollOver: card.scrollWidth - card.clientWidth,
+                    clipped: chip.scrollWidth > chip.clientWidth };
+      w.remove();
+      return res;
+    })()""")
+    assert r["overRight"] <= 1, f"la pastille de référence déborde à droite de la fiche ({r['overRight']}px)"
+    assert r["scrollOver"] == 0, "la fiche a un débordement horizontal (scroll) dû à la pastille"
+    assert r["clipped"], "le libellé long devrait être écrêté (ellipsis) dans la pastille"
+    assert not app.console_errors()
+
+
 # ⚙ Colonnes 3 états (colMap) : En ligne / En détail / Masqué + réordonnancement conservé. Le
 # placement pilote la vue Maître·détail. « Masqué » = colonne retirée du tableau.
 COLMENU_3S = r"""

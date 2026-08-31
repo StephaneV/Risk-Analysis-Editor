@@ -687,11 +687,13 @@
     cursor:pointer;background:transparent;color:var(--muted);border:1.5px solid var(--border);line-height:1.5;opacity:.6}
   .cf-tag:hover{opacity:.85}
   .cf-tag.on{background:var(--tagc,#888);color:var(--tagfg,#fff);border-color:var(--tagc,#888);opacity:1}
-  .cf-chips{display:inline-flex;flex-wrap:wrap;gap:4px;vertical-align:middle}
+  .cf-chips{display:inline-flex;flex-wrap:wrap;gap:4px;vertical-align:middle;max-width:100%}
   .cf-chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;
     color:var(--tagfg,#fff);background:var(--tagc,#888);white-space:nowrap}
-  /* Référence à un objet : libellé possiblement long → ellipsis, libellé complet en infobulle (title). */
-  .cf-chip.cf-chip-ref{display:inline-block;max-width:240px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:help}
+  /* Référence à un objet : libellé possiblement long → ellipsis, libellé complet en infobulle (title).
+     max-width plafonné à 240px MAIS jamais au-delà du conteneur (100%) : sinon une pastille longue déborde
+     d'une fiche étroite en vue Cartes (surtout en densité dense). */
+  .cf-chip.cf-chip-ref{display:inline-block;max-width:min(240px,100%);overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:help}
   /* Cellule de texte longue : écrêtée à 3 lignes ; si tronquée (.is-clipped) → curseur loupe. */
   .cell-clip{max-width:340px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
   .cell-clip.is-clipped{cursor:zoom-in}
