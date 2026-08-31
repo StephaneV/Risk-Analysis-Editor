@@ -849,6 +849,10 @@
   .plan-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px}
   .plan-card.overdue{border-color:var(--danger)}
   .plan-card b{font-weight:600}
+  .plan-card .pc-head{display:flex;align-items:center;gap:6px}
+  .plan-card .pc-head b{flex:1;min-width:0}
+  .plan-card .pc-edit{flex:none}
+  #planArea td.plan-act{width:1%;white-space:nowrap}
   .plan-card.dragging{opacity:.45}
   .kanban-col.drop-target{outline:2px dashed var(--accent);outline-offset:-4px;border-radius:8px}
   #planArea tr[data-mid]{cursor:pointer}   /* lignes du plan cliquables dans la vue, pas dans le rapport */
@@ -6519,7 +6523,7 @@ function renderReport(){
     action_plan:s=>{
       let inner='<h2>'+esc(t("tab_plan"))+'</h2>';
       if(!nM)inner+='<div class="rp-sub">'+esc(t("measures_empty"))+'</div>';
-      else planGroups(MEAS,s.view).forEach(g=>{if(g.label)inner+='<h3>'+esc(g.label)+'</h3>';inner+=planTable(g.measures);});
+      else planGroups(MEAS,s.view).forEach(g=>{if(g.label)inner+='<h3>'+esc(g.label)+'</h3>';inner+=planTable(g.measures,true);});   // rapport : sans bouton d'édition
       return '<div class="rp-card" id="rsec-action_plan">'+inner+'</div>';
     }
   };
@@ -6628,7 +6632,7 @@ function planSortByDate(list){
   const noD=list.filter(m=>!m.due_date).slice().sort(cmpId);
   return {withD,noD};
 }
-function planRow(m){
+function planRow(m,forReport){
   const ov=isOverdue(m);
   return '<tr'+(ov?' class="overdue-row"':'')+' data-mid="'+esc(m.id)+'">'+
     '<td data-col="id"><span class="id-badge">'+esc(m.id)+'</span></td>'+
@@ -6636,7 +6640,9 @@ function planRow(m){
     '<td class="muted" data-col="resp">'+esc(m.responsible||"—")+'</td>'+
     '<td data-col="due">'+(m.due_date?esc(fmtDate(m.due_date))+(ov?' <span class="plan-late">'+esc(t("plan_overdue"))+'</span>':''):'<span class="muted">—</span>')+'</td>'+
     '<td data-col="status">'+statusBadge(m.status)+'</td>'+
-    '<td data-col="covered">'+planCovered(m.id)+'</td></tr>';
+    '<td data-col="covered">'+planCovered(m.id)+'</td>'+
+    (forReport?'':'<td class="plan-act"><div class="actions"><button class="btn icon sm" data-plan-edit="'+esc(m.id)+'"'+a11y("a11y_edit_measure",m.id)+'>✎</button></div></td>')+   // pas de bouton d'édition dans le rapport
+    '</tr>';
 }
 /* Groupes du plan d'action selon la vue : "status" (par statut), "responsible" (par responsable,
    « — » en dernier), sinon échéance (un seul groupe, datées triées puis non datées). Renvoie une
@@ -6651,11 +6657,11 @@ function planGroups(MEAS,view){
   const withD=MEAS.filter(m=>m.due_date).slice().sort((a,b)=>a.due_date<b.due_date?-1:a.due_date>b.due_date?1:0);
   return [{label:null,measures:withD.concat(MEAS.filter(m=>!m.due_date))}];
 }
-function planTable(list){
+function planTable(list,forReport){
   // Conteneur à défilement : sur écran étroit le tableau défile au lieu de pousser la page.
   return '<div class="table-scroll"><table><thead><tr><th>'+esc(t("th_id"))+'</th><th>'+esc(t("th_measure"))+'</th><th>'+esc(t("th_responsible"))+
-    '</th><th>'+esc(t("f_due_date"))+'</th><th>'+esc(t("th_status"))+'</th><th>'+esc(t("th_covered_risks"))+'</th></tr></thead><tbody>'+
-    list.map(planRow).join("")+'</tbody></table></div>';
+    '</th><th>'+esc(t("f_due_date"))+'</th><th>'+esc(t("th_status"))+'</th><th>'+esc(t("th_covered_risks"))+'</th>'+(forReport?'':'<th></th>')+'</tr></thead><tbody>'+
+    list.map(m=>planRow(m,forReport)).join("")+'</tbody></table></div>';
 }
 function planCard(m){
   const ov=isOverdue(m), risks=risksOfMeasure(m.id);
@@ -6663,7 +6669,7 @@ function planCard(m){
      d'une colonne de statut à l'autre — le glisser-déposer n'est plus le seul moyen. */
   const nom=t("a11y_plan_card",m.id,m.label,statusLabel(m.status||"proposed"));
   return '<div class="plan-card'+(ov?" overdue":"")+'" data-mid="'+esc(m.id)+'" draggable="true" style="cursor:pointer"'+
-    ' tabindex="0" role="button" aria-label="'+esc(nom)+'"><div data-col="measure"><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b></div>'+
+    ' tabindex="0" role="button" aria-label="'+esc(nom)+'"><div data-col="measure" class="pc-head"><span class="id-badge">'+esc(m.id)+'</span> <b>'+esc(m.label)+'</b><button class="btn icon sm pc-edit" data-plan-edit="'+esc(m.id)+'"'+a11y("a11y_edit_measure",m.id)+'>✎</button></div>'+
     ((m.due_date||m.responsible)?'<div class="muted" style="margin-top:4px;font-size:11px">'+
       (m.due_date?'<span data-col="due"'+(ov?' style="color:var(--danger);font-weight:700"':'')+'>'+esc(fmtDate(m.due_date))+(ov?' ⚠':'')+'</span>':'')+
       (m.due_date&&m.responsible?' · ':'')+(m.responsible?'<span data-col="resp">'+esc(m.responsible)+'</span>':'')+'</div>':'')+
@@ -6755,9 +6761,15 @@ function renderPlan(){
   const area=document.getElementById("planArea");if(!area)return;
   let dragId=null;
   area.addEventListener("click",e=>{
+    const eb=e.target.closest("[data-plan-edit]");   // bouton ✎ : édition en un clic (le double-clic reste possible ailleurs sur la carte/ligne)
+    if(eb){openMeasureModal(eb.dataset.planEdit);return;}
     if(e.target.closest("[data-open-r],[data-open-m]"))return; // les pastilles ouvrent leur propre fiche
+    rowClickZoom(e);   // simple-clic : zoom si cellule tronquée, sinon rien (édition au double-clic)
+  });
+  area.addEventListener("dblclick",e=>rowEditDbl(e,cel=>{   // double-clic (carte/ligne) : éditer la mesure, positionné sur le champ
     const el=e.target.closest("[data-mid]");if(!el)return;
-    const cc=e.target.closest("[data-col]");openMeasureModal(el.dataset.mid,null,cc&&cc.dataset.col);});
+    openMeasureModal(el.dataset.mid,null,cel&&cel.dataset.col);
+  }));
   /* Alternative clavier au glisser-déposer (vue Par statut) :
      Entrée/Espace ouvre la mesure, Ctrl+←/→ la fait changer de colonne. */
   area.addEventListener("keydown",e=>{
