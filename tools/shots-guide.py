@@ -60,7 +60,7 @@ SHOTS = [
     ("guide-22-parametres-rapport", DEMO+"&tab=settings.report",
         "setParamMode('report')", True,  1180),
     ("guide-19-menu-colonnes",      DEMO+"&tab=risks",
-        "document.querySelector('#risksTableEl thead .colgear').click()", False, 940),
+        "document.querySelector('#view-risks .col-mount .colgear').click()", False, 940),
     ("guide-20-menu-fichier",       DEMO+"&tab=risks",
         "document.getElementById('btnFile').click()", False, 620),
     ("guide-21-aide-raccourcis",    DEMO+"&tab=risks",
