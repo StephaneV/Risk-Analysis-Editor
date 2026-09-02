@@ -17,6 +17,14 @@ a sa propre configuration). Les mécanismes existants (ordre des colonnes par gl
 tri par clic sur l'en‑tête, glisser‑ligne, sélecteur ⚙, flag « Masquer en tableau ») sont
 **conservés** et étendus, jamais remplacés.
 
+**Édition (harmonisée, toutes vues).** Un **simple clic** sur un champ ne fait rien — hors
+texte long tronqué (→ aperçu agrandi) et image (→ visionneuse) ; un **double‑clic** ouvre la
+fiche, **positionnée sur le champ** (cellule du tableau, valeur du tiroir Maître·détail, paire
+ou bloc de la fiche en Cartes). Ce modèle s'applique aussi au **Plan d'action** (échéancier,
+kanban par statut, par responsable), qui porte en plus un **bouton ✎** par ligne/carte ouvrant
+la mesure en un clic. Les boutons d'action (✎ éditer, ⧉ dupliquer, 🗑 supprimer) restent au
+simple clic.
+
 ## 2. Les trois vues
 
 - **Tableau** — la vue tableur actuelle (toutes les colonnes non masquées, défilement).
@@ -52,16 +60,19 @@ Contraintes de largeur : les cellules gardent leur dimensionnement au contenu ; 
 
 Chaque colonne d'une table a un **placement** :
 
-| Placement | Vue Maître·détail | Vue Tableau |
-|---|---|---|
-| **En ligne** | dans la ligne compacte | colonne visible |
-| **En détail** | dans le panneau déplié | colonne visible (secondaire) |
-| **Masqué** | nulle part | nulle part |
+| Placement | Vue Tableau | Vue Maître·détail | Vue Cartes |
+|---|---|---|---|
+| **En ligne** | colonne visible | colonne (ligne compacte) | dans la fiche |
+| **En détail** | **masqué** | au tiroir (panneau déplié) | dans la fiche |
+| **Masqué** | nulle part | nulle part | nulle part |
 
-« En ligne » vs « En détail » est un **point de bascule de priorité** : le même réglage sert
-aux deux vues (en Tableau, les colonnes « en détail » sont simplement des colonnes visibles
-placées après les colonnes « en ligne » ; en Maître·détail, elles descendent au tiroir).
-« Masqué » ré‑emploie le mécanisme existant `hide_table`.
+« En ligne » vs « En détail » est un **point de bascule de priorité**. Tableau et Maître·détail
+affichent les **mêmes colonnes** (les colonnes « en ligne ») ; les colonnes « en détail » **ne
+sont pas des colonnes** du tableau plat : en Maître·détail elles descendent au **tiroir**, en
+Tableau elles sont **masquées**, et dans les deux cas elles restent visibles dans la **fiche**
+en Cartes. Par défaut, l'auto ne classe une colonne qu'en « En ligne » ou « En détail » (jamais
+« Masqué ») : les colonnes verbeuses ou secondaires partent « En détail ». « Masqué » — choix
+**explicite** de l'utilisateur — ré‑emploie le mécanisme existant `hide_table`.
 
 ### 4.1 Réglage — sélecteur ⚙ Colonnes enrichi
 
@@ -92,8 +103,8 @@ L'utilisateur peut tout redéfinir ; ses choix priment sur les défauts.
 - **Texte complet** (pas d'écrêtage) et **Markdown rendu** (couleur/surlignage/gras…),
   cohérent avec l'affichage riche des champs texte/textarea/calculé‑texte.
 - Un tiroir ouvert **reste rattaché à sa ligne** lors d'un tri.
-- **Champs vides** : masqués du tiroir par défaut (option `show_empty_detail`, à confirmer),
-  pour ne pas l'encombrer.
+- **Champs vides** : masqués du tiroir, pour ne pas l'encombrer (comportement retenu ; l'option
+  `show_empty_detail` envisagée n'a pas été jugée nécessaire).
 - Le dépliage est piloté par un **chevron** dans la 1re cellule ; l'état déplié n'est pas persisté
   (repart replié à l'ouverture de la vue).
 
@@ -151,7 +162,7 @@ et non un objet unique par table — pour rester aligné sur `columns` déjà en
   le reste des colonnes visibles non verrouillées est **En ligne**. `view` (piste 2, modèle) =
   mémoire de la vue par table. Défaut (clé absente) : colonnes verbeuses → détail (§4.3), vue
   `table`. Verrous ID/libellé/Actions jamais écrits dans `detail`.
-- La **pleine largeur** : `extensions.display.full_width` (booléen global) — à confirmer vs par table.
+- La **pleine largeur** : `extensions.display.full_width` (booléen global) — retenu global (non par table).
 - Rétro‑compat : absence de ces clés ⇒ défauts (`view:"table"`, *Confort*, split par type §4.3).
   Aucune écriture de config vide dans le fichier (lecture paresseuse, comme l'existant).
 
@@ -217,3 +228,28 @@ libellé reste modifiable, contrairement aux objets où name_attr est verrouill�
 préréglages de colonnes.
 
 Chaque étape est committée séparément, avec tests (pytest + Playwright, suites `ui`/`export`).
+
+### 13.8 Évolutions ultérieures (livrées en 3.1.0)
+
+Après les sept étapes ci‑dessus, plusieurs points ont été affinés — ils **priment** sur les
+annotations d'étape correspondantes du journal :
+
+- **Sémantique « En détail »** : une colonne « en détail » est désormais **masquée de la vue
+  Tableau** (et non « colonne visible secondaire ») ; elle n'apparaît qu'au tiroir Maître·détail
+  et dans la fiche en Cartes (cf. §4). Défaut auto : **jamais « Masqué »** — l'auto ne choisit
+  qu'entre « En ligne » et « En détail ».
+- **⚙ Colonnes en barre d'outils** : pour Risques/Mesures/Liens aussi, le ⚙ a quitté l'en‑tête
+  du tableau pour la **barre d'outils** (visible dans toutes les vues, Cartes comprises).
+- **Densité en Cartes** : le contrôle de densité agit aussi sur l'espacement des fiches et **reste
+  affiché** en vue Cartes (y compris pour les objets).
+- **Édition au double‑clic** : le clic‑ligne / clic‑fiche **n'ouvre plus** la fiche ; l'édition se
+  fait au **double‑clic**, positionnée sur le champ, dans toutes les vues (cf. §1). Le simple clic
+  ne conserve que le zoom (texte tronqué) et la visionneuse (image).
+- **Plan d'action** : même modèle d'édition (double‑clic) + **bouton ✎** par ligne/carte, dans
+  ses trois présentations ; le rapport réutilise le tableau du plan **sans** ce bouton.
+- **Notes des Liens** : rendu **Markdown** dans les trois vues (tableau écrêté + loupe, tiroir,
+  cartes).
+- **Sélecteur de vue et densité en icônes** ; **poignée de réordonnancement** dans sa propre
+  colonne figée.
+
+Reste ouvert : **préréglages de colonnes** (jeux de colonnes nommés).

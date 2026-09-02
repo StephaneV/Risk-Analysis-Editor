@@ -23,7 +23,7 @@ Ce guide décrit l'utilisation complète de **Risk Analysis Editor**, l'éditeur
 13. [Le rapport](#13-le-rapport)
 14. [Les champs personnalisés](#14-les-champs-personnalisés)
 15. [Les objets et les références](#15-les-objets-et-les-références)
-16. [Rechercher, trier, filtrer, personnaliser les colonnes](#16-rechercher-trier-filtrer-personnaliser-les-colonnes)
+16. [Vues des registres, recherche, tri, filtres, colonnes](#16-vues-des-registres-recherche-tri-filtres-colonnes)
 17. [Import et export CSV](#17-import-et-export-csv)
 18. [Exports Word et Excel](#18-exports-word-et-excel)
 19. [Gérer les fichiers et les modèles](#19-gérer-les-fichiers-et-les-modèles)
@@ -178,7 +178,7 @@ L'onglet **Risques** liste tous les risques de l'analyse. Chaque ligne montre :
 
 ### Créer ou modifier un risque
 
-Cliquez sur une ligne (ou sur l'icône ✎) pour ouvrir la **fiche du risque**. Un clic sur une **cellule précise** ouvre la fiche **directement sur le champ correspondant** : cliquez la *catégorie* pour éditer la catégorie, une pastille de *cotation* pour vous placer sur ce bloc d'évaluation, la colonne *mesures* pour ouvrir la section des liens, etc. Ce confort de saisie vaut aussi pour les onglets **Mesures**, **Liens** (vue *Détails*), **Objets** et **Plan d'action** (échéancier, statut, par responsable).
+**Double-cliquez** sur une ligne — ou cliquez l'icône **✎** — pour ouvrir la **fiche du risque**. Un **double-clic** sur une **cellule précise** ouvre la fiche **directement sur le champ correspondant** : double-cliquez la *catégorie* pour éditer la catégorie, une pastille de *cotation* pour vous placer sur ce bloc d'évaluation, la colonne *mesures* pour ouvrir la section des liens, etc. Un **simple clic** ne fait rien (sauf sur un **texte long tronqué** → aperçu agrandi, ou une **image** → visionneuse). Ce fonctionnement vaut, dans **toutes les vues** (Tableau, Maître·détail, Cartes — voir [§16](#16-vues-des-registres-recherche-tri-filtres-colonnes)), pour les onglets **Mesures**, **Liens** (vue *Détails*), **Objets** et **Plan d'action** (échéancier, statut, par responsable).
 
 ![Fiche d'un risque](images/guide-08-fiche-risque.png)
 
@@ -202,7 +202,7 @@ Chaque ligne offre trois actions :
 - **⧉ Dupliquer** — ouvre une **fiche de création pré-remplie** (identifiant suivant, libellé suffixé « (copie) », mesures associées reprises). La copie n'est créée **qu'à la validation** ;
 - **🗑 Supprimer** — après confirmation. Un message **« Annuler »** apparaît alors quelques secondes pour **restaurer** la fiche supprimée (liens compris) en cas d'erreur.
 
-**Réordonner les lignes.** Lorsqu'aucun tri de colonne n'est actif, une **poignée ⠿** apparaît au survol dans la colonne ID : glissez-la pour changer l'ordre des risques dans le fichier (au clavier : `Ctrl+↑`/`Ctrl+↓`). Cet ordre gouverne l'affichage par défaut, le rapport et les exports. Voir [§16](#16-rechercher-trier-filtrer-personnaliser-les-colonnes).
+**Réordonner les lignes.** Lorsqu'aucun tri de colonne n'est actif, une **poignée ⠿** apparaît au survol dans la colonne ID : glissez-la pour changer l'ordre des risques dans le fichier (au clavier : `Ctrl+↑`/`Ctrl+↓`). Cet ordre gouverne l'affichage par défaut, le rapport et les exports. Voir [§16](#16-vues-des-registres-recherche-tri-filtres-colonnes).
 
 ---
 
@@ -342,7 +342,7 @@ L'onglet **Plan d'action** transforme les mesures en suivi opérationnel, à tra
 
 ![Plan d'action : kanban par statut](images/guide-17-plan-kanban.png)
 
-Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par statut). Les mesures **en retard** (échéance passée et non finalisées) sont mises en évidence. Chaque carte est **éditable au clic** (elle ouvre la fiche de la mesure).
+Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par statut). Les mesures **en retard** (échéance passée et non finalisées) sont mises en évidence. Chaque carte (et chaque ligne des vues *échéancier* / *par responsable*) porte un bouton **✎** qui ouvre la fiche de la mesure en un clic ; un **double-clic** sur le corps de la carte l'ouvre aussi, positionné sur le champ visé.
 
 ---
 
@@ -520,18 +520,27 @@ Une fois définis, objets et références irriguent tout l'outil :
 
 ---
 
-## 16. Rechercher, trier, filtrer, personnaliser les colonnes
+## 16. Vues des registres, recherche, tri, filtres, colonnes
 
-Ces fonctions transversales s'appliquent aux registres Risques, Mesures et au détail des Liens.
+Ces fonctions transversales s'appliquent aux registres **Risques**, **Mesures**, au détail des **Liens** et aux **Objets** (chaque type) — et, pour la présentation des lignes/cartes, au **Plan d'action**.
 
 - **Rechercher.** Le champ *Rechercher…* filtre les lignes par texte libre.
 - **Trier.** Un clic sur un en-tête de colonne trie ; l'en-tête cycle sur **trois états** : croissant → décroissant → **retour à l'ordre d'origine** (l'ordre du fichier). Les colonnes de champ personnalisé scalaires sont également triables.
 - **Filtrer.** Des filtres déroulants (catégorie, type, statut, responsable, « en retard uniquement », et tout champ personnalisé déclaré *filtrable* — y compris une **valeur calculée** à résultat *oui/non* ou dotée d'une **alerte**, proposée alors comme *En alerte / Hors alerte*) restreignent l'affichage. Les filtres se **combinent (ET)**. **Chaque onglet propose par défaut les filtres de sa famille** — ceux du **risque** (registre Risques, **Matrices**), de la **mesure** (Mesures, Plan d'action), du **risque et de la mesure** (**Statistiques**, qui affiche les deux) ou du **lien** (Liens) ; les filtres d'une autre famille n'apparaissent **que lorsqu'ils sont actifs**. Ceux de **catégorie** (risque), **type** et **statut** (mesure) ainsi que les **champs personnalisés** se **propagent le long des liens** — et donc à **tous les onglets, aux matrices et au rapport** : filtrer sur un risque restreint aussi les mesures et les liens correspondants, et réciproquement. La **recherche texte** et les filtres propres au *Plan d'action* (**responsable**, **« en retard »**) restent **locaux** à leur vue (le filtre *statut* du Plan est le même que celui des mesures). Quand un filtre propagé est actif, sa **valeur** reste **visible et modifiable** dans la barre de **chaque onglet** où il agit — par exemple, un filtre de catégorie posé sur les risques apparaît aussi, avec sa valeur, dans la barre des mesures. Un compteur « n sur N » et un bouton *Réinitialiser* apparaissent dès qu'un filtre ou une recherche restreint la vue (la réinitialisation efface aussi les filtres propagés). Le **filtrage propagé** (catégorie, type, statut et champs personnalisés) est **enregistré dans le fichier** et retrouvé à la réouverture ; le modifier marque le fichier comme *à enregistrer*. Un paramètre d'adresse `?filter=code:valeur;…` permet aussi de l'appliquer au démarrage (voir [§19](#19-gérer-les-fichiers-et-les-modèles)).
-- **Personnaliser les colonnes.** Le bouton **⚙** à droite de l'en-tête ouvre le menu des colonnes.
+- **Choisir la vue.** Un sélecteur d'icônes bascule chaque registre entre trois présentations : **Tableau** (grille classique), **Maître·détail** (liste compacte + **tiroir de détail** dépliable ligne par ligne, via le chevron) et **Cartes** (une fiche par élément). La vue est mémorisée par registre.
+- **Régler la densité.** Trois icônes — **Confortable / Compact / Dense** (infobulle au survol) — resserrent l'affichage : hauteur des lignes en Tableau/Maître·détail, espacement des fiches en Cartes.
+- **Trier sans en-tête.** En Maître·détail et surtout en Cartes (dépourvues d'en-tête), le menu **« Trier par ▾ »** trie par n'importe quel champ.
+- **Personnaliser les colonnes.** Le bouton **⚙ Colonnes**, dans la **barre d'outils** (visible dans toutes les vues), ouvre le menu des colonnes.
 
 ![Menu de personnalisation des colonnes](images/guide-19-menu-colonnes.png)
 
-Vous pouvez y **afficher/masquer** chaque colonne (y compris les champs personnalisés, marqués *perso*), et les **réordonner** — soit par les flèches ▲/▼ du menu, soit en **glissant directement les en-têtes** dans le tableau. Les colonnes **ID** et **Actions** restent épinglées. La disposition est **enregistrée dans le fichier**.
+Chaque colonne (y compris les champs personnalisés, marqués *perso*) se règle sur **trois états** :
+
+- **En ligne** — affichée comme **colonne** en Tableau et en Maître·détail, et dans la fiche en Cartes ;
+- **En détail** — **masquée** en Tableau, reléguée au **tiroir de détail** en Maître·détail, et affichée dans la fiche en Cartes ;
+- **Masqué** — cachée dans toutes les vues.
+
+Par défaut, l'application classe automatiquement chaque colonne entre *En ligne* et *En détail* (les textes longs et les colonnes secondaires partent *En détail*) — **jamais** *Masqué*, qui reste un choix explicite. On **réordonne** les colonnes par les flèches ▲/▼ du menu ou en **glissant les en-têtes**. Les colonnes **ID** et **Actions** restent épinglées ; une option **pleine largeur** étend le registre à toute la fenêtre. Toute la disposition (vue, densité, états, ordre) est **enregistrée dans le fichier**.
 
 ---
 
