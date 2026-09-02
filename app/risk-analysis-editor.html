@@ -1695,8 +1695,10 @@ const I18N = {
     hp_drop:"Déposer un fichier .rae.json sur la fenêtre l'ouvre",
     hp_sec_nav:"Navigation", hp_esc:"Fermer la fenêtre ou le menu ouvert", hp_help:"Ouvrir cette aide",
     hp_url:"Paramètres d'adresse : ?file=, ?tab=, ?lang=, ?filter=",
-    hp_sec_tables:"Tableaux", hp_sort:"Trier la colonne : croissant → décroissant → ordre d'origine", hp_reorder:"Réordonner les colonnes en glissant l'en-tête",
-    hp_cols:"Choisir les colonnes affichées, dont les champs personnalisés", hp_pill:"Ouvrir la fiche du risque ou de la mesure référencée",
+    hp_sec_tables:"Registres : vues, édition, colonnes", hp_sort:"Trier la colonne : croissant → décroissant → ordre d'origine", hp_reorder:"Réordonner les colonnes en glissant l'en-tête",
+    hp_views:"Changer de vue : Tableau / Maître·détail / Cartes", hp_density:"Densité d'affichage : Confortable / Compact / Dense", hp_sortby:"Trier par n'importe quel champ (utile en Cartes)",
+    hp_edit_dbl:"Ouvrir la fiche (double-clic) ; simple clic : rien — texte tronqué → agrandir, image → visionneuse",
+    hp_cols:"Colonnes : En ligne / En détail / Masqué, réordonner, champs personnalisés", hp_pill:"Ouvrir la fiche du risque ou de la mesure référencée",
     hp_sec_matrix:"Matrices, liens & plan d'action", hp_drag:"Déplacer une pastille (matrices) ou une carte (kanban)",
     hp_ctrl_arrows:"Déplacer au clavier la pastille ou la carte sélectionnée", hp_space:"Cocher/décocher dans la grille des associations",
     hp_arrows:"Se déplacer dans les onglets et la grille des associations",
@@ -2101,8 +2103,10 @@ const I18N = {
     hp_drop:"Dropping a .rae.json file on the window opens it",
     hp_sec_nav:"Navigation", hp_esc:"Close the open dialog or menu", hp_help:"Open this help",
     hp_url:"URL parameters: ?file=, ?tab=, ?lang=, ?filter=",
-    hp_sec_tables:"Tables", hp_sort:"Sort the column: ascending → descending → original order", hp_reorder:"Reorder columns by dragging the header",
-    hp_cols:"Choose displayed columns, including custom fields", hp_pill:"Open the referenced risk or measure",
+    hp_sec_tables:"Registers: views, editing, columns", hp_sort:"Sort the column: ascending → descending → original order", hp_reorder:"Reorder columns by dragging the header",
+    hp_views:"Switch view: Table / Master·detail / Cards", hp_density:"Display density: Comfortable / Compact / Dense", hp_sortby:"Sort by any field (handy in Cards)",
+    hp_edit_dbl:"Open the record (double-click); single click: nothing — clipped text → zoom, image → lightbox",
+    hp_cols:"Columns: Inline / In detail / Hidden, reorder, custom fields", hp_pill:"Open the referenced risk or measure",
     hp_sec_matrix:"Matrices, links & action plan", hp_drag:"Move a chip (matrices) or a card (kanban)",
     hp_ctrl_arrows:"Move the selected chip or card with the keyboard", hp_space:"Check/uncheck in the associations grid",
     hp_arrows:"Navigate the tabs and the associations grid",
@@ -2502,8 +2506,10 @@ const I18N = {
     hp_drop:"Trascinare un file .rae.json sulla finestra lo apre",
     hp_sec_nav:"Navigazione", hp_esc:"Chiudi la finestra o il menu aperto", hp_help:"Apri questo aiuto",
     hp_url:"Parametri URL: ?file=, ?tab=, ?lang=, ?filter=",
-    hp_sec_tables:"Tabelle", hp_sort:"Ordina la colonna: crescente → decrescente → ordine originale", hp_reorder:"Riordina le colonne trascinando l'intestazione",
-    hp_cols:"Scegli le colonne visualizzate, inclusi i campi personalizzati", hp_pill:"Apri la scheda del rischio o della misura",
+    hp_sec_tables:"Registri: viste, modifica, colonne", hp_sort:"Ordina la colonna: crescente → decrescente → ordine originale", hp_reorder:"Riordina le colonne trascinando l'intestazione",
+    hp_views:"Cambia vista: Tabella / Elenco·dettaglio / Schede", hp_density:"Densità di visualizzazione: Comoda / Compatta / Densa", hp_sortby:"Ordina per qualsiasi campo (utile nelle Schede)",
+    hp_edit_dbl:"Apri la scheda (doppio clic); clic singolo: niente — testo troncato → ingrandisci, immagine → visualizzatore",
+    hp_cols:"Colonne: In linea / In dettaglio / Nascosta, riordina, campi personalizzati", hp_pill:"Apri la scheda del rischio o della misura",
     hp_sec_matrix:"Matrici, collegamenti e piano d'azione", hp_drag:"Sposta una pastiglia (matrici) o una scheda (kanban)",
     hp_ctrl_arrows:"Sposta con la tastiera la pastiglia o la scheda selezionata", hp_space:"Seleziona/deseleziona nella griglia delle associazioni",
     hp_arrows:"Naviga tra le schede e nella griglia delle associazioni",
@@ -7702,7 +7708,6 @@ function colOrder(table){
   const rest=keep.filter(k=>k!==first);
   return first?[first,...rest]:rest;
 }
-function effectiveCols(table){const cols=colMap(table);return colOrder(table).map(k=>cols[k]).concat([cols["__act"]]);}
 function setColOrder(table,list){colConfigStore()[table]=list;markDirty();}
 function toggleColumn(table,key,on){
   const order=colOrder(table).slice(), i=order.indexOf(key);
@@ -8176,7 +8181,7 @@ function openHelpModal(){
   pushModal(t("help_title"),
     sec("hp_sec_file")+row("Ctrl+S","hp_save")+row("Ctrl+Maj+S","hp_save_as")+row("Ctrl+O","hp_open")+row("📄 ⭢","hp_drop")+
     sec("hp_sec_nav")+row(t("hp_k_esc"),"hp_esc")+row("?","hp_help")+row("URL","hp_url")+
-    sec("hp_sec_tables")+row(t("hp_k_click"),"hp_sort")+row(t("hp_k_drag"),"hp_reorder")+row("⠿","hp_row_reorder")+row("⚙","hp_cols")+row("R1 · M4","hp_pill")+
+    sec("hp_sec_tables")+row("▦ ▤ ▥","hp_views")+row("≣","hp_density")+row("2× "+t("hp_k_click"),"hp_edit_dbl")+row(t("hp_k_click"),"hp_sort")+row("▾","hp_sortby")+row(t("hp_k_drag"),"hp_reorder")+row("⠿","hp_row_reorder")+row("⚙","hp_cols")+row("R1 · M4","hp_pill")+
     sec("hp_sec_matrix")+row(t("hp_k_drag"),"hp_drag")+row("Ctrl+←↑→↓","hp_ctrl_arrows")+row(t("hp_k_space"),"hp_space")+row("←↑→↓","hp_arrows")+
     sec("hp_sec_md")+row("**g** *i* ~~b~~","hp_md_emph")+row("`code` [t](url)","hp_md_code")+row("[texte]{.red}","hp_md_color")+row("==texte==","hp_md_hl")+row("#  -  >","hp_md_block"),
     [{label:t("btn_ok"),onClick:api=>api.close()}]);
