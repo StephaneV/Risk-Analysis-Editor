@@ -209,3 +209,39 @@ def test_missing_object_type_definitions(validate):
     assert has(F, "error", "C1", "custom_fields[0].items")
     assert has(F, "error", "C1", "custom_fields[1].object_type")
     assert has(F, "error", "C1", "custom_fields[2].expression")
+
+
+# ------------------------------------------------------------------ localisation (n° de ligne + extrait)
+@pytest.fixture
+def locate(browser, base_url):
+    ctx = browser.new_context()
+    page = ctx.new_page()
+    page.goto(base_url + "/tools/rae-validator/index.html", wait_until="load")
+    page.wait_for_function("typeof buildLocIndex === 'function' && typeof locateAt === 'function'")
+    yield lambda text, path: page.evaluate("([t,p])=>locateAt(buildLocIndex(t), p)", [text, path])
+    ctx.close()
+
+
+def test_location_line_number(locate):
+    """Le chemin d'un résultat est mappé au bon numéro de ligne du texte source."""
+    text = '{\n  "risks": [\n    {"id": "R1"},\n    {"id": "R2"}\n  ]\n}'
+    assert locate(text, "risks[1].id")["line"] == 4
+    assert locate(text, "risks[0]")["line"] == 3
+    # chemin inexistant (valeur manquante) -> remonte a l'ancetre present
+    assert locate(text, "risks[1].missing")["line"] == 4
+
+
+def test_location_long_line_is_elided(locate):
+    """Sur une ligne trop longue, l'extrait est fenetre avec elision avant et apres."""
+    text = '{"a": 1, "target": "' + ("x" * 300) + '", "b": 2}'
+    r = locate(text, "target")
+    assert r["line"] == 1
+    assert "\u2026" in r["excerpt"], "pas d'elision sur une ligne longue"
+    assert len(r["excerpt"]) < 250, "extrait non tronque"
+
+
+def test_location_short_line_full(locate):
+    """Sur une ligne courte, l'extrait est la ligne entiere (sans elision)."""
+    text = '{\n  "version": "1.0"\n}'
+    r = locate(text, "version")
+    assert r["line"] == 2 and "\u2026" not in r["excerpt"] and "1.0" in r["excerpt"]

@@ -66,7 +66,10 @@
   .find.error .sev{color:var(--err)}
   .find.warning .sev{color:var(--warn)}
   .find .body .msg{line-height:1.45}
-  .find .body .path{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px;word-break:break-all}
+  .find .body .loc{display:flex;align-items:baseline;gap:8px;margin-top:5px;flex-wrap:wrap}
+  .find .body .loc .ln{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;flex:none}
+  .find .body .loc .ex{font-family:var(--mono);font-size:12px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;color:var(--text);overflow-x:auto;max-width:100%;white-space:pre;word-break:normal}
+  .find .body .path{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:3px;word-break:break-all}
   .find .body .rule{font-size:11px;color:var(--muted)}
   code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:0 4px}
   .empty-report{color:var(--muted);text-align:center;padding:60px 20px}
@@ -584,6 +587,52 @@ function detectCycles(graph){
 }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
+/* ---- Localisation source : n° de ligne + extrait de ligne (élision si trop longue) ----
+   On ré‑analyse le TEXTE brut (JSON déjà valide) pour associer chaque chemin
+   (ex. risks[3].initial_assessment.probability) au décalage de son début. */
+function buildLineStarts(text){ const a=[0]; for(let i=0;i<text.length;i++) if(text[i]==="\n") a.push(i+1); return a; }
+function buildLocIndex(text){
+  const pos=Object.create(null); let i=0; const n=text.length;
+  const ws=()=>{ while(i<n){const c=text[i]; if(c===" "||c==="\t"||c==="\n"||c==="\r")i++; else break;} };
+  const quoted=()=>{ i++; while(i<n){const c=text[i++]; if(c==="\\")i++; else if(c==='"')break;} };
+  function value(path){ ws(); if(!(path in pos))pos[path]=i; const c=text[i];
+    if(c==="{") obj(path); else if(c==="[") arr(path); else if(c==='"') quoted();
+    else { while(i<n && ",}] \t\n\r".indexOf(text[i])<0) i++; } }
+  function obj(path){ i++; ws(); if(text[i]==="}"){i++;return;}
+    while(i<n){ ws(); const ks=i; quoted(); let key; try{key=JSON.parse(text.slice(ks,i));}catch(e){key=text.slice(ks+1,i-1);} ws(); if(text[i]===":")i++;
+      value(path===""?String(key):path+"."+key); ws();
+      if(text[i]===","){i++;continue;} if(text[i]==="}")i++; return; } }
+  function arr(path){ i++; ws(); if(text[i]==="]"){i++;return;} let k=0;
+    while(i<n){ value(path+"["+k+"]"); k++; ws(); if(text[i]===","){i++;continue;} if(text[i]==="]")i++; return; } }
+  try{ ws(); value(""); }catch(e){}
+  return {pos, starts:buildLineStarts(text), text};
+}
+function lineIndexOf(off, starts){ let lo=0,hi=starts.length-1,a=0; while(lo<=hi){const m=(lo+hi)>>1; if(starts[m]<=off){a=m;lo=m+1;}else hi=m-1;} return a; }
+function excerptAt(text, starts, off){
+  const li=lineIndexOf(off,starts), ls=starts[li], le=(li+1<starts.length?starts[li+1]-1:text.length);
+  const line=text.slice(ls,le).replace(/\r$/,""); const col=off-ls;
+  const MAX=140, L=52, R=76;
+  let ex;
+  if(line.length<=MAX) ex=line.replace(/^\s+/,"");
+  else{ const s=Math.max(0,col-L), e=Math.min(line.length,col+R); ex=(s>0?"…":"")+line.slice(s,e).replace(/^\s+|\s+$/g,"")+(e<line.length?"…":""); }
+  return {line:li+1, excerpt:ex};
+}
+/* Décalage → localisation, en remontant au chemin ancêtre présent si le chemin exact n'existe pas
+   (valeur manquante, orpheline…). */
+function locateAt(idx, path){
+  let p=path||"";
+  while(p && !(p in idx.pos)) p=p.replace(/(\.[^.\[\]]+|\[[0-9]+\])$/,"");
+  const off=(p in idx.pos)?idx.pos[p]:0;
+  return excerptAt(idx.text, idx.starts, off);
+}
+/* Localise l'erreur de syntaxe signalée par JSON.parse (position / ligne+colonne). */
+function jsonErrLoc(text, msg){
+  let m=/position (\d+)/.exec(msg); let off=m?+m[1]:null;
+  if(off==null){ m=/line (\d+) column (\d+)/.exec(msg); if(m){ const st=buildLineStarts(text); off=(st[+m[1]-1]||0)+(+m[2]-1); } }
+  if(off==null||!text) return null;
+  return excerptAt(text, buildLineStarts(text), Math.min(off, text.length-1));
+}
+
 /* =========================================================================
    UI : chargement de fichiers, rendu du rapport
    ========================================================================= */
@@ -605,10 +654,11 @@ function addLoaded(name, text, readErr){
   else{
     let json;
     try{ json=JSON.parse(text); }
-    catch(e){ entry.fatal="JSON invalide : "+e.message; }
+    catch(e){ entry.fatal="JSON invalide : "+e.message; entry.fatalLoc=jsonErrLoc(text,e.message); }
     if(json!==undefined && entry.fatal===null){
       try{ entry.findings=validate(json,name); }
       catch(e){ entry.fatal="Erreur interne du validateur : "+(e&&e.message||e); }
+      if(entry.fatal===null){ const idx=buildLocIndex(text); entry.findings.forEach(f=>{ try{ f.loc=locateAt(idx,f.path); }catch(_){} }); }
     }
   }
   entry.findings.forEach(f=>entry.counts[f.sev]++);
@@ -640,7 +690,8 @@ function renderReport(){
   if(!f){ el.innerHTML='<div class="empty-report"><div class="big">Aucun fichier sélectionné</div>Choisissez un fichier dans la liste.</div>'; return; }
   if(f.fatal){
     el.innerHTML='<div class="summary err"><span class="verdict"><span class="dot"></span>Fichier illisible</span><span class="fname">'+esc(f.name)+'</span></div>'
-      +'<div class="find error"><div class="sev">Erreur</div><div class="body"><div class="msg">'+esc(f.fatal)+'</div></div></div>';
+      +'<div class="find error"><div class="sev">Erreur</div><div class="body"><div class="msg">'+esc(f.fatal)+'</div>'
+      +(f.fatalLoc?'<div class="loc"><span class="ln">ligne '+f.fatalLoc.line+'</span><code class="ex">'+esc(f.fatalLoc.excerpt)+'</code></div>':'')+'</div></div>';
     return;
   }
   const ne=f.counts.error, nw=f.counts.warning;
@@ -668,6 +719,7 @@ function renderReport(){
     byCat[c].forEach(x=>{
       h+='<div class="find '+x.sev+'"><div class="sev">'+(x.sev==="error"?"Erreur":"Avert.")+'</div>'
         +'<div class="body"><div class="msg">'+x.msg+'</div>'
+        +(x.loc?'<div class="loc"><span class="ln">ligne '+x.loc.line+'</span><code class="ex">'+esc(x.loc.excerpt)+'</code></div>':'')
         +(x.path?'<div class="path">'+esc(x.path)+'</div>':'')
         +(x.rule?'<div class="rule">règle '+esc(x.rule)+'</div>':'')
         +'</div></div>';

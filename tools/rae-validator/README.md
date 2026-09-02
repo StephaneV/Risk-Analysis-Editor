@@ -13,7 +13,8 @@ d'analyse de risque `.rae.json`. Aucune dépendance, aucune installation, aucune
 - Le panneau de droite affiche :
   - un **verdict** — *Fichier valide* / *Conforme, avec réserves* / *Fichier non conforme* ;
   - des **filtres** (Erreurs, Avertissements, recherche texte) ;
-  - les résultats **groupés par catégorie**, chacun avec son **chemin** dans le fichier
+  - les résultats **groupés par catégorie**, chacun avec le **numéro de ligne** et un **extrait**
+    de la ligne source (élidé `…` avant/après si elle est trop longue), son **chemin** dans le fichier
     (ex. `risks[3].initial_assessment.probability`) et le **numéro de règle** (voir plus bas).
 - Paramètre d'URL `?file=<url>` : charge automatiquement le fichier pointé (si l'outil est servi en
   HTTP) — pratique pour un usage scripté.
