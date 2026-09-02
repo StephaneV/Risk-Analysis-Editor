@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validateur .rae.json — format &amp; cohérence</title>
+<style>
+  :root{
+    --bg:#f4f6fa; --panel:#ffffff; --panel2:#eef1f6; --border:#d7dde7;
+    --text:#1f2733; --muted:#6b7686; --accent:#3a63d6; --accent-d:#2c4fb0;
+    --err:#c0392b; --err-bg:#fdECEA; --warn:#b9770e; --warn-bg:#fdf3e2;
+    --ok:#1e824c; --ok-bg:#e9f7ef; --info:#5a6b86;
+    --mono:ui-monospace,"Cascadia Code",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0e1320; --panel:#161d2c; --panel2:#1d2537; --border:#2a3550;
+    --text:#e6ebf5; --muted:#93a0b8; --accent:#4c7dff; --accent-d:#3a63d6;
+    --err:#ef6b5f; --err-bg:#33191a; --warn:#e0a44a; --warn-bg:#2e2413;
+    --ok:#4cc38a; --ok-bg:#13291f; --info:#8fa0bd;
+  }}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+  header{display:flex;align-items:center;gap:14px;padding:11px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex:none;flex-wrap:wrap}
+  header h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .sub{color:var(--muted);font-size:12px}
+  .spacer{flex:1}
+  .btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{background:var(--panel2)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-d)}
+  main{flex:1;display:flex;min-height:0}
+  /* Liste des fichiers */
+  #files{width:250px;flex:none;border-right:1px solid var(--border);background:var(--panel);overflow:auto;padding:8px}
+  #files .empty{color:var(--muted);font-size:12.5px;padding:14px 10px;text-align:center}
+  .fitem{border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin-bottom:7px;cursor:pointer;background:var(--panel)}
+  .fitem:hover{background:var(--panel2)}
+  .fitem.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .fitem .fn{font-weight:600;font-size:12.5px;word-break:break-all;line-height:1.3}
+  .fitem .fb{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap}
+  .pill{font-size:11px;font-weight:700;border-radius:20px;padding:1px 8px;white-space:nowrap}
+  .pill.e{background:var(--err-bg);color:var(--err)}
+  .pill.w{background:var(--warn-bg);color:var(--warn)}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  /* Rapport */
+  #report{flex:1;overflow:auto;padding:18px 22px;min-width:0}
+  .summary{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--panel);margin-bottom:16px}
+  .summary .verdict{font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px}
+  .summary .dot{width:12px;height:12px;border-radius:50%}
+  .summary.err{border-color:var(--err)} .summary.err .dot{background:var(--err)}
+  .summary.warn{border-color:var(--warn)} .summary.warn .dot{background:var(--warn)}
+  .summary.ok{border-color:var(--ok)} .summary.ok .dot{background:var(--ok)}
+  .summary .fname{color:var(--muted);font-size:12.5px;font-family:var(--mono)}
+  .counts{display:flex;gap:8px}
+  .filters{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+  .toggle{border:1px solid var(--border);background:var(--panel);border-radius:8px;padding:5px 10px;font-size:12.5px;cursor:pointer;user-select:none}
+  .toggle.off{opacity:.45}
+  .toggle .n{font-weight:700}
+  #search{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:6px 10px;font-size:13px;min-width:200px;flex:1;max-width:360px}
+  .cat{margin:16px 0 6px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .find{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:9px 12px;border:1px solid var(--border);border-left-width:3px;border-radius:9px;background:var(--panel);margin-bottom:7px}
+  .find.error{border-left-color:var(--err)}
+  .find.warning{border-left-color:var(--warn)}
+  .find .sev{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;align-self:start;padding-top:2px}
+  .find.error .sev{color:var(--err)}
+  .find.warning .sev{color:var(--warn)}
+  .find .body .msg{line-height:1.45}
+  .find .body .path{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px;word-break:break-all}
+  .find .body .rule{font-size:11px;color:var(--muted)}
+  code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:0 4px}
+  .empty-report{color:var(--muted);text-align:center;padding:60px 20px}
+  .empty-report .big{font-size:15px;color:var(--text);margin-bottom:6px}
+  kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 5px;background:var(--panel2)}
+  /* Drop overlay */
+  #drop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50;
+    background:color-mix(in srgb,var(--accent) 14%,transparent);backdrop-filter:blur(2px)}
+  #drop.on{display:flex}
+  #drop .box{border:2px dashed var(--accent);border-radius:16px;padding:40px 60px;background:var(--panel);font-weight:600;color:var(--accent)}
+  #fileInput{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Validateur <code>.rae.json</code></h1>
+  <span class="sub">format &amp; cohérence — 100&nbsp;% hors‑ligne, aucune donnée n'est envoyée</span>
+  <span class="spacer"></span>
+  <button class="btn primary" id="btnOpen">📂 Charger un fichier…</button>
+  <button class="btn" id="btnPaste">📋 Coller le JSON…</button>
+  <button class="btn" id="btnClear">Effacer</button>
+</header>
+<main>
+  <div id="files"><div class="empty">Aucun fichier.<br>Glissez un ou plusieurs <code>.rae.json</code> ici, ou <b>Charger</b>.</div></div>
+  <div id="report"><div class="empty-report"><div class="big">Aucun fichier chargé</div>Glissez un fichier <code>.rae.json</code> (ou plusieurs) n'importe où sur la page,<br>ou utilisez <b>Charger un fichier</b> / <b>Coller le JSON</b>.</div></div>
+</main>
+<div id="drop"><div class="box">Déposez le(s) fichier(s) .rae.json</div></div>
+<input type="file" id="fileInput" accept=".json,.rae.json,application/json" multiple>
+
+<script>
+"use strict";
+/* =========================================================================
+   Validateur autonome de fichiers .rae.json — Risk Analysis Editor
+   Contrôles de FORMAT (schéma) et de COHÉRENCE (règles C1–C10 de la spec),
+   reproduits ici car l'application est permissive au chargement.
+   Deux niveaux : « error » (bloquant / incohérence) et « warning » (à vérifier).
+   ========================================================================= */
+
+/* ---- Vocabulaire du format (aligné sur le schéma et l'app) ---- */
+const CF_TARGETS = ["analysis","risk","cotation","measure","link"];
+const CF_TYPES = ["boolean","integer","float","date","text","textarea","url","email","tel","regexp",
+                  "color","image","select","checklist","tags","scale","progress","reference","computed"];
+const TYPES_WITH_ITEMS = ["select","checklist","tags","scale"];
+const MULTI_TYPES = ["checklist","tags","reference"];
+const RESULT_TYPES = ["number","integer","date","text","boolean"];
+const MEASURE_STATUS = ["proposed","planned","in_progress","implemented","abandoned"];
+const META_STATUS = ["draft","approved","archived"];
+const META_LANG = ["fr","en","it"];
+const SCORE_METHODS = ["product","sum","matrix"];
+const CRIT_ACCEPTANCE = ["acceptable","tolerable","to_treat","unacceptable"];
+const REF_RISK = "@risks", REF_MEASURE = "@measures";
+
+const CALC_FUNCS = new Set(["IF","AND","OR","NOT","SUM","AVERAGE","MEAN","MEDIAN","MIN","MAX","COUNT",
+  "ROUND","ROUNDUP","ROUNDDOWN","INT","ABS","MOD","POWER","SQRT","CONCAT","LEN","TODAY","DATE",
+  "YEAR","MONTH","DAY","EDATE","DATEDIF"]);
+
+/* Grandeurs natives exploitables dans une formule, par cible (cf. moteur calcResolveField). */
+const NATIVE = {
+  risk:["id","label","category","owner","description","comment",
+        "probability_initial","severity_initial","score_initial","criticality_initial",
+        "probability_residual","severity_residual","score_residual","criticality_residual"],
+  measure:["id","label","description","comment","due_date","cost","status","type","responsible","overdue"],
+  cotation:["probability","severity","score","criticality"],
+  link:["risk_id","measure_id","comment"],
+  analysis:["risks_count","measures_count","links_count"],
+  object:["id"]
+};
+const COLLECTION_TARGET = { risks:"risk", measures:"measure", links:"link" };
+
+const RE_URL   = /^https?:\/\/[^\s]+$/i;
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const RE_TEL   = /^\+?[0-9][0-9\s().\-]{5,}$/;
+const RE_HEX   = /^#[0-9a-fA-F]{6}$/;
+const RE_DATE  = /^\d{4}-\d{2}-\d{2}$/;
+const RE_VER   = /^\d+\.\d+$/;
+
+/* =========================================================================
+   Analyseur de formules (mode « validation ») — miroir de la grammaire du moteur.
+   Ne calcule rien : vérifie la SYNTAXE et récolte références + appels de fonction.
+   ========================================================================= */
+function tokenizeFormula(src){
+  const toks=[]; const s=src; let i=0; const n=s.length;
+  const two=["<>","<=",">=","!="];
+  while(i<n){
+    const c=s[i];
+    if(c===" "||c==="\t"||c==="\n"||c==="\r"){i++;continue;}
+    if(c>="0"&&c<="9"){ let j=i+1; while(j<n&&s[j]>="0"&&s[j]<="9")j++;
+      if(s[j]==="."&&s[j+1]>="0"&&s[j+1]<="9"){j++;while(j<n&&s[j]>="0"&&s[j]<="9")j++;}
+      toks.push({k:"num",v:s.slice(i,j),p:i}); i=j; continue; }
+    if(/[A-Za-z_]/.test(c)){ let j=i+1; while(j<n&&/[A-Za-z0-9_]/.test(s[j]))j++;
+      toks.push({k:"id",v:s.slice(i,j),p:i}); i=j; continue; }
+    if(c==='"'||c==="'"){ let j=i+1; while(j<n&&s[j]!==c)j++;
+      if(j>=n)throw{message:"Chaîne de caractères non terminée",p:i};
+      toks.push({k:"str",v:s.slice(i+1,j),p:i}); i=j+1; continue; }
+    const t2=s.substr(i,2);
+    if(two.includes(t2)){ toks.push({k:"op",v:(t2==="!="?"<>":t2),p:i}); i+=2; continue; }
+    if("+-*/^&=<>(),.".includes(c)){ toks.push({k:"op",v:c,p:i}); i++; continue; }
+    throw{message:"Caractère inattendu « "+c+" »",p:i};
+  }
+  toks.push({k:"end",v:"",p:n});
+  return toks;
+}
+/* Parse et renvoie {refs:[[seg,...]], funcs:[{name,p}]} ; lève {message,p} en cas d'erreur de syntaxe. */
+function parseFormula(src){
+  let e=String(src||"").trim();
+  if(e[0]==="=")e=e.slice(1);
+  if(!e.trim())throw{message:"Formule vide",p:0};
+  const T=tokenizeFormula(e);
+  let pos=0;
+  const refs=[], funcs=[];
+  const peek=()=>T[pos];
+  const isKw=w=>{const t=T[pos];return t.k==="id"&&t.v.toUpperCase()===w;};
+  const eat=()=>T[pos++];
+  const expect=(v)=>{const t=T[pos];if(t.k==="op"&&t.v===v){pos++;return;}throw{message:"« "+v+" » attendu",p:t.p};};
+  function expr(){return orE();}
+  function orE(){let x=andE();while(isKw("OR")){eat();andE();}return x;}
+  function andE(){let x=notE();while(isKw("AND")){eat();notE();}return x;}
+  function notE(){if(isKw("NOT")){eat();return notE();}return comp();}
+  function comp(){let x=concat();const t=peek();if(t.k==="op"&&["=","<>","<","<=",">",">="].includes(t.v)){eat();concat();}return x;}
+  function concat(){let x=sum();while(peek().k==="op"&&peek().v==="&"){eat();sum();}return x;}
+  function sum(){let x=prod();while(peek().k==="op"&&(peek().v==="+"||peek().v==="-")){eat();prod();}return x;}
+  function prod(){let x=power();while(peek().k==="op"&&(peek().v==="*"||peek().v==="/")){eat();power();}return x;}
+  function power(){let x=unary();if(peek().k==="op"&&peek().v==="^"){eat();power();}return x;}
+  function unary(){if(peek().k==="op"&&(peek().v==="+"||peek().v==="-")){eat();return unary();}return primary();}
+  function primary(){
+    const t=peek();
+    if(t.k==="num"){eat();return;}
+    if(t.k==="str"){eat();return;}
+    if(t.k==="op"&&t.v==="("){eat();expr();expect(")");return;}
+    if(t.k==="id"){
+      const up=t.v.toUpperCase();
+      if(up==="TRUE"||up==="FALSE"||up==="VRAI"||up==="FAUX"){eat();return;}
+      // fonction si suivi de '('
+      if(T[pos+1]&&T[pos+1].k==="op"&&T[pos+1].v==="("){
+        funcs.push({name:t.v,p:t.p}); eat(); expect("(");
+        if(!(peek().k==="op"&&peek().v===")")){ expr(); while(peek().k==="op"&&peek().v===","){eat();expr();} }
+        expect(")"); return;
+      }
+      // référence pointée : ident ('.' ident)*
+      const seg=[t.v]; eat();
+      while(peek().k==="op"&&peek().v==="."){ eat();
+        const id=peek(); if(id.k!=="id"){throw{message:"Nom attendu après « . »",p:id.p};}
+        seg.push(id.v); eat();
+      }
+      refs.push(seg); return;
+    }
+    throw{message:"Expression inattendue",p:t.p};
+  }
+  expr();
+  if(peek().k!=="end")throw{message:"Symbole en trop « "+peek().v+" »",p:peek().p};
+  return {refs,funcs};
+}
+
+/* =========================================================================
+   Moteur de validation
+   ========================================================================= */
+function validate(root, filename){
+  const F=[]; // findings
+  const add=(sev,cat,msg,path,rule)=>F.push({sev,cat,msg,path:path||"",rule:rule||""});
+  const err=(cat,msg,path,rule)=>add("error",cat,msg,path,rule);
+  const warn=(cat,msg,path,rule)=>add("warning",cat,msg,path,rule);
+  const arr=x=>Array.isArray(x)?x:[];
+  const isObj=x=>x&&typeof x==="object"&&!Array.isArray(x);
+  const q=s=>"<code>"+esc(String(s))+"</code>";
+
+  if(!isObj(root)){ err("Format","La racine du fichier doit être un objet JSON.","(racine)","C1"); return F; }
+
+  /* ---------- 1. FORMAT / STRUCTURE ---------- */
+  if(root.format!=="risk-analysis-editor")
+    err("Format","Clé "+q("format")+" absente ou incorrecte (attendu "+q("risk-analysis-editor")+").","format","C1");
+  if(root.version==null) warn("Format","Clé "+q("version")+" absente.","version","C1");
+  else if(!RE_VER.test(String(root.version))) warn("Format","Version "+q(root.version)+" au format inattendu (attendu "+q("MAJEUR.MINEUR")+").","version","C1");
+
+  for(const [k,typ] of [["risks","array"],["measures","array"],["treatments","array"],
+      ["custom_fields","array"],["object_types","array"],["objects","array"]]){
+    if(root[k]!=null && !Array.isArray(root[k])) err("Format","Clé "+q(k)+" doit être un tableau.",k,"C1");
+  }
+  if(root.risks==null) err("Format","Clé obligatoire "+q("risks")+" absente.","risks","C1");
+  if(root.metadata!=null && !isObj(root.metadata)) err("Format",q("metadata")+" doit être un objet.","metadata","C1");
+  const meta=isObj(root.metadata)?root.metadata:{};
+  if(meta.language!=null && !META_LANG.includes(meta.language))
+    warn("Format","Langue "+q(meta.language)+" inconnue (attendu "+META_LANG.join(", ")+").","metadata.language","C1");
+  if(meta.status!=null && !META_STATUS.includes(meta.status))
+    warn("Format","Statut d'analyse "+q(meta.status)+" inconnu (attendu "+META_STATUS.join(", ")+").","metadata.status","C1");
+
+  const risks=arr(root.risks), measures=arr(root.measures), treatments=arr(root.treatments);
+  const cfields=arr(root.custom_fields), otypes=arr(root.object_types), objects=arr(root.objects);
+
+  /* ---------- 2. GRILLE (C3, C5, C7) ---------- */
+  const grid=isObj(root.grid)?root.grid:null;
+  let vLevels=[], hLevels=[];
+  if(!grid){ err("Grille","Clé obligatoire "+q("grid")+" absente ou invalide.","grid","C1"); }
+  else{
+    const axis=(a,path,name)=>{
+      if(!isObj(a)){ err("Grille","Axe "+name+" absent.",path,"C1"); return []; }
+      const lv=arr(a.levels);
+      if(lv.length<2) err("Grille","L'axe "+name+" doit avoir au moins 2 niveaux.",path+".levels","C1");
+      const vals=lv.map(x=>x&&x.value);
+      // C3 : valeurs uniques et strictement croissantes
+      for(let i=0;i<lv.length;i++){ if(typeof lv[i].value!=="number") err("Grille","Niveau sans "+q("value")+" numérique.",path+".levels["+i+"]","C1"); }
+      const seen=new Set();
+      vals.forEach((v,i)=>{ if(seen.has(v)) err("Grille","Valeur d'axe dupliquée "+q(v)+".",path+".levels["+i+"]","C3"); seen.add(v); });
+      for(let i=1;i<vals.length;i++){ if(typeof vals[i]==="number"&&typeof vals[i-1]==="number"&&vals[i]<=vals[i-1])
+        err("Grille","Valeurs d'axe non strictement croissantes ("+vals[i-1]+" → "+vals[i]+").",path+".levels","C3"); }
+      return vals.filter(v=>typeof v==="number");
+    };
+    vLevels=axis(grid.vertical_axis,"grid.vertical_axis","vertical (vraisemblance)");
+    hLevels=axis(grid.horizontal_axis,"grid.horizontal_axis","horizontal (gravité)");
+    // score.method + matrix (C7)
+    const sc=grid.score;
+    if(isObj(sc)){
+      if(sc.method && !SCORE_METHODS.includes(sc.method))
+        warn("Grille","Méthode de score "+q(sc.method)+" inconnue (attendu "+SCORE_METHODS.join(", ")+").","grid.score.method","C1");
+      if(sc.method==="matrix"){
+        const m=sc.matrix;
+        if(!Array.isArray(m)) err("Grille","Méthode "+q("matrix")+" mais "+q("grid.score.matrix")+" absente.","grid.score.matrix","C7");
+        else{
+          if(m.length!==vLevels.length) err("Grille","Matrice : "+m.length+" lignes pour "+vLevels.length+" niveaux de vraisemblance.","grid.score.matrix","C7");
+          m.forEach((row,i)=>{ if(!Array.isArray(row)||row.length!==hLevels.length)
+            err("Grille","Matrice : ligne "+i+" de "+(Array.isArray(row)?row.length:"?")+" cases pour "+hLevels.length+" niveaux de gravité.","grid.score.matrix["+i+"]","C7"); });
+        }
+      }
+    } else warn("Grille","Clé "+q("grid.score")+" absente.","grid.score","C1");
+    // criticality_levels : couverture sans chevauchement (C5)
+    const cl=arr(grid.criticality_levels);
+    if(!cl.length) warn("Grille","Aucun niveau de criticité ("+q("grid.criticality_levels")+").","grid.criticality_levels","C1");
+    const ranges=cl.map((c,i)=>({i,a:c&&c.score_min,b:c&&c.score_max,c})).filter(r=>typeof r.a==="number"&&typeof r.b==="number");
+    ranges.forEach(r=>{ if(r.a>r.b) err("Grille","Niveau de criticité avec "+q("score_min")+" > "+q("score_max")+" ("+r.a+" > "+r.b+").","grid.criticality_levels["+r.i+"]","C5"); });
+    const sorted=ranges.slice().sort((x,y)=>x.a-y.a);
+    for(let i=1;i<sorted.length;i++){ if(sorted[i].a<=sorted[i-1].b)
+      err("Grille","Plages de criticité qui se chevauchent ([" +sorted[i-1].a+"–"+sorted[i-1].b+"] et ["+sorted[i].a+"–"+sorted[i].b+"]).","grid.criticality_levels","C5"); }
+    cl.forEach((c,i)=>{ if(c&&c.acceptance!=null&&!CRIT_ACCEPTANCE.includes(c.acceptance))
+      warn("Grille","Acceptation "+q(c.acceptance)+" inconnue.","grid.criticality_levels["+i+"].acceptance","C1");
+      if(c&&c.color!=null&&!RE_HEX.test(String(c.color))) warn("Grille","Couleur "+q(c.color)+" invalide (attendu "+q("#RRGGBB")+").","grid.criticality_levels["+i+"].color","C1"); });
+  }
+  const vSet=new Set(vLevels), hSet=new Set(hLevels);
+
+  /* ---------- Pré‑passe : collecte des identifiants (nécessaire pour valider les références
+     depuis les valeurs de champs, avant les contrôles détaillés) + doublons (C2/C8) ---------- */
+  const riskIds=new Set(), measureIds=new Set();
+  const objIdsByType={}, allObjIds={};
+  risks.forEach((r,i)=>{ if(isObj(r)&&r.id!=null&&r.id!==""){ if(riskIds.has(r.id)) err("Doublons","Identifiant de risque "+q(r.id)+" en double.","risks["+i+"].id","C2"); riskIds.add(r.id); } });
+  measures.forEach((m,i)=>{ if(isObj(m)&&m.id!=null&&m.id!==""){ if(measureIds.has(m.id)) err("Doublons","Identifiant de mesure "+q(m.id)+" en double.","measures["+i+"].id","C2"); measureIds.add(m.id); } });
+  objects.forEach((o,i)=>{ if(!isObj(o)||o.id==null||o.id==="")return; const set=objIdsByType[o.type]||(objIdsByType[o.type]=new Set());
+    if(set.has(o.id)) err("Doublons","Objet "+q(o.id)+" en double dans le type "+q(o.type)+".","objects["+i+"].id","C8"); set.add(o.id);
+    if(allObjIds[o.id]&&allObjIds[o.id]!==o.type) warn("Doublons","Identifiant d'objet "+q(o.id)+" réutilisé dans deux types ("+q(allObjIds[o.id])+", "+q(o.type)+").","objects["+i+"].id","C8"); allObjIds[o.id]=o.type; });
+
+  /* ---------- 3. CHAMPS PERSONNALISÉS : définitions ---------- */
+  const fieldsByTarget={analysis:{},risk:{},cotation:{},measure:{},link:{}};
+  const labelSeen={}; CF_TARGETS.forEach(t=>labelSeen[t]={});
+  cfields.forEach((f,i)=>{
+    const P="custom_fields["+i+"]";
+    if(!isObj(f)){ err("Champs","Définition de champ non-objet.",P,"C1"); return; }
+    const code=f.code, tgt=f.target;
+    if(!code) err("Champs","Champ sans "+q("code")+".",P,"C1");
+    if(!CF_TARGETS.includes(tgt)) err("Champs","Cible "+q(tgt)+" invalide (attendu "+CF_TARGETS.join(", ")+").",P+".target","C1");
+    if(!f.label) warn("Champs","Champ "+q(code)+" sans "+q("label")+".",P+".label","C1");
+    if(!CF_TYPES.includes(f.type)) err("Champs","Type "+q(f.type)+" inconnu pour le champ "+q(code)+".",P+".type","C1");
+    if(TYPES_WITH_ITEMS.includes(f.type) && !arr(f.items).length) err("Champs","Le champ "+q(code)+" ("+q(f.type)+") doit définir "+q("items")+".",P+".items","C1");
+    if(f.type==="reference" && !f.object_type) err("Champs","Champ référence "+q(code)+" sans "+q("object_type")+".",P+".object_type","C1");
+    if(f.type==="computed" && (f.expression==null||String(f.expression).trim()==="")) err("Champs","Champ calculé "+q(code)+" sans "+q("expression")+".",P+".expression","C1");
+    if(f.result_type!=null && !RESULT_TYPES.includes(f.result_type)) warn("Champs","Type de résultat "+q(f.result_type)+" inconnu.",P+".result_type","C1");
+    // items internes
+    if(arr(f.items).length){
+      const ic=new Set(), iv=new Set();
+      f.items.forEach((it,j)=>{
+        if(f.type==="scale"){ if(typeof it.value!=="number") err("Champs","Item d'échelle sans "+q("value")+" numérique.",P+".items["+j+"]","C1");
+          else{ if(iv.has(it.value)) err("Champs","Valeur d'échelle dupliquée "+q(it.value)+".",P+".items["+j+"]","C2"); iv.add(it.value);} }
+        else{ if(!it.code) err("Champs","Item sans "+q("code")+".",P+".items["+j+"]","C1");
+          else{ if(ic.has(it.code)) err("Champs","Code d'item dupliqué "+q(it.code)+".",P+".items["+j+"]","C2"); ic.add(it.code);} }
+      });
+    }
+    // unicité (code,target) + conflit de libellé
+    if(code&&CF_TARGETS.includes(tgt)){
+      if(fieldsByTarget[tgt][code]) err("Doublons","Deux champs de cible "+q(tgt)+" partagent le code "+q(code)+".",P+".code","C2");
+      else fieldsByTarget[tgt][code]=f;
+      const lab=fieldLabel(f);
+      if(lab){ if(labelSeen[tgt][lab]) warn("Nommage","Deux champs de cible "+q(tgt)+" portent le libellé "+q(lab)+".",P+".label","C9");
+        else labelSeen[tgt][lab]=code; }
+    }
+  });
+
+  /* ---------- 4. TYPES D'OBJETS & ATTRIBUTS ---------- */
+  const typeByCode={}, attrsByType={}, otLabelSeen={}, prefixSeen={};
+  otypes.forEach((ot,i)=>{
+    const P="object_types["+i+"]";
+    if(!isObj(ot)){ err("Objets","Type d'objet non-objet.",P,"C1"); return; }
+    const code=ot.code;
+    if(!code) err("Objets","Type d'objet sans "+q("code")+".",P,"C1");
+    else{ if(typeByCode[code]) err("Doublons","Type d'objet "+q(code)+" défini plusieurs fois.",P+".code","C2"); else typeByCode[code]=ot; }
+    if(!ot.label) warn("Objets","Type d'objet "+q(code)+" sans "+q("label")+".",P+".label","C1");
+    else{ const l=i18nLabel(ot.label); if(l){ if(otLabelSeen[l]) warn("Nommage","Deux types d'objet portent le libellé "+q(l)+".",P+".label","C9"); else otLabelSeen[l]=code; } }
+    if(ot.id_prefix==null||ot.id_prefix==="") warn("Objets","Type d'objet "+q(code)+" sans "+q("id_prefix")+".",P+".id_prefix","C1");
+    else{ if(prefixSeen[ot.id_prefix]) warn("Objets","Préfixe d'id "+q(ot.id_prefix)+" partagé par plusieurs types (risque de collision d'id).",P+".id_prefix","C9"); else prefixSeen[ot.id_prefix]=code; }
+    const attrs={}, alab={}; attrsByType[code]=attrs;
+    arr(ot.attributes).forEach((a,j)=>{
+      const AP=P+".attributes["+j+"]";
+      if(!isObj(a)){ err("Objets","Attribut non-objet.",AP,"C1"); return; }
+      if(!a.code) err("Objets","Attribut sans "+q("code")+".",AP,"C1");
+      else{ if(attrs[a.code]) err("Doublons","Attribut "+q(a.code)+" défini plusieurs fois dans le type "+q(code)+".",AP+".code","C2"); else attrs[a.code]=a; }
+      if(!CF_TYPES.includes(a.type)) err("Objets","Type d'attribut "+q(a.type)+" inconnu.",AP+".type","C1");
+      if(TYPES_WITH_ITEMS.includes(a.type)&&!arr(a.items).length) err("Objets","Attribut "+q(a.code)+" ("+q(a.type)+") sans "+q("items")+".",AP+".items","C1");
+      if(a.type==="reference"&&!a.object_type) err("Objets","Attribut référence "+q(a.code)+" sans "+q("object_type")+".",AP+".object_type","C1");
+      if(a.type==="computed"&&(a.expression==null||String(a.expression).trim()==="")) err("Objets","Attribut calculé "+q(a.code)+" sans "+q("expression")+".",AP+".expression","C1");
+      const l=i18nLabel(a.label); if(l){ if(alab[l]) warn("Nommage","Deux attributs du type "+q(code)+" portent le libellé "+q(l)+".",AP+".label","C9"); else alab[l]=a.code; }
+    });
+    if(ot.name_attr!=null && !attrs[ot.name_attr]) warn("Objets","L'attribut de libellé "+q(ot.name_attr)+" du type "+q(code)+" n'existe pas.",P+".name_attr","C8");
+  });
+
+  /* ---------- 5. RISQUES ---------- */
+  const riskLabelSeen={};
+  risks.forEach((r,i)=>{
+    const P="risks["+i+"]";
+    if(!isObj(r)){ err("Risques","Risque non-objet.",P,"C1"); return; }
+    if(r.id==null||r.id==="") err("Risques","Risque sans "+q("id")+".",P+".id","C1");
+    if(r.label==null||r.label==="") warn("Risques","Risque "+q(r.id||("#"+i))+" sans "+q("label")+".",P+".label","C1");
+    else{ if(riskLabelSeen[r.label]) warn("Nommage","Deux risques portent le libellé "+q(r.label)+".",P+".label","C9"); else riskLabelSeen[r.label]=r.id; }
+    const chkAssess=(a,ap,name,required)=>{
+      if(a==null){ if(required) err("Risques","Risque "+q(r.id)+" sans "+q(name)+".",P+"."+name,"C1"); return null; }
+      if(!isObj(a)){ err("Risques",q(name)+" non-objet.",P+"."+name,"C1"); return null; }
+      const pv=a.probability, sv=a.severity;
+      if(typeof pv!=="number") err("Risques","Vraisemblance manquante/non numérique dans "+name+" du risque "+q(r.id)+".",P+"."+name+".probability","C4");
+      else if(vSet.size&&!vSet.has(pv)) err("Cohérence","Vraisemblance "+q(pv)+" hors des niveaux de l'axe ("+[...vSet].join(", ")+") — risque "+q(r.id)+".",P+"."+name+".probability","C4");
+      if(typeof sv!=="number") err("Risques","Gravité manquante/non numérique dans "+name+" du risque "+q(r.id)+".",P+"."+name+".severity","C4");
+      else if(hSet.size&&!hSet.has(sv)) err("Cohérence","Gravité "+q(sv)+" hors des niveaux de l'axe ("+[...hSet].join(", ")+") — risque "+q(r.id)+".",P+"."+name+".severity","C4");
+      // champs de cotation
+      checkCustomValues(a.custom, "cotation", P+"."+name+".custom", "risque "+q(r.id)+" ("+name+")");
+      return (typeof pv==="number"&&typeof sv==="number")?{p:pv,s:sv}:null;
+    };
+    const ini=chkAssess(r.initial_assessment,P,"initial_assessment",true);
+    const res=chkAssess(r.residual_assessment,P,"residual_assessment",false);
+    // C9 : résiduel ≤ initial (score = p*s en approximation, sinon comparaison p et s)
+    if(ini&&res){ if(res.p*res.s>ini.p*ini.s) warn("Cohérence","Risque "+q(r.id)+" : le risque résiduel ("+res.p+"×"+res.s+") est supérieur à l'initial ("+ini.p+"×"+ini.s+").",P,"C9"); }
+    checkCustomValues(r.custom, "risk", P+".custom", "risque "+q(r.id));
+  });
+
+  /* ---------- 6. MESURES ---------- */
+  const measLabelSeen={};
+  measures.forEach((m,i)=>{
+    const P="measures["+i+"]";
+    if(!isObj(m)){ err("Mesures","Mesure non-objet.",P,"C1"); return; }
+    if(m.id==null||m.id==="") err("Mesures","Mesure sans "+q("id")+".",P+".id","C1");
+    if(m.label==null||m.label==="") warn("Mesures","Mesure "+q(m.id||("#"+i))+" sans "+q("label")+".",P+".label","C1");
+    else{ if(measLabelSeen[m.label]) warn("Nommage","Deux mesures portent le libellé "+q(m.label)+".",P+".label","C9"); else measLabelSeen[m.label]=m.id; }
+    if(m.status!=null && !MEASURE_STATUS.includes(m.status)) warn("Mesures","Statut "+q(m.status)+" inconnu (attendu "+MEASURE_STATUS.join(", ")+").",P+".status","C1");
+    if(m.due_date!=null && m.due_date!=="" && !RE_DATE.test(String(m.due_date))) warn("Mesures","Échéance "+q(m.due_date)+" au format inattendu (AAAA-MM-JJ).",P+".due_date","C1");
+    checkCustomValues(m.custom, "measure", P+".custom", "mesure "+q(m.id));
+  });
+
+  /* ---------- 7. LIENS (treatments) : C6 + doublons ---------- */
+  const linkSeen=new Set();
+  treatments.forEach((tr,i)=>{
+    const P="treatments["+i+"]";
+    if(!isObj(tr)){ err("Liens","Lien non-objet.",P,"C1"); return; }
+    if(tr.risk==null||tr.risk==="") err("Liens","Lien sans "+q("risk")+".",P+".risk","C6");
+    else if(!riskIds.has(tr.risk)) err("Liens","Lien vers un risque inexistant "+q(tr.risk)+".",P+".risk","C6");
+    if(tr.measure==null||tr.measure==="") err("Liens","Lien sans "+q("measure")+".",P+".measure","C6");
+    else if(!measureIds.has(tr.measure)) err("Liens","Lien vers une mesure inexistante "+q(tr.measure)+".",P+".measure","C6");
+    const key=tr.risk+" → "+tr.measure;
+    if(tr.risk&&tr.measure){ if(linkSeen.has(key)) warn("Doublons","Lien en double "+q(key)+".",P,"C6"); linkSeen.add(key); }
+    checkCustomValues(tr.custom, "link", P+".custom", "lien "+q(key));
+  });
+
+  /* ---------- 8. OBJETS (instances) : C8 + C10 (id/doublons collectés en pré‑passe) ---------- */
+  objects.forEach((o,i)=>{
+    const P="objects["+i+"]";
+    if(!isObj(o)){ err("Objets","Objet non-objet.",P,"C1"); return; }
+    if(o.id==null||o.id==="") err("Objets","Objet sans "+q("id")+".",P+".id","C1");
+    if(o.type==null||o.type==="") { err("Objets","Objet sans "+q("type")+".",P+".type","C8"); }
+    else if(!typeByCode[o.type]) { err("Objets","Objet "+q(o.id)+" de type inconnu "+q(o.type)+".",P+".type","C8"); }
+    // valeurs d'attributs
+    const attrs=attrsByType[o.type]||{};
+    const vals=isObj(o.values)?o.values:{};
+    if(o.values!=null&&!isObj(o.values)) err("Objets","Objet "+q(o.id)+" : "+q("values")+" doit être un objet.",P+".values","C1");
+    // orphelines : clé sans attribut
+    Object.keys(vals).forEach(code=>{ if(!attrs[code]) warn("Champs orphelins","Objet "+q(o.id)+" : valeur "+q(code)+" sans attribut correspondant dans le type "+q(o.type)+".",P+".values."+code,"C8"); });
+    // obligatoires + validation de valeur (attributs)
+    Object.keys(attrs).forEach(code=>{ const a=attrs[code]; if(a.type==="computed"||a.type==="image")return;
+      const v=vals[code];
+      if(a.required && !hasVal(v)) warn("Obligatoires","Objet "+q(o.id)+" : attribut obligatoire "+q(code)+" vide.",P+".values."+code,"C1");
+      if(hasVal(v)) valueChecks(a,v,P+".values."+code,"objet "+q(o.id));
+    });
+  });
+
+  /* ---------- 9. VALEURS DE CHAMPS (custom) : orphelines, obligatoires, format ----------
+     checkCustomValues est défini ici pour capturer le contexte (closures). */
+  function checkCustomValues(customObj, target, path, ctxLabel){
+    const defs=fieldsByTarget[target]||{};
+    if(customObj!=null && !isObj(customObj)){ err("Champs","Bloc "+q("custom")+" non-objet ("+ctxLabel+").",path,"C1"); return; }
+    const vals=isObj(customObj)?customObj:{};
+    Object.keys(vals).forEach(code=>{ if(!defs[code]) warn("Champs orphelins","Valeur "+q(code)+" sans champ correspondant ("+ctxLabel+", cible "+q(target)+").",path+"."+code,"C10"); });
+    Object.keys(defs).forEach(code=>{ const f=defs[code]; if(f.type==="computed"||f.type==="image")return;
+      const v=vals[code];
+      if(f.required && !hasVal(v)) warn("Obligatoires","Champ obligatoire "+q(code)+" vide ("+ctxLabel+").",path+"."+code,"C1");
+      if(hasVal(v)) valueChecks(f,v,path+"."+code,ctxLabel);
+    });
+  }
+  // Champs de cible « analysis »
+  checkCustomValues(root.custom, "analysis", "custom", "analyse");
+
+  /* ---------- 10. VALIDATION D'UNE VALEUR (bornes, motif, énumération, référence) ---------- */
+  function valueChecks(f,v,path,ctxLabel){
+    const t=f.type;
+    const num=(x)=>typeof x==="number"&&isFinite(x);
+    if((t==="integer"||t==="float")){
+      if(!num(v)) warn("Valeurs","Champ "+q(f.code)+" : valeur non numérique "+q(v)+" ("+ctxLabel+").",path,"C1");
+      else{ if(f.min!=null&&v<f.min) warn("Valeurs","Champ "+q(f.code)+" : "+q(v)+" < min "+q(f.min)+" ("+ctxLabel+").",path,"C1");
+             if(f.max!=null&&v>f.max) warn("Valeurs","Champ "+q(f.code)+" : "+q(v)+" > max "+q(f.max)+" ("+ctxLabel+").",path,"C1");
+             if(t==="integer"&&!Number.isInteger(v)) warn("Valeurs","Champ "+q(f.code)+" : entier attendu, "+q(v)+" ("+ctxLabel+").",path,"C1"); }
+    }
+    else if(t==="progress"){ if(!num(v)||v<0||v>100) warn("Valeurs","Champ "+q(f.code)+" : progression hors 0–100 ("+q(v)+", "+ctxLabel+").",path,"C1"); }
+    else if(t==="boolean"){ if(typeof v!=="boolean") warn("Valeurs","Champ "+q(f.code)+" : booléen attendu ("+q(v)+", "+ctxLabel+").",path,"C1"); }
+    else if(t==="date"){ if(typeof v!=="string"||!RE_DATE.test(v)) warn("Valeurs","Champ "+q(f.code)+" : date AAAA-MM-JJ attendue ("+q(v)+", "+ctxLabel+").",path,"C1");
+      else{ if(f.min!=null&&v<f.min) warn("Valeurs","Champ "+q(f.code)+" : date "+q(v)+" avant min "+q(f.min)+".",path,"C1");
+             if(f.max!=null&&v>f.max) warn("Valeurs","Champ "+q(f.code)+" : date "+q(v)+" après max "+q(f.max)+".",path,"C1"); } }
+    else if(t==="color"){ if(typeof v!=="string"||!RE_HEX.test(v)) warn("Valeurs","Champ "+q(f.code)+" : couleur "+q("#RRGGBB")+" attendue ("+q(v)+", "+ctxLabel+").",path,"C1"); }
+    else if(t==="url"){ if(typeof v!=="string"||!RE_URL.test(v)) warn("Valeurs","Champ "+q(f.code)+" : URL invalide ("+q(v)+", "+ctxLabel+").",path,"C1"); }
+    else if(t==="email"){ if(typeof v!=="string"||!RE_EMAIL.test(v)) warn("Valeurs","Champ "+q(f.code)+" : e‑mail invalide ("+q(v)+", "+ctxLabel+").",path,"C1"); }
+    else if(t==="tel"){ if(typeof v!=="string"||!RE_TEL.test(v)) warn("Valeurs","Champ "+q(f.code)+" : téléphone invalide ("+q(v)+", "+ctxLabel+").",path,"C1"); }
+    else if(t==="regexp"){ if(f.pattern){ let re=null; try{re=new RegExp("^(?:"+f.pattern+")$");}catch(e){}
+        if(re && (typeof v!=="string"||!re.test(v))) warn("Valeurs","Champ "+q(f.code)+" : ne respecte pas le motif "+q(f.pattern)+" ("+q(v)+", "+ctxLabel+").",path,"C1"); } }
+    else if(t==="text"||t==="textarea"){ if(typeof v==="string"){ if(f.min!=null&&v.length<f.min) warn("Valeurs","Champ "+q(f.code)+" : trop court (<"+f.min+", "+ctxLabel+").",path,"C1");
+        if(f.max!=null&&v.length>f.max) warn("Valeurs","Champ "+q(f.code)+" : trop long (>"+f.max+", "+ctxLabel+").",path,"C1"); } }
+    else if(t==="select"){ const codes=new Set(arr(f.items).map(it=>it.code));
+      if(!codes.has(v)) warn("Valeurs","Champ "+q(f.code)+" : valeur "+q(v)+" absente des items ("+ctxLabel+").",path,"C1"); }
+    else if(t==="checklist"||t==="tags"){ const codes=new Set(arr(f.items).map(it=>it.code));
+      const list=Array.isArray(v)?v:[v]; list.forEach(x=>{ if(!codes.has(x)) warn("Valeurs","Champ "+q(f.code)+" : item "+q(x)+" absent de la liste ("+ctxLabel+").",path,"C1"); });
+      if(t==="checklist"){ if(f.min_items!=null&&list.length<f.min_items) warn("Valeurs","Champ "+q(f.code)+" : moins de "+f.min_items+" items ("+ctxLabel+").",path,"C1");
+        if(f.max_items!=null&&list.length>f.max_items) warn("Valeurs","Champ "+q(f.code)+" : plus de "+f.max_items+" items ("+ctxLabel+").",path,"C1"); } }
+    else if(t==="scale"){ const vals=new Set(arr(f.items).map(it=>it.value));
+      if(!vals.has(v)) warn("Valeurs","Champ "+q(f.code)+" : niveau "+q(v)+" absent de l'échelle ("+ctxLabel+").",path,"C1"); }
+    else if(t==="reference"){ checkRef(f.object_type, v, f.code, path, ctxLabel); }
+  }
+  function checkRef(otype, v, code, path, ctxLabel){
+    const ids=Array.isArray(v)?v:[v];
+    const exists=id=>{
+      if(otype===REF_RISK) return riskIds.has(id);
+      if(otype===REF_MEASURE) return measureIds.has(id);
+      return (objIdsByType[otype]&&objIdsByType[otype].has(id));
+    };
+    const known = otype===REF_RISK||otype===REF_MEASURE||!!typeByCode[otype];
+    if(!known){ err("Références","Champ "+q(code)+" : type de référence inconnu "+q(otype)+" ("+ctxLabel+").",path,"C8"); return; }
+    ids.forEach(id=>{ if(id!=null&&id!==""&&!exists(id)) warn("Références orphelines","Champ "+q(code)+" : référence "+q(id)+" vers "+refTargetLabel(otype)+" inexistant ("+ctxLabel+").",path,"C10"); });
+  }
+  function refTargetLabel(otype){ if(otype===REF_RISK)return "un risque"; if(otype===REF_MEASURE)return "une mesure"; return "un "+(otype||"objet"); }
+
+  /* ---------- 11. FORMULES DES CHAMPS CALCULÉS ---------- */
+  // Graphe de dépendances (cf.<code> vers un autre calculé de la même cible) pour la détection de cycles.
+  const compDeps={}; // "target:code" -> [ "target:code2" ]
+  function validateFormulaField(f, target, path){
+    let parsed;
+    try{ parsed=parseFormula(f.expression); }
+    catch(e){ err("Formules","Champ calculé "+q(f.code)+" : erreur de syntaxe — "+esc(e.message)+(e.p!=null?" (pos. "+e.p+")":"")+".",path,"C1"); return; }
+    // fonctions
+    parsed.funcs.forEach(fn=>{ if(!CALC_FUNCS.has(fn.name.toUpperCase())) err("Formules","Champ calculé "+q(f.code)+" : fonction inconnue "+q(fn.name)+".",path,"C1"); });
+    const selfKey=target+":"+f.code; const deps=compDeps[selfKey]||(compDeps[selfKey]=[]);
+    const isObjTarget = target.indexOf("object:")===0;
+    const objTypeCode = isObjTarget? target.slice(7) : null;
+    const localDefs = isObjTarget ? (attrsByType[objTypeCode]||{}) : (fieldsByTarget[target]||{});
+    const nativeTarget = isObjTarget ? "object" : target;
+    parsed.refs.forEach(seg=>{
+      const head=seg[0];
+      if(head==="cf"){
+        const code=seg[1];
+        if(seg.length===2){
+          const g=localDefs[code];
+          if(!g) err("Formules","Champ calculé "+q(f.code)+" : référence à un champ inexistant "+q("cf."+code)+".",path,"C1");
+          else if(g.type==="computed"){ deps.push(target+":"+code); }
+        } else if(seg.length>=3){ // traversée cf.<ref>.cf.<attr> / .id
+          const g=localDefs[code];
+          if(!g) err("Formules","Champ calculé "+q(f.code)+" : "+q("cf."+code)+" (traversée) référence un champ inexistant.",path,"C1");
+          else if(g.type!=="reference") warn("Formules","Champ calculé "+q(f.code)+" : traversée "+q(seg.join("."))+" via un champ non‑référence "+q("cf."+code)+".",path,"C1");
+          else{ const tgtType=g.object_type;
+            if(seg[2]==="cf"&&seg[3]){ const at=(attrsByType[tgtType]||{})[seg[3]];
+              if(!refIsEntityCode(tgtType)&&!at) warn("Formules","Champ calculé "+q(f.code)+" : attribut "+q(seg[3])+" absent du type "+q(tgtType)+" (traversée).",path,"C1"); }
+          }
+        }
+      } else if(COLLECTION_TARGET[head]){
+        const et=COLLECTION_TARGET[head];
+        if(seg[1]==="cf"&&seg[2]){ if(!(fieldsByTarget[et]||{})[seg[2]]) err("Formules","Champ calculé "+q(f.code)+" : collection "+q(seg.join("."))+" — champ "+q("cf."+seg[2])+" absent de la cible "+q(et)+".",path,"C1"); }
+        else if(seg[1]){ if(!NATIVE[et].includes(seg[1])) warn("Formules","Champ calculé "+q(f.code)+" : "+q(seg.join("."))+" — grandeur "+q(seg[1])+" inconnue pour "+q(et)+".",path,"C1"); }
+      } else if(seg.length===1){
+        if(!(NATIVE[nativeTarget]||[]).includes(head) && !(nativeTarget==="analysis"&&/^(risks|measures|links)_count$/.test(head)))
+          err("Formules","Champ calculé "+q(f.code)+" : référence inconnue "+q(head)+" (cible "+q(nativeTarget)+").",path,"C1");
+      } else {
+        warn("Formules","Champ calculé "+q(f.code)+" : référence non reconnue "+q(seg.join("."))+".",path,"C1");
+      }
+    });
+  }
+  function refIsEntityCode(c){ return c===REF_RISK||c===REF_MEASURE; }
+  cfields.forEach((f,i)=>{ if(isObj(f)&&f.type==="computed"&&CF_TARGETS.includes(f.target)) validateFormulaField(f,f.target,"custom_fields["+i+"].expression"); });
+  otypes.forEach((ot,i)=>{ if(!isObj(ot))return; arr(ot.attributes).forEach((a,j)=>{ if(isObj(a)&&a.type==="computed"&&ot.code) validateFormulaField(a,"object:"+ot.code,"object_types["+i+"].attributes["+j+"].expression"); }); });
+  // Cycles
+  detectCycles(compDeps).forEach(cyc=>{ const codes=cyc.map(k=>k.split(":").pop());
+    err("Formules","Cycle de dépendances entre champs calculés : "+esc(codes.join(" → "))+".","custom_fields","C1"); });
+
+  return F;
+
+  /* ------- utilitaires locaux ------- */
+  function hasVal(v){ return !(v===undefined||v===null||v===""||(Array.isArray(v)&&v.length===0)); }
+  function fieldLabel(f){ return i18nLabel(f&&f.label); }
+}
+
+/* ---- utilitaires globaux ---- */
+function i18nLabel(l){ if(l==null)return ""; if(typeof l==="string")return l; if(typeof l==="object")return l.fr||l.en||l.it||Object.values(l)[0]||""; return String(l); }
+function detectCycles(graph){
+  const cycles=[], WHITE=0,GREY=1,BLACK=2, color={}, stack=[];
+  const seen=new Set();
+  function dfs(u){ color[u]=GREY; stack.push(u);
+    (graph[u]||[]).forEach(v=>{ if(color[v]===GREY){ const idx=stack.indexOf(v); const cyc=stack.slice(idx).concat(v); const key=cyc.slice().sort().join("|"); if(!seen.has(key)){seen.add(key);cycles.push(cyc);} }
+      else if(color[v]!==BLACK && graph[v]) dfs(v); });
+    stack.pop(); color[u]=BLACK; }
+  Object.keys(graph).forEach(u=>{ if(!color[u]) dfs(u); });
+  return cycles;
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* =========================================================================
+   UI : chargement de fichiers, rendu du rapport
+   ========================================================================= */
+const state={ files:[], sel:-1, show:{error:true,warning:true}, q:"" };
+
+function loadFiles(fileList){
+  const items=[...fileList];
+  let pending=items.length;
+  items.forEach(file=>{
+    const rd=new FileReader();
+    rd.onload=()=>{ addLoaded(file.name, rd.result); if(--pending===0){ state.sel=state.files.length-1; render(); } };
+    rd.onerror=()=>{ addLoaded(file.name, null, "Lecture du fichier impossible."); if(--pending===0){ state.sel=state.files.length-1; render(); } };
+    rd.readAsText(file);
+  });
+}
+function addLoaded(name, text, readErr){
+  const entry={ name, findings:[], counts:{error:0,warning:0}, fatal:null };
+  if(readErr){ entry.fatal=readErr; }
+  else{
+    let json;
+    try{ json=JSON.parse(text); }
+    catch(e){ entry.fatal="JSON invalide : "+e.message; }
+    if(json!==undefined && entry.fatal===null){
+      try{ entry.findings=validate(json,name); }
+      catch(e){ entry.fatal="Erreur interne du validateur : "+(e&&e.message||e); }
+    }
+  }
+  entry.findings.forEach(f=>entry.counts[f.sev]++);
+  state.files.push(entry);
+}
+
+function render(){
+  renderFileList(); renderReport();
+}
+function renderFileList(){
+  const el=document.getElementById("files");
+  if(!state.files.length){ el.innerHTML='<div class="empty">Aucun fichier.<br>Glissez un ou plusieurs <code>.rae.json</code> ici, ou <b>Charger</b>.</div>'; return; }
+  el.innerHTML="";
+  state.files.forEach((f,i)=>{
+    const d=document.createElement("div"); d.className="fitem"+(i===state.sel?" sel":"");
+    const badges = f.fatal
+      ? '<span class="pill e">erreur JSON</span>'
+      : (f.counts.error?'<span class="pill e">'+f.counts.error+' err.</span>':'')
+        + (f.counts.warning?'<span class="pill w">'+f.counts.warning+' avert.</span>':'')
+        + (!f.counts.error&&!f.counts.warning?'<span class="pill ok">valide</span>':'');
+    d.innerHTML='<div class="fn">'+esc(f.name)+'</div><div class="fb">'+badges+'</div>';
+    d.onclick=()=>{ state.sel=i; render(); };
+    el.appendChild(d);
+  });
+}
+function renderReport(){
+  const el=document.getElementById("report");
+  const f=state.files[state.sel];
+  if(!f){ el.innerHTML='<div class="empty-report"><div class="big">Aucun fichier sélectionné</div>Choisissez un fichier dans la liste.</div>'; return; }
+  if(f.fatal){
+    el.innerHTML='<div class="summary err"><span class="verdict"><span class="dot"></span>Fichier illisible</span><span class="fname">'+esc(f.name)+'</span></div>'
+      +'<div class="find error"><div class="sev">Erreur</div><div class="body"><div class="msg">'+esc(f.fatal)+'</div></div></div>';
+    return;
+  }
+  const ne=f.counts.error, nw=f.counts.warning;
+  const cls = ne? "err" : (nw? "warn" : "ok");
+  const verdict = ne? "Fichier non conforme" : (nw? "Conforme, avec réserves" : "Fichier valide");
+  let h='<div class="summary '+cls+'"><span class="verdict"><span class="dot"></span>'+verdict+'</span>'
+    +'<span class="counts"><span class="pill e">'+ne+' erreur'+(ne>1?'s':'')+'</span><span class="pill w">'+nw+' avertissement'+(nw>1?'s':'')+'</span></span>'
+    +'<span class="spacer"></span><span class="fname">'+esc(f.name)+'</span></div>';
+  h+='<div class="filters">'
+    +'<span class="toggle'+(state.show.error?'':' off')+'" data-t="error">Erreurs <span class="n">'+ne+'</span></span>'
+    +'<span class="toggle'+(state.show.warning?'':' off')+'" data-t="warning">Avertissements <span class="n">'+nw+'</span></span>'
+    +'<input id="search" placeholder="Filtrer (message, chemin, règle)…" value="'+esc(state.q)+'">'
+    +'</div>';
+  // filtrage
+  let list=f.findings.filter(x=>state.show[x.sev]);
+  if(state.q.trim()){ const qq=state.q.toLowerCase(); list=list.filter(x=>(x.msg+" "+x.path+" "+x.cat+" "+x.rule).toLowerCase().indexOf(qq)>=0); }
+  if(!list.length){ h+='<div class="empty-report">'+(f.findings.length? 'Aucun résultat pour ce filtre.' : '<div class="big">✔ Aucun problème détecté</div>Le fichier respecte le format et les règles de cohérence vérifiées.')+'</div>'; el.innerHTML=h; wireReport(); return; }
+  // groupé par catégorie, erreurs d'abord
+  const order=["error","warning"];
+  const cats=[]; const byCat={};
+  list.sort((a,b)=>order.indexOf(a.sev)-order.indexOf(b.sev));
+  list.forEach(x=>{ if(!byCat[x.cat]){byCat[x.cat]=[];cats.push(x.cat);} byCat[x.cat].push(x); });
+  cats.forEach(c=>{
+    h+='<div class="cat">'+esc(c)+'</div>';
+    byCat[c].forEach(x=>{
+      h+='<div class="find '+x.sev+'"><div class="sev">'+(x.sev==="error"?"Erreur":"Avert.")+'</div>'
+        +'<div class="body"><div class="msg">'+x.msg+'</div>'
+        +(x.path?'<div class="path">'+esc(x.path)+'</div>':'')
+        +(x.rule?'<div class="rule">règle '+esc(x.rule)+'</div>':'')
+        +'</div></div>';
+    });
+  });
+  el.innerHTML=h; wireReport();
+}
+function wireReport(){
+  document.querySelectorAll(".toggle").forEach(t=>t.onclick=()=>{ const k=t.dataset.t; state.show[k]=!state.show[k]; renderReport(); });
+  const s=document.getElementById("search"); if(s){ s.oninput=()=>{ state.q=s.value; const p=s.selectionStart; renderReport(); const s2=document.getElementById("search"); if(s2){s2.focus(); try{s2.setSelectionRange(p,p);}catch(e){}} }; }
+}
+
+/* ---- Boutons & drag-drop ---- */
+document.getElementById("btnOpen").onclick=()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange=e=>{ if(e.target.files.length) loadFiles(e.target.files); e.target.value=""; };
+document.getElementById("btnClear").onclick=()=>{ state.files=[]; state.sel=-1; render(); };
+document.getElementById("btnPaste").onclick=()=>{
+  const txt=prompt("Collez le contenu JSON d'un fichier .rae.json :");
+  if(txt==null||!txt.trim())return; addLoaded("(collé)", txt); state.sel=state.files.length-1; render();
+};
+let dragN=0; const drop=document.getElementById("drop");
+window.addEventListener("dragenter",e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes("Files")){ e.preventDefault(); dragN++; drop.classList.add("on"); } });
+window.addEventListener("dragover",e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
+window.addEventListener("dragleave",e=>{ if(--dragN<=0){ dragN=0; drop.classList.remove("on"); } });
+window.addEventListener("drop",e=>{ e.preventDefault(); dragN=0; drop.classList.remove("on"); if(e.dataTransfer&&e.dataTransfer.files.length) loadFiles(e.dataTransfer.files); });
+
+/* Chargement auto via ?file=<url> (si servi en HTTP) — pratique pour un usage scripté. */
+(function(){ const u=new URLSearchParams(location.search).get("file"); if(!u)return;
+  fetch(u).then(r=>r.text()).then(t=>{ addLoaded(u.split("/").pop(), t); state.sel=state.files.length-1; render(); }).catch(()=>{}); })();
+</script>
+</body>
+</html>
