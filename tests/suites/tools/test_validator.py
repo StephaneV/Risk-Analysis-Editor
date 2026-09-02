@@ -245,3 +245,34 @@ def test_location_short_line_full(locate):
     text = '{\n  "version": "1.0"\n}'
     r = locate(text, "version")
     assert r["line"] == 2 and "\u2026" not in r["excerpt"] and "1.0" in r["excerpt"]
+
+
+# ------------------------------------------------------------------ non-regression : pas de blocage
+@pytest.fixture
+def tool_page(browser, base_url):
+    ctx = browser.new_context()
+    page = ctx.new_page()
+    page.goto(base_url + "/tools/rae-validator/index.html", wait_until="load")
+    page.wait_for_function(
+        "typeof validate==='function' && typeof buildLocIndex==='function' && typeof locateAt==='function'")
+    yield page
+    ctx.close()
+
+
+def test_absent_toplevel_key_locates_to_root(locate):
+    """Un chemin de 1er niveau absent (ex. grid manquant) se localise a la racine, SANS boucler."""
+    text = '{\n  "risks": []\n}'
+    r = locate(text, "grid")
+    assert r["line"] == 1
+
+
+def test_non_rae_json_full_flow_no_hang(tool_page):
+    """Un JSON quelconque (pas un .rae.json) : validate + localisation de chaque resultat
+    doivent se terminer (aucune boucle infinie dans locateAt)."""
+    text = json.dumps({"catalog_type": "aipd", "version": "1.0",
+                       "risks": [{"code": "R-1", "label": "x", "description": "y"}],
+                       "measures": [], "mapping": [{"risk": "R-1", "measures": ["M-1"]}]})
+    n = tool_page.evaluate(
+        "(t)=>{ const j=JSON.parse(t); const F=validate(j,'x'); const idx=buildLocIndex(t);"
+        " F.forEach(f=>{ f.loc=locateAt(idx,f.path); }); return F.length; }", text)
+    assert n > 0

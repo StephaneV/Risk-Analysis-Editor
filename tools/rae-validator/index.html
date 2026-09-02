@@ -621,7 +621,11 @@ function excerptAt(text, starts, off){
    (valeur manquante, orpheline…). */
 function locateAt(idx, path){
   let p=path||"";
-  while(p && !(p in idx.pos)) p=p.replace(/(\.[^.\[\]]+|\[[0-9]+\])$/,"");
+  while(p && !(p in idx.pos)){
+    const np=p.replace(/(\.[^.\[\]]+|\[[0-9]+\])$/,"");
+    if(np===p){ p=""; break; }   // plus rien à retirer (ex. clé de 1er niveau absente) → racine
+    p=np;
+  }
   const off=(p in idx.pos)?idx.pos[p]:0;
   return excerptAt(idx.text, idx.starts, off);
 }
