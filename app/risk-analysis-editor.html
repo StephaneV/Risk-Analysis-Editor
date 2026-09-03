@@ -333,7 +333,13 @@
   .table-scroll.sh-left .reg.has-lead td[data-col="id"]::after,.table-scroll.sh-left .reg.has-lead thead th.col-pinned::after,.table-scroll.sh-left .reg.has-lead thead th.md-id-col::after{opacity:1}
   .reg tr.md-detail-row>td{position:static;background:var(--panel-2);padding:0;box-shadow:none;z-index:auto}
   .reg tr.md-detail-row>td::after,.reg tr.md-detail-row>td::before{display:none}
-  .md-detail{display:grid;grid-template-columns:max-content 1fr;gap:7px 18px;align-items:baseline;padding:11px 16px 13px}
+  /* white-space:normal directement sur le tiroir : la cellule unique hérite du nowrap de
+     #risksTable td:first-child ; une déclaration directe ici l'emporte sur la valeur héritée. */
+  .md-detail{display:grid;grid-template-columns:max-content 1fr;gap:7px 18px;align-items:baseline;padding:11px 16px 13px;white-space:normal}
+  /* Le tiroir suit le défilement horizontal et se borne à la largeur visible du conteneur
+     (--reg-vw, posée par sizeRegScrollers) : les valeurs longues passent à la ligne au lieu de déborder. */
+  .reg tr.md-detail-row>td>.md-detail{position:sticky;left:0;box-sizing:border-box;width:var(--reg-vw,100%);max-width:var(--reg-vw,100%);min-width:0}
+  .md-detail .md-val>*{min-width:0}
   .md-detail .md-lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
   .md-detail .md-val{font-size:13px;overflow-wrap:anywhere}
   .md-detail .md-none{grid-column:1 / -1;color:var(--muted);font-size:12.5px;font-style:italic}
@@ -12939,6 +12945,7 @@ function sizeRegScrollers(){
     if(sc.offsetParent===null){sc.classList.remove("reg-fill");sc.style.maxHeight="";return;}   // vue masquée
     if(!sc._edgeBound){sc.addEventListener("scroll",()=>updateRegEdgeShadows(sc),{passive:true});sc._edgeBound=true;}
     updateRegEdgeShadows(sc);
+    sc.style.setProperty("--reg-vw",sc.clientWidth+"px");   // largeur visible : borne le tiroir Maître·détail (retour à la ligne)
     sc.style.maxHeight="";   // hauteur naturelle : on mesure le haut du conteneur et la « traîne » en dessous
     const rect=sc.getBoundingClientRect();
     const docH=document.documentElement.scrollHeight;
