@@ -8,7 +8,7 @@ def test_registry_row_count_matches_model(app):
     app.load("ebios.rae.json")
     app.goto("risks")
     n = app.js("(analyse.risks||[]).length")
-    rows = app.js("document.querySelectorAll('#risksTable tr').length")
+    rows = app.js("document.querySelectorAll('#risksTable tr[data-rid]').length")
     assert n > 0 and rows == n
 
 
@@ -309,6 +309,8 @@ def test_risks_sort_menu(app):
 GRIP_COL = r"""
 () => {
   const tbl = () => document.getElementById('risksTableEl');
+  // Défaut = Maître·détail : la poignée se teste en vue Tableau.
+  document.querySelector('#view-risks .view-seg [data-view-mode="table"]').click();
   sizeRegScrollers();
   const gripCol = tbl().querySelector('tbody td.reg-grip-col');
   const idCol = tbl().querySelector('tbody td[data-col="id"]');

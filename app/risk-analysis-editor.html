@@ -1669,7 +1669,7 @@ const I18N = {
     no_linked_measure:"Aucune mesure liée", linked_measures_label:"Mesures de maîtrise liées :",
     risks_title:"Registre des risques", risks_caption:"Cliquez sur un risque pour l'éditer.",
     btn_import_csv:"⭱ Importer (CSV)", btn_export_csv:"⭳ Exporter (CSV)", toast_csv_export:"CSV exporté : {0}", btn_add_risk:"+ Ajouter un risque",
-    th_id:"ID", th_risk:"Risque", th_risk_id:"ID risque", th_measure_id:"ID mesure", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel",
+    th_id:"ID", th_risk:"Risque", th_risk_id:"ID risque", th_measure_id:"ID mesure", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel", th_score:"Score",
     th_measures:"Mesures", th_evolution:"Évolution",
     cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
     cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
@@ -2077,7 +2077,7 @@ const I18N = {
     no_linked_measure:"No linked measure", linked_measures_label:"Linked controls:",
     risks_title:"Risk register", risks_caption:"Click a risk to edit it.",
     btn_import_csv:"⭱ Import (CSV)", btn_export_csv:"⭳ Export (CSV)", toast_csv_export:"CSV exported: {0}", btn_add_risk:"+ Add a risk",
-    th_id:"ID", th_risk:"Risk", th_risk_id:"Risk ID", th_measure_id:"Measure ID", th_category:"Category", th_initial:"Initial", th_residual:"Residual",
+    th_id:"ID", th_risk:"Risk", th_risk_id:"Risk ID", th_measure_id:"Measure ID", th_category:"Category", th_initial:"Initial", th_residual:"Residual", th_score:"Score",
     th_measures:"Measures", th_evolution:"Change",
     cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
     cols_up:"Move column left", cols_down:"Move column right",
@@ -2480,7 +2480,7 @@ const I18N = {
     no_linked_measure:"Nessuna misura collegata", linked_measures_label:"Misure di controllo collegate:",
     risks_title:"Registro dei rischi", risks_caption:"Clicca su un rischio per modificarlo.",
     btn_import_csv:"⭱ Importa (CSV)", btn_export_csv:"⭳ Esporta (CSV)", toast_csv_export:"CSV esportato: {0}", btn_add_risk:"+ Aggiungi un rischio",
-    th_id:"ID", th_risk:"Rischio", th_risk_id:"ID rischio", th_measure_id:"ID misura", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo",
+    th_id:"ID", th_risk:"Rischio", th_risk_id:"ID rischio", th_measure_id:"ID misura", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo", th_score:"Punteggio",
     th_measures:"Misure", th_evolution:"Evoluzione",
     cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
     cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
@@ -7458,7 +7458,8 @@ function riskPill(id){const rr=riskById(id);
   return '<span class="pill" data-open-r="'+esc(id)+'" tabindex="0" role="button" aria-label="'+esc(rr?rr.id+" — "+rr.label:id)+'">'+esc(id)+'</span>';}
 // Descripteurs des colonnes intégrées (hors Actions), par table.
 function builtinCols(table){
-  if(table==="risks")return [
+  if(table==="risks"){
+    const cols=[
     {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:r=>'<span class="id-badge">'+esc(r.id)+'</span>'},   // poignée déportée dans sa propre colonne (reg-grip-col)
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:r=>'<b>'+esc(r.label)+'</b>'},
     {key:"cat",label:t("th_category"),sort:"cat",text:true,cell:r=>'<span class="muted">'+esc(r.category||"—")+'</span>'},
@@ -7467,8 +7468,29 @@ function builtinCols(table){
     {key:"residual",label:t("th_residual"),sort:"residual",cell:r=>riskCellTag(r,"r")},
     {key:"measures",label:t("th_measures"),cell:r=>{const m=measuresOfRisk(r.id);return m.length?'<span class="pill-list">'+m.map(id=>measurePill(id)).join("")+'</span>':'<span class="muted">—</span>';}},
     {key:"evolution",label:t("th_evolution"),sort:"evolution",cell:r=>riskDeltaCell(r)},
-  ];
-  if(table==="measures")return [
+    ];
+    // Colonnes détaillées disponibles au sélecteur (par défaut « en détail ») : description, notes,
+    // et le détail des cotations initiale/résiduelle (vraisemblance, gravité, score, champs de cotation).
+    const dash='<span class="muted">—</span>';
+    cols.push({key:"description",label:t("f_description"),text:true,detail:true,cell:r=>r.description?mdToHTML(r.description):dash});
+    cols.push({key:"comment",label:t("f_notes"),text:true,detail:true,cell:r=>r.comment?mdToHTML(r.comment):dash});
+    const axV=analyse.grid.vertical_axis.label, axH=analyse.grid.horizontal_axis.label;
+    const lvl=(levels,v)=>{const l=levels.find(x=>x.value===v);let lb=l&&l.label;if(lb&&typeof lb==="object")lb=lb[lang]||lb.fr||Object.values(lb)[0];return lb||(v!=null?String(v):"");};
+    const ass=(r,ph)=>ph==="i"?r.initial_assessment:residual(r);
+    [["i",t("th_initial")],["r",t("th_residual")]].forEach(([ph,pl])=>{
+      cols.push({key:"prob_"+ph,label:pl+" · "+axV,detail:true,cell:r=>{const e=ass(r,ph);return e&&e.probability!=null?esc(lvl(probabilityLevels(),e.probability))+' <span class="muted">('+e.probability+')</span>':dash;}});
+      cols.push({key:"sev_"+ph,label:pl+" · "+axH,detail:true,cell:r=>{const e=ass(r,ph);return e&&e.severity!=null?esc(lvl(severityLevels(),e.severity))+' <span class="muted">('+e.severity+')</span>':dash;}});
+      cols.push({key:"score_"+ph,label:pl+" · "+t("th_score"),detail:true,cell:r=>{const e=ass(r,ph);return e&&e.probability!=null&&e.severity!=null?'<b>'+scoreOf(e.probability,e.severity)+'</b>':dash;}});
+      customFieldsFor("cotation").forEach(f=>{
+        cols.push({key:"cot"+ph+":"+f.code,label:pl+" · "+cfLabel(f),detail:true,text:cfIsTextCol(f),cell:r=>{const e=ass(r,ph),v=(e&&e.custom||{})[f.code];
+          return f.type==="computed"?(cfComputedDisplayHTML(f,"cotation",e)||dash):(cfHasVal(v)?cfDisplayHTML(f,v,true):dash);}});
+      });
+    });
+    return cols;
+  }
+  if(table==="measures"){
+    const dash='<span class="muted">—</span>';
+    return [
     {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:m=>'<span class="id-badge">'+esc(m.id)+'</span>'},   // poignée déportée dans sa propre colonne (reg-grip-col)
     {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:m=>'<b>'+esc(m.label)+'</b>'},
     {key:"type",label:t("th_type"),sort:"type",cell:m=>'<span class="muted">'+(m.type?esc(typeLabel(m.type)):"—")+'</span>'},
@@ -7477,7 +7499,10 @@ function builtinCols(table){
     {key:"due",label:t("f_due_date"),sort:"due",def:false,cell:m=>'<span class="muted">'+esc(fmtDate(m.due_date)||"—")+'</span>'},
     {key:"cost",label:t("f_cost"),sort:"cost",def:false,cell:m=>'<span class="muted">'+(m.cost!=null&&m.cost!==""?esc(m.cost):"—")+'</span>'},
     {key:"covered",label:t("th_covered_risks"),cell:m=>{const rk=risksOfMeasure(m.id);return rk.length?'<span class="pill-list">'+rk.map(id=>riskPill(id)).join("")+'</span>':'<span class="muted">—</span>';}},
+    {key:"description",label:t("f_description"),text:true,detail:true,cell:m=>m.description?mdToHTML(m.description):dash},
+    {key:"comment",label:t("f_notes"),text:true,detail:true,cell:m=>m.comment?mdToHTML(m.comment):dash},
   ];
+  }
   return [ // links (le champ « custom » vit dans l'objet treatment)
     {key:"rid",label:t("th_risk_id"),pinned:"first",sort:"rid",cell:x=>'<span class="id-badge">'+esc(x.risk)+'</span>'},
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
@@ -7638,8 +7663,8 @@ document.addEventListener("click",e=>{const chev=e.target.closest(".md-chev");if
    partent « en détail », les autres « en ligne ». Ces helpers ne sont pas encore consommés par le
    rendu (étape 3) ; ils constituent le contrat testé du modèle. */
 function regViewStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.view=d.view||{};}
-function tableView(table){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.view;const x=v&&v[table];return (x==="master_detail"||x==="cards")?x:"table";}
-function setTableView(table,val){if(val==="table"){const s=regViewStore();delete s[table];}else regViewStore()[table]=val;markDirty();}
+function tableView(table){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.view;const x=v&&v[table];return (x==="master_detail"||x==="cards"||x==="table")?x:"master_detail";}   // défaut : Maître·détail
+function setTableView(table,val){if(val==="master_detail"){const s=regViewStore();delete s[table];}else regViewStore()[table]=val;markDirty();}   // défaut Maître·détail : purge la clé
 function regDetailStore(){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};return d.detail=d.detail||{};}
 function savedDetailCols(table){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.detail;const a=v&&v[table];return Array.isArray(a)?a:null;}
 /* Clé de la colonne « libellé » verrouillée en ligne (risques/mesures : le libellé ; objets :

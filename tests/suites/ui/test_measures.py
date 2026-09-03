@@ -8,7 +8,7 @@ def test_registry_row_count_matches_model(app):
     app.load("ebios.rae.json")
     app.goto("measures")
     n = app.js("(analyse.measures||[]).length")
-    rows = app.js("document.querySelectorAll('#measuresTable tr').length")
+    rows = app.js("document.querySelectorAll('#measuresTable tr[data-rid]').length")
     assert n > 0 and rows == n
 
 

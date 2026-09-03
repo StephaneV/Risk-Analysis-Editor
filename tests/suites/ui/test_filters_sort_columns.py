@@ -7,10 +7,10 @@ pytestmark = pytest.mark.ui
 def test_category_filter_reduces_rows(app):
     app.load("ebios.rae.json")
     app.goto("risks")
-    total = app.js("document.querySelectorAll('#risksTable tr').length")
+    total = app.js("document.querySelectorAll('#risksTable tr[data-rid]').length")
     cat = app.js("analyse.risks[0].category")
     app.js("c=>{listState.risks.cat=c; renderRisks();}", cat)
-    filtered = app.js("document.querySelectorAll('#risksTable tr').length")
+    filtered = app.js("document.querySelectorAll('#risksTable tr[data-rid]').length")
     assert 0 < filtered <= total
     # tous les risques d'une seule catégorie
     with_cat = app.js("c=>analyse.risks.filter(r=>r.category===c).length", cat)
@@ -22,7 +22,7 @@ def test_search_filters_rows(app):
     app.goto("risks")
     label = app.js("analyse.risks[0].label")
     app.js("q=>{listState.risks.q=q; renderRisks();}", label[:6])
-    filtered = app.js("document.querySelectorAll('#risksTable tr').length")
+    filtered = app.js("document.querySelectorAll('#risksTable tr[data-rid]').length")
     assert filtered >= 1
 
 
@@ -49,7 +49,7 @@ def test_reference_field_filter(app):
     assert app.js("cfFilterableFields('risk').map(f=>f.code).indexOf('vmref')>=0"), "champ référence non filtrable"
     # filtrer sur l'objet O1 → R1 et R3
     app.js("()=>{cfFilters={vmref:'O1'}; renderRisks();}")
-    rows = app.js("document.querySelectorAll('#risksTable tr').length")
+    rows = app.js("document.querySelectorAll('#risksTable tr[data-rid]').length")
     ids = sorted(app.js("visibleRisks().map(r=>r.id)"))
     app.js("()=>{cfFilters={}; renderRisks();}")
     assert rows == 2 and ids == ["R1", "R3"], f"filtre référence O1 → rows={rows} ids={ids}"

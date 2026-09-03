@@ -293,7 +293,7 @@ def test_object_density_per_type(app):
     app.goto("objects")
     r = app.js(OBJ_DENSITY)
     assert "dense" in r["firstCls"], "densité non appliquée au 1er type"
-    assert r["secondCls"] == "reg", "densité du 1er type déteint sur le 2e (pas indépendante)"
+    assert "dense" not in r["secondCls"] and "compact" not in r["secondCls"], "densité du 1er type déteint sur le 2e (pas indépendante)"
     assert r["secondActive"] == "comfortable", "2e type : contrôle non revenu à Confort"
     assert "dense" in r["backCls"], "densité du 1er type non conservée au retour"
     assert r["storedFirst"] == "dense", "densité du 1er type non mémorisée sous objects.<code>"
@@ -324,11 +324,11 @@ PLACEMENT = r"""
   // Verrou : tenter de reléguer le libellé au détail est ignoré.
   setColPlacement(tk, 'cf:' + na, 'detail');
   out.labelStillInline = colPlacement(tk, 'cf:' + na);
-  // Vue mémorisée par table.
+  // Vue mémorisée par table (défaut Maître·détail : purge la clé ; 'table' explicite la stocke).
   out.viewDefault = tableView(tk);
-  setTableView(tk, 'master_detail'); out.viewSet = tableView(tk);
+  setTableView(tk, 'table'); out.viewSet = tableView(tk);
   out.viewStored = ((analyse.extensions.display||{}).view||{})[tk];
-  setTableView(tk, 'table'); out.viewReset = tableView(tk);
+  setTableView(tk, 'master_detail'); out.viewReset = tableView(tk);
   out.viewKeyCleared = ((analyse.extensions.display||{}).view||{})[tk] === undefined;
   // Risques : le libellé (risk) est verrouillé en ligne.
   out.risksLabelKey = labelColKey('risks');
@@ -353,10 +353,10 @@ def test_column_placement_model(app):
     assert r["afterDetail"]["placement"] == "detail" and r["afterDetail"]["storedHasKey"]
     # Verrou du libellé.
     assert r["labelStillInline"] == "inline", "le libellé ne doit pas pouvoir passer au détail"
-    # Vue mémorisée par table.
-    assert r["viewDefault"] == "table" and r["viewSet"] == "master_detail"
-    assert r["viewStored"] == "master_detail"
-    assert r["viewReset"] == "table" and r["viewKeyCleared"], "retour à 'table' doit purger la clé"
+    # Vue mémorisée par table (défaut = Maître·détail).
+    assert r["viewDefault"] == "master_detail" and r["viewSet"] == "table"
+    assert r["viewStored"] == "table"
+    assert r["viewReset"] == "master_detail" and r["viewKeyCleared"], "retour au défaut Maître·détail doit purger la clé"
     # Risques : libellé verrouillé en ligne.
     assert r["risksLabelKey"] == "risk" and r["risksLabelPlacement"] == "inline"
     assert not app.console_errors()
@@ -372,12 +372,14 @@ MASTER_DETAIL = r"""
   const inst = objectsOfType(code)[0];
   inst.values.motivation = 'Mot [rouge]{.red} ==surli== **gras**';
   inst.values.objectif_vise = '';
-  // bascule en Maître·détail
+  // bascule en Maître·détail (MD est le défaut ; re-rendu explicite pour intégrer les valeurs
+  // fraîchement éditées ci-dessus dans le tiroir)
   const vseg = document.querySelector('#view-objects .view-seg');
   vseg.querySelector('[data-view-mode="master_detail"]').click();
+  renderObjects();
   const tbl = document.querySelector('#view-objects table.reg');
   const out = {
-    stored: ((analyse.extensions.display||{}).view||{})[tk],
+    stored: (((analyse.extensions||{}).display||{}).view||{})[tk],
     isMd: tbl.classList.contains('md'),
     headerCols: [...tbl.querySelectorAll('thead th')].map(th => th.textContent.replace(/[▲▼]/g,'').trim()),
     inlineKeys: inlineColKeys(tk), detailKeys: detailColKeys(tk),
@@ -417,7 +419,7 @@ def test_object_master_detail_view(app):
     app.load("ebios-objets.rae.json")
     app.goto("objects")
     r = app.js(MASTER_DETAIL)
-    assert r["stored"] == "master_detail" and r["isMd"], "vue Maître·détail non activée"
+    assert r["isMd"], "vue Maître·détail non activée"   # MD = défaut : clic MD purge la clé (persistance couverte par test_column_placement_model)
     # Colonnes en ligne = tout sauf les colonnes « en détail ».
     assert "cf:motivation" not in r["inlineKeys"] and "cf:objectif_vise" not in r["inlineKeys"]
     assert "cf:motivation" in r["detailKeys"] and "cf:objectif_vise" in r["detailKeys"]
@@ -508,7 +510,7 @@ CARDS = r"""
   const vseg = document.querySelector('#view-objects .view-seg');
   vseg.querySelector('[data-view-mode="cards"]').click();
   const out = {
-    stored: ((analyse.extensions.display||{}).view||{})[tk],
+    stored: (((analyse.extensions||{}).display||{}).view||{})[tk],
     hasCardsBtn: [...vseg.querySelectorAll('button')].some(b => b.dataset.viewMode === 'cards'),
     densityShown: !!document.querySelector('#view-objects .density-seg'),
     gearPresent: !!document.querySelector('#view-objects .objcolgear'),
