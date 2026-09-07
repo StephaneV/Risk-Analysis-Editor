@@ -19,14 +19,24 @@ champs personnalisés, objets et références, etc.).
 |---|---|---|---|
 | [`demo-ebios-rm-systeme-d-information.rae.json`](demo-ebios-rm-systeme-d-information.rae.json) | 🇫🇷 fr | Inspiré d'**EBIOS RM** (ANSSI) et d'ISO 27005 | 12 risques · 11 mesures · 10 champs perso |
 | [`demo-ebios-rm-systeme-d-information-objets.rae.json`](demo-ebios-rm-systeme-d-information-objets.rae.json) | 🇫🇷 fr | Inspiré d'**EBIOS RM** (ANSSI) et d'ISO 27005 | 12 risques · 11 mesures · 15 champs perso · **5 types d'objets, 32 objets** |
+| [`demo-ebios-rm-systeme-d-information-objets-enrichi.rae.json`](demo-ebios-rm-systeme-d-information-objets-enrichi.rae.json) | 🇫🇷 fr | Inspiré d'**EBIOS RM** (ANSSI) et d'ISO 27005 | 12 risques · 11 mesures · 19 champs perso · **8 types d'objets, 46 objets** · rapport pré-paramétré |
 | [`demo-ebios-rm-information-system.rae.json`](demo-ebios-rm-information-system.rae.json) | 🇬🇧 en | **EBIOS RM**-inspired (ANSSI) & ISO 27005 | 12 risques · 11 mesures · 10 champs perso |
 | [`demo-aipd-sst.rae.json`](demo-aipd-sst.rae.json) | 🇫🇷 fr | Volet analyse de risques d'une **AIPD**, inspiré de la méthode **PIA de la CNIL** (RGPD art. 35) | 12 risques · 12 mesures · 9 champs perso |
 | [`demo-aipd-sst-objets.rae.json`](demo-aipd-sst-objets.rae.json) | 🇫🇷 fr | Volet analyse de risques d'une **AIPD**, inspiré de la méthode **PIA de la CNIL** (RGPD art. 35) | 12 risques · 12 mesures · 12 champs perso · **6 types d'objets, 32 objets** |
+| [`demo-aipd-sst-objets-enrichi.rae.json`](demo-aipd-sst-objets-enrichi.rae.json) | 🇫🇷 fr | Volet analyse de risques d'une **AIPD**, inspiré de la méthode **PIA de la CNIL** (RGPD art. 35) | 12 risques · 12 mesures · 19 champs perso · **7 types d'objets, 39 objets** · rapport pré-paramétré |
 | [`demo-dpia-ohs.rae.json`](demo-dpia-ohs.rae.json) | 🇬🇧 en | Risk-analysis part of a **DPIA**, inspired by the CNIL **PIA** method (GDPR art. 35) | 12 risques · 12 mesures · 9 champs perso |
 
 Les variantes **« avec objets »** (`…-objets`) reprennent l'analyse correspondante en y ajoutant un
 **inventaire d'objets** (valeurs métier, biens supports, parties prenantes…) reliés aux risques par
 des **champs de référence**, pour illustrer l'onglet *Objets* et les valeurs calculées par référence.
+
+Les variantes **« enrichies »** (`…-objets-enrichi`) vont plus loin dans le formalisme de la méthode
+et illustrent le plus grand nombre de fonctionnalités : modèle d'objets complété (pour l'AIPD :
+personnes concernées, destinataires, finalités, sous-traitants… ; pour EBIOS RM : socle de sécurité
+rattaché au Guide d'hygiène ANSSI, parties prenantes et sources avec **valeurs calculées**
+pertinence/menace/zone, scénarios stratégiques et opérationnels avec séquences **MITRE ATT&CK**),
+champs personnalisés rangés dans l'ordre de lecture de la méthode, et un **rapport pré-paramétré**
+(rubriques, sections répétées/annexes, radar…). Ces variantes ont été **générées par IA**.
 
 ## Ouvrir un exemple
 
