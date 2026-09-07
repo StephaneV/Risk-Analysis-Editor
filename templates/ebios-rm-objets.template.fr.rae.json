@@ -1,0 +1,2474 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "Modèle EBIOS RM enrichi (objets)",
+    "description": "Squelette d'analyse **EBIOS RM (ANSSI)** avec **types d'objets** et **champs personnalisés** préconfigurés (valeurs métier, biens supports, événements redoutés, socle de sécurité, sources de risque, parties prenantes, scénarios stratégiques et opérationnels) et un **rapport pré-paramétré**.\n\nÀ compléter : instances d'objets (ateliers 1–4), puis risques, mesures et liens (traitement, atelier 5).",
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "methodology_reference": "EBIOS Risk Manager (ANSSI)",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "kind": "template"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Vraisemblance",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Minime",
+          "description": "Vraisemblance minime : le scénario paraît difficilement réalisable ; la source de risque est peu susceptible d'agir ou le mode opératoire est très difficile à mettre en œuvre."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "Vraisemblance significative : le scénario paraît possible ; la source de risque peut agir et le mode opératoire reste réalisable avec un effort modéré."
+        },
+        {
+          "value": 3,
+          "label": "Forte",
+          "description": "Vraisemblance forte : le scénario a de bonnes chances de se produire ; la source de risque est motivée et outillée, le mode opératoire est réalisable sans difficulté majeure."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "Vraisemblance maximale : le scénario va très probablement se produire, voire de façon récurrente ; le mode opératoire est aisé et la source de risque déterminée."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Gravité",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Mineure",
+          "description": "Gravité mineure : aucun impact opérationnel notable ni sur la sécurité des personnes et des biens. L'organisation surmonte la situation sans difficulté."
+        },
+        {
+          "value": 2,
+          "label": "Significative",
+          "description": "Gravité significative : dégradation des performances de l'activité, sans impact sur la sécurité des personnes et des biens. L'organisation surmonte la situation malgré quelques difficultés (mode dégradé)."
+        },
+        {
+          "value": 3,
+          "label": "Grave",
+          "description": "Gravité grave : forte dégradation des performances de l'activité, avec d'éventuels impacts significatifs sur la sécurité des personnes et des biens. L'organisation ne surmonte la situation qu'avec de sérieuses difficultés (mode très dégradé)."
+        },
+        {
+          "value": 4,
+          "label": "Critique",
+          "description": "Gravité critique : incapacité de l'organisation à assurer tout ou partie de son activité, avec d'éventuels impacts graves sur la sécurité des personnes et des biens. La survie de l'organisation peut être menacée."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "faible",
+        "label": "Faible",
+        "score_min": 1,
+        "score_max": 3,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque faible : acceptable en l'état au regard des critères d'acceptation du risque ; à surveiller lors des revues."
+      },
+      {
+        "code": "modere",
+        "label": "Modéré",
+        "score_min": 4,
+        "score_max": 6,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque modéré : tolérable sous conditions ; des mesures de réduction sont à envisager selon une analyse coût/bénéfice."
+      },
+      {
+        "code": "eleve",
+        "label": "Élevé",
+        "score_min": 7,
+        "score_max": 11,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque élevé : doit être traité ; des mesures de sécurité sont planifiées et suivies pour le ramener à un niveau acceptable."
+      },
+      {
+        "code": "critique",
+        "label": "Critique",
+        "score_min": 12,
+        "score_max": 16,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque critique : inacceptable au regard des critères d'acceptation du risque ; traitement prioritaire et immédiat requis."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels",
+        "en": "Frameworks",
+        "it": "Riferimenti"
+      },
+      "items": [
+        {
+          "code": "ebios-rm",
+          "label": {
+            "fr": "EBIOS RM",
+            "en": "EBIOS RM",
+            "it": "EBIOS RM"
+          },
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Méthode EBIOS Risk Manager de l'ANSSI pour apprécier et traiter les risques numériques par scénarios stratégiques et opérationnels",
+            "en": "ANSSI's EBIOS Risk Manager method to assess and treat digital risks through strategic and operational scenarios",
+            "it": "Metodo EBIOS Risk Manager dell'ANSSI per valutare e trattare i rischi digitali tramite scenari strategici e operativi"
+          }
+        },
+        {
+          "code": "iso-27005",
+          "label": {
+            "fr": "ISO 27005",
+            "en": "ISO 27005",
+            "it": "ISO 27005"
+          },
+          "color": "#4c7dff",
+          "description": {
+            "fr": "Norme internationale de gestion des risques liés à la sécurité de l'information, complémentaire à l'ISO 27001",
+            "en": "International standard for information security risk management, complementary to ISO 27001",
+            "it": "Norma internazionale di gestione dei rischi per la sicurezza delle informazioni, complementare alla ISO 27001"
+          }
+        },
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD",
+            "en": "GDPR",
+            "it": "GDPR"
+          },
+          "color": "#e25631",
+          "description": {
+            "fr": "Règlement européen encadrant le traitement des données à caractère personnel et les obligations de protection associées",
+            "en": "European regulation governing the processing of personal data and the associated protection obligations",
+            "it": "Regolamento europeo che disciplina il trattamento dei dati personali e i relativi obblighi di protezione"
+          }
+        },
+        {
+          "code": "nis2",
+          "label": {
+            "fr": "NIS2",
+            "en": "NIS2",
+            "it": "NIS2"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Directive européenne renforçant la cybersécurité des entités essentielles et importantes et leurs obligations de gestion des risques",
+            "en": "European directive strengthening the cybersecurity of essential and important entities and their risk management obligations",
+            "it": "Direttiva europea che rafforza la cibersicurezza dei soggetti essenziali e importanti e i loro obblighi di gestione dei rischi"
+          }
+        },
+        {
+          "code": "pssi",
+          "label": {
+            "fr": "PSSI",
+            "en": "ISSP",
+            "it": "PSSI"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Politique de sécurité du système d'information définissant les règles et objectifs de sécurité de l'organisation",
+            "en": "Information system security policy defining the organisation's security rules and objectives",
+            "it": "Politica di sicurezza del sistema informativo che definisce le regole e gli obiettivi di sicurezza dell'organizzazione"
+          }
+        }
+      ]
+    },
+    {
+      "code": "perimetre",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Périmètre",
+        "en": "Scope",
+        "it": "Ambito"
+      },
+      "items": [
+        {
+          "code": "si-metier",
+          "label": {
+            "fr": "SI métier",
+            "en": "Business IS",
+            "it": "SI di business"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "hebergement",
+          "label": {
+            "fr": "Hébergement",
+            "en": "Hosting",
+            "it": "Hosting"
+          },
+          "color": "#10ac84"
+        },
+        {
+          "code": "postes",
+          "label": {
+            "fr": "Postes de travail",
+            "en": "Workstations",
+            "it": "Postazioni di lavoro"
+          },
+          "color": "#ee5253"
+        },
+        {
+          "code": "interco",
+          "label": {
+            "fr": "Interconnexions partenaires",
+            "en": "Partner interconnections",
+            "it": "Interconnessioni con partner"
+          },
+          "color": "#f39c12"
+        }
+      ]
+    },
+    {
+      "code": "socle_securite",
+      "target": "analysis",
+      "type": "textarea",
+      "label": {
+        "fr": "Socle de sécurité de référence",
+        "en": "Reference security baseline",
+        "it": "Base di sicurezza di riferimento"
+      },
+      "order": 3
+    },
+    {
+      "code": "recevabilite",
+      "target": "analysis",
+      "type": "textarea",
+      "label": {
+        "fr": "Recevabilité de l'étude",
+        "en": "Study admissibility",
+        "it": "Ammissibilità dello studio"
+      },
+      "order": 4
+    },
+    {
+      "code": "vm_impactees",
+      "type": "reference",
+      "object_type": "valeur_metier",
+      "multiple": true,
+      "label": {
+        "fr": "Valeurs métier impactées",
+        "en": "Business values impacted",
+        "it": "Valori aziendali impattati"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 1
+    },
+    {
+      "code": "biens_concernes",
+      "type": "reference",
+      "object_type": "bien_support",
+      "multiple": true,
+      "label": {
+        "fr": "Biens supports concernés",
+        "en": "Supporting assets involved",
+        "it": "Beni di supporto coinvolti"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 2
+    },
+    {
+      "code": "evenements",
+      "type": "reference",
+      "object_type": "evenement_redoute",
+      "multiple": true,
+      "label": {
+        "fr": "Événements redoutés",
+        "en": "Feared events",
+        "it": "Eventi temuti"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 3
+    },
+    {
+      "code": "impacts",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 4,
+      "label": {
+        "fr": "Impacts redoutés",
+        "en": "Feared impacts",
+        "it": "Impatti temuti"
+      },
+      "items": [
+        {
+          "code": "financier",
+          "label": {
+            "fr": "Financier",
+            "en": "Financial",
+            "it": "Economico"
+          },
+          "color": "#b7950b",
+          "description": {
+            "fr": "Pertes financières directes ou indirectes : fraude, interruption d'activité, sanctions ou coûts de remédiation",
+            "en": "Direct or indirect financial losses: fraud, business interruption, penalties or remediation costs",
+            "it": "Perdite economiche dirette o indirette: frode, interruzione dell'attività, sanzioni o costi di rimedio"
+          }
+        },
+        {
+          "code": "juridique",
+          "label": {
+            "fr": "Juridique / RGPD",
+            "en": "Legal / GDPR",
+            "it": "Giuridico / GDPR"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Conséquences légales et réglementaires, notamment sanctions RGPD, contentieux ou manquements contractuels",
+            "en": "Legal and regulatory consequences, notably GDPR penalties, litigation or contractual breaches",
+            "it": "Conseguenze legali e normative, in particolare sanzioni GDPR, contenziosi o inadempienze contrattuali"
+          }
+        },
+        {
+          "code": "reputation",
+          "label": {
+            "fr": "Réputation",
+            "en": "Reputation",
+            "it": "Reputazione"
+          },
+          "color": "#e67e22",
+          "description": {
+            "fr": "Atteinte à l'image et à la confiance des clients, partenaires et du public envers l'organisation",
+            "en": "Damage to the image and trust of clients, partners and the public towards the organisation",
+            "it": "Danno all'immagine e alla fiducia di clienti, partner e pubblico verso l'organizzazione"
+          }
+        },
+        {
+          "code": "operationnel",
+          "label": {
+            "fr": "Opérationnel",
+            "en": "Operational",
+            "it": "Operativo"
+          },
+          "color": "#2980b9",
+          "description": {
+            "fr": "Perturbation des activités et processus métier : indisponibilité, dégradation de service ou perte de production",
+            "en": "Disruption of business activities and processes: unavailability, service degradation or production loss",
+            "it": "Perturbazione delle attività e dei processi aziendali: indisponibilità, degrado del servizio o perdita di produzione"
+          }
+        },
+        {
+          "code": "humain",
+          "label": {
+            "fr": "Humain",
+            "en": "Human",
+            "it": "Umano"
+          },
+          "color": "#c0392b",
+          "description": {
+            "fr": "Atteinte à la sécurité ou à l'intégrité des personnes, incluant les risques pour la santé et la sûreté",
+            "en": "Harm to the safety or integrity of individuals, including risks to health and physical safety",
+            "it": "Lesione della sicurezza o dell'integrità delle persone, compresi i rischi per la salute e l'incolumità"
+          }
+        },
+        {
+          "code": "donnees",
+          "label": {
+            "fr": "Données personnelles",
+            "en": "Personal data",
+            "it": "Dati personali"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Compromission de données personnelles : divulgation, altération ou perte affectant les personnes concernées",
+            "en": "Compromise of personal data: disclosure, alteration or loss affecting the data subjects",
+            "it": "Compromissione di dati personali: divulgazione, alterazione o perdita che colpisce gli interessati"
+          }
+        }
+      ]
+    },
+    {
+      "code": "sources_fiche",
+      "type": "reference",
+      "object_type": "source_risque",
+      "multiple": true,
+      "label": {
+        "fr": "Sources de risque",
+        "en": "Risk sources",
+        "it": "Fonti di rischio"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 5
+    },
+    {
+      "code": "niveau_source",
+      "target": "risk",
+      "type": "select",
+      "label": {
+        "fr": "Niveau de risque (source)",
+        "en": "Risk level (source)",
+        "it": "Livello di rischio (fonte)"
+      },
+      "filterable": true,
+      "items": [
+        {
+          "code": "faible",
+          "label": {
+            "fr": "Faible",
+            "en": "Low",
+            "it": "Basso"
+          }
+        },
+        {
+          "code": "moyen",
+          "label": {
+            "fr": "Moyen",
+            "en": "Medium",
+            "it": "Medio"
+          }
+        },
+        {
+          "code": "eleve",
+          "label": {
+            "fr": "Élevé",
+            "en": "High",
+            "it": "Elevato"
+          }
+        },
+        {
+          "code": "critique",
+          "label": {
+            "fr": "Critique",
+            "en": "Critical",
+            "it": "Critico"
+          }
+        }
+      ],
+      "order": 6
+    },
+    {
+      "code": "parties_prenantes",
+      "type": "reference",
+      "object_type": "partie_prenante",
+      "multiple": true,
+      "label": {
+        "fr": "Parties prenantes",
+        "en": "Stakeholders",
+        "it": "Parti interessate"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 7
+    },
+    {
+      "code": "scenario_strat",
+      "target": "risk",
+      "type": "reference",
+      "object_type": "scenario_strategique",
+      "multiple": true,
+      "label": {
+        "fr": "Scénario stratégique",
+        "en": "Strategic scenario",
+        "it": "Scenario strategico"
+      },
+      "filterable": true,
+      "order": 8
+    },
+    {
+      "code": "scenario_op",
+      "target": "risk",
+      "type": "reference",
+      "object_type": "scenario_operationnel",
+      "multiple": true,
+      "label": {
+        "fr": "Scénario opérationnel",
+        "en": "Operational scenario",
+        "it": "Scenario operativo"
+      },
+      "filterable": true,
+      "order": 9
+    },
+    {
+      "code": "justification",
+      "target": "cotation",
+      "type": "textarea",
+      "order": 1,
+      "label": {
+        "fr": "Justification",
+        "en": "Justification",
+        "it": "Motivazione"
+      },
+      "description": {
+        "fr": "Justification de la cotation : choix de la vraisemblance et de la gravité.",
+        "en": "Rationale for the assessment: choice of likelihood and severity.",
+        "it": "Motivazione della valutazione: scelta di verosimiglianza e gravità."
+      }
+    },
+    {
+      "code": "date_cotation",
+      "target": "cotation",
+      "type": "date",
+      "order": 2,
+      "label": {
+        "fr": "Date de cotation",
+        "en": "Assessment date",
+        "it": "Data di valutazione"
+      }
+    },
+    {
+      "code": "fonction",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Fonction de sécurité",
+        "en": "Security function",
+        "it": "Funzione di sicurezza"
+      },
+      "items": [
+        {
+          "code": "identifier",
+          "label": {
+            "fr": "Identifier",
+            "en": "Identify",
+            "it": "Identificare"
+          },
+          "color": "#34495e",
+          "description": {
+            "fr": "Comprendre le contexte, les actifs et les risques pour gouverner la cybersécurité (fonction Identify du NIST CSF)",
+            "en": "Understand context, assets and risks to govern cybersecurity (NIST CSF Identify function)",
+            "it": "Comprendere il contesto, gli asset e i rischi per governare la cibersicurezza (funzione Identify del NIST CSF)"
+          }
+        },
+        {
+          "code": "proteger",
+          "label": {
+            "fr": "Protéger",
+            "en": "Protect",
+            "it": "Proteggere"
+          },
+          "color": "#2980b9",
+          "description": {
+            "fr": "Mettre en place les mesures de protection limitant l'impact d'un incident (fonction Protect du NIST CSF)",
+            "en": "Implement safeguards to limit the impact of an incident (NIST CSF Protect function)",
+            "it": "Attuare le misure di protezione che limitano l'impatto di un incidente (funzione Protect del NIST CSF)"
+          }
+        },
+        {
+          "code": "detecter",
+          "label": {
+            "fr": "Détecter",
+            "en": "Detect",
+            "it": "Rilevare"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Identifier rapidement la survenue d'un événement de cybersécurité (fonction Detect du NIST CSF)",
+            "en": "Promptly identify the occurrence of a cybersecurity event (NIST CSF Detect function)",
+            "it": "Individuare rapidamente il verificarsi di un evento di cibersicurezza (funzione Detect del NIST CSF)"
+          }
+        },
+        {
+          "code": "repondre",
+          "label": {
+            "fr": "Répondre",
+            "en": "Respond",
+            "it": "Rispondere"
+          },
+          "color": "#e67e22",
+          "description": {
+            "fr": "Agir face à un incident détecté pour en contenir et réduire les effets (fonction Respond du NIST CSF)",
+            "en": "Act on a detected incident to contain and reduce its effects (NIST CSF Respond function)",
+            "it": "Agire di fronte a un incidente rilevato per contenerne e ridurne gli effetti (funzione Respond del NIST CSF)"
+          }
+        },
+        {
+          "code": "retablir",
+          "label": {
+            "fr": "Rétablir",
+            "en": "Recover",
+            "it": "Ripristinare"
+          },
+          "color": "#27ae60",
+          "description": {
+            "fr": "Restaurer les capacités et services altérés par un incident (fonction Recover du NIST CSF)",
+            "en": "Restore capabilities and services impaired by an incident (NIST CSF Recover function)",
+            "it": "Ripristinare le capacità e i servizi compromessi da un incidente (funzione Recover del NIST CSF)"
+          }
+        }
+      ]
+    },
+    {
+      "code": "domaine",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Domaine",
+        "en": "Domain",
+        "it": "Ambito"
+      },
+      "items": [
+        {
+          "code": "technique",
+          "label": {
+            "fr": "Technique",
+            "en": "Technical",
+            "it": "Tecnica"
+          },
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Mesure reposant sur des dispositifs technologiques : chiffrement, cloisonnement, journalisation ou contrôle d'accès",
+            "en": "Control based on technological means: encryption, segmentation, logging or access control",
+            "it": "Misura basata su dispositivi tecnologici: cifratura, segmentazione, registrazione dei log o controllo degli accessi"
+          }
+        },
+        {
+          "code": "organisationnel",
+          "label": {
+            "fr": "Organisationnel",
+            "en": "Organizational",
+            "it": "Organizzativo"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure relevant de la gouvernance et des procédures : politiques, sensibilisation, gestion des rôles et responsabilités",
+            "en": "Control relating to governance and procedures: policies, awareness, management of roles and responsibilities",
+            "it": "Misura di governance e di procedura: politiche, sensibilizzazione, gestione di ruoli e responsabilità"
+          }
+        },
+        {
+          "code": "physique",
+          "label": {
+            "fr": "Physique",
+            "en": "Physical",
+            "it": "Fisica"
+          },
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Mesure de sécurité physique protégeant locaux, équipements et supports contre les accès et sinistres",
+            "en": "Physical security control protecting premises, equipment and media against access and incidents",
+            "it": "Misura di sicurezza fisica a protezione di locali, apparecchiature e supporti da accessi e sinistri"
+          }
+        },
+        {
+          "code": "juridique",
+          "label": {
+            "fr": "Juridique",
+            "en": "Legal",
+            "it": "Giuridica"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure de nature contractuelle ou réglementaire : clauses, engagements de conformité et obligations de sous-traitance",
+            "en": "Control of a contractual or regulatory nature: clauses, compliance commitments and subcontracting obligations",
+            "it": "Misura di natura contrattuale o normativa: clausole, impegni di conformità e obblighi verso i fornitori"
+          }
+        }
+      ]
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "palette": "red-orange-yellow-green",
+      "step": 5,
+      "order": 3,
+      "label": {
+        "fr": "Avancement",
+        "en": "Progress",
+        "it": "Avanzamento"
+      }
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Effet sur le risque",
+        "en": "Effect on risk",
+        "it": "Effetto sul rischio"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood",
+            "it": "Riduce la verosimiglianza"
+          },
+          "color": "#2980b9",
+          "description": {
+            "fr": "Mesure diminuant la probabilité qu'un scénario de risque se réalise",
+            "en": "Control reducing the likelihood of a risk scenario occurring",
+            "it": "Misura che riduce la probabilità che uno scenario di rischio si realizzi"
+          }
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité",
+            "en": "Reduces severity",
+            "it": "Riduce la gravità"
+          },
+          "color": "#e67e22",
+          "description": {
+            "fr": "Mesure limitant l'ampleur des conséquences si le scénario de risque se produit",
+            "en": "Control limiting the severity of consequences should the risk scenario occur",
+            "it": "Misura che limita l'entità delle conseguenze se lo scenario di rischio si verifica"
+          }
+        },
+        {
+          "code": "detecte",
+          "label": {
+            "fr": "Détecte",
+            "en": "Detects",
+            "it": "Rileva"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure permettant de repérer la survenue du scénario de risque afin de réagir",
+            "en": "Control enabling detection of the risk scenario's occurrence in order to react",
+            "it": "Misura che consente di rilevare il verificarsi dello scenario di rischio per potervi reagire"
+          }
+        },
+        {
+          "code": "transfere",
+          "label": {
+            "fr": "Transfère",
+            "en": "Transfers",
+            "it": "Trasferisce"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure reportant tout ou partie du risque vers un tiers, par assurance ou externalisation",
+            "en": "Control transferring all or part of the risk to a third party, through insurance or outsourcing",
+            "it": "Misura che trasferisce in tutto o in parte il rischio a un terzo, tramite assicurazione o esternalizzazione"
+          }
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "object_types": [
+    {
+      "code": "valeur_metier",
+      "label": {
+        "fr": "Valeur métier",
+        "en": "Business value",
+        "it": "Valore aziendale"
+      },
+      "id_prefix": "VM",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Name",
+            "it": "Nome"
+          }
+        },
+        {
+          "code": "nature",
+          "type": "select",
+          "label": {
+            "fr": "Nature",
+            "en": "Nature",
+            "it": "Natura"
+          },
+          "items": [
+            {
+              "code": "processus",
+              "label": {
+                "fr": "Processus",
+                "en": "Process",
+                "it": "Processo"
+              }
+            },
+            {
+              "code": "information",
+              "label": {
+                "fr": "Information",
+                "en": "Information",
+                "it": "Informazione"
+              }
+            }
+          ]
+        },
+        {
+          "code": "responsable",
+          "type": "text",
+          "label": {
+            "fr": "Entité / dépositaire",
+            "en": "Entity / custodian",
+            "it": "Entità / depositario"
+          }
+        },
+        {
+          "code": "besoin_d",
+          "type": "scale",
+          "label": {
+            "fr": "Disponibilité",
+            "en": "Availability",
+            "it": "Disponibilità"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Critique",
+                "en": "Critical",
+                "it": "Critico"
+              },
+              "color": "#d64545"
+            }
+          ]
+        },
+        {
+          "code": "besoin_i",
+          "type": "scale",
+          "label": {
+            "fr": "Intégrité",
+            "en": "Integrity",
+            "it": "Integrità"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Critique",
+                "en": "Critical",
+                "it": "Critico"
+              },
+              "color": "#d64545"
+            }
+          ]
+        },
+        {
+          "code": "besoin_c",
+          "type": "scale",
+          "label": {
+            "fr": "Confidentialité",
+            "en": "Confidentiality",
+            "it": "Riservatezza"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Critique",
+                "en": "Critical",
+                "it": "Critico"
+              },
+              "color": "#d64545"
+            }
+          ]
+        },
+        {
+          "code": "besoin_p",
+          "type": "scale",
+          "label": {
+            "fr": "Preuve / Traçabilité",
+            "en": "Proof / Traceability",
+            "it": "Prova / Tracciabilità"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Critique",
+                "en": "Critical",
+                "it": "Critico"
+              },
+              "color": "#d64545"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "bien_support",
+      "label": {
+        "fr": "Bien support",
+        "en": "Supporting asset",
+        "it": "Bene di supporto"
+      },
+      "id_prefix": "BS",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Name",
+            "it": "Nome"
+          }
+        },
+        {
+          "code": "type",
+          "type": "select",
+          "label": {
+            "fr": "Type",
+            "en": "Type",
+            "it": "Tipo"
+          },
+          "items": [
+            {
+              "code": "materiel",
+              "label": {
+                "fr": "Matériel",
+                "en": "Hardware",
+                "it": "Materiale"
+              }
+            },
+            {
+              "code": "logiciel",
+              "label": {
+                "fr": "Logiciel",
+                "en": "Software",
+                "it": "Software"
+              }
+            },
+            {
+              "code": "reseau",
+              "label": {
+                "fr": "Réseau",
+                "en": "Network",
+                "it": "Rete"
+              }
+            },
+            {
+              "code": "personnel",
+              "label": {
+                "fr": "Personnel",
+                "en": "Staff",
+                "it": "Personale"
+              }
+            },
+            {
+              "code": "site",
+              "label": {
+                "fr": "Site / local",
+                "en": "Site / premises",
+                "it": "Sito / locale"
+              }
+            },
+            {
+              "code": "organisation",
+              "label": {
+                "fr": "Organisation",
+                "en": "Organization",
+                "it": "Organizzazione"
+              }
+            },
+            {
+              "code": "canal",
+              "label": {
+                "fr": "Canal",
+                "en": "Channel",
+                "it": "Canale"
+              }
+            }
+          ]
+        },
+        {
+          "code": "responsable",
+          "type": "text",
+          "label": {
+            "fr": "Responsable",
+            "en": "Owner",
+            "it": "Responsabile"
+          }
+        },
+        {
+          "code": "valeurs_soutenues",
+          "type": "reference",
+          "object_type": "valeur_metier",
+          "multiple": true,
+          "label": {
+            "fr": "Valeurs métier soutenues",
+            "en": "Business values supported",
+            "it": "Valori aziendali sostenuti"
+          }
+        }
+      ]
+    },
+    {
+      "code": "evenement_redoute",
+      "label": {
+        "fr": "Événement redouté",
+        "en": "Feared event",
+        "it": "Evento temuto"
+      },
+      "id_prefix": "ER",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Name",
+            "it": "Nome"
+          }
+        },
+        {
+          "code": "valeur_ciblee",
+          "type": "reference",
+          "object_type": "valeur_metier",
+          "multiple": false,
+          "label": {
+            "fr": "Valeur métier ciblée",
+            "en": "Targeted business value",
+            "it": "Valore aziendale preso di mira"
+          },
+          "required": true
+        },
+        {
+          "code": "criteres",
+          "type": "tags",
+          "multiple": true,
+          "label": {
+            "fr": "Critères de sécurité impactés",
+            "en": "Security criteria impacted",
+            "it": "Criteri di sicurezza impattati"
+          },
+          "items": [
+            {
+              "code": "D",
+              "label": {
+                "fr": "Disponibilité",
+                "en": "Availability",
+                "it": "Disponibilità"
+              },
+              "color": "#2980b9"
+            },
+            {
+              "code": "I",
+              "label": {
+                "fr": "Intégrité",
+                "en": "Integrity",
+                "it": "Integrità"
+              },
+              "color": "#16a085"
+            },
+            {
+              "code": "C",
+              "label": {
+                "fr": "Confidentialité",
+                "en": "Confidentiality",
+                "it": "Riservatezza"
+              },
+              "color": "#8e44ad"
+            },
+            {
+              "code": "P",
+              "label": {
+                "fr": "Preuve / Traçabilité",
+                "en": "Proof / Traceability",
+                "it": "Prova / Tracciabilità"
+              },
+              "color": "#e67e22"
+            }
+          ]
+        },
+        {
+          "code": "gravite",
+          "type": "scale",
+          "label": {
+            "fr": "Gravité",
+            "en": "Severity",
+            "it": "Gravità"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Mineure",
+                "en": "Minor",
+                "it": "Minore"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Significative",
+                "en": "Significant",
+                "it": "Significativa"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Grave",
+                "en": "Serious",
+                "it": "Grave"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Critique",
+                "en": "Critical",
+                "it": "Critico"
+              },
+              "color": "#d64545"
+            }
+          ]
+        },
+        {
+          "code": "impacts",
+          "type": "textarea",
+          "label": {
+            "fr": "Impacts redoutés",
+            "en": "Feared impacts",
+            "it": "Impatti temuti"
+          }
+        },
+        {
+          "code": "impact_type",
+          "type": "select",
+          "label": {
+            "fr": "Type d'impact",
+            "en": "Impact type",
+            "it": "Tipo di impatto"
+          },
+          "items": [
+            {
+              "code": "reglementaire",
+              "label": {
+                "fr": "Réglementaire",
+                "en": "Regulatory",
+                "it": "Normativo"
+              }
+            },
+            {
+              "code": "operationnel",
+              "label": {
+                "fr": "Opérationnel",
+                "en": "Operational",
+                "it": "Operativo"
+              }
+            },
+            {
+              "code": "humain",
+              "label": {
+                "fr": "Humain",
+                "en": "Human",
+                "it": "Umano"
+              }
+            },
+            {
+              "code": "financier",
+              "label": {
+                "fr": "Financier",
+                "en": "Financial",
+                "it": "Economico"
+              }
+            },
+            {
+              "code": "reputationnel",
+              "label": {
+                "fr": "Réputationnel",
+                "en": "Reputational",
+                "it": "Reputazionale"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "exigence_socle",
+      "label": {
+        "fr": "Exigence du socle de sécurité",
+        "en": "Security baseline requirement",
+        "it": "Requisito della base di sicurezza"
+      },
+      "id_prefix": "EX",
+      "name_attr": "exigence",
+      "attributes": [
+        {
+          "code": "exigence",
+          "type": "text",
+          "label": {
+            "fr": "Exigence",
+            "en": "Requirement",
+            "it": "Requisito"
+          }
+        },
+        {
+          "code": "statut",
+          "type": "select",
+          "label": {
+            "fr": "Statut",
+            "en": "Status",
+            "it": "Stato"
+          },
+          "items": [
+            {
+              "code": "applique",
+              "label": {
+                "fr": "Appliqué",
+                "en": "Applied",
+                "it": "Applicato"
+              }
+            },
+            {
+              "code": "partiel",
+              "label": {
+                "fr": "Partiel",
+                "en": "Partial",
+                "it": "Parziale"
+              }
+            },
+            {
+              "code": "non_applique",
+              "label": {
+                "fr": "Non appliqué",
+                "en": "Not applied",
+                "it": "Non applicato"
+              }
+            }
+          ]
+        },
+        {
+          "code": "reference",
+          "type": "text",
+          "label": {
+            "fr": "Référence",
+            "en": "Reference",
+            "it": "Riferimento"
+          }
+        },
+        {
+          "code": "ecart",
+          "type": "textarea",
+          "label": {
+            "fr": "Écart constaté",
+            "en": "Gap identified",
+            "it": "Scostamento rilevato"
+          }
+        },
+        {
+          "code": "remediation",
+          "type": "textarea",
+          "label": {
+            "fr": "Remédiation",
+            "en": "Remediation",
+            "it": "Rimedio"
+          }
+        }
+      ]
+    },
+    {
+      "code": "source_risque",
+      "label": {
+        "fr": "Source de risque",
+        "en": "Risk source",
+        "it": "Fonte di rischio"
+      },
+      "id_prefix": "SR",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Name",
+            "it": "Nome"
+          }
+        },
+        {
+          "code": "profil",
+          "type": "select",
+          "label": {
+            "fr": "Profil",
+            "en": "Profile",
+            "it": "Profilo"
+          },
+          "items": [
+            {
+              "code": "crime_organise",
+              "label": {
+                "fr": "Crime organisé",
+                "en": "Organized crime",
+                "it": "Criminalità organizzata"
+              }
+            },
+            {
+              "code": "interne_malveillant",
+              "label": {
+                "fr": "Interne malveillant",
+                "en": "Malicious insider",
+                "it": "Insider doloso"
+              }
+            },
+            {
+              "code": "amateur",
+              "label": {
+                "fr": "Amateur",
+                "en": "Amateur",
+                "it": "Dilettante"
+              }
+            },
+            {
+              "code": "activiste_ideologique",
+              "label": {
+                "fr": "Activiste idéologique",
+                "en": "Ideological activist",
+                "it": "Attivista ideologico"
+              }
+            },
+            {
+              "code": "etatique",
+              "label": {
+                "fr": "Étatique",
+                "en": "State-sponsored",
+                "it": "Statale"
+              }
+            },
+            {
+              "code": "concurrent",
+              "label": {
+                "fr": "Concurrent",
+                "en": "Competitor",
+                "it": "Concorrente"
+              }
+            },
+            {
+              "code": "vengeur",
+              "label": {
+                "fr": "Vengeur",
+                "en": "Avenger",
+                "it": "Vendicatore"
+              }
+            }
+          ]
+        },
+        {
+          "code": "description",
+          "type": "textarea",
+          "label": {
+            "fr": "Description",
+            "en": "Description",
+            "it": "Descrizione"
+          }
+        },
+        {
+          "code": "objectif_vise",
+          "type": "textarea",
+          "label": {
+            "fr": "Objectif visé",
+            "en": "Target objective",
+            "it": "Obiettivo"
+          }
+        },
+        {
+          "code": "motivation",
+          "type": "textarea",
+          "label": {
+            "fr": "Motivation",
+            "en": "Motivation",
+            "it": "Motivazione"
+          }
+        },
+        {
+          "code": "ressources",
+          "type": "scale",
+          "label": {
+            "fr": "Ressources",
+            "en": "Resources",
+            "it": "Risorse"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Moyen",
+                "en": "Medium",
+                "it": "Medio"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              },
+              "color": "#e6862e"
+            }
+          ]
+        },
+        {
+          "code": "motivation_niv",
+          "type": "scale",
+          "label": {
+            "fr": "Niveau de motivation",
+            "en": "Motivation level",
+            "it": "Livello di motivazione"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Moyen",
+                "en": "Medium",
+                "it": "Medio"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              },
+              "color": "#e6862e"
+            }
+          ]
+        },
+        {
+          "code": "activite_niv",
+          "type": "scale",
+          "label": {
+            "fr": "Niveau d'activité",
+            "en": "Activity level",
+            "it": "Livello di attività"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Moyen",
+                "en": "Medium",
+                "it": "Medio"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              },
+              "color": "#e6862e"
+            }
+          ]
+        },
+        {
+          "code": "pertinence_score",
+          "type": "computed",
+          "label": {
+            "fr": "Pertinence (SR/OV)",
+            "en": "Relevance (RS/TO)",
+            "it": "Pertinenza (FR/OP)"
+          },
+          "expression": "=cf.motivation_niv+cf.ressources+cf.activite_niv",
+          "result_type": "integer"
+        },
+        {
+          "code": "niveau_pertinence",
+          "type": "computed",
+          "label": {
+            "fr": "Niveau de pertinence",
+            "en": "Relevance level",
+            "it": "Livello di pertinenza"
+          },
+          "expression": "=IF(cf.pertinence_score>=8,\"Élevée\",IF(cf.pertinence_score>=5,\"Moyenne\",\"Faible\"))",
+          "result_type": "text"
+        },
+        {
+          "code": "retenue",
+          "type": "boolean",
+          "label": {
+            "fr": "Source retenue",
+            "en": "Source selected",
+            "it": "Fonte selezionata"
+          }
+        },
+        {
+          "code": "justification",
+          "type": "textarea",
+          "label": {
+            "fr": "Justification de la décision",
+            "en": "Decision rationale",
+            "it": "Motivazione della decisione"
+          }
+        }
+      ]
+    },
+    {
+      "code": "partie_prenante",
+      "label": {
+        "fr": "Partie prenante de l'écosystème",
+        "en": "Ecosystem stakeholder",
+        "it": "Parte interessata dell'ecosistema"
+      },
+      "id_prefix": "PP",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Name",
+            "it": "Nome"
+          }
+        },
+        {
+          "code": "categorie",
+          "type": "select",
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category",
+            "it": "Categoria"
+          },
+          "items": [
+            {
+              "code": "client",
+              "label": {
+                "fr": "Client",
+                "en": "Customer",
+                "it": "Cliente"
+              }
+            },
+            {
+              "code": "fournisseur",
+              "label": {
+                "fr": "Fournisseur",
+                "en": "Supplier",
+                "it": "Fornitore"
+              }
+            },
+            {
+              "code": "prestataire",
+              "label": {
+                "fr": "Prestataire",
+                "en": "Third party",
+                "it": "Fornitore"
+              }
+            },
+            {
+              "code": "partenaire",
+              "label": {
+                "fr": "Partenaire",
+                "en": "Partner",
+                "it": "Partner"
+              }
+            },
+            {
+              "code": "autorite",
+              "label": {
+                "fr": "Autorité",
+                "en": "Authority",
+                "it": "Autorità"
+              }
+            }
+          ]
+        },
+        {
+          "code": "description",
+          "type": "textarea",
+          "label": {
+            "fr": "Description",
+            "en": "Description",
+            "it": "Descrizione"
+          }
+        },
+        {
+          "code": "dependance",
+          "type": "scale",
+          "label": {
+            "fr": "Dépendance",
+            "en": "Dependence",
+            "it": "Dipendenza"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Fort",
+                "en": "High",
+                "it": "Alto"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Maximal",
+                "en": "Maximum",
+                "it": "Massimo"
+              },
+              "color": "#d64545"
+            }
+          ]
+        },
+        {
+          "code": "penetration",
+          "type": "scale",
+          "label": {
+            "fr": "Pénétration",
+            "en": "Penetration",
+            "it": "Penetrazione"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Fort",
+                "en": "High",
+                "it": "Alto"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Maximal",
+                "en": "Maximum",
+                "it": "Massimo"
+              },
+              "color": "#d64545"
+            }
+          ]
+        },
+        {
+          "code": "maturite",
+          "type": "scale",
+          "label": {
+            "fr": "Maturité cyber",
+            "en": "Cyber maturity",
+            "it": "Maturità cyber"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#d64545"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Fort",
+                "en": "High",
+                "it": "Alto"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Maximal",
+                "en": "Maximum",
+                "it": "Massimo"
+              },
+              "color": "#2e9e5b"
+            }
+          ]
+        },
+        {
+          "code": "confiance",
+          "type": "scale",
+          "label": {
+            "fr": "Confiance",
+            "en": "Trust",
+            "it": "Fiducia"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              },
+              "color": "#d64545"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Modéré",
+                "en": "Moderate",
+                "it": "Moderato"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Fort",
+                "en": "High",
+                "it": "Alto"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Maximal",
+                "en": "Maximum",
+                "it": "Massimo"
+              },
+              "color": "#2e9e5b"
+            }
+          ]
+        },
+        {
+          "code": "menace",
+          "type": "computed",
+          "label": {
+            "fr": "Niveau de menace",
+            "en": "Threat level",
+            "it": "Livello di minaccia"
+          },
+          "expression": "=(cf.dependance*cf.penetration)/(cf.maturite*cf.confiance)",
+          "result_type": "number",
+          "decimals": 2,
+          "alert": {
+            "max": 2,
+            "color": "#c0505a"
+          }
+        },
+        {
+          "code": "zone",
+          "type": "computed",
+          "label": {
+            "fr": "Zone",
+            "en": "Zone",
+            "it": "Zona"
+          },
+          "expression": "=IF(cf.menace>=4,\"Danger\",IF(cf.menace>=2,\"Contrôle\",\"Veille\"))",
+          "result_type": "text"
+        }
+      ]
+    },
+    {
+      "code": "scenario_strategique",
+      "label": {
+        "fr": "Scénario stratégique",
+        "en": "Strategic scenario",
+        "it": "Scenario strategico"
+      },
+      "id_prefix": "SS",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Intitulé",
+            "en": "Title",
+            "it": "Titolo"
+          }
+        },
+        {
+          "code": "source",
+          "type": "reference",
+          "label": {
+            "fr": "Source de risque",
+            "en": "Risk source",
+            "it": "Fonte di rischio"
+          },
+          "object_type": "source_risque",
+          "multiple": false
+        },
+        {
+          "code": "evenement",
+          "type": "reference",
+          "label": {
+            "fr": "Événement redouté",
+            "en": "Feared event",
+            "it": "Evento temuto"
+          },
+          "object_type": "evenement_redoute",
+          "multiple": false
+        },
+        {
+          "code": "valeur_metier",
+          "type": "reference",
+          "label": {
+            "fr": "Valeur métier visée",
+            "en": "Targeted business value",
+            "it": "Valore di business"
+          },
+          "object_type": "valeur_metier",
+          "multiple": false
+        },
+        {
+          "code": "parties_prenantes",
+          "type": "reference",
+          "label": {
+            "fr": "Parties prenantes de l'écosystème",
+            "en": "Ecosystem stakeholders",
+            "it": "Parti interessate dell'ecosistema"
+          },
+          "object_type": "partie_prenante",
+          "multiple": true
+        },
+        {
+          "code": "chemin",
+          "type": "textarea",
+          "label": {
+            "fr": "Chemin d'attaque",
+            "en": "Attack path",
+            "it": "Percorso d'attacco"
+          }
+        },
+        {
+          "code": "ecosysteme",
+          "type": "textarea",
+          "label": {
+            "fr": "Écosystème concerné",
+            "en": "Ecosystem involved",
+            "it": "Ecosistema coinvolto"
+          }
+        },
+        {
+          "code": "mesures_ecosysteme",
+          "type": "textarea",
+          "label": {
+            "fr": "Mesures sur l'écosystème",
+            "en": "Ecosystem measures",
+            "it": "Misure sull'ecosistema"
+          }
+        },
+        {
+          "code": "option_traitement",
+          "type": "select",
+          "label": {
+            "fr": "Option de traitement",
+            "en": "Treatment option",
+            "it": "Opzione di trattamento"
+          },
+          "items": [
+            {
+              "code": "reduire",
+              "label": {
+                "fr": "Réduire",
+                "en": "Reduce",
+                "it": "Ridurre"
+              }
+            },
+            {
+              "code": "partager",
+              "label": {
+                "fr": "Partager",
+                "en": "Share",
+                "it": "Condividere"
+              }
+            },
+            {
+              "code": "eviter",
+              "label": {
+                "fr": "Éviter",
+                "en": "Avoid",
+                "it": "Evitare"
+              }
+            },
+            {
+              "code": "accepter",
+              "label": {
+                "fr": "Accepter",
+                "en": "Accept",
+                "it": "Accettare"
+              }
+            }
+          ]
+        },
+        {
+          "code": "gravite",
+          "type": "scale",
+          "label": {
+            "fr": "Gravité retenue",
+            "en": "Severity retained",
+            "it": "Gravità adottata"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Mineure",
+                "en": "Minor",
+                "it": "Minore"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Significative",
+                "en": "Significant",
+                "it": "Significativa"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Grave",
+                "en": "Serious",
+                "it": "Grave"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Critique",
+                "en": "Critical",
+                "it": "Critico"
+              },
+              "color": "#d64545"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "scenario_operationnel",
+      "label": {
+        "fr": "Scénario opérationnel",
+        "en": "Operational scenario",
+        "it": "Scenario operativo"
+      },
+      "id_prefix": "SO",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Intitulé",
+            "en": "Title",
+            "it": "Titolo"
+          }
+        },
+        {
+          "code": "scenario_strategique",
+          "type": "reference",
+          "label": {
+            "fr": "Scénario stratégique",
+            "en": "Strategic scenario",
+            "it": "Scenario strategico"
+          },
+          "object_type": "scenario_strategique",
+          "multiple": false
+        },
+        {
+          "code": "chemin",
+          "type": "textarea",
+          "label": {
+            "fr": "Mode opératoire",
+            "en": "Modus operandi",
+            "it": "Modus operandi"
+          }
+        },
+        {
+          "code": "mitre",
+          "type": "textarea",
+          "label": {
+            "fr": "Séquence MITRE ATT&CK",
+            "en": "MITRE ATT&CK sequence",
+            "it": "Sequenza MITRE ATT&CK"
+          }
+        },
+        {
+          "code": "faisabilite",
+          "type": "select",
+          "label": {
+            "fr": "Faisabilité",
+            "en": "Feasibility",
+            "it": "Fattibilità"
+          },
+          "items": [
+            {
+              "code": "difficile",
+              "label": {
+                "fr": "Difficile",
+                "en": "Difficult",
+                "it": "Difficile"
+              }
+            },
+            {
+              "code": "moyenne",
+              "label": {
+                "fr": "Moyenne",
+                "en": "Medium",
+                "it": "Media"
+              }
+            },
+            {
+              "code": "elevee",
+              "label": {
+                "fr": "Élevée",
+                "en": "High",
+                "it": "Alta"
+              }
+            }
+          ]
+        },
+        {
+          "code": "vraisemblance",
+          "type": "scale",
+          "label": {
+            "fr": "Vraisemblance globale",
+            "en": "Overall likelihood",
+            "it": "Verosimiglianza complessiva"
+          },
+          "items": [
+            {
+              "value": 1,
+              "label": {
+                "fr": "Peu vraisemblable",
+                "en": "Unlikely",
+                "it": "Poco verosimile"
+              },
+              "color": "#2e9e5b"
+            },
+            {
+              "value": 2,
+              "label": {
+                "fr": "Vraisemblable",
+                "en": "Likely",
+                "it": "Verosimile"
+              },
+              "color": "#e0b93a"
+            },
+            {
+              "value": 3,
+              "label": {
+                "fr": "Très vraisemblable",
+                "en": "Very likely",
+                "it": "Molto verosimile"
+              },
+              "color": "#e6862e"
+            },
+            {
+              "value": 4,
+              "label": {
+                "fr": "Quasi-certain",
+                "en": "Almost certain",
+                "it": "Quasi certo"
+              },
+              "color": "#d64545"
+            }
+          ]
+        },
+        {
+          "code": "maillon_limitant",
+          "type": "text",
+          "label": {
+            "fr": "Maillon limitant",
+            "en": "Limiting factor",
+            "it": "Anello limitante"
+          }
+        },
+        {
+          "code": "niveau_risque",
+          "type": "select",
+          "label": {
+            "fr": "Niveau de risque",
+            "en": "Risk level",
+            "it": "Livello di rischio"
+          },
+          "items": [
+            {
+              "code": "faible",
+              "label": {
+                "fr": "Faible",
+                "en": "Low",
+                "it": "Basso"
+              }
+            },
+            {
+              "code": "moyen",
+              "label": {
+                "fr": "Moyen",
+                "en": "Medium",
+                "it": "Medio"
+              }
+            },
+            {
+              "code": "eleve",
+              "label": {
+                "fr": "Élevé",
+                "en": "High",
+                "it": "Elevato"
+              }
+            },
+            {
+              "code": "critique",
+              "label": {
+                "fr": "Critique",
+                "en": "Critical",
+                "it": "Critico"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objects": [],
+  "risks": [],
+  "measures": [],
+  "treatments": [],
+  "extensions": {
+    "display": {
+      "report": {
+        "scope": "all",
+        "orientation": "portrait",
+        "cover": {
+          "on": true
+        },
+        "toc": {
+          "on": true
+        },
+        "iteration": {
+          "by": "none",
+          "sort": "alpha"
+        },
+        "sections": [
+          {
+            "id": "metadata",
+            "on": true,
+            "zone": "header"
+          },
+          {
+            "id": "presentation",
+            "on": true,
+            "zone": "header"
+          },
+          {
+            "id": "objects",
+            "on": true,
+            "zone": "header",
+            "view": "detail"
+          },
+          {
+            "id": "matrix_ir",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "matrix_initial",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "matrix_residual",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "summary_counts",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "summary_distribution",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "matrix_traj",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "radar",
+            "on": true,
+            "zone": "appendix",
+            "dim": "vm_impactees",
+            "metric": "max",
+            "eval": "both-over"
+          },
+          {
+            "id": "risks_table",
+            "on": true,
+            "zone": "repeated",
+            "columns": [
+              "id",
+              "risk",
+              "cat",
+              "cf:scenario_strat",
+              "cf:niveau_source",
+              "initial",
+              "residual",
+              "measures"
+            ]
+          },
+          {
+            "id": "risks_detail",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "measures_table",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "measures_detail",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "links_table",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "links_detail",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "action_plan",
+            "on": true,
+            "zone": "appendix",
+            "view": "due_date"
+          },
+          {
+            "id": "grid_axes",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "grid_criticality",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "field_glossary",
+            "on": true,
+            "zone": "appendix"
+          }
+        ]
+      }
+    }
+  }
+}

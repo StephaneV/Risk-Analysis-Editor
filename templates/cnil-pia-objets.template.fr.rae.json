@@ -1,0 +1,1868 @@
+{
+  "format": "risk-analysis-editor",
+  "version": "1.0",
+  "metadata": {
+    "title": "Modèle AIPD (CNIL PIA) enrichi (objets)",
+    "description": "Squelette d'**analyse d'impact (AIPD / PIA CNIL)** avec **types d'objets** et **champs personnalisés** préconfigurés (personnes concernées, données personnelles, finalités, sous-traitants, destinataires, supports, sources de risque) et un **rapport pré-paramétré**.\n\nÀ compléter : instances d'objets (contexte), puis risques, mesures et liens (traitement).",
+    "author": "",
+    "organization": "",
+    "scope": "",
+    "methodology_reference": "Méthode PIA de la CNIL (RGPD art. 35)",
+    "revision": "1.0",
+    "status": "draft",
+    "language": "fr",
+    "kind": "template"
+  },
+  "grid": {
+    "vertical_axis": {
+      "label": "Vraisemblance",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Négligeable",
+          "description": "Il ne semble pas possible pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+        },
+        {
+          "value": 2,
+          "label": "Limitée",
+          "description": "Il semble difficile pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+        },
+        {
+          "value": 3,
+          "label": "Importante",
+          "description": "Il semble possible pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "Il semble extrêmement facile pour les sources de risques retenues de réaliser la menace en s'appuyant sur les propriétés des supports."
+        }
+      ]
+    },
+    "horizontal_axis": {
+      "label": "Gravité",
+      "levels": [
+        {
+          "value": 1,
+          "label": "Négligeable",
+          "description": "Les personnes concernées ne seront pas impactées ou pourraient connaître quelques désagréments, qu'elles surmonteront sans difficulté."
+        },
+        {
+          "value": 2,
+          "label": "Limitée",
+          "description": "Les personnes concernées pourraient connaître des désagréments significatifs, qu'elles pourront surmonter malgré quelques difficultés."
+        },
+        {
+          "value": 3,
+          "label": "Importante",
+          "description": "Les personnes concernées pourraient connaître des conséquences significatives, qu'elles devraient pouvoir surmonter, mais avec de réelles et sérieuses difficultés."
+        },
+        {
+          "value": 4,
+          "label": "Maximale",
+          "description": "Les personnes concernées pourraient connaître des conséquences significatives, voire irrémédiables, qu'elles pourraient ne pas surmonter."
+        }
+      ]
+    },
+    "score": {
+      "method": "product"
+    },
+    "criticality_levels": [
+      {
+        "code": "negligeable",
+        "label": "Négligeable",
+        "score_min": 1,
+        "score_max": 3,
+        "color": "#2e9e5b",
+        "acceptance": "acceptable",
+        "order": 1,
+        "description": "Risque négligeable : acceptable en l'état ; les mesures existantes suffisent, à réexaminer lors des revues de l'AIPD."
+      },
+      {
+        "code": "limite",
+        "label": "Limité",
+        "score_min": 4,
+        "score_max": 6,
+        "color": "#e0b93a",
+        "acceptance": "tolerable",
+        "order": 2,
+        "description": "Risque limité : tolérable ; des mesures complémentaires sont recommandées selon une analyse coût/bénéfice."
+      },
+      {
+        "code": "important",
+        "label": "Important",
+        "score_min": 7,
+        "score_max": 11,
+        "color": "#e6862e",
+        "acceptance": "to_treat",
+        "order": 3,
+        "description": "Risque important : doit être traité ; des mesures doivent être planifiées et suivies avant ou pendant la mise en œuvre du traitement."
+      },
+      {
+        "code": "maximal",
+        "label": "Maximal",
+        "score_min": 12,
+        "score_max": 16,
+        "color": "#d64545",
+        "acceptance": "unacceptable",
+        "order": 4,
+        "description": "Risque maximal : inacceptable ; traitement prioritaire requis. En l'absence de réduction suffisante, une consultation préalable de la CNIL peut être nécessaire."
+      }
+    ]
+  },
+  "custom_fields": [
+    {
+      "code": "referentiels",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Référentiels",
+        "en": "Frameworks",
+        "it": "Riferimenti"
+      },
+      "items": [
+        {
+          "code": "rgpd",
+          "label": {
+            "fr": "RGPD",
+            "en": "GDPR",
+            "it": "GDPR"
+          },
+          "color": "#e25631",
+          "description": {
+            "fr": "Règlement général sur la protection des données, socle des obligations de traitement des données de santé des salariés",
+            "en": "General Data Protection Regulation, the basis for obligations when processing employees' health data",
+            "it": "Regolamento generale sulla protezione dei dati, base degli obblighi di trattamento dei dati sanitari dei dipendenti"
+          }
+        },
+        {
+          "code": "pia-cnil",
+          "label": {
+            "fr": "Méthode PIA (CNIL)",
+            "en": "CNIL PIA method",
+            "it": "Metodo PIA (CNIL)"
+          },
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Méthode d'analyse d'impact de la CNIL, structurant l'appréciation des risques sur la vie privée des personnes concernées",
+            "en": "CNIL's privacy impact assessment method, structuring the evaluation of risks to the data subjects' privacy",
+            "it": "Metodo di valutazione d'impatto della CNIL, che struttura la valutazione dei rischi per la vita privata degli interessati"
+          }
+        },
+        {
+          "code": "code-travail",
+          "label": {
+            "fr": "Code du travail",
+            "en": "French Labour Code",
+            "it": "Codice del lavoro"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Dispositions du Code du travail encadrant la santé au travail et le suivi médical des salariés",
+            "en": "French Labour Code provisions governing occupational health and the medical monitoring of employees",
+            "it": "Disposizioni del Codice del lavoro che disciplinano la medicina del lavoro e la sorveglianza sanitaria dei dipendenti"
+          }
+        },
+        {
+          "code": "secret-medical",
+          "label": {
+            "fr": "Secret médical",
+            "en": "Medical confidentiality",
+            "it": "Segreto medico"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Obligation légale de confidentialité protégeant les informations médicales relatives aux personnes concernées",
+            "en": "Legal confidentiality obligation protecting medical information relating to the data subjects",
+            "it": "Obbligo legale di riservatezza a tutela delle informazioni mediche relative agli interessati"
+          }
+        },
+        {
+          "code": "hds",
+          "label": {
+            "fr": "Hébergeur HDS",
+            "en": "HDS health data host",
+            "it": "Hosting HDS"
+          },
+          "color": "#f39c12",
+          "description": {
+            "fr": "Certification exigée pour héberger des données de santé, garantissant la sécurité et la confidentialité de l'hébergement",
+            "en": "Certification required to host health data, guaranteeing the security and confidentiality of the hosting",
+            "it": "Certificazione richiesta per l'hosting di dati sanitari, che garantisce la sicurezza e la riservatezza dell'hosting"
+          }
+        }
+      ]
+    },
+    {
+      "code": "perimetre",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Périmètre",
+        "en": "Scope",
+        "it": "Ambito"
+      },
+      "items": [
+        {
+          "code": "dmst",
+          "label": {
+            "fr": "Logiciel métier (DMST)",
+            "en": "Health record software",
+            "it": "Software gestionale (cartella sanitaria)"
+          },
+          "color": "#2e86de"
+        },
+        {
+          "code": "messagerie",
+          "label": {
+            "fr": "Messagerie",
+            "en": "Email",
+            "it": "Posta elettronica"
+          },
+          "color": "#10ac84"
+        },
+        {
+          "code": "serveurs",
+          "label": {
+            "fr": "Serveurs",
+            "en": "Servers",
+            "it": "Server"
+          },
+          "color": "#6c3483"
+        },
+        {
+          "code": "postes",
+          "label": {
+            "fr": "Postes de travail",
+            "en": "Workstations",
+            "it": "Postazioni di lavoro"
+          },
+          "color": "#ee5253"
+        },
+        {
+          "code": "impressions",
+          "label": {
+            "fr": "Imprimantes & papier",
+            "en": "Printers & paper",
+            "it": "Stampanti e carta"
+          },
+          "color": "#b7950b"
+        },
+        {
+          "code": "reseau",
+          "label": {
+            "fr": "Réseau",
+            "en": "Network",
+            "it": "Rete"
+          },
+          "color": "#34495e"
+        },
+        {
+          "code": "sauvegardes",
+          "label": {
+            "fr": "Sauvegardes",
+            "en": "Backups",
+            "it": "Backup"
+          },
+          "color": "#27ae60"
+        }
+      ]
+    },
+    {
+      "code": "finalites",
+      "target": "analysis",
+      "type": "reference",
+      "object_type": "finalite",
+      "multiple": true,
+      "label": {
+        "fr": "Finalités",
+        "en": "Purposes",
+        "it": "Finalità"
+      },
+      "order": 3
+    },
+    {
+      "code": "personnes_concernees",
+      "target": "analysis",
+      "type": "reference",
+      "object_type": "personne_concernee",
+      "multiple": true,
+      "label": {
+        "fr": "Personnes concernées",
+        "en": "Data subjects",
+        "it": "Interessati"
+      },
+      "order": 4
+    },
+    {
+      "code": "destinataires",
+      "target": "analysis",
+      "type": "reference",
+      "object_type": "destinataire",
+      "multiple": true,
+      "label": {
+        "fr": "Destinataires",
+        "en": "Recipients",
+        "it": "Destinatari"
+      },
+      "order": 5
+    },
+    {
+      "code": "sous_traitants",
+      "target": "analysis",
+      "type": "reference",
+      "object_type": "sous_traitant",
+      "multiple": true,
+      "label": {
+        "fr": "Sous-traitants",
+        "en": "Processors",
+        "it": "Responsabili del trattamento"
+      },
+      "order": 6
+    },
+    {
+      "code": "droits_personnes",
+      "target": "analysis",
+      "type": "tags",
+      "multiple": true,
+      "label": {
+        "fr": "Droits des personnes assurés",
+        "en": "Data subject rights ensured",
+        "it": "Diritti degli interessati garantiti"
+      },
+      "items": [
+        {
+          "code": "information",
+          "label": {
+            "fr": "Information",
+            "en": "Information",
+            "it": "Informazione"
+          }
+        },
+        {
+          "code": "acces",
+          "label": {
+            "fr": "Accès",
+            "en": "Access",
+            "it": "Accesso"
+          }
+        },
+        {
+          "code": "rectification",
+          "label": {
+            "fr": "Rectification",
+            "en": "Rectification",
+            "it": "Rettifica"
+          }
+        },
+        {
+          "code": "opposition",
+          "label": {
+            "fr": "Opposition",
+            "en": "Objection",
+            "it": "Opposizione"
+          }
+        },
+        {
+          "code": "effacement",
+          "label": {
+            "fr": "Effacement",
+            "en": "Erasure",
+            "it": "Cancellazione"
+          }
+        },
+        {
+          "code": "portabilite",
+          "label": {
+            "fr": "Portabilité",
+            "en": "Portability",
+            "it": "Portabilità"
+          }
+        },
+        {
+          "code": "limitation",
+          "label": {
+            "fr": "Limitation",
+            "en": "Restriction",
+            "it": "Limitazione"
+          }
+        }
+      ],
+      "order": 7
+    },
+    {
+      "code": "mesures_droits",
+      "target": "analysis",
+      "type": "textarea",
+      "label": {
+        "fr": "Modalités d'exercice des droits",
+        "en": "How rights are exercised",
+        "it": "Modalità di esercizio dei diritti"
+      },
+      "order": 8
+    },
+    {
+      "code": "avis_personnes",
+      "target": "analysis",
+      "type": "textarea",
+      "label": {
+        "fr": "Avis des personnes concernées",
+        "en": "Data subjects' opinion",
+        "it": "Parere degli interessati"
+      },
+      "order": 9
+    },
+    {
+      "code": "avis_dpo",
+      "target": "analysis",
+      "type": "textarea",
+      "label": {
+        "fr": "Avis du DPO",
+        "en": "DPO opinion",
+        "it": "Parere del DPO"
+      },
+      "order": 10
+    },
+    {
+      "code": "decision",
+      "target": "analysis",
+      "type": "select",
+      "label": {
+        "fr": "Décision de validation",
+        "en": "Validation decision",
+        "it": "Decisione di convalida"
+      },
+      "items": [
+        {
+          "code": "validee",
+          "label": {
+            "fr": "Validée",
+            "en": "Approved",
+            "it": "Approvata"
+          }
+        },
+        {
+          "code": "validee_reserve",
+          "label": {
+            "fr": "Validée avec réserves",
+            "en": "Approved with reservations",
+            "it": "Approvata con riserve"
+          }
+        },
+        {
+          "code": "a_revoir",
+          "label": {
+            "fr": "À revoir",
+            "en": "To be revised",
+            "it": "Da rivedere"
+          }
+        },
+        {
+          "code": "refusee",
+          "label": {
+            "fr": "Refusée",
+            "en": "Rejected",
+            "it": "Respinta"
+          }
+        }
+      ],
+      "order": 11
+    },
+    {
+      "code": "sources_fiche",
+      "type": "reference",
+      "object_type": "source_risque",
+      "multiple": true,
+      "label": {
+        "fr": "Sources de risque",
+        "en": "Risk sources",
+        "it": "Fonti di rischio"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 1
+    },
+    {
+      "code": "supports_fiche",
+      "type": "reference",
+      "object_type": "support",
+      "multiple": true,
+      "label": {
+        "fr": "Supports concernés",
+        "en": "Supporting assets",
+        "it": "Supporti interessati"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 2
+    },
+    {
+      "code": "donnees_concernees",
+      "type": "reference",
+      "object_type": "donnee_personnelle",
+      "multiple": true,
+      "label": {
+        "fr": "Données concernées",
+        "en": "Data involved",
+        "it": "Dati coinvolti"
+      },
+      "target": "risk",
+      "filterable": true,
+      "order": 3
+    },
+    {
+      "code": "impacts",
+      "target": "risk",
+      "type": "tags",
+      "multiple": true,
+      "order": 4,
+      "label": {
+        "fr": "Impacts sur les personnes",
+        "en": "Impacts on data subjects",
+        "it": "Impatti sulle persone"
+      },
+      "items": [
+        {
+          "code": "secret",
+          "label": {
+            "fr": "Atteinte au secret médical",
+            "en": "Breach of medical confidentiality",
+            "it": "Violazione del segreto medico"
+          },
+          "color": "#c0392b",
+          "description": {
+            "fr": "Événement redouté où la divulgation d'informations médicales rompt le secret médical des personnes concernées",
+            "en": "Feared event where disclosure of medical information breaches the data subjects' medical confidentiality",
+            "it": "Evento temuto in cui la divulgazione di informazioni mediche viola il segreto medico degli interessati"
+          }
+        },
+        {
+          "code": "vie-privee",
+          "label": {
+            "fr": "Atteinte à la vie privée",
+            "en": "Invasion of privacy",
+            "it": "Violazione della vita privata"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Atteinte à la vie privée des personnes concernées par l'exposition d'informations sensibles les concernant",
+            "en": "Harm to the data subjects' privacy through exposure of sensitive information about them",
+            "it": "Violazione della vita privata degli interessati dovuta all'esposizione di informazioni sensibili che li riguardano"
+          }
+        },
+        {
+          "code": "discrimination",
+          "label": {
+            "fr": "Discrimination à l'emploi",
+            "en": "Employment discrimination",
+            "it": "Discriminazione nel lavoro"
+          },
+          "color": "#d35400",
+          "description": {
+            "fr": "Usage détourné des données de santé conduisant à une discrimination à l'emploi des personnes concernées",
+            "en": "Misuse of health data leading to employment discrimination against the data subjects",
+            "it": "Uso improprio dei dati sanitari che porta a una discriminazione nel lavoro degli interessati"
+          }
+        },
+        {
+          "code": "moral",
+          "label": {
+            "fr": "Préjudice moral",
+            "en": "Emotional harm",
+            "it": "Danno morale"
+          },
+          "color": "#e67e22",
+          "description": {
+            "fr": "Préjudice moral subi par les personnes concernées : stress, sentiment d'atteinte ou perte de confiance",
+            "en": "Non-material harm suffered by the data subjects: stress, sense of intrusion or loss of trust",
+            "it": "Danno morale subito dagli interessati: stress, senso di lesione o perdita di fiducia"
+          }
+        },
+        {
+          "code": "suivi",
+          "label": {
+            "fr": "Perte de suivi médical",
+            "en": "Loss of medical follow-up",
+            "it": "Perdita della sorveglianza sanitaria"
+          },
+          "color": "#2980b9",
+          "description": {
+            "fr": "Perte ou altération des données compromettant la continuité du suivi médical des personnes concernées",
+            "en": "Loss or alteration of data compromising the continuity of the data subjects' medical monitoring",
+            "it": "Perdita o alterazione dei dati che compromette la continuità della sorveglianza sanitaria degli interessati"
+          }
+        },
+        {
+          "code": "financier",
+          "label": {
+            "fr": "Préjudice financier",
+            "en": "Financial harm",
+            "it": "Danno economico"
+          },
+          "color": "#b7950b",
+          "description": {
+            "fr": "Préjudice financier pour les personnes concernées, par exemple refus d'assurance ou d'emploi lié à leurs données",
+            "en": "Financial harm to the data subjects, for example denial of insurance or employment linked to their data",
+            "it": "Danno economico per gli interessati, ad esempio rifiuto di assicurazione o di impiego legato ai loro dati"
+          }
+        }
+      ]
+    },
+    {
+      "code": "nature",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Nature de la mesure",
+        "en": "Type of measure",
+        "it": "Natura della misura"
+      },
+      "items": [
+        {
+          "code": "juridique",
+          "label": {
+            "fr": "Juridique",
+            "en": "Legal",
+            "it": "Giuridica"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure de nature contractuelle ou réglementaire : clauses de confidentialité, engagements de conformité et encadrement de la sous-traitance",
+            "en": "Control of a contractual or regulatory nature: confidentiality clauses, compliance commitments and subcontracting framework",
+            "it": "Misura di natura contrattuale o normativa: clausole di riservatezza, impegni di conformità e disciplina del trattamento affidato a terzi"
+          }
+        },
+        {
+          "code": "organisationnelle",
+          "label": {
+            "fr": "Organisationnelle",
+            "en": "Organizational",
+            "it": "Organizzativa"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure de gouvernance et de procédure : habilitations, sensibilisation du personnel et gestion des accès aux dossiers",
+            "en": "Governance and procedural control: authorisations, staff awareness and management of access to records",
+            "it": "Misura di governance e di procedura: autorizzazioni, sensibilizzazione del personale e gestione degli accessi alle cartelle"
+          }
+        },
+        {
+          "code": "technique",
+          "label": {
+            "fr": "Technique",
+            "en": "Technical",
+            "it": "Tecnica"
+          },
+          "color": "#3a63d6",
+          "description": {
+            "fr": "Mesure technologique protégeant les données de santé : chiffrement, journalisation, cloisonnement et contrôle d'accès",
+            "en": "Technological control protecting health data: encryption, logging, segmentation and access control",
+            "it": "Misura tecnologica a protezione dei dati sanitari: cifratura, registrazione dei log, segmentazione e controllo degli accessi"
+          }
+        },
+        {
+          "code": "physique",
+          "label": {
+            "fr": "Physique",
+            "en": "Physical",
+            "it": "Fisica"
+          },
+          "color": "#7f8c8d",
+          "description": {
+            "fr": "Mesure de sécurité physique protégeant locaux, dossiers et supports médicaux contre les accès non autorisés",
+            "en": "Physical security control protecting premises, records and medical media against unauthorised access",
+            "it": "Misura di sicurezza fisica a protezione di locali, cartelle e supporti medici da accessi non autorizzati"
+          }
+        }
+      ]
+    },
+    {
+      "code": "objectif",
+      "target": "measure",
+      "type": "tags",
+      "multiple": true,
+      "order": 2,
+      "label": {
+        "fr": "Objectif de sécurité",
+        "en": "Security objective",
+        "it": "Obiettivo di sicurezza"
+      },
+      "items": [
+        {
+          "code": "confidentialite",
+          "label": {
+            "fr": "Confidentialité",
+            "en": "Confidentiality",
+            "it": "Riservatezza"
+          },
+          "color": "#c0392b",
+          "description": {
+            "fr": "Garantir que les données de santé ne sont accessibles qu'aux personnes dûment habilitées",
+            "en": "Ensure health data is accessible only to duly authorised persons",
+            "it": "Garantire che i dati sanitari siano accessibili solo alle persone debitamente autorizzate"
+          }
+        },
+        {
+          "code": "integrite",
+          "label": {
+            "fr": "Intégrité",
+            "en": "Integrity",
+            "it": "Integrità"
+          },
+          "color": "#e67e22",
+          "description": {
+            "fr": "Préserver l'exactitude et l'intégrité des données de santé contre toute altération non autorisée",
+            "en": "Preserve the accuracy and integrity of health data against any unauthorised alteration",
+            "it": "Preservare l'esattezza e l'integrità dei dati sanitari da qualsiasi alterazione non autorizzata"
+          }
+        },
+        {
+          "code": "disponibilite",
+          "label": {
+            "fr": "Disponibilité",
+            "en": "Availability",
+            "it": "Disponibilità"
+          },
+          "color": "#27ae60",
+          "description": {
+            "fr": "Assurer l'accès aux données de santé au moment voulu par les personnes autorisées",
+            "en": "Ensure health data is available when needed to authorised persons",
+            "it": "Garantire l'accesso ai dati sanitari nel momento voluto dalle persone autorizzate"
+          }
+        },
+        {
+          "code": "tracabilite",
+          "label": {
+            "fr": "Traçabilité",
+            "en": "Traceability",
+            "it": "Tracciabilità"
+          },
+          "color": "#34495e",
+          "description": {
+            "fr": "Conserver la trace des accès et actions sur les données de santé afin de les imputer",
+            "en": "Retain a record of access and actions on health data to enable accountability",
+            "it": "Conservare la traccia degli accessi e delle azioni sui dati sanitari per poterli imputare"
+          }
+        },
+        {
+          "code": "minimisation",
+          "label": {
+            "fr": "Minimisation",
+            "en": "Minimization",
+            "it": "Minimizzazione"
+          },
+          "color": "#2980b9",
+          "description": {
+            "fr": "Limiter la collecte et la conservation des données de santé au strict nécessaire à la finalité",
+            "en": "Limit the collection and retention of health data to what is strictly necessary for the purpose",
+            "it": "Limitare la raccolta e la conservazione dei dati sanitari allo stretto necessario alla finalità"
+          }
+        },
+        {
+          "code": "droits",
+          "label": {
+            "fr": "Droits des personnes",
+            "en": "Data subject rights",
+            "it": "Diritti degli interessati"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Permettre l'exercice effectif des droits des personnes concernées : information, accès, rectification et opposition",
+            "en": "Enable effective exercise of the data subjects' rights: information, access, rectification and objection",
+            "it": "Consentire l'esercizio effettivo dei diritti degli interessati: informazione, accesso, rettifica e opposizione"
+          }
+        }
+      ]
+    },
+    {
+      "code": "avancement",
+      "target": "measure",
+      "type": "progress",
+      "palette": "red-orange-yellow-green",
+      "step": 5,
+      "order": 3,
+      "label": {
+        "fr": "Avancement",
+        "en": "Progress",
+        "it": "Avanzamento"
+      }
+    },
+    {
+      "code": "effet",
+      "target": "link",
+      "type": "tags",
+      "multiple": true,
+      "order": 1,
+      "label": {
+        "fr": "Effet sur le risque",
+        "en": "Effect on risk",
+        "it": "Effetto sul rischio"
+      },
+      "items": [
+        {
+          "code": "vraisemblance",
+          "label": {
+            "fr": "Réduit la vraisemblance",
+            "en": "Reduces likelihood",
+            "it": "Riduce la verosimiglianza"
+          },
+          "color": "#2980b9",
+          "description": {
+            "fr": "Mesure diminuant la probabilité que l'événement redouté se réalise",
+            "en": "Control reducing the likelihood of the feared event occurring",
+            "it": "Misura che riduce la probabilità che l'evento temuto si realizzi"
+          }
+        },
+        {
+          "code": "gravite",
+          "label": {
+            "fr": "Réduit la gravité",
+            "en": "Reduces severity",
+            "it": "Riduce la gravità"
+          },
+          "color": "#e67e22",
+          "description": {
+            "fr": "Mesure limitant l'ampleur des conséquences pour les personnes concernées si l'événement redouté survient",
+            "en": "Control limiting the severity of consequences for the data subjects should the feared event occur",
+            "it": "Misura che limita l'entità delle conseguenze per gli interessati se l'evento temuto si verifica"
+          }
+        },
+        {
+          "code": "detecte",
+          "label": {
+            "fr": "Détecte",
+            "en": "Detects",
+            "it": "Rileva"
+          },
+          "color": "#16a085",
+          "description": {
+            "fr": "Mesure permettant de repérer la survenue de l'événement redouté afin de réagir",
+            "en": "Control enabling detection of the feared event's occurrence in order to react",
+            "it": "Misura che consente di rilevare il verificarsi dell'evento temuto per potervi reagire"
+          }
+        },
+        {
+          "code": "transfere",
+          "label": {
+            "fr": "Transfère",
+            "en": "Transfers",
+            "it": "Trasferisce"
+          },
+          "color": "#8e44ad",
+          "description": {
+            "fr": "Mesure reportant tout ou partie du risque vers un tiers, par assurance ou externalisation",
+            "en": "Control transferring all or part of the risk to a third party, through insurance or outsourcing",
+            "it": "Misura che trasferisce in tutto o in parte il rischio a un terzo, tramite assicurazione o esternalizzazione"
+          }
+        }
+      ]
+    }
+  ],
+  "custom": {},
+  "object_types": [
+    {
+      "code": "personne_concernee",
+      "label": {
+        "fr": "Personne concernée",
+        "en": "Data subject",
+        "it": "Interessato"
+      },
+      "id_prefix": "PC",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Catégorie de personnes",
+            "en": "Category of persons",
+            "it": "Categoria di persone"
+          }
+        },
+        {
+          "code": "categorie",
+          "type": "select",
+          "label": {
+            "fr": "Type",
+            "en": "Type",
+            "it": "Tipo"
+          },
+          "items": [
+            {
+              "code": "salarie",
+              "label": {
+                "fr": "Salarié / travailleur suivi",
+                "en": "Employee / monitored worker",
+                "it": "Dipendente / lavoratore sorvegliato"
+              }
+            },
+            {
+              "code": "candidat",
+              "label": {
+                "fr": "Candidat / embauche",
+                "en": "Applicant / hiring",
+                "it": "Candidato / assunzione"
+              }
+            },
+            {
+              "code": "ancien",
+              "label": {
+                "fr": "Ancien travailleur",
+                "en": "Former worker",
+                "it": "Ex lavoratore"
+              }
+            },
+            {
+              "code": "interimaire",
+              "label": {
+                "fr": "Intérimaire / externe",
+                "en": "Temp / external",
+                "it": "Interinale / esterno"
+              }
+            },
+            {
+              "code": "personnel",
+              "label": {
+                "fr": "Personnel du service",
+                "en": "Service staff",
+                "it": "Personale del servizio"
+              }
+            }
+          ]
+        },
+        {
+          "code": "vulnerabilite",
+          "type": "select",
+          "label": {
+            "fr": "Personnes vulnérables",
+            "en": "Vulnerable persons",
+            "it": "Persone vulnerabili"
+          },
+          "items": [
+            {
+              "code": "oui",
+              "label": {
+                "fr": "Oui",
+                "en": "Yes",
+                "it": "Sì"
+              }
+            },
+            {
+              "code": "non",
+              "label": {
+                "fr": "Non",
+                "en": "No",
+                "it": "No"
+              }
+            }
+          ]
+        },
+        {
+          "code": "volume",
+          "type": "text",
+          "label": {
+            "fr": "Volume approximatif",
+            "en": "Approximate volume",
+            "it": "Volume approssimativo"
+          }
+        }
+      ]
+    },
+    {
+      "code": "donnee_personnelle",
+      "label": {
+        "fr": "Donnée personnelle",
+        "en": "Personal data",
+        "it": "Dato personale"
+      },
+      "id_prefix": "DP",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Catégorie de données",
+            "en": "Data category",
+            "it": "Categoria di dati"
+          }
+        },
+        {
+          "code": "categorie",
+          "type": "select",
+          "label": {
+            "fr": "Nature",
+            "en": "Nature",
+            "it": "Natura"
+          },
+          "items": [
+            {
+              "code": "identification",
+              "label": {
+                "fr": "Identification",
+                "en": "Identification",
+                "it": "Identificazione"
+              }
+            },
+            {
+              "code": "sante",
+              "label": {
+                "fr": "Santé",
+                "en": "Health",
+                "it": "Salute"
+              }
+            },
+            {
+              "code": "professionnelle",
+              "label": {
+                "fr": "Vie professionnelle",
+                "en": "Professional life",
+                "it": "Vita professionale"
+              }
+            },
+            {
+              "code": "connexion",
+              "label": {
+                "fr": "Connexion / journaux",
+                "en": "Connection / logs",
+                "it": "Connessione / log"
+              }
+            },
+            {
+              "code": "vie_personnelle",
+              "label": {
+                "fr": "Vie personnelle",
+                "en": "Personal life",
+                "it": "Vita personale"
+              }
+            }
+          ]
+        },
+        {
+          "code": "sensibilite",
+          "type": "select",
+          "label": {
+            "fr": "Sensibilité",
+            "en": "Sensitivity",
+            "it": "Sensibilità"
+          },
+          "items": [
+            {
+              "code": "ordinaire",
+              "label": {
+                "fr": "Ordinaire",
+                "en": "Ordinary",
+                "it": "Ordinario"
+              }
+            },
+            {
+              "code": "sensible",
+              "label": {
+                "fr": "Sensible (art. 9 RGPD)",
+                "en": "Sensitive (GDPR art. 9)",
+                "it": "Sensibile (art. 9 GDPR)"
+              }
+            },
+            {
+              "code": "particuliere",
+              "label": {
+                "fr": "Perception particulière",
+                "en": "Perceived as sensitive",
+                "it": "Percepito come sensibile"
+              }
+            }
+          ]
+        },
+        {
+          "code": "conservation",
+          "type": "text",
+          "label": {
+            "fr": "Durée de conservation",
+            "en": "Retention period",
+            "it": "Periodo di conservazione"
+          }
+        },
+        {
+          "code": "personnes",
+          "type": "reference",
+          "object_type": "personne_concernee",
+          "multiple": true,
+          "label": {
+            "fr": "Personnes concernées",
+            "en": "Data subjects",
+            "it": "Interessati"
+          }
+        },
+        {
+          "code": "destinataires",
+          "type": "reference",
+          "object_type": "destinataire",
+          "multiple": true,
+          "label": {
+            "fr": "Destinataires des données",
+            "en": "Data recipients",
+            "it": "Destinatari dei dati"
+          }
+        },
+        {
+          "code": "origine",
+          "type": "select",
+          "label": {
+            "fr": "Origine des données",
+            "en": "Data origin",
+            "it": "Origine dei dati"
+          },
+          "items": [
+            {
+              "code": "personne",
+              "label": {
+                "fr": "Collectée auprès de la personne",
+                "en": "Collected from the person",
+                "it": "Raccolto presso la persona"
+              }
+            },
+            {
+              "code": "tiers",
+              "label": {
+                "fr": "Obtenue d'un tiers",
+                "en": "Obtained from a third party",
+                "it": "Ottenuto da un terzo"
+              }
+            },
+            {
+              "code": "observation",
+              "label": {
+                "fr": "Produite par observation / examen",
+                "en": "Produced by observation / examination",
+                "it": "Prodotto tramite osservazione / esame"
+              }
+            }
+          ]
+        },
+        {
+          "code": "base_minimisation",
+          "type": "textarea",
+          "label": {
+            "fr": "Justification de la minimisation",
+            "en": "Minimization justification",
+            "it": "Giustificazione della minimizzazione"
+          }
+        }
+      ]
+    },
+    {
+      "code": "finalite",
+      "label": {
+        "fr": "Finalité",
+        "en": "Purpose",
+        "it": "Finalità"
+      },
+      "id_prefix": "FN",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Finalité",
+            "en": "Purpose",
+            "it": "Finalità"
+          }
+        },
+        {
+          "code": "base_legale",
+          "type": "select",
+          "label": {
+            "fr": "Base légale",
+            "en": "Legal basis",
+            "it": "Base giuridica"
+          },
+          "items": [
+            {
+              "code": "obligation_legale",
+              "label": {
+                "fr": "Obligation légale",
+                "en": "Legal obligation",
+                "it": "Obbligo legale"
+              }
+            },
+            {
+              "code": "mission_ip",
+              "label": {
+                "fr": "Mission d'intérêt public",
+                "en": "Public interest task",
+                "it": "Compito di interesse pubblico"
+              }
+            },
+            {
+              "code": "contrat",
+              "label": {
+                "fr": "Contrat",
+                "en": "Contract",
+                "it": "Contratto"
+              }
+            },
+            {
+              "code": "consentement",
+              "label": {
+                "fr": "Consentement",
+                "en": "Consent",
+                "it": "Consenso"
+              }
+            },
+            {
+              "code": "interet_legitime",
+              "label": {
+                "fr": "Intérêt légitime",
+                "en": "Legitimate interest",
+                "it": "Legittimo interesse"
+              }
+            }
+          ]
+        },
+        {
+          "code": "description",
+          "type": "textarea",
+          "label": {
+            "fr": "Description",
+            "en": "Description",
+            "it": "Descrizione"
+          }
+        },
+        {
+          "code": "donnees",
+          "type": "reference",
+          "object_type": "donnee_personnelle",
+          "multiple": true,
+          "label": {
+            "fr": "Données utilisées",
+            "en": "Data used",
+            "it": "Dati utilizzati"
+          }
+        },
+        {
+          "code": "sous_traitants",
+          "type": "reference",
+          "object_type": "sous_traitant",
+          "multiple": true,
+          "label": {
+            "fr": "Sous-traitants impliqués",
+            "en": "Processors involved",
+            "it": "Responsabili del trattamento coinvolti"
+          }
+        },
+        {
+          "code": "necessite_justifiee",
+          "type": "textarea",
+          "label": {
+            "fr": "Nécessité & proportionnalité",
+            "en": "Necessity & proportionality",
+            "it": "Necessità e proporzionalità"
+          }
+        }
+      ]
+    },
+    {
+      "code": "sous_traitant",
+      "label": {
+        "fr": "Sous-traitant",
+        "en": "Processor",
+        "it": "Responsabile del trattamento"
+      },
+      "id_prefix": "ST",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Sous-traitant",
+            "en": "Processor",
+            "it": "Responsabile del trattamento"
+          }
+        },
+        {
+          "code": "prestation",
+          "type": "text",
+          "label": {
+            "fr": "Prestation",
+            "en": "Service provided",
+            "it": "Prestazione"
+          }
+        },
+        {
+          "code": "hds",
+          "type": "boolean",
+          "label": {
+            "fr": "Hébergeur de données de santé (HDS) certifié",
+            "en": "Certified health-data host (HDS)",
+            "it": "Hosting di dati sanitari (HDS) certificato"
+          }
+        },
+        {
+          "code": "localisation",
+          "type": "text",
+          "label": {
+            "fr": "Localisation / transferts",
+            "en": "Location / transfers",
+            "it": "Ubicazione / trasferimenti"
+          }
+        },
+        {
+          "code": "garanties",
+          "type": "textarea",
+          "label": {
+            "fr": "Garanties (art. 28 RGPD)",
+            "en": "Safeguards (GDPR art. 28)",
+            "it": "Garanzie (art. 28 GDPR)"
+          }
+        },
+        {
+          "code": "donnees_traitees",
+          "type": "reference",
+          "object_type": "donnee_personnelle",
+          "multiple": true,
+          "label": {
+            "fr": "Données confiées",
+            "en": "Data entrusted",
+            "it": "Dati affidati"
+          }
+        },
+        {
+          "code": "transfert_hors_ue",
+          "type": "boolean",
+          "label": {
+            "fr": "Transfert hors-UE",
+            "en": "Non-EU transfer",
+            "it": "Trasferimento extra-UE"
+          }
+        }
+      ]
+    },
+    {
+      "code": "support",
+      "label": {
+        "fr": "Support",
+        "en": "Supporting asset",
+        "it": "Bene di supporto"
+      },
+      "id_prefix": "SP",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Support",
+            "en": "Supporting asset",
+            "it": "Bene di supporto"
+          }
+        },
+        {
+          "code": "type",
+          "type": "select",
+          "label": {
+            "fr": "Type",
+            "en": "Type",
+            "it": "Tipo"
+          },
+          "items": [
+            {
+              "code": "logiciel",
+              "label": {
+                "fr": "Logiciel",
+                "en": "Software",
+                "it": "Software"
+              }
+            },
+            {
+              "code": "materiel",
+              "label": {
+                "fr": "Matériel",
+                "en": "Hardware",
+                "it": "Materiale"
+              }
+            },
+            {
+              "code": "reseau",
+              "label": {
+                "fr": "Réseau",
+                "en": "Network",
+                "it": "Rete"
+              }
+            },
+            {
+              "code": "papier",
+              "label": {
+                "fr": "Papier",
+                "en": "Paper",
+                "it": "Carta"
+              }
+            },
+            {
+              "code": "personnel",
+              "label": {
+                "fr": "Personnel",
+                "en": "Staff",
+                "it": "Personale"
+              }
+            },
+            {
+              "code": "local",
+              "label": {
+                "fr": "Local",
+                "en": "Premises",
+                "it": "Locali"
+              }
+            },
+            {
+              "code": "canal",
+              "label": {
+                "fr": "Canal",
+                "en": "Channel",
+                "it": "Canale"
+              }
+            }
+          ]
+        },
+        {
+          "code": "responsable",
+          "type": "text",
+          "label": {
+            "fr": "Responsable",
+            "en": "Owner",
+            "it": "Responsabile"
+          }
+        },
+        {
+          "code": "donnees_portees",
+          "type": "reference",
+          "object_type": "donnee_personnelle",
+          "multiple": true,
+          "label": {
+            "fr": "Données portées",
+            "en": "Data carried",
+            "it": "Dati veicolati"
+          }
+        },
+        {
+          "code": "operateur",
+          "type": "reference",
+          "object_type": "sous_traitant",
+          "multiple": false,
+          "label": {
+            "fr": "Opérateur / hébergeur",
+            "en": "Operator / host",
+            "it": "Operatore / hosting"
+          }
+        },
+        {
+          "code": "finalites",
+          "type": "reference",
+          "object_type": "finalite",
+          "multiple": true,
+          "label": {
+            "fr": "Finalités servies",
+            "en": "Purposes served",
+            "it": "Finalità servite"
+          }
+        }
+      ]
+    },
+    {
+      "code": "source_risque",
+      "label": {
+        "fr": "Source de risque",
+        "en": "Risk source",
+        "it": "Fonte di rischio"
+      },
+      "id_prefix": "SR",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Source de risque",
+            "en": "Risk source",
+            "it": "Fonte di rischio"
+          }
+        },
+        {
+          "code": "categorie",
+          "type": "select",
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category",
+            "it": "Categoria"
+          },
+          "items": [
+            {
+              "code": "interne_malveillante",
+              "label": {
+                "fr": "Interne — malveillante",
+                "en": "Internal — malicious",
+                "it": "Interna — dolosa"
+              }
+            },
+            {
+              "code": "interne_accidentelle",
+              "label": {
+                "fr": "Interne — accidentelle",
+                "en": "Internal — accidental",
+                "it": "Interna — accidentale"
+              }
+            },
+            {
+              "code": "externe_humaine",
+              "label": {
+                "fr": "Externe — humaine",
+                "en": "External — human",
+                "it": "Esterna — umana"
+              }
+            },
+            {
+              "code": "non_humaine",
+              "label": {
+                "fr": "Source non humaine",
+                "en": "Non-human source",
+                "it": "Fonte non umana"
+              }
+            }
+          ]
+        },
+        {
+          "code": "motivation",
+          "type": "textarea",
+          "label": {
+            "fr": "Motivation / mode opératoire",
+            "en": "Motivation / modus operandi",
+            "it": "Motivazione / modus operandi"
+          }
+        },
+        {
+          "code": "pertinence",
+          "type": "select",
+          "label": {
+            "fr": "Pertinence",
+            "en": "Relevance",
+            "it": "Pertinenza"
+          },
+          "items": [
+            {
+              "code": "1",
+              "label": {
+                "fr": "1 — Faible",
+                "en": "1 — Low",
+                "it": "1 — Bassa"
+              }
+            },
+            {
+              "code": "2",
+              "label": {
+                "fr": "2 — Modéré",
+                "en": "2 — Moderate",
+                "it": "2 — Moderata"
+              }
+            },
+            {
+              "code": "3",
+              "label": {
+                "fr": "3 — Fort",
+                "en": "3 — High",
+                "it": "3 — Alta"
+              }
+            },
+            {
+              "code": "4",
+              "label": {
+                "fr": "4 — Maximal",
+                "en": "4 — Maximum",
+                "it": "4 — Massima"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "destinataire",
+      "label": {
+        "fr": "Destinataire",
+        "en": "Recipient",
+        "it": "Destinatario"
+      },
+      "id_prefix": "DEST",
+      "name_attr": "nom",
+      "attributes": [
+        {
+          "code": "nom",
+          "type": "text",
+          "label": {
+            "fr": "Destinataire",
+            "en": "Recipient",
+            "it": "Destinatario"
+          }
+        },
+        {
+          "code": "categorie",
+          "type": "select",
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category",
+            "it": "Categoria"
+          },
+          "items": [
+            {
+              "code": "interne",
+              "label": {
+                "fr": "Service interne / équipe pluridisciplinaire",
+                "en": "Internal service / multidisciplinary team",
+                "it": "Servizio interno / squadra multidisciplinare"
+              }
+            },
+            {
+              "code": "personne_concernee",
+              "label": {
+                "fr": "Personne concernée",
+                "en": "Data subject",
+                "it": "Interessato"
+              }
+            },
+            {
+              "code": "tiers_autorise",
+              "label": {
+                "fr": "Tiers autorisé",
+                "en": "Authorized third party",
+                "it": "Terzo autorizzato"
+              }
+            },
+            {
+              "code": "autorite",
+              "label": {
+                "fr": "Autorité / organisme public",
+                "en": "Authority / public body",
+                "it": "Autorità / ente pubblico"
+              }
+            },
+            {
+              "code": "sous_traitant",
+              "label": {
+                "fr": "Sous-traitant",
+                "en": "Processor",
+                "it": "Responsabile del trattamento"
+              }
+            },
+            {
+              "code": "autre_responsable",
+              "label": {
+                "fr": "Autre responsable de traitement",
+                "en": "Other controller",
+                "it": "Altro titolare del trattamento"
+              }
+            }
+          ]
+        },
+        {
+          "code": "finalite_transmission",
+          "type": "textarea",
+          "label": {
+            "fr": "Finalité de la transmission",
+            "en": "Purpose of the transfer",
+            "it": "Finalità della trasmissione"
+          }
+        },
+        {
+          "code": "donnees_recues",
+          "type": "reference",
+          "object_type": "donnee_personnelle",
+          "multiple": true,
+          "label": {
+            "fr": "Données reçues",
+            "en": "Data received",
+            "it": "Dati ricevuti"
+          }
+        },
+        {
+          "code": "localisation",
+          "type": "select",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location",
+            "it": "Ubicazione"
+          },
+          "items": [
+            {
+              "code": "ue",
+              "label": {
+                "fr": "Union européenne / EEE",
+                "en": "European Union / EEA",
+                "it": "Unione europea / SEE"
+              }
+            },
+            {
+              "code": "hors_ue_adequat",
+              "label": {
+                "fr": "Hors UE — pays adéquat",
+                "en": "Non-EU — adequate country",
+                "it": "Extra-UE — paese adeguato"
+              }
+            },
+            {
+              "code": "hors_ue_garanties",
+              "label": {
+                "fr": "Hors UE — garanties appropriées",
+                "en": "Non-EU — appropriate safeguards",
+                "it": "Extra-UE — garanzie adeguate"
+              }
+            }
+          ]
+        },
+        {
+          "code": "garanties_transfert",
+          "type": "textarea",
+          "label": {
+            "fr": "Garanties de transfert (hors-UE)",
+            "en": "Transfer safeguards (non-EU)",
+            "it": "Garanzie di trasferimento (extra-UE)"
+          }
+        }
+      ]
+    }
+  ],
+  "objects": [],
+  "risks": [],
+  "measures": [],
+  "treatments": [],
+  "extensions": {
+    "display": {
+      "report": {
+        "scope": "all",
+        "orientation": "portrait",
+        "cover": {
+          "on": true
+        },
+        "toc": {
+          "on": true
+        },
+        "iteration": {
+          "by": "risk_category",
+          "sort": "alpha"
+        },
+        "sections": [
+          {
+            "id": "metadata",
+            "on": true,
+            "zone": "header"
+          },
+          {
+            "id": "presentation",
+            "on": true,
+            "zone": "header"
+          },
+          {
+            "id": "matrix_ir",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "matrix_initial",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "matrix_residual",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "matrix_traj",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "risks_table",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "risks_detail",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "measures_table",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "measures_detail",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "links_table",
+            "on": false,
+            "zone": "repeated"
+          },
+          {
+            "id": "links_detail",
+            "on": true,
+            "zone": "repeated"
+          },
+          {
+            "id": "summary_counts",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "summary_distribution",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "radar",
+            "on": true,
+            "zone": "appendix",
+            "dim": "sources_fiche",
+            "metric": "max",
+            "eval": "both-over"
+          },
+          {
+            "id": "action_plan",
+            "on": true,
+            "zone": "appendix",
+            "view": "due_date"
+          },
+          {
+            "id": "grid_axes",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "grid_criticality",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "field_glossary",
+            "on": true,
+            "zone": "appendix"
+          },
+          {
+            "id": "objects",
+            "on": true,
+            "zone": "appendix",
+            "view": "detail"
+          }
+        ]
+      }
+    }
+  }
+}
