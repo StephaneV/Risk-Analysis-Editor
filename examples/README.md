@@ -49,9 +49,28 @@ champs personnalisés rangés dans l'ordre de lecture de la méthode, et un **ra
   lecture d'un fichier voisin, donc le bouton de démonstration est masqué. Utilisez alors le menu
   **Fichier › Charger un fichier `.rae.json`…** et choisissez l'un des fichiers de ce dossier.
 
-> Les exemples ouverts par le bouton d'accueil de l'application sont
-> [`demo-ebios-rm-systeme-d-information.rae.json`](demo-ebios-rm-systeme-d-information.rae.json) (interface en
-> français) et [`demo-ebios-rm-information-system.rae.json`](demo-ebios-rm-information-system.rae.json)
+> Les exemples ouverts par le bouton d'accueil de l'application sont les variantes **enrichies** :
+> [`demo-ebios-rm-systeme-d-information-objets-enrichi.rae.json`](demo-ebios-rm-systeme-d-information-objets-enrichi.rae.json)
+> (interface en français) et [`demo-ebios-rm-information-system-enriched.rae.json`](demo-ebios-rm-information-system-enriched.rae.json)
 > (interface en anglais).
 
 Pour prendre l'outil en main écran par écran, voir le **[guide utilisateur](../docs/guide-utilisateur.md)**.
+
+## Régénération des variantes enrichies
+
+Les variantes **enrichies** (`…-objets-enrichi` / `…-enriched`) sont **produites par script** à partir des
+variantes « objets » de base — ne les éditez pas à la main, modifiez le script puis régénérez. Les scripts
+vivent dans ce dossier :
+
+```bash
+python examples/build-demos.py       # 2 démos FR enrichies (depuis les bases …-objets)
+python examples/build-demos-en.py    # traductions EN (demo-dpia-ohs-enriched, …-information-system-enriched)
+```
+
+`build-demos-en.py` réutilise les traductions EN des bases (appariement `demo-aipd-sst` ↔ `demo-dpia-ohs`
+et `demo-ebios-rm-systeme-d-information` ↔ `demo-ebios-rm-information-system`) et complète le delta ; toute
+chaîne non traduite est signalée. Valider ensuite chaque fichier avec l'outil
+[`rae-validator`](../tools/rae-validator/) (cible : 0 erreur / 0 avertissement).
+
+> Les **templates** enrichis dérivés de ces exemples sont, eux, régénérés depuis
+> [`../templates/`](../templates/) (voir le README de ce dossier).

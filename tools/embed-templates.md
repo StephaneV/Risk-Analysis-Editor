@@ -50,7 +50,7 @@ python tools/embed-templates.py
 Sortie typique :
 
 ```
-Embarqué : 4 modèles (12 fichiers), 138027 octets de données.
+Embarqué : 6 modèles (18 fichiers), 350255 octets de données.
 ```
 
 Le script **avertit** si une base ne possède pas les trois langues attendues.
