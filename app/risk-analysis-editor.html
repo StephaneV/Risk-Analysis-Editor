@@ -956,6 +956,11 @@
     appearance:none;-webkit-appearance:none}
   .mtx-edit select option{background:var(--panel);color:var(--text);text-shadow:none}
   .mtx-edit .axname{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  /* Aperçu lecture seule de la grille (méthodes Produit / Somme) : score + couleur de zone par case.
+     Même gabarit que le <select> de l'éditeur « Matrice » (min-width 104px) → colonnes identiques et
+     largeur stable quand on change de méthode de calcul. */
+  .mtx-preview .mtx-pcell{border-radius:7px;font-weight:700;font-size:11px;padding:8px 6px;min-width:104px;
+    box-sizing:border-box;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.55);font-variant-numeric:tabular-nums}
 
   /* ---------- Rapport (document clair, aperçu = impression) ---------- */
   /* Le document du rapport est toujours rendu en clair, quel que soit le thème.
@@ -1772,6 +1777,8 @@ const I18N = {
     toast_transposed:"Axes transposés : {0} (vertical) × {1} (horizontal).",
     mtx_edit_title:"Niveau de risque par cellule",
     mtx_edit_caption:"Choisissez le niveau de chaque case. Lignes : <b>{0}</b> (haut = fort) · colonnes : <b>{1}</b>.",
+    mtx_preview_title:"Aperçu de la grille",
+    mtx_preview_caption:"Score et couleur de criticité de chaque case. Lignes : <b>{0}</b> (haut = fort) · colonnes : <b>{1}</b>.",
     crit_default:"Nouveau niveau", crit_code_base:"niveau", err_min_crit:"Il faut au moins un niveau de criticité.",
     cov_uncovered:"score {0} non couvert", cov_multi:"score {0} couvert par plusieurs niveaux",
     cov_warn_title:"⚠ Couverture des scores incomplète ou ambiguë", cov_warn_range:"(scores atteignables {0}→{1}) :",
@@ -2180,6 +2187,8 @@ const I18N = {
     toast_transposed:"Axes transposed: {0} (vertical) × {1} (horizontal).",
     mtx_edit_title:"Risk level per cell",
     mtx_edit_caption:"Choose the level of each cell. Rows: <b>{0}</b> (top = high) · columns: <b>{1}</b>.",
+    mtx_preview_title:"Grid preview",
+    mtx_preview_caption:"Score and criticality color of each cell. Rows: <b>{0}</b> (top = high) · columns: <b>{1}</b>.",
     crit_default:"New level", crit_code_base:"level", err_min_crit:"At least one criticality level is required.",
     cov_uncovered:"score {0} not covered", cov_multi:"score {0} covered by several levels",
     cov_warn_title:"⚠ Incomplete or ambiguous score coverage", cov_warn_range:"(reachable scores {0}→{1}):",
@@ -2583,6 +2592,8 @@ const I18N = {
     toast_transposed:"Assi trasposti: {0} (verticale) × {1} (orizzontale).",
     mtx_edit_title:"Livello di rischio per cella",
     mtx_edit_caption:"Scegli il livello di ogni cella. Righe: <b>{0}</b> (in alto = elevato) · colonne: <b>{1}</b>.",
+    mtx_preview_title:"Anteprima della griglia",
+    mtx_preview_caption:"Punteggio e colore di criticità di ogni cella. Righe: <b>{0}</b> (in alto = elevato) · colonne: <b>{1}</b>.",
     crit_default:"Nuovo livello", crit_code_base:"livello", err_min_crit:"È necessario almeno un livello di criticità.",
     cov_uncovered:"punteggio {0} non coperto", cov_multi:"punteggio {0} coperto da più livelli",
     cov_warn_title:"⚠ Copertura dei punteggi incompleta o ambigua", cov_warn_range:"(punteggi raggiungibili {0}→{1}):",
@@ -13941,7 +13952,7 @@ document.getElementById("view-settings").addEventListener("input",e=>{
     if(tgt.dataset.f==="value")n.value=+tgt.value;
     else if(tgt.dataset.f==="description")n.description=tgt.value;
     else n.label=tgt.value;
-    markDirty();requestAnimationFrame(renderMatrices);}
+    markDirty();renderMatrixEditor();requestAnimationFrame(renderMatrices);}   // aperçu de grille à jour
 });
 document.getElementById("btnResetPlacement").addEventListener("click",()=>{
   if(analyse.extensions)analyse.extensions.placement={};
@@ -14068,11 +14079,27 @@ function ensureMatrix(){ // (re)dimensionne la matrice à la taille des axes, en
 function renderMatrixEditor(){
   const host=document.getElementById("matrixEditor");
   const s=analyse.grid.score;
-  if(s.method!=="matrix"){host.style.display="none";host.innerHTML="";return;}
-  ensureMatrix();
   const P=probabilityLevels(),G=severityLevels();
   const rows=P.slice().sort((a,b)=>b.value-a.value);   // haut = fort
   const cols=G.slice().sort((a,b)=>a.value-b.value);
+  if(s.method!=="matrix"){
+    // Méthodes Produit / Somme : aperçu EN LECTURE SEULE (score + couleur de zone par case), au même
+    // emplacement que l'éditeur « Matrice ». Se rafraîchit avec les axes, la méthode et les seuils.
+    let h='<h3>'+esc(t("mtx_preview_title"))+'</h3>'+
+      '<div class="caption">'+t("mtx_preview_caption",esc(analyse.grid.vertical_axis.label),esc(analyse.grid.horizontal_axis.label))+'</div>'+
+      '<div class="mtx-edit mtx-preview"><table><thead><tr><th class="axname">'+esc(analyse.grid.vertical_axis.label)+' \\ '+esc(analyse.grid.horizontal_axis.label)+'</th>';
+    cols.forEach(c=>h+='<th>'+esc(c.label)+'</th>');
+    h+='</tr></thead><tbody>';
+    rows.forEach(rl=>{
+      h+='<tr><th class="rowlab">'+esc(rl.label)+'</th>';
+      cols.forEach(cl=>{const sc=scoreOf(rl.value,cl.value),cr=critFor(sc),bg=(cr&&cr.color)||'#888';
+        h+='<td><div class="mtx-pcell" style="background:'+esc(bg)+';color:'+cfTagFg(bg)+'" title="'+esc((cr&&cr.label)||'')+'">'+sc+'</div></td>';});
+      h+='</tr>';
+    });
+    h+='</tbody></table></div>';
+    host.style.display="block";host.innerHTML=h;return;
+  }
+  ensureMatrix();
   const crits=analyse.grid.criticality_levels;
   let h='<h3>'+esc(t("mtx_edit_title"))+'</h3>'+
     '<div class="caption">'+t("mtx_edit_caption",esc(analyse.grid.vertical_axis.label),esc(analyse.grid.horizontal_axis.label))+'</div>'+
