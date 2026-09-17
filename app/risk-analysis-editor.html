@@ -450,6 +450,15 @@
   .ov-chip.mid{background:rgba(10,14,24,.82);color:#fff;border:2px dotted #fff}
   .ov-chip.end{background:#0a0e18;color:#fff;border:2px solid #fff}
   .ov-chip.unchanged{background:var(--unchanged);color:#fff;border:2px solid #fff}
+  /* Mode 3 cotations — apparence par ensemble de stades présents sur la case.
+     Style de bordure = 1er stade (inhérent=tirets, actuel=points, résiduel=plein) ;
+     teinte de fond = dernier stade (clair→moyen→foncé). unch_all = aucune réduction (gris). */
+  .ov-chip.inherent{background:rgba(10,14,24,.6);color:#fff;border:2px dashed rgba(255,255,255,.9)}
+  .ov-chip.current{background:rgba(10,14,24,.82);color:#fff;border:2px dotted #fff}
+  .ov-chip.residual{background:#0a0e18;color:#fff;border:2px solid #fff}
+  .ov-chip.unch_ia{background:rgba(10,14,24,.82);color:#fff;border:2px dashed rgba(255,255,255,.9)}
+  .ov-chip.unch_ar{background:#0a0e18;color:#fff;border:2px dotted #fff}
+  .ov-chip.unch_all{background:var(--unchanged);color:#fff;border:2px solid #fff}
   .leader{stroke:rgba(255,255,255,.28);stroke-width:1;stroke-dasharray:2 3}
   .x-axis{display:flex;margin-top:8px}
   .x-axis .x-label{flex:1;text-align:center;color:var(--muted);font-size:10.5px}
@@ -465,6 +474,12 @@
   .legend .swatch.mid{background:rgba(10,14,24,.82);border:2px dotted #fff}
   .legend .swatch.end{background:#0a0e18;border:2px solid #fff}
   .legend .swatch.unchanged{background:var(--unchanged);border:2px solid #fff}
+  .legend .swatch.inherent{background:rgba(10,14,24,.6);border:2px dashed rgba(255,255,255,.9)}
+  .legend .swatch.current{background:rgba(10,14,24,.82);border:2px dotted #fff}
+  .legend .swatch.residual{background:#0a0e18;border:2px solid #fff}
+  .legend .swatch.unch_ia{background:rgba(10,14,24,.82);border:2px dashed rgba(255,255,255,.9)}
+  .legend .swatch.unch_ar{background:#0a0e18;border:2px dotted #fff}
+  .legend .swatch.unch_all{background:var(--unchanged);border:2px solid #fff}
   .arrow-leg{display:inline-block;width:22px;height:0;border-top:2px solid currentColor;margin-right:2px;vertical-align:middle;opacity:.75}
   .arrow-leg.dashed{border-top-style:dashed}
   .trans-tag{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;color:var(--muted)}
@@ -1678,6 +1693,7 @@ const I18N = {
     exp_copy:"⧉ Copier", exp_both:"les deux", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Position initiale", leg_end:"Position résiduelle", leg_unchanged:"Risque non réduit",
     leg_arrow_current:"Flèche pleine : mesures en place (Inhérente → Actuelle)", leg_arrow_residual:"Flèche pointillée : mesures proposées / planifiées / en cours (Actuelle → Résiduelle)",
+    leg_unch_ia:"Non réduit Inhérente → Actuelle", leg_unch_ar:"Non réduit Actuelle → Résiduelle", leg_unch_all:"Non réduit (aucune cotation)",
     manual_notice:"✋ Placement manuel : glissez-déposez les pastilles", show_grid:"Afficher la grille de placement",
     toast_img_saved:"Image enregistrée : {0}", toast_img_fail:"Échec de la génération de l'image.",
     toast_img_copied:"Image copiée dans le presse-papiers.",
@@ -2092,6 +2108,7 @@ const I18N = {
     exp_copy:"⧉ Copy", exp_both:"both", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Initial position", leg_end:"Residual position", leg_unchanged:"Unreduced risk",
     leg_arrow_current:"Solid arrow: measures in place (Inherent → Current)", leg_arrow_residual:"Dashed arrow: proposed / planned / in-progress measures (Current → Residual)",
+    leg_unch_ia:"Not reduced Inherent → Current", leg_unch_ar:"Not reduced Current → Residual", leg_unch_all:"Not reduced (no change)",
     manual_notice:"✋ Manual placement: drag and drop the chips", show_grid:"Show placement grid",
     toast_img_saved:"Image saved: {0}", toast_img_fail:"Image generation failed.",
     toast_img_copied:"Image copied to clipboard.",
@@ -2501,6 +2518,7 @@ const I18N = {
     exp_copy:"⧉ Copia", exp_both:"entrambe", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Posizione iniziale", leg_end:"Posizione residua", leg_unchanged:"Rischio non ridotto",
     leg_arrow_current:"Freccia piena: misure in atto (Inerente → Attuale)", leg_arrow_residual:"Freccia tratteggiata: misure proposte / pianificate / in corso (Attuale → Residua)",
+    leg_unch_ia:"Non ridotto Inerente → Attuale", leg_unch_ar:"Non ridotto Attuale → Residua", leg_unch_all:"Non ridotto (nessuna variazione)",
     manual_notice:"✋ Posizionamento manuale: trascina i pallini", show_grid:"Mostra la griglia di posizionamento",
     toast_img_saved:"Immagine salvata: {0}", toast_img_fail:"Generazione dell'immagine non riuscita.",
     toast_img_copied:"Immagine copiata negli appunti.",
@@ -3383,22 +3401,35 @@ function setAssessmentLevels(n){const e=analyse.extensions=analyse.extensions||{
 function current(risk){return risk.current_assessment||risk.initial_assessment;}
 /* Accès générique par niveau logique : "inherent" (=initiale), "current" (=actuelle), "residual" (=résiduelle). */
 function assessmentOf(risk,level){return level==="current"?current(risk):level==="inherent"?(risk.initial_assessment):residual(risk);}
-/* Suite ordonnée des stades de trajectoire d'un risque, cases consécutives identiques fusionnées.
+/* Suite ordonnée des pastilles de trajectoire d'un risque (une par case distincte occupée).
    Mode 2 : [initiale → résiduelle]. Mode 3 : [inhérente → actuelle → résiduelle].
-   Chaque stade : {ev, kind, dashedIn}. `kind` réattribué par position (start/mid/end, ou unchanged si
-   un seul stade). `dashedIn` = style de la flèche ENTRANTE (pointillée pour Actuelle→Résiduelle). */
+   Chaque pastille : {ev, kind, app, dashedIn}.
+   - `kind` (start/mid/end/unchanged) : sert au glisser et au focus clavier (cotation ciblée).
+   - `app` : classe d'APPARENCE, dérivée de l'ENSEMBLE des stades qui coïncident sur la case —
+       inherent / current / residual (un seul stade), unch_ia (Inhérente=Actuelle),
+       unch_ar (Actuelle=Résiduelle), unch_all (aucune réduction). En mode 2 : start/end/unchanged.
+   - `dashedIn` : la flèche entrante est pointillée pour la transition Actuelle→Résiduelle. */
+function _cellSame(a,b){return a.probability===b.probability&&a.severity===b.severity;}
 function riskTrajStages(r){
   const L3=assessmentLevels()===3;
-  const seq=L3
-    ? [{ev:r.initial_assessment,dashedIn:false},{ev:current(r),dashedIn:false},{ev:residual(r),dashedIn:true}]
-    : [{ev:r.initial_assessment,dashedIn:false},{ev:residual(r),dashedIn:false}];
-  const same=(a,b)=>a.probability===b.probability&&a.severity===b.severity;
-  const out=[seq[0]];
-  for(let i=1;i<seq.length;i++){if(!same(seq[i].ev,out[out.length-1].ev))out.push(seq[i]);}
-  if(out.length===1)out[0]=Object.assign({},out[0],{kind:"unchanged"});
-  else{out[0]=Object.assign({},out[0],{kind:"start"});out[out.length-1]=Object.assign({},out[out.length-1],{kind:"end"});
-    for(let i=1;i<out.length-1;i++)out[i]=Object.assign({},out[i],{kind:"mid"});}
-  return out;
+  if(!L3){
+    const I=r.initial_assessment,R=residual(r);
+    if(_cellSame(I,R))return [{ev:I,kind:"unchanged",app:"unchanged",dashedIn:false}];
+    return [{ev:I,kind:"start",app:"start",dashedIn:false},{ev:R,kind:"end",app:"end",dashedIn:false}];
+  }
+  const I=r.initial_assessment,A=current(r),R=residual(r);
+  // Cas dégénéré : Inhérente et Résiduelle sur la même case (aller-retour ou tout identique)
+  // → une seule pastille « aucune réduction » (cf. demande : traité comme non réduit I·A·R).
+  if(_cellSame(I,R))return [{ev:I,kind:"unchanged",app:"unch_all",dashedIn:false}];
+  // Accumuler les stades par case distincte (I → A → R), en mémorisant les lettres présentes.
+  const pts=[];
+  [["i",I],["a",A],["r",R]].forEach(([ltr,ev])=>{const last=pts[pts.length-1];
+    if(last&&_cellSame(last.ev,ev))last.letters+=ltr;else pts.push({ev:ev,letters:ltr});});
+  const appOf=l=>({i:"inherent",a:"current",r:"residual",ia:"unch_ia",ar:"unch_ar",iar:"unch_all"})[l]||"current";
+  return pts.map((p,idx)=>({ev:p.ev,
+    kind:idx===0?"start":(idx===pts.length-1?"end":"mid"),
+    app:appOf(p.letters),
+    dashedIn:p.letters[0]==="r"}));   // pastille dont le 1er stade est R : flèche entrante Actuelle→Résiduelle (pointillée)
 }
 /* Transition à laquelle une mesure contribue (mode 3), d'après son statut :
    « en place » (implemented) réduit Inhérente→Actuelle (flèche pleine) ;
@@ -5205,10 +5236,12 @@ function renderMatrices(){
     setToolbarExport([b],"");
     const L3=assessmentLevels()===3;
     const kindsLeg=L3
-      ? '<div class="item"><span class="swatch start">R</span>'+esc(t("lvl_inherent"))+'</div>'+
-        '<div class="item"><span class="swatch mid">R</span>'+esc(t("lvl_current"))+'</div>'+
-        '<div class="item"><span class="swatch end">R</span>'+esc(t("lvl_residual"))+'</div>'+
-        '<div class="item"><span class="swatch unchanged">R</span>'+esc(t("leg_unchanged"))+'</div>'
+      ? '<div class="item"><span class="swatch inherent">R</span>'+esc(t("lvl_inherent"))+'</div>'+
+        '<div class="item"><span class="swatch current">R</span>'+esc(t("lvl_current"))+'</div>'+
+        '<div class="item"><span class="swatch residual">R</span>'+esc(t("lvl_residual"))+'</div>'+
+        '<div class="item"><span class="swatch unch_ia">R</span>'+esc(t("leg_unch_ia"))+'</div>'+
+        '<div class="item"><span class="swatch unch_ar">R</span>'+esc(t("leg_unch_ar"))+'</div>'+
+        '<div class="item"><span class="swatch unch_all">R</span>'+esc(t("leg_unch_all"))+'</div>'
       : '<div class="item"><span class="swatch start">R</span>'+esc(t("leg_start"))+'</div>'+
         '<div class="item"><span class="swatch end">R</span>'+esc(t("leg_end"))+'</div>'+
         '<div class="item"><span class="swatch unchanged">R</span>'+esc(t("leg_unchanged"))+'</div>';
@@ -5342,7 +5375,7 @@ function drawTrajectories(mc){
   const cellTokens={};
   const push=(p,g,tok)=>{const k=p+"-"+g;(cellTokens[k]=cellTokens[k]||[]).push(tok);};
   visibleRisks().forEach(r=>{
-    riskTrajStages(r).forEach(st=>push(st.ev.probability,st.ev.severity,{risk:r,kind:st.kind}));
+    riskTrajStages(r).forEach(st=>push(st.ev.probability,st.ev.severity,{risk:r,kind:st.kind,app:st.app}));
   });
 
   // Disposer chaque case selon la stratégie ; mémoriser la position de chaque jeton pour les flèches
@@ -5357,7 +5390,7 @@ function drawTrajectories(mc){
       const pos=lay.pos[i];
       posOf[t.risk.id+"|"+t.kind]={x:pos.x,y:pos.y,size:lay.size};
       if(i<hiddenStart){
-        const ch=makeOvChip(t.risk,t.kind,lay.size);
+        const ch=makeOvChip(t.risk,t.kind,lay.size,t.app);
         ch.style.left=pos.x+"px";ch.style.top=pos.y+"px";
         attachCellDrag(ch,t.risk,t.kind);   // la disposition manuelle a son propre glisser
         chips.appendChild(ch);
@@ -5387,11 +5420,15 @@ function drawTrajectories(mc){
     }
   });
 }
-function makeOvChip(risk,kind,size){
-  const c=document.createElement("div");c.className="ov-chip "+kind;c.textContent=chipLabel(risk);
+/* `app` (facultatif) = classe d'apparence distincte du `kind` (glisser/infobulle) ; en trajectoire
+   mode 3, les deux diffèrent (une case fusionnée porte plusieurs stades). Repli sur `kind`. */
+function makeOvChip(risk,kind,size,app){
+  const c=document.createElement("div");c.className="ov-chip "+(app||kind);
+  // La couleur de bordure des pastilles fusionnées suit la teinte du dernier stade présent (voir CSS).
+  c.textContent=chipLabel(risk);
   if(size&&size!==BASE_CHIP){c.style.width=size+"px";c.style.height=size+"px";
     c.style.fontSize=Math.max(7,Math.round(size*0.46))+"px";c.style.borderWidth=(size<15?1:2)+"px";}
-  attachTip(c,risk,kind);return c;
+  attachTip(c,risk,kind,app);return c;
 }
 /* Trace une flèche de trajectoire (ligne visible + zone de survol élargie) et, au survol,
    affiche la liste des mesures de maîtrise liées au risque. */
@@ -5773,10 +5810,10 @@ function renderManualTraj(mc){
          (cf. whichOfKind). La dessiner à l'emplacement initial la figerait : un dépôt dans
          la case de départ, ou la réunion des pastilles dans une même case, laisserait
          la pastille là où elle était au lieu de suivre le geste. */
-      const p=posFor(r,"residual");if(!p)return;const c=makeOvChip(r,"unchanged",size);
+      const p=posFor(r,"residual");if(!p)return;const c=makeOvChip(r,"unchanged",size,stages[0].app);
       c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,"residual");chipsEl.appendChild(c);return;}
     stages.forEach(st=>{const w=wOf(st.kind),p=posFor(r,w);if(!p)return;
-      const c=makeOvChip(r,st.kind,size);c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,w);chipsEl.appendChild(c);});
+      const c=makeOvChip(r,st.kind,size,st.app);c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,w);chipsEl.appendChild(c);});
   });
 }
 /* Disposition trajectoire — grille optimisée : placement sur une grille K×K par case
@@ -5798,7 +5835,7 @@ function layoutTrajectoryGridOpt(mc){
   visibleRisks().forEach(r=>{
     const stages=riskTrajStages(r);
     const toks=stages.map(st=>{const c=center(st.ev.probability,st.ev.severity);
-      return c?{risk:r,kind:st.kind,p:st.ev.probability,g:st.ev.severity,cx:c.x,cy:c.y,si:0,sj:0,arrows:[]}:null;});
+      return c?{risk:r,kind:st.kind,app:st.app,p:st.ev.probability,g:st.ev.severity,cx:c.x,cy:c.y,si:0,sj:0,arrows:[]}:null;});
     if(toks.some(x=>!x))return;   // au moins une case hors grille : on ignore ce risque
     toks.forEach(tk=>tokens.push(tk));
     for(let i=1;i<toks.length;i++){
@@ -5936,7 +5973,7 @@ function layoutTrajectoryGridOpt(mc){
   arrows.forEach(a=>{const ax=a.start.cx+a.start.dx,ay=a.start.cy+a.start.dy,bx=a.end.cx+a.end.dx,by=a.end.cy+a.end.dy;
     const ang=Math.atan2(by-ay,bx-ax),pad=rad+3;
     trajArrow(svg,ax+Math.cos(ang)*pad,ay+Math.sin(ang)*pad,bx-Math.cos(ang)*pad,by-Math.sin(ang)*pad,a.start.risk,a.dashed);});
-  tokens.forEach(t=>{const c=makeOvChip(t.risk,t.kind,size);
+  tokens.forEach(t=>{const c=makeOvChip(t.risk,t.kind,size,t.app);
     c.style.left=(t.cx+t.dx)+"px";c.style.top=(t.cy+t.dy)+"px";
     attachCellDrag(c,t.risk,t.kind);   // disposition « flèches optimisées », la plus courante
     chipsEl.appendChild(c);});
@@ -6003,7 +6040,7 @@ function svgChipEl(el,ox,oy){
   const r=el.getBoundingClientRect(),cs=getComputedStyle(el);
   const cx=r.left-ox+r.width/2,cy=r.top-oy+r.height/2,f=colorToFill(cs.backgroundColor);
   const sw=parseFloat(cs.borderTopWidth)||2,rad=Math.max(1,r.width/2-sw/2);
-  const dash=cs.borderTopStyle==="dashed"?' stroke-dasharray="3 2"':"";
+  const dash=cs.borderTopStyle==="dashed"?' stroke-dasharray="3 2"':cs.borderTopStyle==="dotted"?' stroke-dasharray="1 2" stroke-linecap="round"':"";
   const txt=svgEsc((el.textContent||"").trim());
   return '<circle cx="'+cx+'" cy="'+cy+'" r="'+rad+'" fill="'+f.fill+'"'+(f.opacity<1?' fill-opacity="'+f.opacity+'"':"")+' stroke="'+cs.borderTopColor+'" stroke-width="'+sw+'"'+dash+'/>'+
     (txt?'<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="'+svgEsc(cs.fontFamily)+'" font-size="'+cs.fontSize+'" font-weight="800" fill="'+cs.color+'">'+txt+'</text>':"");
@@ -6024,7 +6061,8 @@ function buildLegendSVG(legendEl,W,startY,bodyFont,groupBreaks){
     const s=it.querySelector(".sq,.swatch");const clone=it.cloneNode(true);
     const sc=clone.querySelector(".sq,.swatch");if(sc)sc.remove();const label=clone.textContent.trim();
     const cs=getComputedStyle(s);
-    arr.push({label,isCircle:s.classList.contains("swatch"),letter:s.textContent.trim(),fill:cs.backgroundColor,stroke:cs.borderTopColor,dash:cs.borderTopStyle==="dashed",w:sw+gapIn+ctx.measureText(label).width,brk:gi>0&&ii===0});
+    const bstyle=cs.borderTopStyle;
+    arr.push({label,isCircle:s.classList.contains("swatch"),letter:s.textContent.trim(),fill:cs.backgroundColor,stroke:cs.borderTopColor,dash:bstyle==="dashed"?"2 2":bstyle==="dotted"?"1 2":"",w:sw+gapIn+ctx.measureText(label).width,brk:gi>0&&ii===0});
   });});
   const rows=[];let cur=[],curW=0;
   arr.forEach(a=>{const add=a.w+(cur.length?gapBetween:0);if(cur.length&&(a.brk||curW+add>W)){rows.push({items:cur,w:curW});cur=[];curW=0;}cur.push(a);curW+=(cur.length>1?gapBetween:0)+a.w;});
@@ -6032,7 +6070,7 @@ function buildLegendSVG(legendEl,W,startY,bodyFont,groupBreaks){
   let out=[],y=startY;
   rows.forEach(row=>{let x=(W-row.w)/2;
     row.items.forEach((a,i)=>{if(i)x+=gapBetween;const cy=y+rowH/2,f=colorToFill(a.fill);
-      if(a.isCircle){out.push('<circle cx="'+(x+sw/2)+'" cy="'+cy+'" r="'+(sw/2)+'" fill="'+f.fill+'"'+(f.opacity<1?' fill-opacity="'+f.opacity+'"':"")+' stroke="'+a.stroke+'" stroke-width="2"'+(a.dash?' stroke-dasharray="2 2"':"")+'/>');
+      if(a.isCircle){out.push('<circle cx="'+(x+sw/2)+'" cy="'+cy+'" r="'+(sw/2)+'" fill="'+f.fill+'"'+(f.opacity<1?' fill-opacity="'+f.opacity+'"':"")+' stroke="'+a.stroke+'" stroke-width="2"'+(a.dash?' stroke-dasharray="'+a.dash+'"':"")+'/>');
         if(a.letter)out.push('<text x="'+(x+sw/2)+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="'+svgEsc(bodyFont)+'" font-size="8" font-weight="800" fill="#fff">'+svgEsc(a.letter)+'</text>');}
       else out.push('<rect x="'+x+'" y="'+(cy-sw/2)+'" width="'+sw+'" height="'+sw+'" rx="4" fill="'+f.fill+'"'+(f.opacity<1?' fill-opacity="'+f.opacity+'"':"")+'/>');
       out.push('<text x="'+(x+sw+gapIn)+'" y="'+cy+'" text-anchor="start" dominant-baseline="central" font-family="'+svgEsc(bodyFont)+'" font-size="12" fill="'+tcol+'">'+svgEsc(a.label)+'</text>');
@@ -6186,12 +6224,20 @@ function attachCellDrag(chip,r,kind){
     document.addEventListener("keydown",onKey,true);
   });
 }
-function attachTip(el,r,kind){
+function attachTip(el,r,kind,app){
   el.dataset.rid=r.id;el.dataset.kind=kind;   // repères pour le déplacement au clavier
   // Contenu de l'infobulle + version texte, qui sert de nom accessible à la pastille.
   const build=()=>{
     let head,ev;
-    if(kind==="initial"||kind==="start"){head=assessmentLevels()===3?t("lvl_inherent"):t("tip_initial");ev=r.initial_assessment;}
+    // En mode 3, l'apparence (app) porte l'ensemble des stades fusionnés : l'en-tête le reflète.
+    const APP={inherent:[t("lvl_inherent"),r.initial_assessment],
+      current:[t("lvl_current"),current(r)],
+      residual:[t("lvl_residual"),residual(r)],
+      unch_ia:[t("lvl_inherent")+" = "+t("lvl_current"),r.initial_assessment],
+      unch_ar:[t("lvl_current")+" = "+t("lvl_residual"),residual(r)],
+      unch_all:[t("lvl_inherent")+" = "+t("lvl_current")+" = "+t("lvl_residual"),r.initial_assessment]};
+    if(app&&APP[app]){head=APP[app][0];ev=APP[app][1];}
+    else if(kind==="initial"||kind==="start"){head=assessmentLevels()===3?t("lvl_inherent"):t("tip_initial");ev=r.initial_assessment;}
     else if(kind==="mid"||kind==="current"){head=t("lvl_current");ev=current(r);}
     else if(kind==="residual"||kind==="end"){head=assessmentLevels()===3?t("lvl_residual"):t("tip_residual");ev=residual(r);}
     else{head=t("tip_unchanged");ev=r.initial_assessment;}

@@ -89,18 +89,40 @@ def test_trajectory_three_dots_two_arrows(app):
     app.load(FX)
     app.goto("matrices")
     app.js("matrixMode='traj';renderMatrices();renderTrajectory(document.querySelector('#matrixArea .matrix-container'));")
-    kinds = app.js(
+    apps = app.js(
         "[...document.querySelectorAll('#matrixArea .ov-chip')].reduce((a,c)=>{const k=c.className.replace('ov-chip','').trim();a[k]=(a[k]||0)+1;return a;},{})"
     )
-    # R1 a 3 points distincts → au moins une pastille « mid » (Actuelle)
-    assert kinds.get("mid", 0) >= 1
-    assert kinds.get("start", 0) >= 1 and kinds.get("end", 0) >= 1
+    # R1 : 3 points distincts → inherent + current + residual
+    assert apps.get("inherent", 0) >= 1 and apps.get("current", 0) >= 1 and apps.get("residual", 0) >= 1
     lines = app.js(
         "[...document.querySelectorAll('#matrixArea svg line')].filter(l=>l.getAttribute('stroke')==='#fff')"
         ".reduce((a,l)=>{a[l.getAttribute('stroke-dasharray')?'dashed':'solid']=(a[l.getAttribute('stroke-dasharray')?'dashed':'solid']||0)+1;return a;},{})"
     )
     assert lines.get("solid", 0) >= 1  # Inhérente→Actuelle (pleine)
     assert lines.get("dashed", 0) >= 1  # Actuelle→Résiduelle (pointillée)
+    assert not app.console_errors()
+
+
+def test_trajectory_six_appearances(app):
+    """Les 6 apparences de pastille du mode 3 (cas d'égalité entre stades) et la légende."""
+    app.load(FX)
+    # R1 distinct, R2 I=A, R3 A=R, R4 tout égal → couvre inherent/current/residual/unch_ia/unch_ar/unch_all
+    app.js(
+        "const R=analyse.risks;const set=(x,I,A,Rr)=>{x.initial_assessment={probability:I[0],severity:I[1]};"
+        "x.current_assessment={probability:A[0],severity:A[1]};x.residual_assessment={probability:Rr[0],severity:Rr[1]};};"
+        "set(R[0],[4,4],[3,3],[1,1]);set(R[1],[4,4],[4,4],[1,2]);set(R[2],[4,3],[2,2],[2,2]);set(R[3],[1,1],[1,1],[1,1]);markDirty();"
+    )
+    app.goto("matrices")
+    app.js("matrixMode='traj';renderMatrices();renderTrajectory(document.querySelector('#matrixArea .matrix-container'));")
+    apps = app.js(
+        "[...document.querySelectorAll('#matrixArea .ov-chip')].reduce((a,c)=>{const k=c.className.replace('ov-chip','').trim();a[k]=(a[k]||0)+1;return a;},{})"
+    )
+    for cls in ("inherent", "current", "residual", "unch_ia", "unch_ar", "unch_all"):
+        assert apps.get(cls, 0) >= 1, f"apparence manquante : {cls}"
+    # la légende expose les 6 swatches
+    sw = app.js("[...document.querySelectorAll('#matrixLegend .swatch')].map(s=>s.className.replace('swatch','').trim())")
+    for cls in ("inherent", "current", "residual", "unch_ia", "unch_ar", "unch_all"):
+        assert cls in sw, f"légende sans swatch : {cls}"
     assert not app.console_errors()
 
 
