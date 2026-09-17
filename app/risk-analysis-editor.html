@@ -445,6 +445,7 @@
      ombre portée plus bas dans la feuille, à spécificité égale — elle l'emporterait. */
   .ov-chip:focus-visible{box-shadow:0 2px 6px rgba(0,0,0,.5),0 0 0 3px var(--focus-ring);z-index:20}
   .ov-chip.start{background:rgba(10,14,24,.6);color:#fff;border:2px dashed rgba(255,255,255,.9)}
+  .ov-chip.mid{background:rgba(10,14,24,.82);color:#fff;border:2px dotted #fff}
   .ov-chip.end{background:#0a0e18;color:#fff;border:2px solid #fff}
   .ov-chip.unchanged{background:var(--unchanged);color:#fff;border:2px solid #fff}
   .leader{stroke:rgba(255,255,255,.28);stroke-width:1;stroke-dasharray:2 3}
@@ -459,8 +460,12 @@
   .legend .swatch{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
     font-size:9px;font-weight:800;color:#fff;flex:none}
   .legend .swatch.start{background:rgba(10,14,24,.6);border:2px dashed rgba(255,255,255,.9)}
+  .legend .swatch.mid{background:rgba(10,14,24,.82);border:2px dotted #fff}
   .legend .swatch.end{background:#0a0e18;border:2px solid #fff}
   .legend .swatch.unchanged{background:var(--unchanged);border:2px solid #fff}
+  .arrow-leg{display:inline-block;width:22px;height:0;border-top:2px solid currentColor;margin-right:2px;vertical-align:middle;opacity:.75}
+  .arrow-leg.dashed{border-top-style:dashed}
+  .trans-tag{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;color:var(--muted)}
   .legend .sq{width:16px;height:16px;border-radius:4px}
 
   /* ---------- Stats ---------- */
@@ -1225,6 +1230,7 @@
       <div class="matrix-toolbar">
         <div class="seg" id="radarEvalSeg">
           <button type="button" data-v="initial" data-i18n="th_initial">Initial</button>
+          <button type="button" data-v="current" data-i18n="lvl_current" style="display:none">Actuelle</button>
           <button type="button" data-v="residual" data-i18n="th_residual">Résiduel</button>
           <button type="button" data-v="both-side" data-i18n="radar_eval_side">Accolés</button>
           <button type="button" data-v="both-over" class="active" data-i18n="radar_eval_over">Superposés</button>
@@ -1506,6 +1512,14 @@
     <!-- -------- Sous-onglet : Grille de cotation -------- -->
     <div class="card ppanel" data-pmode="grid" style="display:none">
       <div class="caption" data-i18n="settings_grid_caption">Les axes définissent la taille de la matrice. Le score et les couleurs sont recalculés automatiquement.</div>
+      <label class="field" style="max-width:380px;margin-bottom:6px">
+        <span class="lab" data-i18n="assess_levels_label">Niveaux de cotation</span>
+        <select id="assessLevels">
+          <option value="2" data-i18n="assess_levels_2">2 (Initiale · Résiduelle)</option>
+          <option value="3" data-i18n="assess_levels_3">3 (Inhérente · Actuelle · Résiduelle)</option>
+        </select>
+      </label>
+      <div class="caption" data-i18n="assess_levels_help" style="margin-bottom:16px">Trois niveaux : risque inhérent (sans mesure), actuel (mesures en place), résiduel (mesures proposées/planifiées/en cours).</div>
       <!-- Prévention d'erreur : rappel qu'une grille déjà cotée n'est pas neutre à modifier. -->
       <div class="callout-warn" id="gridRatedWarn" style="display:none"></div>
       <button class="btn ghost sm" id="btnTranspose" style="margin-bottom:16px" data-i18n="btn_transpose_long">⇄ Transposer les axes (échanger horizontal / vertical)</button>
@@ -1661,6 +1675,7 @@ const I18N = {
     mtx_initial:"Risque initial (brut)", mtx_residual:"Risque résiduel (net)", mtx_traj:"Trajectoire des risques",
     exp_copy:"⧉ Copier", exp_both:"les deux", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Position initiale", leg_end:"Position résiduelle", leg_unchanged:"Risque non réduit",
+    leg_arrow_current:"Flèche pleine : mesures en place (Inhérente → Actuelle)", leg_arrow_residual:"Flèche pointillée : mesures proposées / planifiées / en cours (Actuelle → Résiduelle)",
     manual_notice:"✋ Placement manuel : glissez-déposez les pastilles", show_grid:"Afficher la grille de placement",
     toast_img_saved:"Image enregistrée : {0}", toast_img_fail:"Échec de la génération de l'image.",
     toast_img_copied:"Image copiée dans le presse-papiers.",
@@ -1681,6 +1696,9 @@ const I18N = {
     risks_title:"Registre des risques", risks_caption:"Cliquez sur un risque pour l'éditer.",
     btn_import_csv:"⭱ Importer (CSV)", btn_export_csv:"⭳ Exporter (CSV)", toast_csv_export:"CSV exporté : {0}", btn_add_risk:"+ Ajouter un risque",
     th_id:"ID", th_risk:"Risque", th_risk_id:"ID risque", th_measure_id:"ID mesure", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel", th_score:"Score",
+    lvl_inherent:"Inhérente", lvl_current:"Actuelle", lvl_residual:"Résiduelle",
+    assess_levels_label:"Niveaux de cotation", assess_levels_2:"2 (Initiale · Résiduelle)", assess_levels_3:"3 (Inhérente · Actuelle · Résiduelle)",
+    assess_levels_help:"Trois niveaux : risque inhérent (sans mesure), actuel (mesures en place), résiduel (mesures proposées/planifiées/en cours).",
     th_measures:"Mesures", th_evolution:"Évolution",
     cols_menu_title:"Colonnes affichées", cols_shown:"Colonnes affichées", cols_pinned:"épinglée", cols_cf:"perso",
     cols_up:"Déplacer la colonne vers la gauche", cols_down:"Déplacer la colonne vers la droite",
@@ -1737,7 +1755,7 @@ const I18N = {
     score_prefix:"Score {0} — ",
     measures_title:"Mesures de maîtrise", measures_caption:"Actions réduisant la probabilité et/ou la gravité des risques.",
     btn_add_measure:"+ Ajouter une mesure",
-    th_measure:"Mesure", th_type:"Type", th_status:"Statut", th_responsible:"Responsable", th_covered_risks:"Risques couverts",
+    th_measure:"Mesure", th_type:"Type", th_status:"Statut", th_responsible:"Responsable", th_covered_risks:"Risques couverts", th_transition:"Transition",
     measures_empty:"Aucune mesure. Cliquez sur « Ajouter une mesure ».", confirm_del_measure:"Supprimer la mesure {0} ?",
     confirm_del_level:"Supprimer le niveau « {0} » de l'axe ?", confirm_del_crit:"Supprimer le niveau de criticité « {0} » ?",
     "status.proposed":"Proposée","status.planned":"Planifiée","status.in_progress":"En cours","status.implemented":"En place","status.abandoned":"Abandonnée",
@@ -2071,6 +2089,7 @@ const I18N = {
     mtx_initial:"Initial risk (gross)", mtx_residual:"Residual risk (net)", mtx_traj:"Risk trajectory",
     exp_copy:"⧉ Copy", exp_both:"both", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Initial position", leg_end:"Residual position", leg_unchanged:"Unreduced risk",
+    leg_arrow_current:"Solid arrow: measures in place (Inherent → Current)", leg_arrow_residual:"Dashed arrow: proposed / planned / in-progress measures (Current → Residual)",
     manual_notice:"✋ Manual placement: drag and drop the chips", show_grid:"Show placement grid",
     toast_img_saved:"Image saved: {0}", toast_img_fail:"Image generation failed.",
     toast_img_copied:"Image copied to clipboard.",
@@ -2091,6 +2110,9 @@ const I18N = {
     risks_title:"Risk register", risks_caption:"Click a risk to edit it.",
     btn_import_csv:"⭱ Import (CSV)", btn_export_csv:"⭳ Export (CSV)", toast_csv_export:"CSV exported: {0}", btn_add_risk:"+ Add a risk",
     th_id:"ID", th_risk:"Risk", th_risk_id:"Risk ID", th_measure_id:"Measure ID", th_category:"Category", th_initial:"Initial", th_residual:"Residual", th_score:"Score",
+    lvl_inherent:"Inherent", lvl_current:"Current", lvl_residual:"Residual",
+    assess_levels_label:"Rating levels", assess_levels_2:"2 (Initial · Residual)", assess_levels_3:"3 (Inherent · Current · Residual)",
+    assess_levels_help:"Three levels: inherent risk (no measure), current (measures in place), residual (proposed/planned/in-progress measures).",
     th_measures:"Measures", th_evolution:"Change",
     cols_menu_title:"Displayed columns", cols_shown:"Displayed columns", cols_pinned:"pinned", cols_cf:"custom",
     cols_up:"Move column left", cols_down:"Move column right",
@@ -2147,7 +2169,7 @@ const I18N = {
     score_prefix:"Score {0} — ",
     measures_title:"Controls / measures", measures_caption:"Actions reducing the probability and/or severity of risks.",
     btn_add_measure:"+ Add a measure",
-    th_measure:"Measure", th_type:"Type", th_status:"Status", th_responsible:"Responsible", th_covered_risks:"Covered risks",
+    th_measure:"Measure", th_type:"Type", th_status:"Status", th_responsible:"Responsible", th_covered_risks:"Covered risks", th_transition:"Transition",
     measures_empty:"No measure. Click “Add a measure”.", confirm_del_measure:"Delete measure {0}?",
     confirm_del_level:"Delete the axis level “{0}”?", confirm_del_crit:"Delete the criticality level “{0}”?",
     "status.proposed":"Proposed","status.planned":"Planned","status.in_progress":"In progress","status.implemented":"Implemented","status.abandoned":"Abandoned",
@@ -2476,6 +2498,7 @@ const I18N = {
     mtx_initial:"Rischio iniziale (lordo)", mtx_residual:"Rischio residuo (netto)", mtx_traj:"Traiettoria dei rischi",
     exp_copy:"⧉ Copia", exp_both:"entrambe", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Posizione iniziale", leg_end:"Posizione residua", leg_unchanged:"Rischio non ridotto",
+    leg_arrow_current:"Freccia piena: misure in atto (Inerente → Attuale)", leg_arrow_residual:"Freccia tratteggiata: misure proposte / pianificate / in corso (Attuale → Residua)",
     manual_notice:"✋ Posizionamento manuale: trascina i pallini", show_grid:"Mostra la griglia di posizionamento",
     toast_img_saved:"Immagine salvata: {0}", toast_img_fail:"Generazione dell'immagine non riuscita.",
     toast_img_copied:"Immagine copiata negli appunti.",
@@ -2496,6 +2519,9 @@ const I18N = {
     risks_title:"Registro dei rischi", risks_caption:"Clicca su un rischio per modificarlo.",
     btn_import_csv:"⭱ Importa (CSV)", btn_export_csv:"⭳ Esporta (CSV)", toast_csv_export:"CSV esportato: {0}", btn_add_risk:"+ Aggiungi un rischio",
     th_id:"ID", th_risk:"Rischio", th_risk_id:"ID rischio", th_measure_id:"ID misura", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo", th_score:"Punteggio",
+    lvl_inherent:"Inerente", lvl_current:"Attuale", lvl_residual:"Residua",
+    assess_levels_label:"Livelli di valutazione", assess_levels_2:"2 (Iniziale · Residua)", assess_levels_3:"3 (Inerente · Attuale · Residua)",
+    assess_levels_help:"Tre livelli: rischio inerente (nessuna misura), attuale (misure attuate), residuo (misure proposte/pianificate/in corso).",
     th_measures:"Misure", th_evolution:"Evoluzione",
     cols_menu_title:"Colonne visualizzate", cols_shown:"Colonne visualizzate", cols_pinned:"fissata", cols_cf:"pers.",
     cols_up:"Sposta la colonna a sinistra", cols_down:"Sposta la colonna a destra",
@@ -2552,7 +2578,7 @@ const I18N = {
     score_prefix:"Punteggio {0} — ",
     measures_title:"Misure di controllo", measures_caption:"Azioni che riducono la probabilità e/o la gravità dei rischi.",
     btn_add_measure:"+ Aggiungi una misura",
-    th_measure:"Misura", th_type:"Tipo", th_status:"Stato", th_responsible:"Responsabile", th_covered_risks:"Rischi coperti",
+    th_measure:"Misura", th_type:"Tipo", th_status:"Stato", th_responsible:"Responsabile", th_covered_risks:"Rischi coperti", th_transition:"Transizione",
     measures_empty:"Nessuna misura. Clicca su « Aggiungi una misura ».", confirm_del_measure:"Eliminare la misura {0}?",
     confirm_del_level:"Eliminare il livello « {0} » dell'asse?", confirm_del_crit:"Eliminare il livello di criticità « {0} »?",
     "status.proposed":"Proposta","status.planned":"Pianificata","status.in_progress":"In corso","status.implemented":"Attuata","status.abandoned":"Abbandonata",
@@ -3344,6 +3370,47 @@ function critFor(score){
 }
 function critOfEval(ev){return critFor(scoreOf(ev.probability,ev.severity));}
 function residual(risk){return risk.residual_assessment||risk.initial_assessment;}
+/* Nombre de niveaux de cotation : 2 (défaut : Initiale → Résiduelle) ou 3 (Inhérente → Actuelle → Résiduelle).
+   Réglé par analyse dans extensions.display.assessment_levels. */
+function assessmentLevels(){const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.assessment_levels;return v===3?3:2;}
+function setAssessmentLevels(n){const e=analyse.extensions=analyse.extensions||{};const d=e.display=e.display||{};
+  if(n===3){d.assessment_levels=3;analyse.risks.forEach(r=>{if(!r.current_assessment)r.current_assessment=JSON.parse(JSON.stringify(r.initial_assessment||{probability:1,severity:1}));});}
+  else delete d.assessment_levels;   // 3→2 : la clé disparaît mais current_assessment est CONSERVÉ sur les risques (non perdu au retour)
+  markDirty();}
+/* Cotation « Actuelle » (mode 3) : repli sur l'initiale si absente. */
+function current(risk){return risk.current_assessment||risk.initial_assessment;}
+/* Accès générique par niveau logique : "inherent" (=initiale), "current" (=actuelle), "residual" (=résiduelle). */
+function assessmentOf(risk,level){return level==="current"?current(risk):level==="inherent"?(risk.initial_assessment):residual(risk);}
+/* Suite ordonnée des stades de trajectoire d'un risque, cases consécutives identiques fusionnées.
+   Mode 2 : [initiale → résiduelle]. Mode 3 : [inhérente → actuelle → résiduelle].
+   Chaque stade : {ev, kind, dashedIn}. `kind` réattribué par position (start/mid/end, ou unchanged si
+   un seul stade). `dashedIn` = style de la flèche ENTRANTE (pointillée pour Actuelle→Résiduelle). */
+function riskTrajStages(r){
+  const L3=assessmentLevels()===3;
+  const seq=L3
+    ? [{ev:r.initial_assessment,dashedIn:false},{ev:current(r),dashedIn:false},{ev:residual(r),dashedIn:true}]
+    : [{ev:r.initial_assessment,dashedIn:false},{ev:residual(r),dashedIn:false}];
+  const same=(a,b)=>a.probability===b.probability&&a.severity===b.severity;
+  const out=[seq[0]];
+  for(let i=1;i<seq.length;i++){if(!same(seq[i].ev,out[out.length-1].ev))out.push(seq[i]);}
+  if(out.length===1)out[0]=Object.assign({},out[0],{kind:"unchanged"});
+  else{out[0]=Object.assign({},out[0],{kind:"start"});out[out.length-1]=Object.assign({},out[out.length-1],{kind:"end"});
+    for(let i=1;i<out.length-1;i++)out[i]=Object.assign({},out[i],{kind:"mid"});}
+  return out;
+}
+/* Transition à laquelle une mesure contribue (mode 3), d'après son statut :
+   « en place » (implemented) réduit Inhérente→Actuelle (flèche pleine) ;
+   proposée/planifiée/en cours réduit Actuelle→Résiduelle (flèche pointillée) ; abandonnée : aucune. */
+function measureTransition(status){
+  if(status==="implemented")return {to:"current",dashed:false,label:t("lvl_current")};
+  if(status==="proposed"||status==="planned"||status==="in_progress")return {to:"residual",dashed:true,label:t("lvl_residual")};
+  return null;
+}
+function transitionCell(status){
+  const tr=measureTransition(status);
+  if(!tr)return '<span class="muted">—</span>';
+  return '<span class="trans-tag"><span class="arrow-leg'+(tr.dashed?' dashed':'')+'"></span>'+esc(tr.label)+'</span>';
+}
 function measuresOfRisk(rid){return analyse.treatments.filter(tr=>tr.risk===rid).map(tr=>tr.measure);}
 function risksOfMeasure(mid){return analyse.treatments.filter(tr=>tr.measure===mid).map(tr=>tr.risk);}
 function measureById(id){return analyse.measures.find(m=>m.id===id);}
@@ -3987,6 +4054,9 @@ function normalize(d){
   d.grid.score=d.grid.score||{method:"product"};
   d.grid.criticality_levels=d.grid.criticality_levels||defaultGrid().criticality_levels;
   d.risks.forEach(r=>{if(!r.residual_assessment)r.residual_assessment=JSON.parse(JSON.stringify(r.initial_assessment));});
+  // Mode 3 cotations : garantir current_assessment (repli = copie de l'initiale). En mode 2 on n'impose rien.
+  if(((d.extensions||{}).display||{}).assessment_levels===3)
+    d.risks.forEach(r=>{if(!r.current_assessment)r.current_assessment=JSON.parse(JSON.stringify(r.initial_assessment));});
   return d;
 }
 
@@ -4257,12 +4327,13 @@ function statCounters(){
   return {nR:R.length,nM:M.length,treated,pct:R.length?Math.round(treated/R.length*100):0};
 }
 function statCriticality(){
-  const R=visibleRisks();
+  const R=visibleRisks(),L3=assessmentLevels()===3;
   const lv=analyse.grid.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min));
-  const ci={},cr={},li={},lr={};lv.forEach(l=>{ci[l.code]=0;cr[l.code]=0;li[l.code]=[];lr[l.code]=[];});
+  const ci={},cc={},cr={},li={},lc={},lr={};lv.forEach(l=>{ci[l.code]=0;cc[l.code]=0;cr[l.code]=0;li[l.code]=[];lc[l.code]=[];lr[l.code]=[];});
   R.forEach(r=>{const ki=critOfEval(r.initial_assessment).code,kr=critOfEval(residual(r)).code;
-    if(ki in ci){ci[ki]++;li[ki].push(r);}if(kr in cr){cr[kr]++;lr[kr].push(r);}});
-  return {rows:lv.map(l=>({key:l.code,label:l.label,color:l.color,initial:ci[l.code],residual:cr[l.code],itemsI:li[l.code],itemsR:lr[l.code]})),total:R.length};
+    if(ki in ci){ci[ki]++;li[ki].push(r);}if(kr in cr){cr[kr]++;lr[kr].push(r);}
+    if(L3){const kc=critOfEval(current(r)).code;if(kc in cc){cc[kc]++;lc[kc].push(r);}}});
+  return {l3:L3,rows:lv.map(l=>({key:l.code,label:l.label,color:l.color,initial:ci[l.code],current:cc[l.code],residual:cr[l.code],itemsI:li[l.code],itemsC:lc[l.code],itemsR:lr[l.code]})),total:R.length};
 }
 /* ---- Graphiques (anneau/camembert) en SVG : un <path> par secteur (survolable) ---- */
 function statArcPath(cx,cy,r,ir,a0,a1){
@@ -4400,15 +4471,20 @@ function statBlockBody(block){
          colorMap:k=>k==="ref"?"#27ae60":"#9aa7b8"});
       return statDistCard(block,t("stat_usage_col"),data,t("stat_objects"),"object");}
     case "criticality":{const d=statCriticality(),disp=block.display||"both",shape=block.shape||"donut";
-      d.rows.forEach((r,i)=>{statReg(block.id,"initial",i,"risk",r.label,r.itemsI);statReg(block.id,"residual",i,"risk",r.label,r.itemsR);});
-      const tbl='<table class="st-tbl"><thead><tr><th>'+esc(t("stat_criticality"))+'</th><th class="num">'+esc(t("stat_initial"))+'</th><th class="num">'+esc(t("stat_residual"))+'</th></tr></thead><tbody>'+
-        d.rows.map((r,i)=>'<tr><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num" data-sk="'+i+'" data-ss="initial">'+r.initial+'</td><td class="num" data-sk="'+i+'" data-ss="residual">'+r.residual+'</td></tr>').join("")+
-        '<tr class="tot"><td>'+esc(t("stat_total"))+'</td><td class="num">'+d.total+'</td><td class="num">'+d.total+'</td></tr></tbody></table>';
+      const L3=d.l3;
+      const labI=L3?t("lvl_inherent"):t("stat_initial"), labC=t("lvl_current"), labR=L3?t("lvl_residual"):t("stat_residual");
+      d.rows.forEach((r,i)=>{statReg(block.id,"initial",i,"risk",r.label,r.itemsI);statReg(block.id,"residual",i,"risk",r.label,r.itemsR);
+        if(L3)statReg(block.id,"current",i,"risk",r.label,r.itemsC);});
+      const tbl='<table class="st-tbl"><thead><tr><th>'+esc(t("stat_criticality"))+'</th><th class="num">'+esc(labI)+'</th>'+(L3?'<th class="num">'+esc(labC)+'</th>':'')+'<th class="num">'+esc(labR)+'</th></tr></thead><tbody>'+
+        d.rows.map((r,i)=>'<tr><td><span class="st-sw" style="background:'+r.color+'"></span>'+esc(r.label)+'</td><td class="num" data-sk="'+i+'" data-ss="initial">'+r.initial+'</td>'+(L3?'<td class="num" data-sk="'+i+'" data-ss="current">'+r.current+'</td>':'')+'<td class="num" data-sk="'+i+'" data-ss="residual">'+r.residual+'</td></tr>').join("")+
+        '<tr class="tot"><td>'+esc(t("stat_total"))+'</td><td class="num">'+d.total+'</td>'+(L3?'<td class="num">'+d.total+'</td>':'')+'<td class="num">'+d.total+'</td></tr></tbody></table>';
       let chart="";
       if(disp!=="table"){
         const rowsI=d.rows.map(r=>({count:r.initial,color:r.color})),rowsR=d.rows.map(r=>({count:r.residual,color:r.color}));
-        chart='<div class="st-duo"><figure>'+statChartSVG(rowsI,shape,d.total,t("stat_initial"),128,"initial")+'<figcaption>'+esc(t("stat_initial"))+'</figcaption></figure>'+
-          '<figure>'+statChartSVG(rowsR,shape,d.total,t("stat_residual"),128,"residual")+'<figcaption>'+esc(t("stat_residual"))+'</figcaption></figure></div>';
+        const figC=L3?'<figure>'+statChartSVG(d.rows.map(r=>({count:r.current,color:r.color})),shape,d.total,labC,128,"current")+'<figcaption>'+esc(labC)+'</figcaption></figure>':'';
+        chart='<div class="st-duo"><figure>'+statChartSVG(rowsI,shape,d.total,labI,128,"initial")+'<figcaption>'+esc(labI)+'</figcaption></figure>'+
+          figC+
+          '<figure>'+statChartSVG(rowsR,shape,d.total,labR,128,"residual")+'<figcaption>'+esc(labR)+'</figcaption></figure></div>';
       }
       if(disp==="table")return '<div class="st-content">'+tbl+'</div>';
       if(disp==="chart")return '<div class="st-content"><div class="st-dist">'+statLegendList(d.rows.map(r=>({label:r.label,count:r.initial,color:r.color})),d.total,"initial")+chart+'</div></div>';
@@ -4463,7 +4539,7 @@ function radarViewLoad(){
   const fields=radarDimFields();
   radarState.dim=(v.dim==="cat"||fields.some(f=>f.code===v.dim))?v.dim:"cat";
   radarState.metric=(["avg","max","sum","weighted","count"].indexOf(v.metric)>=0||radarFieldMetric(v.metric))?v.metric:"avg";
-  radarState.eval=["initial","residual","both-side","both-over"].indexOf(v.eval)>=0?v.eval:"both-over";
+  radarState.eval=["initial","current","residual","both-side","both-over"].indexOf(v.eval)>=0?v.eval:"both-over";
   radarState.emptyAxes=v.empty_axes!==false;   // défaut : afficher tous les axes
 }
 function radarViewSave(){
@@ -4541,7 +4617,7 @@ function radarAxes(risks,dim,includeEmpty){
 }
 function radarValues(risks,dim,axes,metric,phase){
   const g={};axes.forEach(k=>g[k]=[]);
-  risks.forEach(r=>{const ev=phase==="residual"?residual(r):r.initial_assessment;const sc=scoreOf(ev.probability,ev.severity);
+  risks.forEach(r=>{const ev=phase==="residual"?residual(r):phase==="current"?current(r):r.initial_assessment;const sc=scoreOf(ev.probability,ev.severity);
     radarKeysOf(r,dim).forEach(k=>{if(g[k])g[k].push(sc);});});
   const W=metric==="weighted"?radarCfg().weights:null;
   return axes.map(k=>{const a=g[k];if(metric==="count")return a.length;if(!a.length)return 0;
@@ -4656,10 +4732,16 @@ function radarTitleText(cfg){cfg=cfg||radarState;
   const metricLabel=radarMetricLabel(cfg.metric);
   const f=radarFieldOf(cfg.dim),dimLabel=cfg.dim==="cat"?t("th_category"):(f?cfLabel(f):cfg.dim);
   if(cfg.metric==="count"||radarFieldMetric(cfg.metric))return metricLabel+" — "+dimLabel;
-  const evL=cfg.eval==="initial"?t("th_initial"):cfg.eval==="residual"?t("th_residual"):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
+  const evL=cfg.eval==="initial"?t("th_initial"):cfg.eval==="current"?t("lvl_current"):cfg.eval==="residual"?t("th_residual"):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
   return metricLabel+" — "+dimLabel+" · "+evL;
 }
 function radarSyncSeg(){
+  const L3=assessmentLevels()===3;
+  // Bouton « Actuelle » visible en mode 3 uniquement ; « Accolés » masqué en mode 3 (les vues combinées superposent 3 séries).
+  const curBtn=document.querySelector('#radarEvalSeg button[data-v="current"]');if(curBtn)curBtn.style.display=L3?"":"none";
+  const sideBtn=document.querySelector('#radarEvalSeg button[data-v="both-side"]');if(sideBtn)sideBtn.style.display=L3?"none":"";
+  if(L3&&(radarState.eval==="both-side"))radarState.eval="both-over";        // Accolés indisponible en mode 3
+  if(!L3&&radarState.eval==="current")radarState.eval="initial";             // Actuelle indisponible en mode 2
   document.querySelectorAll("#radarEvalSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.eval));
   syncSegAria();
 }
@@ -4679,9 +4761,12 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
       : [{name:t("radar_metric_count"),color:rc.colorInit,values:radarValues(risks,dim,axes,"count","initial")}];
     vmax=radarExtVmax(radarNiceMax(series[0].values));bands=false;
   } else {
-    const sI={name:t("th_initial"),color:rc.colorInit,values:radarValues(risks,dim,axes,metric,"initial")};
-    const sR={name:t("th_residual"),color:rc.colorRes,values:radarValues(risks,dim,axes,metric,"residual")};
-    series=cfg.eval==="initial"?[sI]:cfg.eval==="residual"?[sR]:[sI,sR];
+    const L3=assessmentLevels()===3;
+    const sI={name:L3?t("lvl_inherent"):t("th_initial"),color:rc.colorInit,values:radarValues(risks,dim,axes,metric,"initial")};
+    const sC={name:t("lvl_current"),color:"#e0b93a",values:radarValues(risks,dim,axes,metric,"current")};
+    const sR={name:L3?t("lvl_residual"):t("th_residual"),color:rc.colorRes,values:radarValues(risks,dim,axes,metric,"residual")};
+    // Mode 3 : les vues combinées superposent 3 séries (both-side non proposé en mode 3, cf. radarSyncSeg).
+    series=cfg.eval==="initial"?[sI]:cfg.eval==="current"?[sC]:cfg.eval==="residual"?[sR]:(L3?[sI,sC,sR]:[sI,sR]);
     if(perRisk){vmax=gridMaxScore();bands=true;}
     else{vmax=radarExtVmax(radarNiceMax(series.reduce((acc,s)=>acc.concat(s.values),[])));bands=false;}
   }
@@ -5014,7 +5099,7 @@ function buildGrid(container,mode){
     // Regroupe les risques par case ; la disposition est appliquée après le layout (layoutStacks)
     const byCell={};
     visibleRisks().forEach(r=>{
-      const ev=mode==="initial"?r.initial_assessment:residual(r);
+      const ev=mode==="initial"?r.initial_assessment:mode==="current"?current(r):residual(r);
       const key=ev.probability+"-"+ev.severity;
       (byCell[key]=byCell[key]||[]).push(r);
     });
@@ -5089,16 +5174,22 @@ function renderMatrices(){
   if(matrixMode==="side"){
     renderArrangementBar("side");
     document.getElementById("matrixHint").textContent=t("hint_side");
+    const L3=assessmentLevels()===3;
     const box=document.createElement("div");box.className="matrices";
-    const b1=document.createElement("div");b1.className="matrix-block";b1.innerHTML=matrixHeader(t("mtx_initial"));
-    const c1=document.createElement("div");b1.appendChild(c1);const mc1=buildGrid(c1,"initial");
-    const b2=document.createElement("div");b2.className="matrix-block";b2.innerHTML=matrixHeader(t("mtx_residual"));
-    const c2=document.createElement("div");b2.appendChild(c2);const mc2=buildGrid(c2,"residual");
-    b1.appendChild(makeExportBar([b1]));b2.appendChild(makeExportBar([b2]));
-    box.appendChild(b1);box.appendChild(b2);area.appendChild(box);
-    setToolbarExport([b1,b2],t("exp_both"));
+    // Mode 3 : trois matrices accolées Inhérente · Actuelle · Résiduelle ; mode 2 : Initiale · Résiduelle.
+    const specs=L3
+      ? [["initial",t("lvl_inherent")],["current",t("lvl_current")],["residual",t("lvl_residual")]]
+      : [["initial",t("mtx_initial")],["residual",t("mtx_residual")]];
+    const blocks=[],grids=[];
+    specs.forEach(([gm,lab])=>{
+      const b=document.createElement("div");b.className="matrix-block";b.innerHTML=matrixHeader(lab);
+      const c=document.createElement("div");b.appendChild(c);const mc=buildGrid(c,gm);
+      b.appendChild(makeExportBar([b]));box.appendChild(b);blocks.push(b);grids.push([mc,gm]);
+    });
+    area.appendChild(box);
+    setToolbarExport(blocks,t("exp_both"));
     legend.innerHTML=critLegend()+(getArrangement()==="manual"?manualNoticeHTML():'');
-    if(getArrangement()==="manual"){ensureManualInit();requestAnimationFrame(()=>{renderManualSide(mc1,"initial");renderManualSide(mc2,"residual");});}
+    if(getArrangement()==="manual"){ensureManualInit();requestAnimationFrame(()=>{grids.forEach(([mc,gm])=>renderManualSide(mc,gm==="initial"?"initial":gm==="current"?"current":"residual"));});}
     else requestAnimationFrame(()=>layoutStacks(area));
   }else{
     renderArrangementBar("traj");
@@ -5109,13 +5200,25 @@ function renderMatrices(){
     const mc=buildGrid(c,"traj");
     requestAnimationFrame(()=>renderTrajectory(mc));
     setToolbarExport([b],"");
+    const L3=assessmentLevels()===3;
+    const kindsLeg=L3
+      ? '<div class="item"><span class="swatch start">R</span>'+esc(t("lvl_inherent"))+'</div>'+
+        '<div class="item"><span class="swatch mid">R</span>'+esc(t("lvl_current"))+'</div>'+
+        '<div class="item"><span class="swatch end">R</span>'+esc(t("lvl_residual"))+'</div>'+
+        '<div class="item"><span class="swatch unchanged">R</span>'+esc(t("leg_unchanged"))+'</div>'
+      : '<div class="item"><span class="swatch start">R</span>'+esc(t("leg_start"))+'</div>'+
+        '<div class="item"><span class="swatch end">R</span>'+esc(t("leg_end"))+'</div>'+
+        '<div class="item"><span class="swatch unchanged">R</span>'+esc(t("leg_unchanged"))+'</div>';
+    const arrowsLeg=L3
+      ? '<div class="legend-grp">'+
+          '<div class="item"><span class="arrow-leg"></span>'+esc(t("leg_arrow_current"))+'</div>'+
+          '<div class="item"><span class="arrow-leg dashed"></span>'+esc(t("leg_arrow_residual"))+'</div>'+
+        '</div>'
+      : '';
     legend.innerHTML=
       '<div class="legend-grp">'+critLegend()+'</div>'+
-      '<div class="legend-grp">'+
-        '<div class="item"><span class="swatch start">R</span>'+esc(t("leg_start"))+'</div>'+
-        '<div class="item"><span class="swatch end">R</span>'+esc(t("leg_end"))+'</div>'+
-        '<div class="item"><span class="swatch unchanged">R</span>'+esc(t("leg_unchanged"))+'</div>'+
-      '</div>'+
+      '<div class="legend-grp">'+kindsLeg+'</div>'+
+      arrowsLeg+
       (getTrajArrangement()==="manual"?manualNoticeHTML():'');
   }
 }
@@ -5232,14 +5335,11 @@ function drawTrajectories(mc){
   const center=(p,g)=>{const cell=mc.querySelector('.cell[data-p="'+p+'"][data-g="'+g+'"]');if(!cell)return null;
     const r=cell.getBoundingClientRect();return{x:r.left-mtx.left+r.width/2,y:r.top-mtx.top+r.height/2};};
 
-  // Regrouper les jetons (départ / arrivée / non-réduit) par case
+  // Regrouper les jetons (départ / intermédiaire / arrivée / non-réduit) par case
   const cellTokens={};
   const push=(p,g,tok)=>{const k=p+"-"+g;(cellTokens[k]=cellTokens[k]||[]).push(tok);};
   visibleRisks().forEach(r=>{
-    const a=r.initial_assessment,b=residual(r);
-    const moved=a.probability!==b.probability||a.severity!==b.severity;
-    if(!moved){push(a.probability,a.severity,{risk:r,kind:"unchanged"});}
-    else{push(a.probability,a.severity,{risk:r,kind:"start"});push(b.probability,b.severity,{risk:r,kind:"end"});}
+    riskTrajStages(r).forEach(st=>push(st.ev.probability,st.ev.severity,{risk:r,kind:st.kind}));
   });
 
   // Disposer chaque case selon la stratégie ; mémoriser la position de chaque jeton pour les flèches
@@ -5267,18 +5367,21 @@ function drawTrajectories(mc){
       bd.style.background="var(--panel-3)";bd.style.borderColor="var(--muted)";bd.style.color="var(--text)";
       if(lay.size&&lay.size!==BASE_CHIP){bd.style.width=lay.size+"px";bd.style.height=lay.size+"px";bd.style.fontSize=Math.max(7,Math.round(lay.size*0.4))+"px";}
       bd.addEventListener("mousemove",e=>{tip.innerHTML="<b>"+esc(t("n_more",lay.badge.count))+"</b><br>"+
-        hidden.map(tk=>esc(tk.risk.id)+" ("+(tk.kind==="start"?t("kind_initial"):tk.kind==="end"?t("kind_residual"):t("kind_stable"))+")").join("<br>");
+        hidden.map(tk=>esc(tk.risk.id)+" ("+(tk.kind==="start"?t("kind_initial"):tk.kind==="mid"?t("lvl_current"):tk.kind==="end"?t("kind_residual"):t("kind_stable"))+")").join("<br>");
         tip.style.opacity=1;tip.style.left=(e.clientX+14)+"px";tip.style.top=(e.clientY+14)+"px";});
       bd.addEventListener("mouseleave",()=>tip.style.opacity=0);
       chips.appendChild(bd);
     }
   });
 
-  // Flèches initiale → résiduelle, entre les positions réelles des pastilles
+  // Flèches entre stades consécutifs, aux positions réelles des pastilles
   visibleRisks().forEach(r=>{
-    const a=posOf[r.id+"|start"],b=posOf[r.id+"|end"];if(!a||!b)return;
-    const ang=Math.atan2(b.y-a.y,b.x-a.x);
-    trajArrow(svg, a.x+Math.cos(ang)*(a.size/2+3), a.y+Math.sin(ang)*(a.size/2+3), b.x-Math.cos(ang)*(b.size/2+3), b.y-Math.sin(ang)*(b.size/2+3), r);
+    const stages=riskTrajStages(r);
+    for(let i=1;i<stages.length;i++){
+      const a=posOf[r.id+"|"+stages[i-1].kind],b=posOf[r.id+"|"+stages[i].kind];if(!a||!b)continue;
+      const ang=Math.atan2(b.y-a.y,b.x-a.x);
+      trajArrow(svg, a.x+Math.cos(ang)*(a.size/2+3), a.y+Math.sin(ang)*(a.size/2+3), b.x-Math.cos(ang)*(b.size/2+3), b.y-Math.sin(ang)*(b.size/2+3), r, stages[i].dashedIn);
+    }
   });
 }
 function makeOvChip(risk,kind,size){
@@ -5302,12 +5405,13 @@ function attachArrowTip(el,risk){
   });
   el.addEventListener("mouseleave",()=>tip.style.opacity=0);
 }
-function trajArrow(svg,x1,y1,x2,y2,risk){
+function trajArrow(svg,x1,y1,x2,y2,risk,dashed){
   const mk=(w,color,extra)=>{const l=document.createElementNS(NS,"line");
     l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
     l.setAttribute("stroke",color);l.setAttribute("stroke-width",w);l.setAttribute("stroke-linecap","round");
     if(extra)extra(l);return l;};
-  const vis=mk(2.2,"#fff",l=>{l.setAttribute("marker-end","url(#head)");l.setAttribute("opacity",".9");});
+  const vis=mk(2.2,"#fff",l=>{l.setAttribute("marker-end","url(#head)");l.setAttribute("opacity",".9");
+    if(dashed)l.setAttribute("stroke-dasharray","4 3");});   // Actuelle→Résiduelle : flèche pointillée
   svg.appendChild(vis);
   if(risk){const hit=mk(14,"transparent",l=>{l.setAttribute("pointer-events","stroke");l.setAttribute("class","arrow-hit");l.style.cursor="help";});
     attachArrowTip(hit,risk);
@@ -5425,15 +5529,18 @@ function snapOff(k,S,N){return (k-(N-1)/2)*(S/N);}
 function manualChipSize(S,N){return Math.max(8,Math.min(BASE_CHIP,Math.floor(S/N)-2));}
 function ensureEval(r,w){
   if(w==="residual"&&!r.residual_assessment)r.residual_assessment=JSON.parse(JSON.stringify(r.initial_assessment));
+  if(w==="current"&&!r.current_assessment)r.current_assessment=JSON.parse(JSON.stringify(r.initial_assessment));
 }
-function evalOf(r,w){return w==="initial"?r.initial_assessment:residual(r);}
+function evalOf(r,w){return w==="initial"?r.initial_assessment:w==="current"?current(r):residual(r);}
 
 /* Initialise les positions manquantes sur la grille, sans superposition dans une même case */
 function ensureManualInit(){
   const N=getGridStep();
+  const L3=assessmentLevels()===3;
+  const pairs=r=>{const a=[["initial",r.initial_assessment],["residual",residual(r)]];if(L3)a.splice(1,0,["current",current(r)]);return a;};
   const occ={}; // "which|p-g" -> Set("col,row")
   analyse.risks.forEach(r=>{
-    [["initial",r.initial_assessment],["residual",residual(r)]].forEach(([w,ev])=>{
+    pairs(r).forEach(([w,ev])=>{
       const pl=getPlace(r.id,w);if(pl){const k=w+"|"+ev.probability+"-"+ev.severity;(occ[k]=occ[k]||new Set()).add(pl.col+","+pl.row);}
     });
   });
@@ -5441,7 +5548,7 @@ function ensureManualInit(){
   order.sort((a,b)=>Math.hypot(a[0]-(N-1)/2,a[1]-(N-1)/2)-Math.hypot(b[0]-(N-1)/2,b[1]-(N-1)/2));
   let changed=false;
   analyse.risks.forEach(r=>{
-    [["initial",r.initial_assessment],["residual",residual(r)]].forEach(([w,ev])=>{
+    pairs(r).forEach(([w,ev])=>{
       if(getPlace(r.id,w))return;
       const k=w+"|"+ev.probability+"-"+ev.severity,used=occ[k]=occ[k]||new Set();
       const slot=order.find(([c,ro])=>!used.has(c+","+ro))||[Math.floor(N/2),Math.floor(N/2)];
@@ -5498,7 +5605,7 @@ function commitManualDrop(mc,r,which,px,py){
   const applies=which==="both"?["initial","residual"]:[which];
   applies.forEach(w=>{
     const [fc,fr]=nearestFreeSlot(cell.p,cell.g,w,r.id,col,row);
-    ensureEval(r,w);const ev=w==="initial"?r.initial_assessment:r.residual_assessment;
+    ensureEval(r,w);const ev=w==="initial"?r.initial_assessment:w==="current"?r.current_assessment:r.residual_assessment;
     ev.probability=cell.p;ev.severity=cell.g;setPlace(r.id,w,fc,fr);
   });
   markDirty();renderRisks();requestAnimationFrame(renderMatrices);
@@ -5518,7 +5625,7 @@ document.getElementById("view-matrices").addEventListener("keydown",e=>{
   const r=riskById(chip.dataset.rid);if(!r)return;
   e.preventDefault();
   const which=whichOfKind(chip.dataset.kind);
-  const ev=which==="residual"?residual(r):r.initial_assessment;
+  const ev=which==="residual"?residual(r):which==="current"?current(r):r.initial_assessment;
   const ps=probabilityLevels().slice().sort((a,b)=>a.value-b.value);
   const gs=severityLevels().slice().sort((a,b)=>a.value-b.value);
   const ip=ps.findIndex(x=>x.value===ev.probability), ig=gs.findIndex(x=>x.value===ev.severity);
@@ -5648,25 +5755,25 @@ function renderManualTraj(mc){
   const S=anyCell.getBoundingClientRect().width,N=getGridStep(),size=manualChipSize(S,N),rad=size/2;
   const posFor=(r,w)=>{const ev=evalOf(r,w),c=cellCenterRel(mc,ev.probability,ev.severity);if(!c)return null;
     const pl=getPlace(r.id,w)||{col:Math.floor(N/2),row:Math.floor(N/2)};return {x:c.x+snapOff(pl.col,S,N),y:c.y+snapOff(pl.row,S,N)};};
-  // flèches
-  visibleRisks().forEach(r=>{const a=r.initial_assessment,b=residual(r);
-    if(a.probability===b.probability&&a.severity===b.severity)return;
-    const ps=posFor(r,"initial"),pe=posFor(r,"residual");if(!ps||!pe)return;
-    const ang=Math.atan2(pe.y-ps.y,pe.x-ps.x),pad=rad+3;
-    trajArrow(svg, ps.x+Math.cos(ang)*pad, ps.y+Math.sin(ang)*pad, pe.x-Math.cos(ang)*pad, pe.y-Math.sin(ang)*pad, r);});
+  const wOf=k=>k==="start"?"initial":k==="mid"?"current":"residual";
+  // flèches (entre stades consécutifs)
+  visibleRisks().forEach(r=>{const stages=riskTrajStages(r);if(stages.length<2)return;
+    for(let i=1;i<stages.length;i++){
+      const pa=posFor(r,wOf(stages[i-1].kind)),pb=posFor(r,wOf(stages[i].kind));if(!pa||!pb)continue;
+      const ang=Math.atan2(pb.y-pa.y,pb.x-pa.x),pad=rad+3;
+      trajArrow(svg, pa.x+Math.cos(ang)*pad, pa.y+Math.sin(ang)*pad, pb.x-Math.cos(ang)*pad, pb.y-Math.sin(ang)*pad, r, stages[i].dashedIn);}});
   // pastilles
-  visibleRisks().forEach(r=>{const a=r.initial_assessment,b=residual(r);
-    if(a.probability===b.probability&&a.severity===b.severity){
+  visibleRisks().forEach(r=>{const stages=riskTrajStages(r);
+    if(stages.length===1){
       /* La pastille unique d'un risque non réduit EST sa pastille résiduelle : elle se
          dessine à l'emplacement résiduel, et c'est cette cotation que le glisser modifie
          (cf. whichOfKind). La dessiner à l'emplacement initial la figerait : un dépôt dans
-         la case de départ, ou la réunion des deux pastilles dans une même case, laisserait
+         la case de départ, ou la réunion des pastilles dans une même case, laisserait
          la pastille là où elle était au lieu de suivre le geste. */
       const p=posFor(r,"residual");if(!p)return;const c=makeOvChip(r,"unchanged",size);
       c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,"residual");chipsEl.appendChild(c);return;}
-    const ps=posFor(r,"initial"),pe=posFor(r,"residual");
-    if(ps){const cs=makeOvChip(r,"start",size);cs.style.left=ps.x+"px";cs.style.top=ps.y+"px";attachManualDrag(cs,mc,r,"initial");chipsEl.appendChild(cs);}
-    if(pe){const ce=makeOvChip(r,"end",size);ce.style.left=pe.x+"px";ce.style.top=pe.y+"px";attachManualDrag(ce,mc,r,"residual");chipsEl.appendChild(ce);}
+    stages.forEach(st=>{const w=wOf(st.kind),p=posFor(r,w);if(!p)return;
+      const c=makeOvChip(r,st.kind,size);c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,w);chipsEl.appendChild(c);});
   });
 }
 /* Disposition trajectoire — grille optimisée : placement sur une grille K×K par case
@@ -5686,16 +5793,17 @@ function layoutTrajectoryGridOpt(mc){
 
   const tokens=[],arrows=[];
   visibleRisks().forEach(r=>{
-    const a=r.initial_assessment,b=residual(r);
-    const ca=center(a.probability,a.severity);if(!ca)return;
-    if(a.probability===b.probability&&a.severity===b.severity){
-      tokens.push({risk:r,kind:"unchanged",p:a.probability,g:a.severity,cx:ca.x,cy:ca.y,si:0,sj:0,arrow:null});return;}
-    const cb=center(b.probability,b.severity);if(!cb)return;
-    const type=a.probability===b.probability?"H":(a.severity===b.severity?"V":"D");
-    const st={risk:r,kind:"start",p:a.probability,g:a.severity,cx:ca.x,cy:ca.y,si:0,sj:0};
-    const en={risk:r,kind:"end",p:b.probability,g:b.severity,cx:cb.x,cy:cb.y,si:0,sj:0};
-    const arr={start:st,end:en,type};st.arrow=arr;en.arrow=arr;
-    tokens.push(st,en);arrows.push(arr);
+    const stages=riskTrajStages(r);
+    const toks=stages.map(st=>{const c=center(st.ev.probability,st.ev.severity);
+      return c?{risk:r,kind:st.kind,p:st.ev.probability,g:st.ev.severity,cx:c.x,cy:c.y,si:0,sj:0,arrows:[]}:null;});
+    if(toks.some(x=>!x))return;   // au moins une case hors grille : on ignore ce risque
+    toks.forEach(tk=>tokens.push(tk));
+    for(let i=1;i<toks.length;i++){
+      const a=toks[i-1],b=toks[i];
+      const type=a.p===b.p?"H":(a.g===b.g?"V":"D");
+      const arr={start:a,end:b,type,dashed:stages[i].dashedIn};
+      a.arrows.push(arr);b.arrows.push(arr);arrows.push(arr);
+    }
   });
   if(!tokens.length)return;
 
@@ -5770,11 +5878,11 @@ function layoutTrajectoryGridOpt(mc){
     const s=aseg(a),d=segDist(posX(t),posY(t),s[0],s[1],s[2],s[3]);return d>=thrOn?0:W_ON*(1-d/thrOn);}
   const ctrCost=t=>W_CTR*(Math.abs(t.si-cInd)+Math.abs(t.sj-cInd));
   function localCost(t){ // somme des termes qui varient quand t bouge
-    let c=ctrCost(t);const arr=t.arrow;
-    if(arr){c+=arrBase(arr);
+    let c=ctrCost(t);
+    t.arrows.forEach(arr=>{c+=arrBase(arr);
       arrows.forEach(b=>{if(b!==arr)c+=pairConflict(arr,b);});
-      tokens.forEach(u=>{if(u!==arr.start&&u!==arr.end)c+=onArrow(u,arr);});}
-    arrows.forEach(b=>{if(b!==arr)c+=onArrow(t,b);});
+      tokens.forEach(u=>{if(u!==arr.start&&u!==arr.end)c+=onArrow(u,arr);});});
+    arrows.forEach(b=>{if(t.arrows.indexOf(b)<0)c+=onArrow(t,b);});   // flèches dont t n'est pas une extrémité
     return c;}
   function totalCost(){let c=0;tokens.forEach(t=>c+=ctrCost(t));arrows.forEach(a=>c+=arrBase(a));
     for(let i=0;i<arrows.length;i++)for(let j=i+1;j<arrows.length;j++)c+=pairConflict(arrows[i],arrows[j]);
@@ -5824,7 +5932,7 @@ function layoutTrajectoryGridOpt(mc){
   /* ---- tracé ---- */
   arrows.forEach(a=>{const ax=a.start.cx+a.start.dx,ay=a.start.cy+a.start.dy,bx=a.end.cx+a.end.dx,by=a.end.cy+a.end.dy;
     const ang=Math.atan2(by-ay,bx-ax),pad=rad+3;
-    trajArrow(svg,ax+Math.cos(ang)*pad,ay+Math.sin(ang)*pad,bx-Math.cos(ang)*pad,by-Math.sin(ang)*pad,a.start.risk);});
+    trajArrow(svg,ax+Math.cos(ang)*pad,ay+Math.sin(ang)*pad,bx-Math.cos(ang)*pad,by-Math.sin(ang)*pad,a.start.risk,a.dashed);});
   tokens.forEach(t=>{const c=makeOvChip(t.risk,t.kind,size);
     c.style.left=(t.cx+t.dx)+"px";c.style.top=(t.cy+t.dy)+"px";
     attachCellDrag(c,t.risk,t.kind);   // disposition « flèches optimisées », la plus courante
@@ -5900,7 +6008,8 @@ function svgChipEl(el,ox,oy){
 function svgArrowEl(l,ox,oy,mrect){
   const mx=mrect.left-ox,my=mrect.top-oy;
   const x1=+l.getAttribute("x1")+mx,y1=+l.getAttribute("y1")+my,x2=+l.getAttribute("x2")+mx,y2=+l.getAttribute("y2")+my;
-  return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(l.getAttribute("stroke")||"#fff")+'" stroke-width="'+(l.getAttribute("stroke-width")||2)+'" stroke-linecap="round" marker-end="url(#ah)"/>';
+  const da=l.getAttribute("stroke-dasharray");
+  return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(l.getAttribute("stroke")||"#fff")+'" stroke-width="'+(l.getAttribute("stroke-width")||2)+'" stroke-linecap="round"'+(da?' stroke-dasharray="'+da+'"':'')+' marker-end="url(#ah)"/>';
 }
 function buildLegendSVG(legendEl,W,startY,bodyFont,groupBreaks){
   const ctx=exportCtx();ctx.font="12px "+bodyFont;
@@ -5991,6 +6100,7 @@ let _dragging=false; // vrai pendant un glisser-déposer : masque les tooltips
    ou pastille unique d'un risque non réduit, qui porte alors les deux cotations. */
 function whichOfKind(kind){
   if(kind==="start"||kind==="initial")return "initial";
+  if(kind==="mid"||kind==="current")return "current";   // pastille « Actuelle » (mode 3)
   /* "unchanged" : risque non encore réduit, affiché par une pastille unique. Le déplacer
      revient à dire « voilà où il se situera après traitement » : on modifie donc la
      cotation résiduelle seule. Emporter aussi l'initiale effacerait l'évaluation d'origine,
@@ -6011,7 +6121,7 @@ function setRiskCell(r,which,p,g,annoncer){
   let change=false;
   applies.forEach(w=>{
     ensureEval(r,w);
-    const ev=w==="initial"?r.initial_assessment:r.residual_assessment;
+    const ev=w==="initial"?r.initial_assessment:w==="current"?r.current_assessment:r.residual_assessment;
     if(ev.probability!==p||ev.severity!==g)change=true;
     ev.probability=p;ev.severity=g;
     if(getArrangement()==="manual"){
@@ -6078,8 +6188,9 @@ function attachTip(el,r,kind){
   // Contenu de l'infobulle + version texte, qui sert de nom accessible à la pastille.
   const build=()=>{
     let head,ev;
-    if(kind==="initial"||kind==="start"){head=t("tip_initial");ev=r.initial_assessment;}
-    else if(kind==="residual"||kind==="end"){head=t("tip_residual");ev=residual(r);}
+    if(kind==="initial"||kind==="start"){head=assessmentLevels()===3?t("lvl_inherent"):t("tip_initial");ev=r.initial_assessment;}
+    else if(kind==="mid"||kind==="current"){head=t("lvl_current");ev=current(r);}
+    else if(kind==="residual"||kind==="end"){head=assessmentLevels()===3?t("lvl_residual"):t("tip_residual");ev=residual(r);}
     else{head=t("tip_unchanged");ev=r.initial_assessment;}
     const sc=scoreOf(ev.probability,ev.severity),c=critFor(sc);
     const cote=head+' · '+t("abbr_prob")+ev.probability+' × '+t("abbr_grav")+ev.severity+' = '+sc+' ('+c.label+')';
@@ -7387,6 +7498,7 @@ function riskCmp(col){return (a,b)=>{
   if(col==="cat")return (a.category||"").localeCompare(b.category||"");
   if(col==="owner")return (a.owner||"").localeCompare(b.owner||"");
   if(col==="initial")return scoreOf(a.initial_assessment.probability,a.initial_assessment.severity)-scoreOf(b.initial_assessment.probability,b.initial_assessment.severity);
+  if(col==="current"){const ca=current(a),cb=current(b);return scoreOf(ca.probability,ca.severity)-scoreOf(cb.probability,cb.severity);}
   if(col==="residual"){const ra=residual(a),rb=residual(b);return scoreOf(ra.probability,ra.severity)-scoreOf(rb.probability,rb.severity);}
   if(col==="evolution"){const dl=x=>scoreOf(residual(x).probability,residual(x).severity)-scoreOf(x.initial_assessment.probability,x.initial_assessment.severity);return dl(a)-dl(b);}
   if(col&&col.indexOf("cf:")===0)return cfColCompare("risk",col.slice(3),a,b);
@@ -7431,7 +7543,7 @@ const CF_SORTABLE_TYPES=["boolean","integer","float","date","text","select","pro
 function cfColSortable(f){return f&&CF_SORTABLE_TYPES.indexOf(f.type)>=0;}
 function cfTargetOf(table){return table==="risks"?"risk":table==="measures"?"measure":"link";}
 function riskCellTag(r,which){
-  const ev=which==="i"?r.initial_assessment:residual(r);const c=critOfEval(ev),s=scoreOf(ev.probability,ev.severity);
+  const ev=which==="i"?r.initial_assessment:which==="c"?current(r):residual(r);const c=critOfEval(ev),s=scoreOf(ev.probability,ev.severity);
   return '<span class="tag" style="background:'+c.color+';color:'+badgeFg(c.color)+'">'+esc(c.label)+' · '+s+'</span>';
 }
 /* Cotations initiale et résiduelle d'un risque (probabilité, gravité, score, niveau de criticité)
@@ -7476,16 +7588,19 @@ function riskPill(id){const rr=riskById(id);
 // Descripteurs des colonnes intégrées (hors Actions), par table.
 function builtinCols(table){
   if(table==="risks"){
+    const L3=assessmentLevels()===3;
+    const labInit=L3?t("lvl_inherent"):t("th_initial"), labResid=L3?t("lvl_residual"):t("th_residual");
     const cols=[
     {key:"id",label:t("th_id"),pinned:"first",sort:"id",cell:r=>'<span class="id-badge">'+esc(r.id)+'</span>'},   // poignée déportée dans sa propre colonne (reg-grip-col)
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:r=>'<b>'+esc(r.label)+'</b>'},
     {key:"cat",label:t("th_category"),sort:"cat",text:true,cell:r=>'<span class="muted">'+esc(r.category||"—")+'</span>'},
     {key:"owner",label:t("f_owner"),sort:"owner",def:false,text:true,cell:r=>'<span class="muted">'+esc(r.owner||"—")+'</span>'},
-    {key:"initial",label:t("th_initial"),sort:"initial",cell:r=>riskCellTag(r,"i")},
-    {key:"residual",label:t("th_residual"),sort:"residual",cell:r=>riskCellTag(r,"r")},
-    {key:"measures",label:t("th_measures"),cell:r=>{const m=measuresOfRisk(r.id);return m.length?'<span class="pill-list">'+m.map(id=>measurePill(id)).join("")+'</span>':'<span class="muted">—</span>';}},
-    {key:"evolution",label:t("th_evolution"),sort:"evolution",cell:r=>riskDeltaCell(r)},
+    {key:"initial",label:labInit,sort:"initial",cell:r=>riskCellTag(r,"i")},
     ];
+    if(L3)cols.push({key:"current",label:t("lvl_current"),sort:"current",cell:r=>riskCellTag(r,"c")});
+    cols.push({key:"residual",label:labResid,sort:"residual",cell:r=>riskCellTag(r,"r")});
+    cols.push({key:"measures",label:t("th_measures"),cell:r=>{const m=measuresOfRisk(r.id);return m.length?'<span class="pill-list">'+m.map(id=>measurePill(id)).join("")+'</span>':'<span class="muted">—</span>';}});
+    cols.push({key:"evolution",label:t("th_evolution"),sort:"evolution",cell:r=>riskDeltaCell(r)});
     // Colonnes détaillées disponibles au sélecteur (par défaut « en détail ») : description, notes,
     // et le détail des cotations initiale/résiduelle (vraisemblance, gravité, score, champs de cotation).
     const dash='<span class="muted">—</span>';
@@ -7493,8 +7608,9 @@ function builtinCols(table){
     cols.push({key:"comment",label:t("f_notes"),text:true,detail:true,cell:r=>r.comment?mdToHTML(r.comment):dash});
     const axV=analyse.grid.vertical_axis.label, axH=analyse.grid.horizontal_axis.label;
     const lvl=(levels,v)=>{const l=levels.find(x=>x.value===v);let lb=l&&l.label;if(lb&&typeof lb==="object")lb=lb[lang]||lb.fr||Object.values(lb)[0];return lb||(v!=null?String(v):"");};
-    const ass=(r,ph)=>ph==="i"?r.initial_assessment:residual(r);
-    [["i",t("th_initial")],["r",t("th_residual")]].forEach(([ph,pl])=>{
+    const ass=(r,ph)=>ph==="i"?r.initial_assessment:ph==="c"?current(r):residual(r);
+    const phases=L3?[["i",labInit],["c",t("lvl_current")],["r",labResid]]:[["i",t("th_initial")],["r",t("th_residual")]];
+    phases.forEach(([ph,pl])=>{
       cols.push({key:"prob_"+ph,label:pl+" · "+axV,detail:true,cell:r=>{const e=ass(r,ph);return e&&e.probability!=null?esc(lvl(probabilityLevels(),e.probability))+' <span class="muted">('+e.probability+')</span>':dash;}});
       cols.push({key:"sev_"+ph,label:pl+" · "+axH,detail:true,cell:r=>{const e=ass(r,ph);return e&&e.severity!=null?esc(lvl(severityLevels(),e.severity))+' <span class="muted">('+e.severity+')</span>':dash;}});
       cols.push({key:"score_"+ph,label:pl+" · "+t("th_score"),detail:true,cell:r=>{const e=ass(r,ph);return e&&e.probability!=null&&e.severity!=null?'<b>'+scoreOf(e.probability,e.severity)+'</b>':dash;}});
@@ -7520,13 +7636,17 @@ function builtinCols(table){
     {key:"comment",label:t("f_notes"),text:true,detail:true,cell:m=>m.comment?mdToHTML(m.comment):dash},
   ];
   }
-  return [ // links (le champ « custom » vit dans l'objet treatment)
+  const L3l=assessmentLevels()===3;
+  const linkCols=[ // links (le champ « custom » vit dans l'objet treatment)
     {key:"rid",label:t("th_risk_id"),pinned:"first",sort:"rid",cell:x=>'<span class="id-badge">'+esc(x.risk)+'</span>'},
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
     {key:"mid",label:t("th_measure_id"),sort:"mid",cell:x=>'<span class="id-badge">'+esc(x.measure)+'</span>'},
     {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:x=>{const m=measureById(x.measure);return esc(m?m.label:"—");}},
     {key:"notes",label:t("f_notes"),sort:"notes",text:true,detail:true,cell:x=>x.comment?mdToHTML(x.comment):'<span class="muted">—</span>'},   // Markdown rendu (tableau écrêté + loupe, tiroir, cartes)
   ];
+  // Mode 3 : transition à laquelle chaque lien contribue, d'après le statut de sa mesure.
+  if(L3l)linkCols.splice(4,0,{key:"transition",label:t("th_transition"),cell:x=>{const m=measureById(x.measure);return transitionCell(m&&m.status);}});
+  return linkCols;
 }
 function cfIsTextCol(f){return f&&(f.type==="text"||f.type==="textarea"||(f.type==="computed"&&(f.result_type||"number")==="text"));}
 function cfCols(table){
@@ -8373,6 +8493,8 @@ function openRiskModal(id,dup,focusCol){
   const linked=new Set(isNew?(dup&&dup.linked||[]):measuresOfRisk(r.id));
 
   const pAxis=analyse.grid.vertical_axis, gAxis=analyse.grid.horizontal_axis;
+  const L3=assessmentLevels()===3;
+  const cur=r.current_assessment||JSON.parse(JSON.stringify(r.initial_assessment));
   const body=
     reqLegend()+
     '<div class="grid2">'+
@@ -8385,13 +8507,19 @@ function openRiskModal(id,dup,focusCol){
       '<label class="field full"><span class="lab">'+esc(t("f_notes"))+'</span><textarea id="f_comment">'+esc(r.comment||"")+'</textarea></label>'+
     '</div>'+
     '<div class="row">'+
-      '<div class="sub-card"><b>'+esc(t("eval_initial"))+'</b>'+
+      '<div class="sub-card"><b>'+esc(L3?t("lvl_inherent"):t("eval_initial"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_ip">'+levelSelect(pAxis,r.initial_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_ig">'+levelSelect(gAxis,r.initial_assessment.severity)+'</select></label>'+
         '<div id="f_icustom">'+cfFieldsHTML("cotation",r.initial_assessment.custom)+'</div>'+
         '<div class="hint" id="prev_i"></div>'+
       '</div>'+
-      '<div class="sub-card"><b>'+esc(t("eval_residual"))+'</b>'+
+      (L3?'<div class="sub-card"><b>'+esc(t("lvl_current"))+'</b>'+
+        '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_cp">'+levelSelect(pAxis,cur.probability)+'</select></label>'+
+        '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_cg">'+levelSelect(gAxis,cur.severity)+'</select></label>'+
+        '<div id="f_ccustom">'+cfFieldsHTML("cotation",cur.custom)+'</div>'+
+        '<div class="hint" id="prev_c"></div>'+
+      '</div>':'')+
+      '<div class="sub-card"><b>'+esc(L3?t("lvl_residual"):t("eval_residual"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_rp">'+levelSelect(pAxis,r.residual_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_rg">'+levelSelect(gAxis,r.residual_assessment.severity)+'</select></label>'+
         '<div id="f_rcustom">'+cfFieldsHTML("cotation",r.residual_assessment.custom)+'</div>'+
@@ -8416,11 +8544,15 @@ function openRiskModal(id,dup,focusCol){
     const ci=cfCollect("cotation",document.getElementById("f_icustom")), cr=cfCollect("cotation",document.getElementById("f_rcustom"));
     if(ci.error){modalMsg(ci.error);modalFocusInvalid(ci.cont);return false;}
     if(cr.error){modalMsg(cr.error);modalFocusInvalid(cr.cont);return false;}
+    let cc2=null;
+    if(L3){cc2=cfCollect("cotation",document.getElementById("f_ccustom"));if(cc2.error){modalMsg(cc2.error);modalFocusInvalid(cc2.cont);return false;}}
     const mkAssess=(p,s,cv)=>{const a={probability:+val(p),severity:+val(s)};if(Object.keys(cv).length)a.custom=cv;return a;};
     const obj={id:newId,label:lib,category:val("f_cat").trim(),owner:val("f_prop").trim(),
       description:val("f_desc").trim(),comment:val("f_comment").trim(),
       initial_assessment:mkAssess("f_ip","f_ig",ci.custom),
       residual_assessment:mkAssess("f_rp","f_rg",cr.custom)};
+    if(L3)obj.current_assessment=mkAssess("f_cp","f_cg",cc2.custom);
+    else if(r.current_assessment)obj.current_assessment=r.current_assessment;  // mode 2 : conserver une cotation actuelle masquée
     if(!obj.category)delete obj.category;if(!obj.owner)delete obj.owner;if(!obj.description)delete obj.description;if(!obj.comment)delete obj.comment;
     if(Object.keys(cc.custom).length)obj.custom=cc.custom;
     if(isNew)analyse.risks.push(obj);
@@ -8445,13 +8577,13 @@ function openRiskModal(id,dup,focusCol){
   attachCompletion(document.getElementById("f_cat"),"category",t("cbx_category"));
 
   // aperçus dynamiques du score/criticité
+  const prevInto=(id,p,g)=>{const s=scoreOf(p,g),cr=critFor(s);document.getElementById(id).innerHTML=esc(t("score_prefix",s))+'<span class="tag" style="background:'+cr.color+';color:'+badgeFg(cr.color)+'">'+esc(cr.label)+'</span>';};
   const upd=()=>{
-    const ip=+val("f_ip"),ig=+val("f_ig"),rp=+val("f_rp"),rg=+val("f_rg");
-    const si=scoreOf(ip,ig),critI=critFor(si),sr=scoreOf(rp,rg),critR=critFor(sr);
-    document.getElementById("prev_i").innerHTML=esc(t("score_prefix",si))+'<span class="tag" style="background:'+critI.color+';color:'+badgeFg(critI.color)+'">'+esc(critI.label)+'</span>';
-    document.getElementById("prev_r").innerHTML=esc(t("score_prefix",sr))+'<span class="tag" style="background:'+critR.color+';color:'+badgeFg(critR.color)+'">'+esc(critR.label)+'</span>';
+    prevInto("prev_i",+val("f_ip"),+val("f_ig"));
+    prevInto("prev_r",+val("f_rp"),+val("f_rg"));
+    if(L3)prevInto("prev_c",+val("f_cp"),+val("f_cg"));
   };
-  ["f_ip","f_ig","f_rp","f_rg"].forEach(id=>document.getElementById(id).addEventListener("change",upd));
+  (L3?["f_ip","f_ig","f_cp","f_cg","f_rp","f_rg"]:["f_ip","f_ig","f_rp","f_rg"]).forEach(id=>document.getElementById(id).addEventListener("change",upd));
   upd();
 
   /* Compteur « liées / total » de la section des mesures, tenu à jour à chaque case cochée
@@ -11965,6 +12097,7 @@ function renderSettings(){
   renderAxis("axisProb",analyse.grid.vertical_axis,"prob");
   renderAxis("axisGrav",analyse.grid.horizontal_axis,"grav");
   document.getElementById("scoreMethode").value=analyse.grid.score.method||"product";
+  document.getElementById("assessLevels").value=String(assessmentLevels());
   document.getElementById("arrangementSel").value=getArrangement();
   document.getElementById("trajArrangementSel").value=getTrajArrangement();
   document.getElementById("cfgEspacement").value=getCellSpacing();
@@ -13966,6 +14099,8 @@ document.getElementById("view-settings").addEventListener("change",e=>{
     analyse.grid.score.method=e.target.value;
     if(e.target.value==="matrix"&&!Array.isArray(analyse.grid.score.matrix))seedMatrix();
     markDirty();renderMatrixEditor();renderRisks();requestAnimationFrame(renderMatrices);}
+  if(e.target.id==="assessLevels"){setAssessmentLevels(+e.target.value);renderAll();
+    if(document.getElementById("view-report").classList.contains("active"))renderReport();}
   if(e.target.id==="arrangementSel"){setArrangement(e.target.value);requestAnimationFrame(renderMatrices);}
   if(e.target.id==="trajArrangementSel"){setTrajArrangement(e.target.value);requestAnimationFrame(renderMatrices);}
   if(e.target.id==="cfgEchelle"){setDisplaySetting("png_scale",+e.target.value);}
