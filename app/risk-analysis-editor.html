@@ -1249,11 +1249,11 @@
       <div class="matrix-toolbar">
         <div class="seg" id="radarEvalSeg">
           <button type="button" data-v="initial" data-i18n="th_initial">Initial</button>
-          <button type="button" data-v="current" data-i18n="lvl_current" style="display:none">Actuelle</button>
           <button type="button" data-v="residual" data-i18n="th_residual">Résiduel</button>
           <button type="button" data-v="both-side" data-i18n="radar_eval_side">Accolés</button>
           <button type="button" data-v="both-over" class="active" data-i18n="radar_eval_over">Superposés</button>
         </div>
+        <select id="radarEvalSel" class="topsel" style="max-width:290px;display:none"></select>
         <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
           <span data-i18n="radar_dim">Dimension</span>
           <select id="radarDim"></select>
@@ -1717,6 +1717,9 @@ const I18N = {
     btn_import_csv:"⭱ Importer (CSV)", btn_export_csv:"⭳ Exporter (CSV)", toast_csv_export:"CSV exporté : {0}", btn_add_risk:"+ Ajouter un risque",
     th_id:"ID", th_risk:"Risque", th_risk_id:"ID risque", th_measure_id:"ID mesure", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel", th_score:"Score",
     lvl_inherent:"Inhérente", lvl_current:"Actuelle", lvl_residual:"Résiduelle",
+    sub_iar:"Inhérente · Actuelle · Résiduelle", sub_ar:"Actuelle · Résiduelle", sub_ir:"Inhérente · Résiduelle",
+    rad_over_iar:"Superposé · Inhérente · Actuelle · Résiduelle", rad_over_ar:"Superposé · Actuelle · Résiduelle", rad_over_ir:"Superposé · Inhérente · Résiduelle",
+    leg_arrow_ir:"Flèche : réduction globale (Inhérente → Résiduelle)",
     assess_levels_label:"Niveaux de cotation", assess_levels_2:"2 (Initiale · Résiduelle)", assess_levels_3:"3 (Inhérente · Actuelle · Résiduelle)",
     assess_levels_help:"Trois niveaux : risque inhérent (sans mesure), actuel (mesures en place), résiduel (mesures proposées/planifiées/en cours).",
     th_measures:"Mesures", th_evolution:"Évolution",
@@ -2132,6 +2135,9 @@ const I18N = {
     btn_import_csv:"⭱ Import (CSV)", btn_export_csv:"⭳ Export (CSV)", toast_csv_export:"CSV exported: {0}", btn_add_risk:"+ Add a risk",
     th_id:"ID", th_risk:"Risk", th_risk_id:"Risk ID", th_measure_id:"Measure ID", th_category:"Category", th_initial:"Initial", th_residual:"Residual", th_score:"Score",
     lvl_inherent:"Inherent", lvl_current:"Current", lvl_residual:"Residual",
+    sub_iar:"Inherent · Current · Residual", sub_ar:"Current · Residual", sub_ir:"Inherent · Residual",
+    rad_over_iar:"Overlaid · Inherent · Current · Residual", rad_over_ar:"Overlaid · Current · Residual", rad_over_ir:"Overlaid · Inherent · Residual",
+    leg_arrow_ir:"Arrow: overall reduction (Inherent → Residual)",
     assess_levels_label:"Rating levels", assess_levels_2:"2 (Initial · Residual)", assess_levels_3:"3 (Inherent · Current · Residual)",
     assess_levels_help:"Three levels: inherent risk (no measure), current (measures in place), residual (proposed/planned/in-progress measures).",
     th_measures:"Measures", th_evolution:"Change",
@@ -2542,6 +2548,9 @@ const I18N = {
     btn_import_csv:"⭱ Importa (CSV)", btn_export_csv:"⭳ Esporta (CSV)", toast_csv_export:"CSV esportato: {0}", btn_add_risk:"+ Aggiungi un rischio",
     th_id:"ID", th_risk:"Rischio", th_risk_id:"ID rischio", th_measure_id:"ID misura", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo", th_score:"Punteggio",
     lvl_inherent:"Inerente", lvl_current:"Attuale", lvl_residual:"Residua",
+    sub_iar:"Inerente · Attuale · Residua", sub_ar:"Attuale · Residua", sub_ir:"Inerente · Residua",
+    rad_over_iar:"Sovrapposto · Inerente · Attuale · Residua", rad_over_ar:"Sovrapposto · Attuale · Residua", rad_over_ir:"Sovrapposto · Inerente · Residua",
+    leg_arrow_ir:"Freccia: riduzione globale (Inerente → Residua)",
     assess_levels_label:"Livelli di valutazione", assess_levels_2:"2 (Iniziale · Residua)", assess_levels_3:"3 (Inerente · Attuale · Residua)",
     assess_levels_help:"Tre livelli: rischio inerente (nessuna misura), attuale (misure attuate), residuo (misure proposte/pianificate/in corso).",
     th_measures:"Misure", th_evolution:"Evoluzione",
@@ -3403,6 +3412,16 @@ function setAssessmentLevels(n){const e=analyse.extensions=analyse.extensions||{
 function current(risk){return risk.current_assessment||risk.initial_assessment;}
 /* Accès générique par niveau logique : "inherent" (=initiale), "current" (=actuelle), "residual" (=résiduelle). */
 function assessmentOf(risk,level){return level==="current"?current(risk):level==="inherent"?(risk.initial_assessment):residual(risk);}
+/* Sous-ensemble de niveaux affichés (mode 3) pour les matrices accolées ("side") et la trajectoire ("traj") :
+   "iar" (Inhérente·Actuelle·Résiduelle, défaut) | "ar" (Actuelle·Résiduelle) | "ir" (Inhérente·Résiduelle). */
+function levelSubset(view){const key=view==="side"?"matrix_subset":"traj_subset";
+  const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display[key];
+  return (v==="ar"||v==="ir")?v:"iar";}
+function setLevelSubset(view,v){const e=analyse.extensions=analyse.extensions||{},d=e.display=e.display||{};
+  const key=view==="side"?"matrix_subset":"traj_subset";
+  if(v==="iar")delete d[key];else d[key]=v;markDirty();}   // défaut non écrit
+/* Niveaux logiques d'un sous-ensemble, dans l'ordre (grille "initial"/"current"/"residual"). */
+function subsetLevels(sub){return sub==="ar"?["current","residual"]:sub==="ir"?["initial","residual"]:["initial","current","residual"];}
 /* Suite ordonnée des pastilles de trajectoire d'un risque (une par case distincte occupée).
    Mode 2 : [initiale → résiduelle]. Mode 3 : [inhérente → actuelle → résiduelle].
    Chaque pastille : {ev, kind, app, dashedIn}.
@@ -3416,22 +3435,33 @@ function riskTrajStages(r){
   const L3=assessmentLevels()===3;
   if(!L3){
     const I=r.initial_assessment,R=residual(r);
-    if(_cellSame(I,R))return [{ev:I,kind:"unchanged",app:"unchanged",dashedIn:false}];
-    return [{ev:I,kind:"start",app:"start",dashedIn:false},{ev:R,kind:"end",app:"end",dashedIn:false}];
+    if(_cellSame(I,R))return [{ev:I,kind:"unchanged",app:"unchanged",dashedIn:false,level:"residual"}];
+    return [{ev:I,kind:"start",app:"start",dashedIn:false,level:"initial"},{ev:R,kind:"end",app:"end",dashedIn:false,level:"residual"}];
   }
-  const I=r.initial_assessment,A=current(r),R=residual(r);
-  // Cas dégénéré : Inhérente et Résiduelle sur la même case (aller-retour ou tout identique)
-  // → une seule pastille « aucune réduction » (cf. demande : traité comme non réduit I·A·R).
-  if(_cellSame(I,R))return [{ev:I,kind:"unchanged",app:"unch_all",dashedIn:false}];
-  // Accumuler les stades par case distincte (I → A → R), en mémorisant les lettres présentes.
+  const sub=levelSubset("traj");
+  // Séquence de stades selon le sous-ensemble (I·A·R par défaut, A·R ou I·R).
+  const seq=sub==="ar"?[["a",current(r)],["r",residual(r)]]
+    :sub==="ir"?[["i",r.initial_assessment],["r",residual(r)]]
+    :[["i",r.initial_assessment],["a",current(r)],["r",residual(r)]];
+  // Cas dégénéré propre à I·A·R : extrémités sur la même case malgré un stade intermédiaire distinct
+  // (I=R≠A) → une seule pastille « aucune réduction » (cf. demande). Les sous-ensembles à 2 stades
+  // gèrent l'égalité par la fusion ci-dessous (A=R → unch_ar, I=R → unch_all).
+  if(sub==="iar"&&_cellSame(seq[0][1],seq[2][1]))return [{ev:seq[0][1],kind:"unchanged",app:"unch_all",dashedIn:false,level:"residual"}];
+  // Accumuler les stades par case distincte, en mémorisant les lettres présentes.
   const pts=[];
-  [["i",I],["a",A],["r",R]].forEach(([ltr,ev])=>{const last=pts[pts.length-1];
+  seq.forEach(([ltr,ev])=>{const last=pts[pts.length-1];
     if(last&&_cellSame(last.ev,ev))last.letters+=ltr;else pts.push({ev:ev,letters:ltr});});
-  const appOf=l=>({i:"inherent",a:"current",r:"residual",ia:"unch_ia",ar:"unch_ar",iar:"unch_all"})[l]||"current";
-  return pts.map((p,idx)=>({ev:p.ev,
-    kind:idx===0?"start":(idx===pts.length-1?"end":"mid"),
-    app:appOf(p.letters),
-    dashedIn:p.letters[0]==="r"}));   // pastille dont le 1er stade est R : flèche entrante Actuelle→Résiduelle (pointillée)
+  const appOf=l=>({i:"inherent",a:"current",r:"residual",ia:"unch_ia",ar:"unch_ar",ir:"unch_all",iar:"unch_all"})[l]||"current";
+  const whichOf={i:"initial",a:"current",r:"residual"};
+  return pts.map((p,idx)=>{
+    const prevLast=idx>0?pts[idx-1].letters.slice(-1):null;
+    return {ev:p.ev,
+      kind:idx===0?"start":(idx===pts.length-1?"end":"mid"),
+      app:appOf(p.letters),
+      level:whichOf[p.letters[0]],   // cotation ciblée par le glisser (1er stade de la case)
+      // flèche entrante pointillée uniquement pour la transition Actuelle→Résiduelle
+      dashedIn:prevLast==="a"&&p.letters[0]==="r"};
+  });
 }
 /* Transition à laquelle une mesure contribue (mode 3), d'après son statut :
    « en place » (implemented) réduit Inhérente→Actuelle (flèche pleine) ;
@@ -4575,7 +4605,7 @@ function radarViewLoad(){
   const fields=radarDimFields();
   radarState.dim=(v.dim==="cat"||fields.some(f=>f.code===v.dim))?v.dim:"cat";
   radarState.metric=(["avg","max","sum","weighted","count"].indexOf(v.metric)>=0||radarFieldMetric(v.metric))?v.metric:"avg";
-  radarState.eval=["initial","current","residual","both-side","both-over"].indexOf(v.eval)>=0?v.eval:"both-over";
+  radarState.eval=["initial","current","residual","both-side","both-over","over_iar","over_ar","over_ir"].indexOf(v.eval)>=0?v.eval:"both-over";
   radarState.emptyAxes=v.empty_axes!==false;   // défaut : afficher tous les axes
 }
 function radarViewSave(){
@@ -4768,17 +4798,29 @@ function radarTitleText(cfg){cfg=cfg||radarState;
   const metricLabel=radarMetricLabel(cfg.metric);
   const f=radarFieldOf(cfg.dim),dimLabel=cfg.dim==="cat"?t("th_category"):(f?cfLabel(f):cfg.dim);
   if(cfg.metric==="count"||radarFieldMetric(cfg.metric))return metricLabel+" — "+dimLabel;
-  const evL=cfg.eval==="initial"?t("th_initial"):cfg.eval==="current"?t("lvl_current"):cfg.eval==="residual"?t("th_residual"):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
+  const evL=cfg.eval==="over_iar"?t("rad_over_iar"):cfg.eval==="over_ar"?t("rad_over_ar"):cfg.eval==="over_ir"?t("rad_over_ir")
+    :cfg.eval==="initial"?(assessmentLevels()===3?t("lvl_inherent"):t("th_initial")):cfg.eval==="current"?t("lvl_current"):cfg.eval==="residual"?(assessmentLevels()===3?t("lvl_residual"):t("th_residual")):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
   return metricLabel+" — "+dimLabel+" · "+evL;
 }
+const RADAR_EVAL3=["initial","current","residual","over_iar","over_ar","over_ir"];
+function radarEvalLabel(v){return {initial:t("lvl_inherent"),current:t("lvl_current"),residual:t("lvl_residual"),
+  over_iar:t("rad_over_iar"),over_ar:t("rad_over_ar"),over_ir:t("rad_over_ir")}[v]||v;}
 function radarSyncSeg(){
   const L3=assessmentLevels()===3;
-  // Bouton « Actuelle » visible en mode 3 uniquement ; « Accolés » masqué en mode 3 (les vues combinées superposent 3 séries).
-  const curBtn=document.querySelector('#radarEvalSeg button[data-v="current"]');if(curBtn)curBtn.style.display=L3?"":"none";
-  const sideBtn=document.querySelector('#radarEvalSeg button[data-v="both-side"]');if(sideBtn)sideBtn.style.display=L3?"none":"";
-  if(L3&&(radarState.eval==="both-side"))radarState.eval="both-over";        // Accolés indisponible en mode 3
-  if(!L3&&radarState.eval==="current")radarState.eval="initial";             // Actuelle indisponible en mode 2
-  document.querySelectorAll("#radarEvalSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.eval));
+  const seg=document.getElementById("radarEvalSeg"),sel=document.getElementById("radarEvalSel");
+  // Mode 3 : trop de choix pour des boutons → menu déroulant. Mode 2 : boutons segmentés (inchangé).
+  if(L3){
+    if(RADAR_EVAL3.indexOf(radarState.eval)<0)radarState.eval="over_iar";   // migrer un ancien réglage (both-*, current…)
+    if(seg)seg.style.display="none";
+    if(sel){sel.style.display="";
+      sel.innerHTML=RADAR_EVAL3.map(v=>'<option value="'+v+'"'+(v===radarState.eval?' selected':'')+'>'+esc(radarEvalLabel(v))+'</option>').join("");}
+  }else{
+    if(sel)sel.style.display="none";
+    if(seg)seg.style.display="";
+    if(radarState.eval==="current"||RADAR_EVAL3.indexOf(radarState.eval)>=0&&radarState.eval!=="initial"&&radarState.eval!=="residual")
+      radarState.eval="both-over";   // valeurs propres au mode 3 → repli en mode 2
+    document.querySelectorAll("#radarEvalSeg button").forEach(b=>b.classList.toggle("active",b.dataset.v===radarState.eval));
+  }
   syncSegAria();
 }
 /* Modèle courant du radar (partagé écran ↔ export) : axes, séries, échelle. */
@@ -4801,8 +4843,11 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
     const sI={name:L3?t("lvl_inherent"):t("th_initial"),color:rc.colorInit,values:radarValues(risks,dim,axes,metric,"initial")};
     const sC={name:t("lvl_current"),color:rc.colorCur,values:radarValues(risks,dim,axes,metric,"current")};
     const sR={name:L3?t("lvl_residual"):t("th_residual"),color:rc.colorRes,values:radarValues(risks,dim,axes,metric,"residual")};
-    // Mode 3 : les vues combinées superposent 3 séries (both-side non proposé en mode 3, cf. radarSyncSeg).
-    series=cfg.eval==="initial"?[sI]:cfg.eval==="current"?[sC]:cfg.eval==="residual"?[sR]:(L3?[sI,sC,sR]:[sI,sR]);
+    // Mode 3 : simple (Inhérente/Actuelle/Résiduelle) ou superposé au choix (I·A·R / A·R / I·R).
+    const ev=cfg.eval;
+    series=ev==="initial"?[sI]:ev==="current"?[sC]:ev==="residual"?[sR]
+      :ev==="over_ar"?[sC,sR]:ev==="over_ir"?[sI,sR]:ev==="over_iar"?[sI,sC,sR]
+      :(L3?[sI,sC,sR]:[sI,sR]);   // both-over / both-side (mode 2) et repli
     if(perRisk){vmax=gridMaxScore();bands=true;}
     else{vmax=radarExtVmax(radarNiceMax(series.reduce((acc,s)=>acc.concat(s.values),[])));bands=false;}
   }
@@ -4884,6 +4929,7 @@ function renderRadars(){
   if(!radarWired){
     const ev=document.getElementById("radarEvalSeg");
     ev.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||ev.style.pointerEvents==="none")return;radarState.eval=b.dataset.v;radarViewSave();renderRadars();});
+    document.getElementById("radarEvalSel").addEventListener("change",function(){radarState.eval=this.value;radarViewSave();renderRadars();});
     document.getElementById("radarMetric").addEventListener("change",function(){radarState.metric=this.value;radarViewSave();renderRadars();});
     document.getElementById("radarDim").addEventListener("change",function(){radarState.dim=this.value;radarViewSave();renderRadars();});
     document.getElementById("radarEmptyAxes").addEventListener("change",function(){radarState.emptyAxes=this.checked;radarViewSave();renderRadars();});
@@ -4922,8 +4968,9 @@ function renderRadars(){
   emptyChk.checked=radarState.emptyAxes!==false;emptyChk.disabled=false;
   document.getElementById("radarEmptyWrap").style.display="inline-flex";
   radarSyncSeg();
-  const evalIndep=(radarState.metric==="count")||!!radarFieldMetric(radarState.metric),evSeg=document.getElementById("radarEvalSeg");
+  const evalIndep=(radarState.metric==="count")||!!radarFieldMetric(radarState.metric),evSeg=document.getElementById("radarEvalSeg"),evSel=document.getElementById("radarEvalSel");
   evSeg.style.opacity=evalIndep?"0.45":"";evSeg.style.pointerEvents=evalIndep?"none":"";
+  evSel.style.opacity=evalIndep?"0.45":"";evSel.disabled=evalIndep;   // le menu déroulant (mode 3) suit le même verrouillage
   document.getElementById("radarTitle").textContent=radarTitleText();
   setRadarExport();
   const area=document.getElementById("radarArea"),leg=document.getElementById("radarLegend"),tbl=document.getElementById("radarTable");
@@ -5186,6 +5233,14 @@ function manualNoticeHTML(){
 }
 function renderArrangementBar(mode){
   const bar=document.getElementById("dispoBar");if(!bar)return;bar.innerHTML="";
+  // Mode 3 : menu du sous-ensemble de niveaux affichés (I·A·R / A·R / I·R), propre à la vue (accolée vs trajectoire).
+  if(assessmentLevels()===3){
+    const view=mode==="side"?"side":"traj",cur=levelSubset(view);
+    const ss=document.createElement("select");ss.className="topsel";ss.id="levelSubsetSel";ss.style.maxWidth="270px";
+    [["iar",t("sub_iar")],["ar",t("sub_ar")],["ir",t("sub_ir")]].forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;if(v===cur)o.selected=true;ss.appendChild(o);});
+    ss.addEventListener("change",e=>{setLevelSubset(view,e.target.value);requestAnimationFrame(renderMatrices);});
+    bar.appendChild(ss);
+  }
   const lab=document.createElement("span");lab.className="hint";lab.textContent=t("dispo_label");lab.style.whiteSpace="nowrap";bar.appendChild(lab);
   if(mode==="side")
     bar.appendChild(buildArrangementSelect(ARRANGEMENT_CODES,"dispo",getArrangement(),v=>{setArrangement(v);requestAnimationFrame(renderMatrices);},t("dispo_side_title")));
@@ -5212,9 +5267,10 @@ function renderMatrices(){
     document.getElementById("matrixHint").textContent=t("hint_side");
     const L3=assessmentLevels()===3;
     const box=document.createElement("div");box.className="matrices";
-    // Mode 3 : trois matrices accolées Inhérente · Actuelle · Résiduelle ; mode 2 : Initiale · Résiduelle.
+    // Mode 3 : matrices accolées selon le sous-ensemble choisi (I·A·R, A·R ou I·R) ; mode 2 : Initiale · Résiduelle.
+    const labelOf={initial:t("lvl_inherent"),current:t("lvl_current"),residual:t("lvl_residual")};
     const specs=L3
-      ? [["initial",t("lvl_inherent")],["current",t("lvl_current")],["residual",t("lvl_residual")]]
+      ? subsetLevels(levelSubset("side")).map(lv=>[lv,labelOf[lv]])
       : [["initial",t("mtx_initial")],["residual",t("mtx_residual")]];
     const blocks=[],grids=[];
     specs.forEach(([gm,lab])=>{
@@ -5225,7 +5281,7 @@ function renderMatrices(){
     area.appendChild(box);
     setToolbarExport(blocks,t("exp_both"));
     legend.innerHTML=critLegend()+(getArrangement()==="manual"?manualNoticeHTML():'');
-    if(getArrangement()==="manual"){ensureManualInit();requestAnimationFrame(()=>{grids.forEach(([mc,gm])=>renderManualSide(mc,gm==="initial"?"initial":gm==="current"?"current":"residual"));});}
+    if(getArrangement()==="manual"){ensureManualInit();requestAnimationFrame(()=>{grids.forEach(([mc,gm])=>renderManualSide(mc,gm));});}
     else requestAnimationFrame(()=>layoutStacks(area));
   }else{
     renderArrangementBar("traj");
@@ -5237,21 +5293,26 @@ function renderMatrices(){
     requestAnimationFrame(()=>renderTrajectory(mc));
     setToolbarExport([b],"");
     const L3=assessmentLevels()===3;
+    const sub=levelSubset("traj");
+    // Swatches d'apparence pertinents pour le sous-ensemble affiché.
+    const APP_LABEL={inherent:t("lvl_inherent"),current:t("lvl_current"),residual:t("lvl_residual"),
+      unch_ia:t("leg_unch_ia"),unch_ar:t("leg_unch_ar"),unch_all:t("leg_unch_all")};
+    const APPS={iar:["inherent","current","residual","unch_ia","unch_ar","unch_all"],
+      ar:["current","residual","unch_ar"], ir:["inherent","residual","unch_all"]};
+    const swatch=cls=>'<div class="item"><span class="swatch '+cls+'">R</span>'+esc(APP_LABEL[cls])+'</div>';
     const kindsLeg=L3
-      ? '<div class="item"><span class="swatch inherent">R</span>'+esc(t("lvl_inherent"))+'</div>'+
-        '<div class="item"><span class="swatch current">R</span>'+esc(t("lvl_current"))+'</div>'+
-        '<div class="item"><span class="swatch residual">R</span>'+esc(t("lvl_residual"))+'</div>'+
-        '<div class="item"><span class="swatch unch_ia">R</span>'+esc(t("leg_unch_ia"))+'</div>'+
-        '<div class="item"><span class="swatch unch_ar">R</span>'+esc(t("leg_unch_ar"))+'</div>'+
-        '<div class="item"><span class="swatch unch_all">R</span>'+esc(t("leg_unch_all"))+'</div>'
+      ? APPS[sub].map(swatch).join("")
       : '<div class="item"><span class="swatch start">R</span>'+esc(t("leg_start"))+'</div>'+
         '<div class="item"><span class="swatch end">R</span>'+esc(t("leg_end"))+'</div>'+
         '<div class="item"><span class="swatch unchanged">R</span>'+esc(t("leg_unchanged"))+'</div>';
-    const arrowsLeg=L3
-      ? '<div class="legend-grp">'+
-          '<div class="item"><span class="arrow-leg"></span>'+esc(t("leg_arrow_current"))+'</div>'+
-          '<div class="item"><span class="arrow-leg dashed"></span>'+esc(t("leg_arrow_residual"))+'</div>'+
-        '</div>'
+    // Flèches présentes selon le sous-ensemble : I·A·R = pleine + pointillée ; A·R = pointillée ; I·R = pleine (globale).
+    const arrowItems=L3
+      ? (sub==="ar"?[['dashed',t("leg_arrow_residual")]]
+        :sub==="ir"?[['',t("leg_arrow_ir")]]
+        :[['',t("leg_arrow_current")],['dashed',t("leg_arrow_residual")]])
+      : [];
+    const arrowsLeg=arrowItems.length
+      ? '<div class="legend-grp">'+arrowItems.map(([cls,lab])=>'<div class="item"><span class="arrow-leg'+(cls?' '+cls:'')+'"></span>'+esc(lab)+'</div>').join("")+'</div>'
       : '';
     legend.innerHTML=
       '<div class="legend-grp">'+critLegend()+'</div>'+
@@ -5377,7 +5438,7 @@ function drawTrajectories(mc){
   const cellTokens={};
   const push=(p,g,tok)=>{const k=p+"-"+g;(cellTokens[k]=cellTokens[k]||[]).push(tok);};
   visibleRisks().forEach(r=>{
-    riskTrajStages(r).forEach(st=>push(st.ev.probability,st.ev.severity,{risk:r,kind:st.kind,app:st.app}));
+    riskTrajStages(r).forEach(st=>push(st.ev.probability,st.ev.severity,{risk:r,kind:st.kind,app:st.app,level:st.level}));
   });
 
   // Disposer chaque case selon la stratégie ; mémoriser la position de chaque jeton pour les flèches
@@ -5392,7 +5453,7 @@ function drawTrajectories(mc){
       const pos=lay.pos[i];
       posOf[t.risk.id+"|"+t.kind]={x:pos.x,y:pos.y,size:lay.size};
       if(i<hiddenStart){
-        const ch=makeOvChip(t.risk,t.kind,lay.size,t.app);
+        const ch=makeOvChip(t.risk,t.kind,lay.size,t.app,t.level);
         ch.style.left=pos.x+"px";ch.style.top=pos.y+"px";
         attachCellDrag(ch,t.risk,t.kind);   // la disposition manuelle a son propre glisser
         chips.appendChild(ch);
@@ -5424,13 +5485,13 @@ function drawTrajectories(mc){
 }
 /* `app` (facultatif) = classe d'apparence distincte du `kind` (glisser/infobulle) ; en trajectoire
    mode 3, les deux diffèrent (une case fusionnée porte plusieurs stades). Repli sur `kind`. */
-function makeOvChip(risk,kind,size,app){
+function makeOvChip(risk,kind,size,app,level){
   const c=document.createElement("div");c.className="ov-chip "+(app||kind);
   // La couleur de bordure des pastilles fusionnées suit la teinte du dernier stade présent (voir CSS).
   c.textContent=chipLabel(risk);
   if(size&&size!==BASE_CHIP){c.style.width=size+"px";c.style.height=size+"px";
     c.style.fontSize=Math.max(7,Math.round(size*0.46))+"px";c.style.borderWidth=(size<15?1:2)+"px";}
-  attachTip(c,risk,kind,app);return c;
+  attachTip(c,risk,kind,app,level);return c;
 }
 /* Trace une flèche de trajectoire (ligne visible + zone de survol élargie) et, au survol,
    affiche la liste des mesures de maîtrise liées au risque. */
@@ -5666,7 +5727,7 @@ document.getElementById("view-matrices").addEventListener("keydown",e=>{
   if(!chip||!chip.dataset.rid)return;
   const r=riskById(chip.dataset.rid);if(!r)return;
   e.preventDefault();
-  const which=whichOfKind(chip.dataset.kind);
+  const which=chip.dataset.which||whichOfKind(chip.dataset.kind);
   const ev=which==="residual"?residual(r):which==="current"?current(r):r.initial_assessment;
   const ps=probabilityLevels().slice().sort((a,b)=>a.value-b.value);
   const gs=severityLevels().slice().sort((a,b)=>a.value-b.value);
@@ -5797,11 +5858,10 @@ function renderManualTraj(mc){
   const S=anyCell.getBoundingClientRect().width,N=getGridStep(),size=manualChipSize(S,N),rad=size/2;
   const posFor=(r,w)=>{const ev=evalOf(r,w),c=cellCenterRel(mc,ev.probability,ev.severity);if(!c)return null;
     const pl=getPlace(r.id,w)||{col:Math.floor(N/2),row:Math.floor(N/2)};return {x:c.x+snapOff(pl.col,S,N),y:c.y+snapOff(pl.row,S,N)};};
-  const wOf=k=>k==="start"?"initial":k==="mid"?"current":"residual";
-  // flèches (entre stades consécutifs)
+  // flèches (entre stades consécutifs) — position d'après le niveau (level) de chaque stade
   visibleRisks().forEach(r=>{const stages=riskTrajStages(r);if(stages.length<2)return;
     for(let i=1;i<stages.length;i++){
-      const pa=posFor(r,wOf(stages[i-1].kind)),pb=posFor(r,wOf(stages[i].kind));if(!pa||!pb)continue;
+      const pa=posFor(r,stages[i-1].level),pb=posFor(r,stages[i].level);if(!pa||!pb)continue;
       const ang=Math.atan2(pb.y-pa.y,pb.x-pa.x),pad=rad+3;
       trajArrow(svg, pa.x+Math.cos(ang)*pad, pa.y+Math.sin(ang)*pad, pb.x-Math.cos(ang)*pad, pb.y-Math.sin(ang)*pad, r, stages[i].dashedIn);}});
   // pastilles
@@ -5812,10 +5872,10 @@ function renderManualTraj(mc){
          (cf. whichOfKind). La dessiner à l'emplacement initial la figerait : un dépôt dans
          la case de départ, ou la réunion des pastilles dans une même case, laisserait
          la pastille là où elle était au lieu de suivre le geste. */
-      const p=posFor(r,"residual");if(!p)return;const c=makeOvChip(r,"unchanged",size,stages[0].app);
-      c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,"residual");chipsEl.appendChild(c);return;}
-    stages.forEach(st=>{const w=wOf(st.kind),p=posFor(r,w);if(!p)return;
-      const c=makeOvChip(r,st.kind,size,st.app);c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,w);chipsEl.appendChild(c);});
+      const w0=stages[0].level,p=posFor(r,w0);if(!p)return;const c=makeOvChip(r,"unchanged",size,stages[0].app,w0);
+      c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,w0);chipsEl.appendChild(c);return;}
+    stages.forEach(st=>{const w=st.level,p=posFor(r,w);if(!p)return;
+      const c=makeOvChip(r,st.kind,size,st.app,w);c.style.left=p.x+"px";c.style.top=p.y+"px";attachManualDrag(c,mc,r,w);chipsEl.appendChild(c);});
   });
 }
 /* Disposition trajectoire — grille optimisée : placement sur une grille K×K par case
@@ -5837,7 +5897,7 @@ function layoutTrajectoryGridOpt(mc){
   visibleRisks().forEach(r=>{
     const stages=riskTrajStages(r);
     const toks=stages.map(st=>{const c=center(st.ev.probability,st.ev.severity);
-      return c?{risk:r,kind:st.kind,app:st.app,p:st.ev.probability,g:st.ev.severity,cx:c.x,cy:c.y,si:0,sj:0,arrows:[]}:null;});
+      return c?{risk:r,kind:st.kind,app:st.app,level:st.level,p:st.ev.probability,g:st.ev.severity,cx:c.x,cy:c.y,si:0,sj:0,arrows:[]}:null;});
     if(toks.some(x=>!x))return;   // au moins une case hors grille : on ignore ce risque
     toks.forEach(tk=>tokens.push(tk));
     for(let i=1;i<toks.length;i++){
@@ -5975,7 +6035,7 @@ function layoutTrajectoryGridOpt(mc){
   arrows.forEach(a=>{const ax=a.start.cx+a.start.dx,ay=a.start.cy+a.start.dy,bx=a.end.cx+a.end.dx,by=a.end.cy+a.end.dy;
     const ang=Math.atan2(by-ay,bx-ax),pad=rad+3;
     trajArrow(svg,ax+Math.cos(ang)*pad,ay+Math.sin(ang)*pad,bx-Math.cos(ang)*pad,by-Math.sin(ang)*pad,a.start.risk,a.dashed);});
-  tokens.forEach(t=>{const c=makeOvChip(t.risk,t.kind,size,t.app);
+  tokens.forEach(t=>{const c=makeOvChip(t.risk,t.kind,size,t.app,t.level);
     c.style.left=(t.cx+t.dx)+"px";c.style.top=(t.cy+t.dy)+"px";
     attachCellDrag(c,t.risk,t.kind);   // disposition « flèches optimisées », la plus courante
     chipsEl.appendChild(c);});
@@ -6182,7 +6242,7 @@ function setRiskCell(r,which,p,g,annoncer){
    La pastille reste en place ; un fantôme suit le curseur, ce qui évite de remanier
    la disposition de la case d'origine pendant le geste. */
 function attachCellDrag(chip,r,kind){
-  const which=whichOfKind(kind);
+  const which=chip.dataset.which||whichOfKind(kind);   // dataset.which : cotation exacte (sous-ensembles mode 3)
   chip.style.cursor="grab";chip.style.touchAction="none";
   chip.addEventListener("pointerdown",e=>{
     if(e.button!==0)return;
@@ -6226,8 +6286,9 @@ function attachCellDrag(chip,r,kind){
     document.addEventListener("keydown",onKey,true);
   });
 }
-function attachTip(el,r,kind,app){
+function attachTip(el,r,kind,app,level){
   el.dataset.rid=r.id;el.dataset.kind=kind;   // repères pour le déplacement au clavier
+  if(level)el.dataset.which=level;            // cotation ciblée par le glisser (prioritaire sur whichOfKind)
   // Contenu de l'infobulle + version texte, qui sert de nom accessible à la pastille.
   const build=()=>{
     let head,ev;

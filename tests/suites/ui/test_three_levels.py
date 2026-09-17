@@ -136,16 +136,77 @@ def test_side_view_three_matrices(app):
     assert not app.console_errors()
 
 
-def test_radar_current_option(app):
+def test_radar_eval_dropdown_mode3(app):
     app.load(FX)
     app.goto("radars")
-    # bouton « Actuelle » visible en mode 3, « Accolés » masqué
-    assert app.js("document.querySelector('#radarEvalSeg button[data-v=\"current\"]').style.display!=='none'")
-    assert app.js("document.querySelector('#radarEvalSeg button[data-v=\"both-side\"]').style.display==='none'")
-    # superposé = 3 séries
-    app.js("radarState.eval='both-over';renderRadars();")
-    names = app.js("radarComputeModel().series.map(s=>s.name)")
-    assert names == ["Inhérente", "Actuelle", "Résiduelle"]
+    # mode 3 : menu déroulant (seg masqué), 6 options
+    assert app.js("document.getElementById('radarEvalSel').style.display!=='none'")
+    assert app.js("document.getElementById('radarEvalSeg').style.display==='none'")
+    opts = app.js("[...document.getElementById('radarEvalSel').options].map(o=>o.value)")
+    assert opts == ["initial", "current", "residual", "over_iar", "over_ar", "over_ir"]
+    # séries selon l'option
+    app.js("radarState.eval='over_iar';renderRadars();")
+    assert app.js("radarComputeModel().series.map(s=>s.name)") == ["Inhérente", "Actuelle", "Résiduelle"]
+    app.js("radarState.eval='over_ar';renderRadars();")
+    assert app.js("radarComputeModel().series.map(s=>s.name)") == ["Actuelle", "Résiduelle"]
+    app.js("radarState.eval='over_ir';renderRadars();")
+    assert app.js("radarComputeModel().series.map(s=>s.name)") == ["Inhérente", "Résiduelle"]
+    app.js("radarState.eval='current';renderRadars();")
+    assert app.js("radarComputeModel().series.map(s=>s.name)") == ["Actuelle"]
+    assert not app.console_errors()
+
+
+def test_radar_seg_mode2(app):
+    app.load("ebios.rae.json")
+    app.goto("radars")
+    # mode 2 : boutons segmentés (menu masqué), sans « Actuelle »
+    assert app.js("document.getElementById('radarEvalSeg').style.display!=='none'")
+    assert app.js("document.getElementById('radarEvalSel').style.display==='none'")
+    vs = app.js("[...document.querySelectorAll('#radarEvalSeg button')].map(b=>b.dataset.v)")
+    assert "current" not in vs and "both-side" in vs
+
+
+def test_matrix_side_subsets_mode3(app):
+    app.load(FX)
+    app.goto("matrices")
+    app.js("matrixMode='side';renderMatrices();")
+    assert app.js("!!document.getElementById('levelSubsetSel')")
+    app.js("setLevelSubset('side','ar');renderMatrices();")
+    assert app.js("document.querySelectorAll('#matrixArea .matrix-block').length") == 2
+    app.js("setLevelSubset('side','ir');renderMatrices();")
+    assert app.js("document.querySelectorAll('#matrixArea .matrix-block').length") == 2
+    app.js("setLevelSubset('side','iar');renderMatrices();")
+    assert app.js("document.querySelectorAll('#matrixArea .matrix-block').length") == 3
+    assert not app.console_errors()
+
+
+def test_trajectory_subsets_mode3(app):
+    app.load(FX)
+    app.goto("matrices")
+    app.js("matrixMode='traj';renderMatrices();")
+
+    def apps():
+        app.js("renderTrajectory(document.querySelector('#matrixArea .matrix-container'));")
+        return app.js(
+            "[...document.querySelectorAll('#matrixArea .ov-chip')].reduce((a,c)=>{const k=c.className.replace('ov-chip','').trim();a[k]=(a[k]||0)+1;return a;},{})"
+        )
+
+    def arrows():
+        return app.js(
+            "[...document.querySelectorAll('#matrixArea svg line')].filter(l=>l.getAttribute('stroke')==='#fff')"
+            ".reduce((a,l)=>{const k=l.getAttribute('stroke-dasharray')?'dashed':'solid';a[k]=(a[k]||0)+1;return a;},{})"
+        )
+
+    # A·R : que current/residual/unch_ar, flèches pointillées uniquement
+    app.js("setLevelSubset('traj','ar');renderMatrices();")
+    ar = apps()
+    assert set(ar) <= {"current", "residual", "unch_ar"}
+    assert arrows().get("solid", 0) == 0 and arrows().get("dashed", 0) >= 1
+    # I·R : que inherent/residual/unch_all, flèches pleines uniquement
+    app.js("setLevelSubset('traj','ir');renderMatrices();")
+    ir = apps()
+    assert set(ir) <= {"inherent", "residual", "unch_all"}
+    assert arrows().get("dashed", 0) == 0 and arrows().get("solid", 0) >= 1
     assert not app.console_errors()
 
 
