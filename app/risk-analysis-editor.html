@@ -142,6 +142,8 @@
   .card .caption{color:var(--muted);font-size:12px;margin-bottom:16px}
   .row{display:flex;gap:20px;flex-wrap:wrap}
   .row>*{flex:1;min-width:260px}
+  .row.row-stack{flex-direction:column;flex-wrap:nowrap}   /* mode 3 cotations : 3 blocs empilés verticalement */
+  .row.row-stack>*{min-width:0}
 
   /* ---------- Formulaires ---------- */
   label.field{display:block;margin-bottom:12px}
@@ -8506,7 +8508,7 @@ function openRiskModal(id,dup,focusCol){
       '<label class="field full"><span class="lab">'+esc(t("f_description"))+'</span><textarea id="f_desc">'+esc(r.description||"")+'</textarea></label>'+
       '<label class="field full"><span class="lab">'+esc(t("f_notes"))+'</span><textarea id="f_comment">'+esc(r.comment||"")+'</textarea></label>'+
     '</div>'+
-    '<div class="row">'+
+    '<div class="row'+(L3?' row-stack':'')+'">'+
       '<div class="sub-card"><b>'+esc(L3?t("lvl_inherent"):t("eval_initial"))+'</b>'+
         '<label class="field" style="margin-top:10px"><span class="lab">'+esc(pAxis.label)+'</span><select id="f_ip">'+levelSelect(pAxis,r.initial_assessment.probability)+'</select></label>'+
         '<label class="field"><span class="lab">'+esc(gAxis.label)+'</span><select id="f_ig">'+levelSelect(gAxis,r.initial_assessment.severity)+'</select></label>'+
