@@ -12957,6 +12957,7 @@ function sizeRegScrollers(){
     if(!sc._edgeBound){sc.addEventListener("scroll",()=>updateRegEdgeShadows(sc),{passive:true});sc._edgeBound=true;}
     updateRegEdgeShadows(sc);
     sc.style.setProperty("--reg-vw",sc.clientWidth+"px");   // largeur visible : borne le tiroir Maître·détail (retour à la ligne)
+    const prevTop=sc.scrollTop;   // préserver le défilement vertical : retirer max-height annule le scroll interne (repli/dépli d'un tiroir MD sinon = retour en haut)
     sc.style.maxHeight="";   // hauteur naturelle : on mesure le haut du conteneur et la « traîne » en dessous
     const rect=sc.getBoundingClientRect();
     const docH=document.documentElement.scrollHeight;
@@ -12971,6 +12972,7 @@ function sizeRegScrollers(){
     const h=Math.round(window.innerHeight-rect.top-tail-8);   // 8px de respiration en bas
     if(h>=220){sc.classList.add("reg-fill");sc.style.maxHeight=h+"px";}
     else{sc.classList.remove("reg-fill");sc.style.maxHeight="";}   // fenêtre trop courte → pas de conteneur borné
+    if(prevTop)sc.scrollTop=prevTop;   // restaurer le défilement (position stable au repli/dépli d'un tiroir)
   });
 }
 let _regRaf=0;
