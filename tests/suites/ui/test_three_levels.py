@@ -127,6 +127,31 @@ def test_radar_current_option(app):
     assert not app.console_errors()
 
 
+def test_radar_render_has_three_colours(app):
+    app.load(FX)
+    app.settings_subtab("radars")
+    app.js("renderRadarSettings()")
+    rds = app.js("[...document.querySelectorAll('#radarCfgPanel [data-rd^=\"color\"]')].map(i=>i.dataset.rd)")
+    assert rds == ["colorInit", "colorCur", "colorRes"]
+    # changer la couleur actuelle et vérifier la propagation à la série + la persistance
+    app.js(
+        "const el=document.querySelector('#radarCfgPanel [data-rd=\"colorCur\"]');el.value='#12a594';"
+        "el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));"
+    )
+    assert app.js("radarCfg().render.colorCur") == "#12a594"
+    cur = app.js("radarComputeModel({eval:'both-over',dim:radarBestDim(),metric:'avg'},visibleRisks()).series[1]")
+    assert cur["name"] == "Actuelle" and cur["color"] == "#12a594"
+    assert not app.console_errors()
+
+
+def test_radar_render_two_colours_in_mode2(app):
+    app.load("ebios.rae.json")
+    app.settings_subtab("radars")
+    app.js("renderRadarSettings()")
+    rds = app.js("[...document.querySelectorAll('#radarCfgPanel [data-rd^=\"color\"]')].map(i=>i.dataset.rd)")
+    assert rds == ["colorInit", "colorRes"]
+
+
 def test_links_transition_column(app):
     app.load(FX)
     app.goto("links")

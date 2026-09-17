@@ -1938,7 +1938,7 @@ const I18N = {
     radar_metric_sum:"Criticité cumulée", radar_metric_weighted:"Criticité pondérée",
     radar_agg_avg:"moyenne", radar_agg_max:"max", radar_agg_sum:"somme", radar_metric_field_grp:"Champ numérique",
     radar_cfg_weights:"Poids par niveau de criticité", radar_cfg_weights_cap:"Utilisés par la métrique « Criticité pondérée » : chaque risque compte pour le poids de son niveau.",
-    radar_cfg_render:"Rendu des radars", radar_cfg_lum:"Luminosité (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Épaisseur du contour", radar_cfg_step:"Pas des graduations (0 = auto)", radar_cfg_spoke:"Couleur des rayons", radar_cfg_color_init:"Couleur (initial)", radar_cfg_color_res:"Couleur (résiduel)",
+    radar_cfg_render:"Rendu des radars", radar_cfg_lum:"Luminosité (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Épaisseur du contour", radar_cfg_step:"Pas des graduations (0 = auto)", radar_cfg_spoke:"Couleur des rayons", radar_cfg_color_init:"Couleur (initial)", radar_cfg_color_inherent:"Couleur (inhérente)", radar_cfg_color_cur:"Couleur (actuelle)", radar_cfg_color_res:"Couleur (résiduel)",
     radar_cfg_saved:"Préférences enregistrées avec l'analyse (rubrique extensions.display.radar).", radar_cfg_reset:"Réinitialiser les valeurs par défaut",
     stats_cfg_intro:"Cochez les blocs à afficher et glissez la poignée ⠿ pour les ordonner. Pour chaque bloc : taille, affichage (tableau, graphique ou les deux) et forme du graphique. Réglable aussi directement dans l'onglet Statistiques. Enregistré dans le fichier.",
     stats_reset:"Réinitialiser par défaut", stats_add_custom:"Ajouter un bloc « champ personnalisé »",
@@ -2347,7 +2347,7 @@ const I18N = {
     radar_metric_sum:"Cumulative criticality", radar_metric_weighted:"Weighted criticality",
     radar_agg_avg:"average", radar_agg_max:"max", radar_agg_sum:"sum", radar_metric_field_grp:"Numeric field",
     radar_cfg_weights:"Weights by criticality level", radar_cfg_weights_cap:"Used by the “Weighted criticality” metric: each risk counts for the weight of its level.",
-    radar_cfg_render:"Radar rendering", radar_cfg_lum:"Lightness (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Outline width", radar_cfg_step:"Grid step (0 = auto)", radar_cfg_spoke:"Spokes colour", radar_cfg_color_init:"Colour (initial)", radar_cfg_color_res:"Colour (residual)",
+    radar_cfg_render:"Radar rendering", radar_cfg_lum:"Lightness (HSL)", radar_cfg_sat:"Saturation", radar_cfg_outline:"Outline width", radar_cfg_step:"Grid step (0 = auto)", radar_cfg_spoke:"Spokes colour", radar_cfg_color_init:"Colour (initial)", radar_cfg_color_inherent:"Colour (inherent)", radar_cfg_color_cur:"Colour (current)", radar_cfg_color_res:"Colour (residual)",
     radar_cfg_saved:"Preferences saved with the analysis (extensions.display.radar).", radar_cfg_reset:"Reset to defaults",
     stats_cfg_intro:"Tick the blocks to show and drag the ⠿ handle to order them. For each block: size, display (table, chart or both) and chart shape. Also adjustable directly in the Statistics tab. Saved in the file.",
     stats_reset:"Reset to default", stats_add_custom:"Add a « custom field » block",
@@ -2756,7 +2756,7 @@ const I18N = {
     radar_metric_sum:"Criticità cumulata", radar_metric_weighted:"Criticità ponderata",
     radar_agg_avg:"media", radar_agg_max:"max", radar_agg_sum:"somma", radar_metric_field_grp:"Campo numerico",
     radar_cfg_weights:"Pesi per livello di criticità", radar_cfg_weights_cap:"Usati dalla metrica « Criticità ponderata »: ogni rischio conta per il peso del suo livello.",
-    radar_cfg_render:"Resa dei radar", radar_cfg_lum:"Luminosità (HSL)", radar_cfg_sat:"Saturazione", radar_cfg_outline:"Spessore del contorno", radar_cfg_step:"Passo delle griglie (0 = auto)", radar_cfg_spoke:"Colore dei raggi", radar_cfg_color_init:"Colore (iniziale)", radar_cfg_color_res:"Colore (residuo)",
+    radar_cfg_render:"Resa dei radar", radar_cfg_lum:"Luminosità (HSL)", radar_cfg_sat:"Saturazione", radar_cfg_outline:"Spessore del contorno", radar_cfg_step:"Passo delle griglie (0 = auto)", radar_cfg_spoke:"Colore dei raggi", radar_cfg_color_init:"Colore (iniziale)", radar_cfg_color_inherent:"Colore (inerente)", radar_cfg_color_cur:"Colore (attuale)", radar_cfg_color_res:"Colore (residuo)",
     radar_cfg_saved:"Preferenze salvate con l'analisi (sezione extensions.display.radar).", radar_cfg_reset:"Ripristina i valori predefiniti",
     stats_cfg_intro:"Seleziona i blocchi da mostrare e trascina la maniglia ⠿ per ordinarli. Per ogni blocco: dimensione, visualizzazione (tabella, grafico o entrambi) e forma del grafico. Regolabile anche direttamente nella scheda Statistiche. Salvato nel file.",
     stats_reset:"Ripristina predefiniti", stats_add_custom:"Aggiungi un blocco « campo personalizzato »",
@@ -4511,12 +4511,12 @@ function statBlockHTML(block){
    VUE RADARS — profil de risque en toile d'araignée
    Échelle et bandes de fond dérivées de la grille de cotation.
    ============================================================ */
-const RADAR_C1="#3a63d6", RADAR_C2="#8a3ffc"; // couleurs initial / résiduel
+const RADAR_C1="#3a63d6", RADAR_C2="#8a3ffc", RADAR_C3="#e0b93a"; // couleurs inhérente / résiduelle / actuelle (mode 3)
 let radarState={eval:"both-over",dim:"cat",metric:"avg",emptyAxes:true}, radarViewFor=null, radarWired=false, RADAR_HOVER=[], RADAR_AXIS_TIP=[], RADAR_CRIT_TIP=[];
 /* Configuration des radars (poids de la métrique pondérée + paramètres de rendu),
    enregistrée avec l'analyse dans extensions.display.radar. Poids par défaut : exponentiels
    selon l'ordre de criticité (1, 2, 4, 8…). */
-const RADAR_RENDER_DEF={hslL:0.85,hslS:1.30,outline:1.5,spoke:"#dbe2ea",ringStep:0,colorInit:RADAR_C1,colorRes:RADAR_C2};
+const RADAR_RENDER_DEF={hslL:0.85,hslS:1.30,outline:1.5,spoke:"#dbe2ea",ringStep:0,colorInit:RADAR_C1,colorCur:RADAR_C3,colorRes:RADAR_C2};
 function radarHex(v,def){return (typeof v==="string"&&/^#[0-9a-fA-F]{6}$/.test(v))?v:def;}
 function radarClamp(v,lo,hi,def){v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):def;}
 function radarCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.radar;return (d&&typeof d==="object")?d:null;}
@@ -4529,6 +4529,7 @@ function radarCfg(){
     ringStep:radarClamp(r.ringStep,0,100000,RADAR_RENDER_DEF.ringStep),
     spoke:radarHex(r.spoke,RADAR_RENDER_DEF.spoke),
     colorInit:radarHex(r.colorInit,RADAR_RENDER_DEF.colorInit),
+    colorCur:radarHex(r.colorCur,RADAR_RENDER_DEF.colorCur),
     colorRes:radarHex(r.colorRes,RADAR_RENDER_DEF.colorRes)};
   const rw=(raw.weights&&typeof raw.weights==="object")?raw.weights:{},weights={};
   critBands().forEach((c,i)=>{const v=+rw[c.code];weights[c.code]=(isFinite(v)&&v>=0)?v:Math.pow(2,i);});
@@ -4765,7 +4766,7 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
   } else {
     const L3=assessmentLevels()===3;
     const sI={name:L3?t("lvl_inherent"):t("th_initial"),color:rc.colorInit,values:radarValues(risks,dim,axes,metric,"initial")};
-    const sC={name:t("lvl_current"),color:"#e0b93a",values:radarValues(risks,dim,axes,metric,"current")};
+    const sC={name:t("lvl_current"),color:rc.colorCur,values:radarValues(risks,dim,axes,metric,"current")};
     const sR={name:L3?t("lvl_residual"):t("th_residual"),color:rc.colorRes,values:radarValues(risks,dim,axes,metric,"residual")};
     // Mode 3 : les vues combinées superposent 3 séries (both-side non proposé en mode 3, cf. radarSyncSeg).
     series=cfg.eval==="initial"?[sI]:cfg.eval==="current"?[sC]:cfg.eval==="residual"?[sR]:(L3?[sI,sC,sR]:[sI,sR]);
@@ -11772,7 +11773,8 @@ function renderRadarSettings(){
     slider("outline",t("radar_cfg_outline"),0,4,0.1,cfg.render.outline)+
     '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_step"))+'</span><input type="number" min="0" step="1" data-rd="ringStep" value="'+cfg.render.ringStep+'" style="max-width:110px"></label>'+
     '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_spoke"))+'</span><input type="color" data-rd="spoke" value="'+cfg.render.spoke+'"></label>'+
-    '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_color_init"))+'</span><input type="color" data-rd="colorInit" value="'+cfg.render.colorInit+'"></label>'+
+    '<label class="rc-field"><span class="rc-lab">'+esc(assessmentLevels()===3?t("radar_cfg_color_inherent"):t("radar_cfg_color_init"))+'</span><input type="color" data-rd="colorInit" value="'+cfg.render.colorInit+'"></label>'+
+    (assessmentLevels()===3?'<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_color_cur"))+'</span><input type="color" data-rd="colorCur" value="'+cfg.render.colorCur+'"></label>':'')+
     '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_cfg_color_res"))+'</span><input type="color" data-rd="colorRes" value="'+cfg.render.colorRes+'"></label>'+
     '<div id="radarCfgPrev" style="text-align:center;margin-top:8px"></div></div>';
   h+='<div class="card rc-foot"><span class="rc-note">💾 '+esc(t("radar_cfg_saved"))+'</span>'+
@@ -11790,7 +11792,9 @@ function collectRadarCfg(){
   const p=document.getElementById("radarCfgPanel");if(!p)return;
   const weights={};p.querySelectorAll("[data-rw]").forEach(i=>{const v=+i.value;weights[i.dataset.rw]=(isFinite(v)&&v>=0)?v:0;});
   const g=r=>{const el=p.querySelector('[data-rd="'+r+'"]');return el?el.value:null;};
-  const store=radarCfgStore();store.weights=weights;store.render={hslL:+g("hslL"),hslS:+g("hslS"),outline:+g("outline"),ringStep:+g("ringStep"),spoke:g("spoke"),colorInit:g("colorInit"),colorRes:g("colorRes")};
+  // colorCur : l'input n'existe qu'en mode 3 ; hors mode 3 on conserve la valeur déjà enregistrée (non perdue).
+  const curColor=g("colorCur")||radarCfg().render.colorCur;
+  const store=radarCfgStore();store.weights=weights;store.render={hslL:+g("hslL"),hslS:+g("hslS"),outline:+g("outline"),ringStep:+g("ringStep"),spoke:g("spoke"),colorInit:g("colorInit"),colorCur:curColor,colorRes:g("colorRes")};
   analyse.extensions.display.radar=store;markDirty();
   ["hslL","hslS","outline"].forEach(r=>{const b=p.querySelector('[data-out="'+r+'"]'),el=p.querySelector('[data-rd="'+r+'"]');if(b&&el)b.textContent=el.value;});
   radarCfgPreview();
