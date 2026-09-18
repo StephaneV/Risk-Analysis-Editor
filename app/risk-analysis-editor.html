@@ -451,15 +451,15 @@
   .ov-chip.end{background:#0a0e18;color:#fff;border:2px solid #fff}
   .ov-chip.unchanged{background:var(--unchanged);color:#fff;border:2px solid #fff}
   /* Mode 3 cotations — apparence par ensemble de stades présents sur la case.
-     Stade unique : style de bordure = stade (inhérent=tirets, actuel=points, résiduel=plein),
+     Stade unique : style de bordure = stade (inhérent=points, actuel=tirets, résiduel=plein),
      fond du plus clair au plus foncé. Cas « non réduit » (plusieurs stades sur une case) :
      fond commun var(--unchanged), la bordure indiquant le 1er stade du segment non réduit. */
-  .ov-chip.inherent{background:rgba(10,14,24,.6);color:#fff;border:2px dashed rgba(255,255,255,.9)}
-  .ov-chip.current{background:rgba(10,14,24,.82);color:#fff;border:2px dotted #fff}
+  .ov-chip.inherent{background:rgba(10,14,24,.6);color:#fff;border:2px dotted rgba(255,255,255,.9)}
+  .ov-chip.current{background:rgba(10,14,24,.82);color:#fff;border:2px dashed #fff}
   .ov-chip.residual{background:#0a0e18;color:#fff;border:2px solid #fff}
   /* Cas « non réduit » : fond commun var(--unchanged) ; le style de bordure distingue le segment concerné. */
-  .ov-chip.unch_ia{background:var(--unchanged);color:#fff;border:2px dashed rgba(255,255,255,.9)}
-  .ov-chip.unch_ar{background:var(--unchanged);color:#fff;border:2px dotted #fff}
+  .ov-chip.unch_ia{background:var(--unchanged);color:#fff;border:2px dotted rgba(255,255,255,.9)}
+  .ov-chip.unch_ar{background:var(--unchanged);color:#fff;border:2px dashed #fff}
   .ov-chip.unch_all{background:var(--unchanged);color:#fff;border:2px solid #fff}
   .leader{stroke:rgba(255,255,255,.28);stroke-width:1;stroke-dasharray:2 3}
   .x-axis{display:flex;margin-top:8px}
@@ -476,11 +476,11 @@
   .legend .swatch.mid{background:rgba(10,14,24,.82);border:2px dotted #fff}
   .legend .swatch.end{background:#0a0e18;border:2px solid #fff}
   .legend .swatch.unchanged{background:var(--unchanged);border:2px solid #fff}
-  .legend .swatch.inherent{background:rgba(10,14,24,.6);border:2px dashed rgba(255,255,255,.9)}
-  .legend .swatch.current{background:rgba(10,14,24,.82);border:2px dotted #fff}
+  .legend .swatch.inherent{background:rgba(10,14,24,.6);border:2px dotted rgba(255,255,255,.9)}
+  .legend .swatch.current{background:rgba(10,14,24,.82);border:2px dashed #fff}
   .legend .swatch.residual{background:#0a0e18;border:2px solid #fff}
-  .legend .swatch.unch_ia{background:var(--unchanged);border:2px dashed rgba(255,255,255,.9)}
-  .legend .swatch.unch_ar{background:var(--unchanged);border:2px dotted #fff}
+  .legend .swatch.unch_ia{background:var(--unchanged);border:2px dotted rgba(255,255,255,.9)}
+  .legend .swatch.unch_ar{background:var(--unchanged);border:2px dashed #fff}
   .legend .swatch.unch_all{background:var(--unchanged);border:2px solid #fff}
   .arrow-leg{display:inline-block;width:22px;height:0;border-top:2px solid currentColor;margin-right:2px;vertical-align:middle;opacity:.75}
   .arrow-leg.dashed{border-top-style:dashed}
