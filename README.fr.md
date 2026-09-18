@@ -30,7 +30,7 @@ Elle permet de mener une analyse de risque générique et structurée : paramét
 
 L'outil repose sur un modèle générique et configurable, adaptable à un référentiel interne et utilisable pour structurer et restituer des analyses conduites dans le cadre d'approches telles qu'ISO 27005, EBIOS RM ou l'AIPD. La grille est largement paramétrable : dimensions, axes, niveaux, libellés, seuils, couleurs et méthode de calcul ; elle est enregistrée dans le fichier.
 
-Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risques, mesures, liens et cotations initiale/résiduelle. Le format est **spécifié** ([documentation technique](specs/SPEC-format-analyse-risque.md)) et accompagné d'un **schéma JSON** de validation ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Les noms de propriétés sont en anglais ; les valeurs (libellés, descriptions) restent dans la langue de l'analyse.
+Toute l'analyse tient dans un fichier **`.rae.json`** autoportant : grille, risques, mesures, liens et cotations initiale/résiduelle (et actuelle en mode 3 cotations). Le format est **spécifié** ([documentation technique](specs/SPEC-format-analyse-risque.md)) et accompagné d'un **schéma JSON** de validation ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Les noms de propriétés sont en anglais ; les valeurs (libellés, descriptions) restent dans la langue de l'analyse.
 
 **Site web officiel :** [www.risk-analysis-editor.com](https://www.risk-analysis-editor.com/) — présentation, captures d'écran et liens.
 
@@ -66,11 +66,12 @@ RAE offre ainsi un cadre **plus structuré et cohérent qu'un ensemble de feuill
 - **Axes paramétrables** (vertical / horizontal) : nombre de niveaux libre, libellés et descriptions en infobulle.
 - **Méthodes de calcul du score** : produit (P × G), somme (P + G) ou **matrice** (niveau défini case par case, avec éditeur dédié).
 - **Niveaux de criticité** : zones colorées, seuils, couleur, décision d'acceptation et description, avec **contrôle de couverture** des scores atteignables.
+- **Deux ou trois niveaux de cotation** *(option, par analyse)* : au mode classique **initiale → résiduelle** s'ajoute un mode **inhérente → actuelle → résiduelle** (risque brut, puis avec les mesures *en place*, puis cible avec les mesures proposées/planifiées/en cours). Activable dans *Paramètres › Grille de cotation* ; il adapte la saisie, les registres, les **matrices** (accolées et **trajectoire à 3 pastilles**), les **radars**, les **statistiques**, le **rapport** et les exports **Word/Excel/CSV**. Par défaut : 2 niveaux (rétrocompatibilité totale).
 - **Transposition des axes** (vertical ↔ horizontal) en un clic, cotations et placements inclus.
 
 ### Saisie
 - **Présentation** : onglet dédié aux métadonnées documentaires de l'analyse (titre, statut, auteur, organisation, périmètre, référence méthodologique, description) et aux valeurs des champs personnalisés de niveau analyse.
-- **Registre des risques** : catégorie, propriétaire, description, évaluation initiale et résiduelle, indicateur d'évolution.
+- **Registre des risques** : catégorie, propriétaire, description, évaluation initiale et résiduelle (et **actuelle** en mode 3 cotations), indicateur d'évolution.
 - **Mesures de maîtrise** : nature (technique / organisationnelle…), statut (avec code couleur), responsable, échéance, coût.
 - **Liens risques ↔ mesures**, en deux sous-onglets : *Associations* (tableau croisé à cocher, plusieurs-à-plusieurs) et *Détails* (registre éditable où chaque lien porte une **note** et ses propres **champs personnalisés**) ; les liens enrichis sont signalés dans le tableau croisé.
 - **Plan d'action** : suivi des mesures via trois présentations (échéancier, kanban par statut, groupé par responsable), mesures **en retard** mises en évidence (échéance passée et non finalisée), et **avancement global** (barre + compteurs par statut). Chaque mesure se **modifie au double-clic** — ou via le **bouton ✎** de chaque ligne/carte — (échéance, statut, responsable, notes, champs personnalisés) et, dans le kanban, se **glisse-dépose** d'une colonne de statut à l'autre.
