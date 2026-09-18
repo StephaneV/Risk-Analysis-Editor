@@ -9287,8 +9287,9 @@ function buildXlsx(){
   };
   // --- Synthèse ---
   const cats=critLevelsSorted();
+  const L3=assessmentLevels()===3;
   const count=w=>critCounts(analyse.risks,cats,w);
-  const ci=count("i"),cr=count("r");
+  const ci=count("i"),cc=count("c"),cr=count("r");
   const treated=analyse.risks.filter(r=>{const a=r.initial_assessment,b=residual(r);return a.probability!==b.probability||a.severity!==b.severity;}).length;
   const syn=[[s((md.title&&md.title.trim())||((DEFAULTS[lang]||DEFAULTS.fr).newTitle),TITLE)],[]];
   [[t("f_author"),md.author],[t("f_org"),md.organization],[t("f_scope"),md.scope],[t("f_methodology"),md.methodology_reference],
@@ -9301,29 +9302,36 @@ function buildXlsx(){
   syn.push([s(t("tab_links"),LBL),n(analyse.treatments.length,PLAIN)]);
   syn.push([s(t("stat_reduced"),LBL),n(treated,PLAIN)]);
   syn.push([]);
-  syn.push([s(t("stat_distribution"),HDR),s(t("th_initial"),HDR),s(t("th_residual"),HDR)]);
-  cats.forEach(c=>syn.push([s(c.label,badge(c.color)),n(ci[c.code]||0),n(cr[c.code]||0)]));
-  const synXml=sheetXML(syn,{widths:[34,26,14],grid:false});
+  if(L3){
+    syn.push([s(t("stat_distribution"),HDR),s(t("lvl_inherent"),HDR),s(t("lvl_current"),HDR),s(t("lvl_residual"),HDR)]);
+    cats.forEach(c=>syn.push([s(c.label,badge(c.color)),n(ci[c.code]||0),n(cc[c.code]||0),n(cr[c.code]||0)]));
+  }else{
+    syn.push([s(t("stat_distribution"),HDR),s(t("th_initial"),HDR),s(t("th_residual"),HDR)]);
+    cats.forEach(c=>syn.push([s(c.label,badge(c.color)),n(ci[c.code]||0),n(cr[c.code]||0)]));
+  }
+  const synXml=sheetXML(syn,{widths:L3?[34,20,20,14]:[34,26,14],grid:false});
   // --- Risques ---
   const cfR=customFieldsFor("risk"),cfC=customFieldsFor("cotation"),axV=g.vertical_axis.label,axH=g.horizontal_axis.label;
-  const lIni=t("th_initial"),lRes=t("th_residual");
-  const cotHead=[];cfC.forEach(f=>{cotHead.push(cfLabel(f)+" — "+lIni,cfLabel(f)+" — "+lRes);});
-  const rkHead=[t("th_id"),t("th_risk"),t("th_category"),t("f_owner"),
-    axV+" — "+lIni,axH+" — "+lIni,t("xl_score")+" — "+lIni,t("xl_crit")+" — "+lIni,
-    axV+" — "+lRes,axH+" — "+lRes,t("xl_score")+" — "+lRes,t("xl_crit")+" — "+lRes,
-    t("th_evolution"),t("th_measures"),t("f_description"),t("f_notes")].concat(cfR.map(cfLabel)).concat(cotHead);
+  // Mode 3 : bloc « Actuelle » inséré entre initiale et résiduelle ; libellés inhérente/résiduelle.
+  const lIni=L3?t("lvl_inherent"):t("th_initial"),lCur=t("lvl_current"),lRes=L3?t("lvl_residual"):t("th_residual");
+  const cotHead=[];cfC.forEach(f=>{cotHead.push(cfLabel(f)+" — "+lIni);if(L3)cotHead.push(cfLabel(f)+" — "+lCur);cotHead.push(cfLabel(f)+" — "+lRes);});
+  const assessCols=lab=>[axV+" — "+lab,axH+" — "+lab,t("xl_score")+" — "+lab,t("xl_crit")+" — "+lab];
+  const rkHead=[t("th_id"),t("th_risk"),t("th_category"),t("f_owner")]
+    .concat(assessCols(lIni)).concat(L3?assessCols(lCur):[]).concat(assessCols(lRes))
+    .concat([t("th_evolution"),t("th_measures"),t("f_description"),t("f_notes")]).concat(cfR.map(cfLabel)).concat(cotHead);
   const rk=[rkHead.map(h=>s(h,HDR))];
+  const assessCells=ev=>{const c=critOfEval(ev);return [n(ev.probability),n(ev.severity),n(scoreOf(ev.probability,ev.severity)),s(c.label,badge(c.color))];};
   analyse.risks.forEach(r=>{
-    const evi=r.initial_assessment,evr=residual(r),cci=critOfEval(evi),ccr=critOfEval(evr);
+    const evi=r.initial_assessment,evc=current(r),evr=residual(r);
     const si=scoreOf(evi.probability,evi.severity),sr=scoreOf(evr.probability,evr.severity);
-    const cot=[];cfC.forEach(f=>{cot.push(cfCell(f,(evi.custom||{})[f.code]),cfCell(f,(evr.custom||{})[f.code]));});
-    rk.push([s(r.id,BOLD),s(r.label,TXT),s(r.category||"",PLAIN),s(r.owner||"",PLAIN),
-      n(evi.probability),n(evi.severity),n(si),s(cci.label,badge(cci.color)),
-      n(evr.probability),n(evr.severity),n(sr),s(ccr.label,badge(ccr.color)),
-      n(sr-si),s(measuresOfRisk(r.id).join(", "),PLAIN),s(mdToText(r.description||""),TXT),s(mdToText(r.comment||""),TXT)]
+    const cot=[];cfC.forEach(f=>{cot.push(cfCell(f,(evi.custom||{})[f.code]));if(L3)cot.push(cfCell(f,(evc.custom||{})[f.code]));cot.push(cfCell(f,(evr.custom||{})[f.code]));});
+    rk.push([s(r.id,BOLD),s(r.label,TXT),s(r.category||"",PLAIN),s(r.owner||"",PLAIN)]
+      .concat(assessCells(evi)).concat(L3?assessCells(evc):[]).concat(assessCells(evr))
+      .concat([n(sr-si),s(measuresOfRisk(r.id).join(", "),PLAIN),s(mdToText(r.description||""),TXT),s(mdToText(r.comment||""),TXT)])
       .concat(cfR.map(f=>cfCell(f,(r.custom||{})[f.code]))).concat(cot));
   });
-  const rkXml=sheetXML(rk,{widths:[9,42,16,16,13,13,11,15,13,13,11,15,11,18,50,36].concat(cfR.map(()=>20)).concat(cotHead.map(()=>26)),freeze:true,filter:rkHead.length});
+  const assessW=[13,13,11,15];
+  const rkXml=sheetXML(rk,{widths:[9,42,16,16].concat(assessW).concat(L3?assessW:[]).concat(assessW).concat([11,18,50,36]).concat(cfR.map(()=>20)).concat(cotHead.map(()=>26)),freeze:true,filter:rkHead.length});
   // --- Mesures ---
   const cfM=customFieldsFor("measure");
   const msHead=[t("th_id"),t("th_measure"),t("th_type"),t("th_status"),t("th_responsible"),t("f_due_date"),t("f_cost"),t("th_covered_risks"),t("f_description"),t("f_notes")].concat(cfM.map(cfLabel));
