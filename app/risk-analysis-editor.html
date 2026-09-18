@@ -1969,7 +1969,7 @@ const I18N = {
     report_hint:"Aperçu ci-dessous. Le bouton Imprimer ouvre la boîte d'impression du navigateur (→ PDF).",
     rp_summary:"Synthèse", rp_presentation:"Présentation", cf_yes:"Oui", cf_no:"Non", rp_created:"Date de création", rp_updated:"Dernière modification",
     rp_metadata:"Métadonnées", rp_toc:"Table des matières", mtx_ir_title:"Matrices Initial / Résiduel",
-    mtx_initial_only:"Matrice initiale seule", mtx_residual_only:"Matrice résiduelle seule", mtx_both_side:"Matrices initiale et résiduelle accolées",
+    mtx_initial_only:"Matrice initiale seule", mtx_current_only:"Matrice actuelle seule", mtx_residual_only:"Matrice résiduelle seule", mtx_both_side:"Matrices initiale et résiduelle accolées",
     rp_filter_summary:"Périmètre filtré", rp_filter_none:"Aucun filtre actif ; le rapport couvre toute l'analyse.",
     settings_report:"Rapport",
     rc_sections_title:"Sections du rapport",
@@ -2380,7 +2380,7 @@ const I18N = {
     report_hint:"Preview below. The Print button opens the browser's print dialog (→ PDF).",
     rp_summary:"Summary", rp_presentation:"Overview", cf_yes:"Yes", cf_no:"No", rp_created:"Created on", rp_updated:"Last updated",
     rp_metadata:"Metadata", rp_toc:"Table of contents", mtx_ir_title:"Inherent / Residual matrices",
-    mtx_initial_only:"Inherent matrix only", mtx_residual_only:"Residual matrix only", mtx_both_side:"Inherent and residual matrices side by side",
+    mtx_initial_only:"Inherent matrix only", mtx_current_only:"Current matrix only", mtx_residual_only:"Residual matrix only", mtx_both_side:"Inherent and residual matrices side by side",
     rp_filter_summary:"Filtered scope", rp_filter_none:"No active filter; the report covers the whole analysis.",
     settings_report:"Report",
     rc_sections_title:"Report sections",
@@ -2791,7 +2791,7 @@ const I18N = {
     report_hint:"Anteprima qui sotto. Il pulsante Stampa apre la finestra di stampa del browser (→ PDF).",
     rp_summary:"Sintesi", rp_presentation:"Presentazione", cf_yes:"Sì", cf_no:"No", rp_created:"Data di creazione", rp_updated:"Ultima modifica",
     rp_metadata:"Metadati", rp_toc:"Indice", mtx_ir_title:"Matrici Iniziale / Residuo",
-    mtx_initial_only:"Matrice iniziale sola", mtx_residual_only:"Matrice residua sola", mtx_both_side:"Matrici iniziale e residua affiancate",
+    mtx_initial_only:"Matrice iniziale sola", mtx_current_only:"Matrice attuale sola", mtx_residual_only:"Matrice residua sola", mtx_both_side:"Matrici iniziale e residua affiancate",
     rp_filter_summary:"Ambito filtrato", rp_filter_none:"Nessun filtro attivo; il report copre l'intera analisi.",
     settings_report:"Report",
     rc_sections_title:"Sezioni del report",
@@ -3405,7 +3405,10 @@ function current(risk){return risk.current_assessment||risk.initial_assessment;}
 function assessmentOf(risk,level){return level==="current"?current(risk):level==="inherent"?(risk.initial_assessment):residual(risk);}
 /* Sous-ensemble de niveaux affichés (mode 3) pour les matrices accolées ("side") et la trajectoire ("traj") :
    "iar" (Inhérente·Actuelle·Résiduelle, défaut) | "ar" (Actuelle·Résiduelle) | "ir" (Inhérente·Résiduelle). */
-function levelSubset(view){const key=view==="side"?"matrix_subset":"traj_subset";
+let _levelSubsetOverride=null;   // {side?,traj?} : forçage temporaire (rendu d'une section de rapport)
+function levelSubset(view){
+  if(_levelSubsetOverride&&_levelSubsetOverride[view])return _levelSubsetOverride[view];
+  const key=view==="side"?"matrix_subset":"traj_subset";
   const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display[key];
   return (v==="ar"||v==="ir")?v:"iar";}
 function setLevelSubset(view,v){const e=analyse.extensions=analyse.extensions||{},d=e.display=e.display||{};
@@ -6306,8 +6309,10 @@ function metaStatusLabel(v){return v?(t("meta_status."+v)!=="meta_status."+v?t("
    construction des matrices du RAPPORT, on force le jeu de risques du périmètre choisi
    (analyse complète OU sous-ensemble filtré) via cet override, consulté par visibleRisks(). */
 let gridRiskOverride=null;
-function reportMatrixSVG(mode,risks){
+function reportMatrixSVG(mode,risks,subset){
   const _prevGR=gridRiskOverride;if(risks)gridRiskOverride=risks;
+  const _prevSub=_levelSubsetOverride;
+  if(subset)_levelSubsetOverride=mode==="side"?{side:subset}:{traj:subset};   // sous-ensemble propre à la section de rapport
   /* Conteneur de mesure ancré sur <body>, PAS sur #reportBody : ce dernier vit dans
      l'onglet Rapport (.view en display:none tant qu'il n'a pas été affiché), où toute
      mesure getBoundingClientRect vaut 0 — l'export Word depuis un autre onglet
@@ -6347,7 +6352,7 @@ function reportMatrixSVG(mode,risks){
   holder.appendChild(legend);
   const svg=buildExportSVG(blocks,legend,holder,mode==="traj").svg;
   holder.remove();
-  gridRiskOverride=_prevGR;
+  gridRiskOverride=_prevGR;_levelSubsetOverride=_prevSub;
   return svg;
 }
 // Matrice UNIQUE (initial ou résiduel), pour la balise {{ matrix type="initial|residual" }} du modèle Word.
@@ -6357,8 +6362,10 @@ function reportMatrixSVG(mode,risks){
    (page de garde, table des matières, toutes les sections activées, ordre par défaut).
    ============================================================ */
 const REPORT_SECTION_IDS=["metadata","presentation","summary_counts","summary_distribution",
-  "grid_axes","grid_criticality","field_glossary","objects","matrix_ir","matrix_initial","matrix_residual","matrix_traj","radar","risks_table","risks_detail",
+  "grid_axes","grid_criticality","field_glossary","objects","matrix_ir","matrix_initial","matrix_current","matrix_residual","matrix_traj","radar","risks_table","risks_detail",
   "measures_table","measures_detail","links_table","links_detail","action_plan"];
+/* Sections réservées au mode « 3 cotations » : masquées (config + rendu) en mode 2. */
+function reportSectionAvailable(id){return id==="matrix_current"?assessmentLevels()===3:true;}
 const REPORT_META_ROW_IDS=["author","organization","scope","methodology","created","updated","revision","status"];
 /* Par défaut (sans configuration), toutes les sections sont activées SAUF les matrices
    « seules » (initiale seule, résiduelle seule) : seule la version accolée est cochée. */
@@ -6370,7 +6377,7 @@ function reportGlossaryItemTitle(id){const i=id.indexOf(":"),tg=id.slice(0,i),co
 function reportObjectItemTitle(id){const code=id.slice(3);const ot=objectTypeByCode(code);
   return (ot?otLabel(ot):code)+" ("+objectsOfType(code).length+")";}
 function reportSectionDefaultOn(id){
-  if(id==="matrix_initial"||id==="matrix_residual"||id==="radar")return false;
+  if(id==="matrix_initial"||id==="matrix_current"||id==="matrix_residual"||id==="radar")return false;
   // Section « Référentiels » : activée par défaut seulement si au moins un item porte une description.
   if(id==="field_glossary")return glossaryFieldList().length>0;
   // Section « Objets » : activée par défaut seulement s'il existe au moins un type d'objet.
@@ -6402,15 +6409,17 @@ function reportDefaultCols(secId){
   risks_table:risksCols,
   measures_table:["id","measure","type","status","resp","covered"],
   links_table:["rid","risk","mid","measure","notes"]})[secId]||[];}
+/* Titre de l'accolée : en mode 3, liste les niveaux du sous-ensemble ; sinon libellé standard. */
+function accoleeTitle(sub){
+  if(assessmentLevels()!==3)return t("mtx_both_side");
+  return subsetLevels(sub||"iar").map(lv=>lv==="initial"?t("lvl_inherent"):lv==="current"?t("lvl_current"):t("lvl_residual")).join(" · ");
+}
 function reportSectionTitle(id){
-  // Accolée en mode 3 : le titre reflète le sous-ensemble affiché (I·A·R par défaut).
-  const irTitle=assessmentLevels()===3
-    ? subsetLevels(levelSubset("side")).map(lv=>lv==="initial"?t("lvl_inherent"):lv==="current"?t("lvl_current"):t("lvl_residual")).join(" · ")
-    : t("mtx_both_side");
+  const irTitle=accoleeTitle(levelSubset("side"));
   return ({
   metadata:t("rp_metadata"), presentation:t("rp_presentation"), summary_counts:t("rp_summary"),
   summary_distribution:t("stat_distribution"), grid_axes:t("settings_grid"), grid_criticality:t("crit_title"), field_glossary:t("rp_field_glossary"), objects:t("rp_objects"),
-  matrix_ir:irTitle, matrix_initial:t("mtx_initial_only"), matrix_residual:t("mtx_residual_only"),
+  matrix_ir:irTitle, matrix_initial:t("mtx_initial_only"), matrix_current:t("mtx_current_only"), matrix_residual:t("mtx_residual_only"),
   matrix_traj:t("mtx_traj"), radar:t("rp_radar"), risks_table:t("risks_title"), risks_detail:t("rp_risk_details"),
   measures_table:t("measures_title"), measures_detail:t("rp_measure_details"), links_table:t("links_title"),
   links_detail:t("rp_link_details"), action_plan:t("tab_plan")})[id]||id;}
@@ -6472,10 +6481,11 @@ function reportCfg(){
       o.view=["table","detail"].indexOf(s.view)>=0?s.view:"table";}
     else if(reportTableId(s.id))o.columns=columns(s.columns,reportTableId(s.id),reportDefaultCols(s.id));
     else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
+    else if(s.id==="matrix_ir"||s.id==="matrix_traj")o.subset=["iar","ar","ir"].indexOf(s.subset)>=0?s.subset:"iar";   // mode 3 : sous-ensemble de niveaux
     else if(s.id==="radar"){
       o.dim=(s.dim==="cat"||radarDimFields().some(f=>f.code===s.dim))?s.dim:"cat";
       o.metric=["avg","max","sum","weighted","count"].indexOf(s.metric)>=0?s.metric:"avg";
-      o.eval=["initial","residual","both-side","both-over"].indexOf(s.eval)>=0?s.eval:"both-over";
+      o.eval=["initial","current","residual","both-side","both-over","over_iar","over_ar","over_ir"].indexOf(s.eval)>=0?s.eval:"both-over";
     }
     return o;
   }
@@ -6673,9 +6683,9 @@ function renderReport(){
       if(!body)return "";
       return card("objects",'<h2>'+esc(t("rp_objects"))+'</h2>'+body);
     },
-    matrix_ir:()=>{
-      let inner='<h2>'+esc(reportSectionTitle("matrix_ir"))+'</h2>';
-      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("side",RISKS);
+    matrix_ir:s=>{
+      let inner='<h2>'+esc(accoleeTitle(s&&s.subset))+'</h2>';
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("side",RISKS,s&&s.subset);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_ir">'+inner+'</div>';
     },
     matrix_initial:()=>{
@@ -6683,14 +6693,19 @@ function renderReport(){
       inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("initial",RISKS);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_initial">'+inner+'</div>';
     },
+    matrix_current:()=>{
+      let inner='<h2>'+esc(t("mtx_current_only"))+'</h2>';
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("current",RISKS);
+      return '<div class="rp-card rp-matrices" id="rsec-matrix_current">'+inner+'</div>';
+    },
     matrix_residual:()=>{
       let inner='<h2>'+esc(t("mtx_residual_only"))+'</h2>';
       inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportSingleMatrixSVG("residual",RISKS);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_residual">'+inner+'</div>';
     },
-    matrix_traj:()=>{
+    matrix_traj:s=>{
       let inner='<h2>'+esc(t("mtx_traj"))+'</h2>';
-      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("traj",RISKS);
+      inner+= nR===0?('<div class="rp-sub">'+esc(t("matrix_empty"))+'</div>'):reportMatrixSVG("traj",RISKS,s&&s.subset);
       return '<div class="rp-card rp-matrices" id="rsec-matrix_traj">'+inner+'</div>';
     },
     radar:s=>{
@@ -6764,7 +6779,7 @@ function renderReport(){
 
   // ---- Assemblage ----
   // Note : l'en-tête / pied de page est réservé à l'export Word ; il n'est pas rendu à l'écran ni à l'impression PDF.
-  const enabled=cfg.sections.filter(s=>s.on);
+  const enabled=cfg.sections.filter(s=>s.on&&reportSectionAvailable(s.id));
   let h="";
   if(cfg.cover.on){
     const c=cfg.cover;let cv='<div class="rp-cover" id="rsec-cover">';
@@ -9805,7 +9820,7 @@ async function buildDocx(){
     body+=dxPageBreak();
   }
 
-  const enabled=cfg.sections.filter(s=>s.on);
+  const enabled=cfg.sections.filter(s=>s.on&&reportSectionAvailable(s.id));
   // Table des matières native
   if(cfg.toc.on&&enabled.length){
     body+=dxP(dxRun(t("rp_toc"),{b:true,sz:30,color:"1F2937"}),{sb:120,sa:120});
@@ -9905,9 +9920,9 @@ async function buildDocx(){
       });
       return out;
     },
-    matrix_ir:async()=>{
-      let out=heading(reportSectionTitle("matrix_ir"));
-      out+=nR?await addSvgImage(reportMatrixSVG("side",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+    matrix_ir:async(s)=>{
+      let out=heading(accoleeTitle(s&&s.subset));
+      out+=nR?await addSvgImage(reportMatrixSVG("side",RISKS,s&&s.subset)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
     matrix_initial:async()=>{
@@ -9915,14 +9930,19 @@ async function buildDocx(){
       out+=nR?await addSvgImage(reportSingleMatrixSVG("initial",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
+    matrix_current:async()=>{
+      let out=heading(t("mtx_current_only"));
+      out+=nR?await addSvgImage(reportSingleMatrixSVG("current",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      return out;
+    },
     matrix_residual:async()=>{
       let out=heading(t("mtx_residual_only"));
       out+=nR?await addSvgImage(reportSingleMatrixSVG("residual",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
-    matrix_traj:async()=>{
+    matrix_traj:async(s)=>{
       let out=heading(t("mtx_traj"));
-      out+=nR?await addSvgImage(reportMatrixSVG("traj",RISKS)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
+      out+=nR?await addSvgImage(reportMatrixSVG("traj",RISKS,s&&s.subset)):dxP(dxRun(t("matrix_empty"),{color:"7A8699"}),{sa:120});
       return out;
     },
     radar:async(s)=>{
@@ -11952,15 +11972,24 @@ function rcSecItemHTML(s,iterating){
   else if(s.id==="action_plan"){ctrl='<select class="rc-rowctrl" data-role="view">'+
     [["due_date","rc_view_due"],["status","rc_view_status"],["responsible","rc_view_resp"]].map(a=>
       '<option value="'+a[0]+'"'+(s.view===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';}
+  else if((s.id==="matrix_ir"||s.id==="matrix_traj")&&assessmentLevels()===3){
+    // Mode 3 : sous-ensemble de niveaux affiché par la section (I·A·R / A·R / I·R).
+    ctrl='<select class="rc-rowctrl" data-role="subset">'+
+      [["iar","sub_iar"],["ar","sub_ar"],["ir","sub_ir"]].map(a=>'<option value="'+a[0]+'"'+(s.subset===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';}
   else if(s.id==="radar"){
+    const L3=assessmentLevels()===3;
     ctrl='<button type="button" class="rc-expand" data-exp="rcsub-radar">'+esc(t("radar_dim"))+' ▾</button>';
     const dimSel='<select class="rc-rowctrl" data-role="radar-dim">'+
       (['<option value="cat"'+(s.dim==="cat"?" selected":"")+'>'+esc(t("th_category"))+'</option>']
         .concat(radarDimFields().map(f=>'<option value="'+esc(f.code)+'"'+(s.dim===f.code?" selected":"")+'>'+esc(cfLabel(f))+'</option>'))).join("")+'</select>';
     const metSel='<select class="rc-rowctrl" data-role="radar-metric">'+
       [["avg","radar_metric_avg"],["max","radar_metric_max"],["sum","radar_metric_sum"],["weighted","radar_metric_weighted"],["count","radar_metric_count"]].map(a=>'<option value="'+a[0]+'"'+(s.metric===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
+    const evOpts=L3
+      ? [["over_iar","rad_over_iar"],["over_ar","rad_over_ar"],["over_ir","rad_over_ir"],["initial","lvl_inherent"],["current","lvl_current"],["residual","lvl_residual"]]
+      : [["both-over","radar_eval_over"],["both-side","radar_eval_side"],["initial","th_initial"],["residual","th_residual"]];
+    const evVal=L3&&evOpts.every(a=>a[0]!==s.eval)?"over_iar":s.eval;   // migrer un ancien réglage mode 2
     const evSel='<select class="rc-rowctrl" data-role="radar-eval">'+
-      [["both-over","radar_eval_over"],["both-side","radar_eval_side"],["initial","th_initial"],["residual","th_residual"]].map(a=>'<option value="'+a[0]+'"'+(s.eval===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
+      evOpts.map(a=>'<option value="'+a[0]+'"'+(evVal===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
     sub='<div class="rc-subrows" id="rcsub-radar">'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_dim"))+'</span>'+dimSel+'</label>'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_metric"))+'</span>'+metSel+'</label>'+
@@ -12008,7 +12037,7 @@ function renderReportSettings(){
   // 2. Sections
   h+='<div class="card"><h2>'+esc(t("rc_sections_title"))+'</h2><div class="caption">'+esc(t("rc_sections_cap"))+'</div>'+
     '<div class="rc-seclist" id="rcSeclist">'+pin("cover",t("rc_cover_row"),cfg.cover.on)+pin("toc",t("rp_toc"),cfg.toc.on)+
-    cfg.sections.map(s=>rcSecItemHTML(s,isSplit)).join("")+'</div></div>';
+    cfg.sections.filter(s=>reportSectionAvailable(s.id)).map(s=>rcSecItemHTML(s,isSplit)).join("")+'</div></div>';
   // 3. Page de garde
   h+='<div class="card"><h2>'+esc(t("rc_cover_row"))+'</h2><div class="caption">'+esc(t("rc_cover_cap"))+'</div>'+
     '<input type="hidden" id="rcLogoData" value="'+esc(c.logo||"")+'">'+
@@ -12083,6 +12112,7 @@ function collectReportCfg(){
     }else if(reportTableId(id)){
       const cols=[];it.querySelectorAll(".rc-subrow").forEach(sr=>{if(sr.querySelector("input").checked)cols.push(sr.dataset.sub);});o.columns=cols;
     }else if(id==="action_plan")o.view=(it.querySelector('[data-role="view"]')||{}).value||"due_date";
+    else if(id==="matrix_ir"||id==="matrix_traj"){const _ss=it.querySelector('[data-role="subset"]');if(_ss)o.subset=_ss.value;}
     else if(id==="radar"){
       o.dim=(it.querySelector('[data-role="radar-dim"]')||{}).value||"cat";
       o.metric=(it.querySelector('[data-role="radar-metric"]')||{}).value||"avg";

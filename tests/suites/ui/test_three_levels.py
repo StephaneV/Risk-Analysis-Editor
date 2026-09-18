@@ -268,3 +268,42 @@ def test_report_mode2_distribution_two_columns(app):
     app.js("renderReport()")
     dist = app.js("[...document.querySelectorAll('#rsec-summary_distribution thead th')].map(h=>h.textContent.trim())")
     assert len(dist) == 3 and "Actuelle" not in dist  # Libellé + Initial + Résiduel
+
+
+def test_report_matrix_current_and_subsets_mode3(app):
+    app.load(FX)
+    app.js(
+        "analyse.extensions.display.report={sections:["
+        "{id:'matrix_current',on:true},"
+        "{id:'matrix_ir',on:true,subset:'ir'},"
+        "{id:'matrix_traj',on:true,subset:'ar'}]};"
+    )
+    app.goto("report")
+    app.js("renderReport()")
+    # matrice Actuelle seule présente
+    assert app.js("!!document.getElementById('rsec-matrix_current')")
+    assert app.js("document.querySelector('#rsec-matrix_current h2').textContent") == "Matrice actuelle seule"
+    # accolée : titre selon le sous-ensemble (I·R)
+    ir = app.js("document.querySelector('#rsec-matrix_ir h2').textContent")
+    assert "Inhérente" in ir and "Résiduelle" in ir and "Actuelle" not in ir
+    assert not app.console_errors()
+
+
+def test_report_settings_mode3_controls(app):
+    app.load(FX)
+    app.settings_subtab("report")
+    app.js("renderReportSettings()")
+    ids = app.js("[...document.querySelectorAll('#reportCfgPanel .rc-secitem')].map(x=>x.dataset.sec)")
+    assert "matrix_current" in ids
+    assert app.js("!!document.querySelector('.rc-secitem[data-sec=\"matrix_traj\"] [data-role=\"subset\"]')")
+    opts = app.js("[...(document.querySelector('.rc-secitem[data-sec=\"radar\"] [data-role=\"radar-eval\"]')||{options:[]}).options].map(o=>o.value)")
+    assert opts == ["over_iar", "over_ar", "over_ir", "initial", "current", "residual"]
+
+
+def test_report_matrix_current_hidden_mode2(app):
+    app.load("ebios.rae.json")
+    app.settings_subtab("report")
+    app.js("renderReportSettings()")
+    ids = app.js("[...document.querySelectorAll('#reportCfgPanel .rc-secitem')].map(x=>x.dataset.sec)")
+    assert "matrix_current" not in ids
+    assert not app.js("!!document.querySelector('.rc-secitem[data-sec=\"matrix_traj\"] [data-role=\"subset\"]')")
