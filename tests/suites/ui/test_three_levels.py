@@ -244,3 +244,27 @@ def test_links_no_transition_measure_pills_coloured(app):
     coloured = app.js("[...document.querySelectorAll('#view-links tbody .pill[data-open-m]')].some(p=>p.style.background)")
     assert coloured
     assert not app.console_errors()
+
+
+def test_report_mode3_sections(app):
+    app.load(FX)
+    app.goto("report")
+    app.js("renderReport()")
+    # Répartition : 3 colonnes de niveaux
+    dist = app.js("[...document.querySelectorAll('#rsec-summary_distribution thead th')].map(h=>h.textContent.trim())")
+    assert dist == ["Libellé", "Inhérente", "Actuelle", "Résiduelle"]
+    # Détail des risques : 3 panneaux de cotation par risque
+    phases = app.js("[...document.querySelectorAll('#rsec-risks_detail .rp-phase .rp-phase-name')].slice(0,3).map(e=>e.textContent.trim())")
+    assert phases == ["Inhérente", "Actuelle", "Résiduelle"]
+    # Accolée : titre reflétant les 3 niveaux (sous-ensemble I·A·R par défaut)
+    h2 = app.js("document.querySelector('#rsec-matrix_ir h2').textContent")
+    assert "Inhérente" in h2 and "Actuelle" in h2 and "Résiduelle" in h2
+    assert not app.console_errors()
+
+
+def test_report_mode2_distribution_two_columns(app):
+    app.load("ebios.rae.json")
+    app.goto("report")
+    app.js("renderReport()")
+    dist = app.js("[...document.querySelectorAll('#rsec-summary_distribution thead th')].map(h=>h.textContent.trim())")
+    assert len(dist) == 3 and "Actuelle" not in dist  # Libellé + Initial + Résiduel
