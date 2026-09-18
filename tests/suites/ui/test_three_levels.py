@@ -94,12 +94,10 @@ def test_trajectory_three_dots_two_arrows(app):
     )
     # R1 : 3 points distincts → inherent + current + residual
     assert apps.get("inherent", 0) >= 1 and apps.get("current", 0) >= 1 and apps.get("residual", 0) >= 1
-    lines = app.js(
-        "[...document.querySelectorAll('#matrixArea svg line')].filter(l=>l.getAttribute('stroke')==='#fff')"
-        ".reduce((a,l)=>{a[l.getAttribute('stroke-dasharray')?'dashed':'solid']=(a[l.getAttribute('stroke-dasharray')?'dashed':'solid']||0)+1;return a;},{})"
-    )
-    assert lines.get("solid", 0) >= 1  # Inhérente→Actuelle (pleine)
-    assert lines.get("dashed", 0) >= 1  # Actuelle→Résiduelle (pointillée)
+    # Toutes les flèches sont blanches pleines (aucune pointillée).
+    dashed = app.js("[...document.querySelectorAll('#matrixArea svg line')].filter(l=>l.getAttribute('stroke')==='#fff'&&l.getAttribute('stroke-dasharray')).length")
+    solid = app.js("[...document.querySelectorAll('#matrixArea svg line')].filter(l=>l.getAttribute('stroke')==='#fff'&&!l.getAttribute('stroke-dasharray')).length")
+    assert dashed == 0 and solid >= 1
     assert not app.console_errors()
 
 
@@ -197,12 +195,12 @@ def test_trajectory_subsets_mode3(app):
             ".reduce((a,l)=>{const k=l.getAttribute('stroke-dasharray')?'dashed':'solid';a[k]=(a[k]||0)+1;return a;},{})"
         )
 
-    # A·R : que current/residual/unch_ar, flèches pointillées uniquement
+    # A·R : que current/residual/unch_ar ; toutes les flèches pleines
     app.js("setLevelSubset('traj','ar');renderMatrices();")
     ar = apps()
     assert set(ar) <= {"current", "residual", "unch_ar"}
-    assert arrows().get("solid", 0) == 0 and arrows().get("dashed", 0) >= 1
-    # I·R : que inherent/residual/unch_all, flèches pleines uniquement
+    assert arrows().get("dashed", 0) == 0 and arrows().get("solid", 0) >= 1
+    # I·R : que inherent/residual/unch_all ; toutes les flèches pleines
     app.js("setLevelSubset('traj','ir');renderMatrices();")
     ir = apps()
     assert set(ir) <= {"inherent", "residual", "unch_all"}
@@ -235,15 +233,14 @@ def test_radar_render_two_colours_in_mode2(app):
     assert rds == ["colorInit", "colorRes"]
 
 
-def test_links_transition_column(app):
+def test_links_no_transition_measure_pills_coloured(app):
     app.load(FX)
     app.goto("links")
     heads = app.js("[...document.querySelectorAll('#view-links thead th')].map(h=>h.textContent.replace('⠿','').replace('📌','').trim())")
-    assert "Transition" in heads
-    counts = app.js(
-        "[...document.querySelectorAll('#view-links .trans-tag')].reduce((a,c)=>{const k=c.textContent.trim();a[k]=(a[k]||0)+1;return a;},{})"
-    )
-    # M1 en place → Actuelle ; M2/M3/M4 → Résiduelle
-    assert counts.get("Actuelle", 0) >= 1
-    assert counts.get("Résiduelle", 0) >= 1
+    assert "Transition" not in heads
+    # Les codes de mesure sont des pastilles colorées selon le statut (comme le registre des risques).
+    pills = app.js("document.querySelectorAll('#view-links tbody .pill[data-open-m]').length")
+    assert pills >= 1
+    coloured = app.js("[...document.querySelectorAll('#view-links tbody .pill[data-open-m]')].some(p=>p.style.background)")
+    assert coloured
     assert not app.console_errors()

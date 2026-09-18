@@ -482,9 +482,6 @@
   .legend .swatch.unch_ia{background:var(--unchanged);border:2px dotted rgba(255,255,255,.9)}
   .legend .swatch.unch_ar{background:var(--unchanged);border:2px dashed #fff}
   .legend .swatch.unch_all{background:var(--unchanged);border:2px solid #fff}
-  .arrow-leg{display:inline-block;width:22px;height:0;border-top:2px solid currentColor;margin-right:2px;vertical-align:middle;opacity:.75}
-  .arrow-leg.dashed{border-top-style:dashed}
-  .trans-tag{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;color:var(--muted)}
   .legend .sq{width:16px;height:16px;border-radius:4px}
 
   /* ---------- Stats ---------- */
@@ -1694,7 +1691,6 @@ const I18N = {
     mtx_initial:"Risque initial (brut)", mtx_residual:"Risque résiduel (net)", mtx_traj:"Trajectoire des risques",
     exp_copy:"⧉ Copier", exp_both:"les deux", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Position initiale", leg_end:"Position résiduelle", leg_unchanged:"Risque non réduit",
-    leg_arrow_current:"Flèche pleine : mesures en place (Inhérente → Actuelle)", leg_arrow_residual:"Flèche pointillée : mesures proposées / planifiées / en cours (Actuelle → Résiduelle)",
     leg_unch_ia:"Non réduit Inhérente → Actuelle", leg_unch_ar:"Non réduit Actuelle → Résiduelle", leg_unch_all:"Non réduit (aucune cotation)",
     manual_notice:"✋ Placement manuel : glissez-déposez les pastilles", show_grid:"Afficher la grille de placement",
     toast_img_saved:"Image enregistrée : {0}", toast_img_fail:"Échec de la génération de l'image.",
@@ -1719,7 +1715,6 @@ const I18N = {
     lvl_inherent:"Inhérente", lvl_current:"Actuelle", lvl_residual:"Résiduelle",
     sub_iar:"Inhérente · Actuelle · Résiduelle", sub_ar:"Actuelle · Résiduelle", sub_ir:"Inhérente · Résiduelle",
     rad_over_iar:"Superposé · Inhérente · Actuelle · Résiduelle", rad_over_ar:"Superposé · Actuelle · Résiduelle", rad_over_ir:"Superposé · Inhérente · Résiduelle",
-    leg_arrow_ir:"Flèche : réduction globale (Inhérente → Résiduelle)",
     assess_levels_label:"Niveaux de cotation", assess_levels_2:"2 (Initiale · Résiduelle)", assess_levels_3:"3 (Inhérente · Actuelle · Résiduelle)",
     assess_levels_help:"Trois niveaux : risque inhérent (sans mesure), actuel (mesures en place), résiduel (mesures proposées/planifiées/en cours).",
     th_measures:"Mesures", th_evolution:"Évolution",
@@ -1778,7 +1773,7 @@ const I18N = {
     score_prefix:"Score {0} — ",
     measures_title:"Mesures de maîtrise", measures_caption:"Actions réduisant la probabilité et/ou la gravité des risques.",
     btn_add_measure:"+ Ajouter une mesure",
-    th_measure:"Mesure", th_type:"Type", th_status:"Statut", th_responsible:"Responsable", th_covered_risks:"Risques couverts", th_transition:"Transition",
+    th_measure:"Mesure", th_type:"Type", th_status:"Statut", th_responsible:"Responsable", th_covered_risks:"Risques couverts",
     measures_empty:"Aucune mesure. Cliquez sur « Ajouter une mesure ».", confirm_del_measure:"Supprimer la mesure {0} ?",
     confirm_del_level:"Supprimer le niveau « {0} » de l'axe ?", confirm_del_crit:"Supprimer le niveau de criticité « {0} » ?",
     "status.proposed":"Proposée","status.planned":"Planifiée","status.in_progress":"En cours","status.implemented":"En place","status.abandoned":"Abandonnée",
@@ -2112,7 +2107,6 @@ const I18N = {
     mtx_initial:"Initial risk (gross)", mtx_residual:"Residual risk (net)", mtx_traj:"Risk trajectory",
     exp_copy:"⧉ Copy", exp_both:"both", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Initial position", leg_end:"Residual position", leg_unchanged:"Unreduced risk",
-    leg_arrow_current:"Solid arrow: measures in place (Inherent → Current)", leg_arrow_residual:"Dashed arrow: proposed / planned / in-progress measures (Current → Residual)",
     leg_unch_ia:"Not reduced Inherent → Current", leg_unch_ar:"Not reduced Current → Residual", leg_unch_all:"Not reduced (no change)",
     manual_notice:"✋ Manual placement: drag and drop the chips", show_grid:"Show placement grid",
     toast_img_saved:"Image saved: {0}", toast_img_fail:"Image generation failed.",
@@ -2137,7 +2131,6 @@ const I18N = {
     lvl_inherent:"Inherent", lvl_current:"Current", lvl_residual:"Residual",
     sub_iar:"Inherent · Current · Residual", sub_ar:"Current · Residual", sub_ir:"Inherent · Residual",
     rad_over_iar:"Overlaid · Inherent · Current · Residual", rad_over_ar:"Overlaid · Current · Residual", rad_over_ir:"Overlaid · Inherent · Residual",
-    leg_arrow_ir:"Arrow: overall reduction (Inherent → Residual)",
     assess_levels_label:"Rating levels", assess_levels_2:"2 (Initial · Residual)", assess_levels_3:"3 (Inherent · Current · Residual)",
     assess_levels_help:"Three levels: inherent risk (no measure), current (measures in place), residual (proposed/planned/in-progress measures).",
     th_measures:"Measures", th_evolution:"Change",
@@ -2196,7 +2189,7 @@ const I18N = {
     score_prefix:"Score {0} — ",
     measures_title:"Controls / measures", measures_caption:"Actions reducing the probability and/or severity of risks.",
     btn_add_measure:"+ Add a measure",
-    th_measure:"Measure", th_type:"Type", th_status:"Status", th_responsible:"Responsible", th_covered_risks:"Covered risks", th_transition:"Transition",
+    th_measure:"Measure", th_type:"Type", th_status:"Status", th_responsible:"Responsible", th_covered_risks:"Covered risks",
     measures_empty:"No measure. Click “Add a measure”.", confirm_del_measure:"Delete measure {0}?",
     confirm_del_level:"Delete the axis level “{0}”?", confirm_del_crit:"Delete the criticality level “{0}”?",
     "status.proposed":"Proposed","status.planned":"Planned","status.in_progress":"In progress","status.implemented":"Implemented","status.abandoned":"Abandoned",
@@ -2525,7 +2518,6 @@ const I18N = {
     mtx_initial:"Rischio iniziale (lordo)", mtx_residual:"Rischio residuo (netto)", mtx_traj:"Traiettoria dei rischi",
     exp_copy:"⧉ Copia", exp_both:"entrambe", exp_png:"⭳ PNG", exp_svg:"⭳ SVG",
     leg_start:"Posizione iniziale", leg_end:"Posizione residua", leg_unchanged:"Rischio non ridotto",
-    leg_arrow_current:"Freccia piena: misure in atto (Inerente → Attuale)", leg_arrow_residual:"Freccia tratteggiata: misure proposte / pianificate / in corso (Attuale → Residua)",
     leg_unch_ia:"Non ridotto Inerente → Attuale", leg_unch_ar:"Non ridotto Attuale → Residua", leg_unch_all:"Non ridotto (nessuna variazione)",
     manual_notice:"✋ Posizionamento manuale: trascina i pallini", show_grid:"Mostra la griglia di posizionamento",
     toast_img_saved:"Immagine salvata: {0}", toast_img_fail:"Generazione dell'immagine non riuscita.",
@@ -2550,7 +2542,6 @@ const I18N = {
     lvl_inherent:"Inerente", lvl_current:"Attuale", lvl_residual:"Residua",
     sub_iar:"Inerente · Attuale · Residua", sub_ar:"Attuale · Residua", sub_ir:"Inerente · Residua",
     rad_over_iar:"Sovrapposto · Inerente · Attuale · Residua", rad_over_ar:"Sovrapposto · Attuale · Residua", rad_over_ir:"Sovrapposto · Inerente · Residua",
-    leg_arrow_ir:"Freccia: riduzione globale (Inerente → Residua)",
     assess_levels_label:"Livelli di valutazione", assess_levels_2:"2 (Iniziale · Residua)", assess_levels_3:"3 (Inerente · Attuale · Residua)",
     assess_levels_help:"Tre livelli: rischio inerente (nessuna misura), attuale (misure attuate), residuo (misure proposte/pianificate/in corso).",
     th_measures:"Misure", th_evolution:"Evoluzione",
@@ -2609,7 +2600,7 @@ const I18N = {
     score_prefix:"Punteggio {0} — ",
     measures_title:"Misure di controllo", measures_caption:"Azioni che riducono la probabilità e/o la gravità dei rischi.",
     btn_add_measure:"+ Aggiungi una misura",
-    th_measure:"Misura", th_type:"Tipo", th_status:"Stato", th_responsible:"Responsabile", th_covered_risks:"Rischi coperti", th_transition:"Transizione",
+    th_measure:"Misura", th_type:"Tipo", th_status:"Stato", th_responsible:"Responsabile", th_covered_risks:"Rischi coperti",
     measures_empty:"Nessuna misura. Clicca su « Aggiungi una misura ».", confirm_del_measure:"Eliminare la misura {0}?",
     confirm_del_level:"Eliminare il livello « {0} » dell'asse?", confirm_del_crit:"Eliminare il livello di criticità « {0} »?",
     "status.proposed":"Proposta","status.planned":"Pianificata","status.in_progress":"In corso","status.implemented":"Attuata","status.abandoned":"Abbandonata",
@@ -3462,19 +3453,6 @@ function riskTrajStages(r){
       // flèche entrante pointillée uniquement pour la transition Actuelle→Résiduelle
       dashedIn:prevLast==="a"&&p.letters[0]==="r"};
   });
-}
-/* Transition à laquelle une mesure contribue (mode 3), d'après son statut :
-   « en place » (implemented) réduit Inhérente→Actuelle (flèche pleine) ;
-   proposée/planifiée/en cours réduit Actuelle→Résiduelle (flèche pointillée) ; abandonnée : aucune. */
-function measureTransition(status){
-  if(status==="implemented")return {to:"current",dashed:false,label:t("lvl_current")};
-  if(status==="proposed"||status==="planned"||status==="in_progress")return {to:"residual",dashed:true,label:t("lvl_residual")};
-  return null;
-}
-function transitionCell(status){
-  const tr=measureTransition(status);
-  if(!tr)return '<span class="muted">—</span>';
-  return '<span class="trans-tag"><span class="arrow-leg'+(tr.dashed?' dashed':'')+'"></span>'+esc(tr.label)+'</span>';
 }
 function measuresOfRisk(rid){return analyse.treatments.filter(tr=>tr.risk===rid).map(tr=>tr.measure);}
 function risksOfMeasure(mid){return analyse.treatments.filter(tr=>tr.measure===mid).map(tr=>tr.risk);}
@@ -5305,19 +5283,10 @@ function renderMatrices(){
       : '<div class="item"><span class="swatch start">R</span>'+esc(t("leg_start"))+'</div>'+
         '<div class="item"><span class="swatch end">R</span>'+esc(t("leg_end"))+'</div>'+
         '<div class="item"><span class="swatch unchanged">R</span>'+esc(t("leg_unchanged"))+'</div>';
-    // Flèches présentes selon le sous-ensemble : I·A·R = pleine + pointillée ; A·R = pointillée ; I·R = pleine (globale).
-    const arrowItems=L3
-      ? (sub==="ar"?[['dashed',t("leg_arrow_residual")]]
-        :sub==="ir"?[['',t("leg_arrow_ir")]]
-        :[['',t("leg_arrow_current")],['dashed',t("leg_arrow_residual")]])
-      : [];
-    const arrowsLeg=arrowItems.length
-      ? '<div class="legend-grp">'+arrowItems.map(([cls,lab])=>'<div class="item"><span class="arrow-leg'+(cls?' '+cls:'')+'"></span>'+esc(lab)+'</div>').join("")+'</div>'
-      : '';
+    // Les flèches sont toutes identiques (blanc plein) : pas de légende de flèches.
     legend.innerHTML=
       '<div class="legend-grp">'+critLegend()+'</div>'+
       '<div class="legend-grp">'+kindsLeg+'</div>'+
-      arrowsLeg+
       (getTrajArrangement()==="manual"?manualNoticeHTML():'');
   }
 }
@@ -5479,7 +5448,7 @@ function drawTrajectories(mc){
     for(let i=1;i<stages.length;i++){
       const a=posOf[r.id+"|"+stages[i-1].kind],b=posOf[r.id+"|"+stages[i].kind];if(!a||!b)continue;
       const ang=Math.atan2(b.y-a.y,b.x-a.x);
-      trajArrow(svg, a.x+Math.cos(ang)*(a.size/2+3), a.y+Math.sin(ang)*(a.size/2+3), b.x-Math.cos(ang)*(b.size/2+3), b.y-Math.sin(ang)*(b.size/2+3), r, stages[i].dashedIn);
+      trajArrow(svg, a.x+Math.cos(ang)*(a.size/2+3), a.y+Math.sin(ang)*(a.size/2+3), b.x-Math.cos(ang)*(b.size/2+3), b.y-Math.sin(ang)*(b.size/2+3), r);
     }
   });
 }
@@ -5863,7 +5832,7 @@ function renderManualTraj(mc){
     for(let i=1;i<stages.length;i++){
       const pa=posFor(r,stages[i-1].level),pb=posFor(r,stages[i].level);if(!pa||!pb)continue;
       const ang=Math.atan2(pb.y-pa.y,pb.x-pa.x),pad=rad+3;
-      trajArrow(svg, pa.x+Math.cos(ang)*pad, pa.y+Math.sin(ang)*pad, pb.x-Math.cos(ang)*pad, pb.y-Math.sin(ang)*pad, r, stages[i].dashedIn);}});
+      trajArrow(svg, pa.x+Math.cos(ang)*pad, pa.y+Math.sin(ang)*pad, pb.x-Math.cos(ang)*pad, pb.y-Math.sin(ang)*pad, r);}});
   // pastilles
   visibleRisks().forEach(r=>{const stages=riskTrajStages(r);
     if(stages.length===1){
@@ -6034,7 +6003,7 @@ function layoutTrajectoryGridOpt(mc){
   /* ---- tracé ---- */
   arrows.forEach(a=>{const ax=a.start.cx+a.start.dx,ay=a.start.cy+a.start.dy,bx=a.end.cx+a.end.dx,by=a.end.cy+a.end.dy;
     const ang=Math.atan2(by-ay,bx-ax),pad=rad+3;
-    trajArrow(svg,ax+Math.cos(ang)*pad,ay+Math.sin(ang)*pad,bx-Math.cos(ang)*pad,by-Math.sin(ang)*pad,a.start.risk,a.dashed);});
+    trajArrow(svg,ax+Math.cos(ang)*pad,ay+Math.sin(ang)*pad,bx-Math.cos(ang)*pad,by-Math.sin(ang)*pad,a.start.risk);});
   tokens.forEach(t=>{const c=makeOvChip(t.risk,t.kind,size,t.app,t.level);
     c.style.left=(t.cx+t.dx)+"px";c.style.top=(t.cy+t.dy)+"px";
     attachCellDrag(c,t.risk,t.kind);   // disposition « flèches optimisées », la plus courante
@@ -7748,17 +7717,14 @@ function builtinCols(table){
     {key:"comment",label:t("f_notes"),text:true,detail:true,cell:m=>m.comment?mdToHTML(m.comment):dash},
   ];
   }
-  const L3l=assessmentLevels()===3;
-  const linkCols=[ // links (le champ « custom » vit dans l'objet treatment)
+  return [ // links (le champ « custom » vit dans l'objet treatment)
     {key:"rid",label:t("th_risk_id"),pinned:"first",sort:"rid",cell:x=>'<span class="id-badge">'+esc(x.risk)+'</span>'},
     {key:"risk",label:t("th_risk"),sort:"risk",text:true,cell:x=>{const r=riskById(x.risk);return esc(r?r.label:"—");}},
-    {key:"mid",label:t("th_measure_id"),sort:"mid",cell:x=>'<span class="id-badge">'+esc(x.measure)+'</span>'},
+    // Code de mesure coloré selon le statut (comme le registre des risques).
+    {key:"mid",label:t("th_measure_id"),sort:"mid",cell:x=>measurePill(x.measure)},
     {key:"measure",label:t("th_measure"),sort:"measure",text:true,cell:x=>{const m=measureById(x.measure);return esc(m?m.label:"—");}},
     {key:"notes",label:t("f_notes"),sort:"notes",text:true,detail:true,cell:x=>x.comment?mdToHTML(x.comment):'<span class="muted">—</span>'},   // Markdown rendu (tableau écrêté + loupe, tiroir, cartes)
   ];
-  // Mode 3 : transition à laquelle chaque lien contribue, d'après le statut de sa mesure.
-  if(L3l)linkCols.splice(4,0,{key:"transition",label:t("th_transition"),cell:x=>{const m=measureById(x.measure);return transitionCell(m&&m.status);}});
-  return linkCols;
 }
 function cfIsTextCol(f){return f&&(f.type==="text"||f.type==="textarea"||(f.type==="computed"&&(f.result_type||"number")==="text"));}
 function cfCols(table){
