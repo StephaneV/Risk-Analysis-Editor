@@ -307,3 +307,22 @@ def test_report_matrix_current_hidden_mode2(app):
     ids = app.js("[...document.querySelectorAll('#reportCfgPanel .rc-secitem')].map(x=>x.dataset.sec)")
     assert "matrix_current" not in ids
     assert not app.js("!!document.querySelector('.rc-secitem[data-sec=\"matrix_traj\"] [data-role=\"subset\"]')")
+
+
+def test_word_template_tags_mode3(app):
+    app.load(FX)
+    # balise de valeur : risk.current.* et synonyme inherent
+    assert app.js("tmplRiskField(riskById('R1'),['current','score']).value") == 12
+    assert app.js("tmplRiskField(riskById('R1'),['inherent','score']).value") == 16
+    assert app.js("tmplRiskField(riskById('R1'),['current','criticality']).value") == "Critique"
+    # comptes par niveau
+    assert app.js("typeof tmplLevelField(analyse.grid.criticality_levels[0],['count_current']).value") == "number"
+    # blocs générateurs (mode 3) ne lèvent pas et produisent du contenu
+    assert app.js("tmplStatBlockXml({type:'distribution',display:'table'},[]).includes('Actuelle')")
+    assert app.js("!!tmplMatrixBlockXml({type:'current'},[])")
+    assert app.js("!!tmplMatrixBlockXml({type:'traj',subset:'ar'},[])")
+    assert app.js("!!tmplRadarBlockXml({evaluation:'over_ar',dimension:'category'},[])")
+    # dictionnaire d'évaluation radar : valeurs mode 3
+    assert app.js("TMPL_RADAR_EVAL['over_iar']") == "over_iar"
+    assert app.js("TMPL_RADAR_EVAL['current']") == "current"
+    assert not app.console_errors()
