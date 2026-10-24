@@ -692,4 +692,4 @@ Dans *Paramètres › Grille de cotation*, réglez **Niveaux de cotation** sur *
 
 ---
 
-*Ce guide correspond à Risk Analysis Editor version 2.0.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
+*Ce guide correspond à Risk Analysis Editor version 3.2.0. Les captures illustrent l'analyse de démonstration fictive `examples/demo-aipd-sst.rae.json`.*
