@@ -139,6 +139,10 @@ Le réglage **Niveaux de cotation** (dans *Grille de cotation*) choisit combien 
 
 Les cotations sont **saisies à la main** (il n'y a pas de calcul automatique). En mode 3, le niveau supplémentaire s'ajoute partout : **fiche de risque** (un 3ᵉ bloc de cotation), **registres** (colonne *Actuelle*), **matrices** (vue accolée à trois matrices et **trajectoire à trois pastilles**), **radars**, **statistiques**, **rapport** et exports **Word / Excel / CSV**.
 
+![Matrices › Trajectoire en mode 3 cotations](images/guide-29-mode3-trajectoire.png)
+
+> *Vue **Trajectoire** en mode 3 : chaque risque chemine de sa position **inhérente** (contour en points) vers l'**actuelle** (tirets) puis la **résiduelle** (contour plein) ; le fond gris signale l'absence de réduction sur un segment. Un menu choisit le sous-ensemble de niveaux affiché.*
+
 > **Rétrocompatibilité.** Le défaut reste 2 niveaux : les analyses, démos et modèles existants sont inchangés. Passer de 3 à 2 niveaux **conserve** les cotations actuelles (simplement masquées), si bien que l'on peut faire l'aller-retour sans rien perdre. Le **niveau de référence** pour les compteurs, filtres, tri et criticité unique reste toujours la **résiduelle**.
 
 ### Affichage des matrices
