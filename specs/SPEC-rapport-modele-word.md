@@ -110,14 +110,14 @@ Chemins en notation pointée, **noms anglais**, correspondant aux clés du forma
 | `analysis.reduced_count` | *(dérivé)* | nombre de risques dont la cotation a changé (initial → résiduel) |
 
 > Compteurs et tableaux statistiques : voir aussi le bloc **`{{ stat … }}`** (§4.5) et les comptes par
-> niveau `level.count_initial` / `level.count_residual` (§3.2).
+> niveau `level.count_initial` / `level.count_current` (mode 3) / `level.count_residual` (§3.2).
 
 ### 3.2 Grille — `grid`
 
 `grid.vertical_axis`, `grid.horizontal_axis`, `grid.method` (**libellé localisé** de la méthode).
 Collection `grid.levels` (pour une boucle ou `table source="levels"`, triée par ordre), chaque niveau
 exposant : `code`, `label` (**étiquette colorée**, cf. `| badge`), `score_min`, `score_max`, `color`,
-`acceptance`, `description`, et les comptes de risques `count_initial` / `count_residual`.
+`acceptance`, `description`, et les comptes de risques `count_initial` / `count_current` (mode 3) / `count_residual`.
 
 **Échelles d'axes** — collections `grid.vertical_axis.levels` (vraisemblance) et
 `grid.horizontal_axis.levels` (gravité), item `step` : `step.value` (nombre), `step.label`,
@@ -139,13 +139,15 @@ exposant : `code`, `label` (**étiquette colorée**, cf. `| badge`), `score_min`
 | `risk.initial.criticality` | *(dérivé)* | libellé du niveau |
 | `risk.initial.criticality_code` | *(dérivé)* | code du niveau |
 | `risk.initial.color` | *(dérivé)* | code couleur hex |
+| `risk.current.*` | idem sur `current_assessment` (cotation **actuelle**, mode 3) | idem |
 | `risk.residual.*` | idem sur `residual_assessment` | idem |
 | `risk.evolution` | *(dérivé)* | Reduced / Unchanged / Worsened |
 | `risk.cf.<code>` | `custom.<code>` (cible *risk* / *cotation*) | libellé(s) |
 | `risk.measures` | *(dérivé via liens)* | sous-collection (boucle imbriquée) |
 | `risk.links` | *(dérivé)* | sous-collection |
 
-> Synonymes acceptés : `risk.gross.*` = `risk.initial.*`, `risk.net.*` = `risk.residual.*`.
+> Synonymes acceptés : `risk.gross.*` = `risk.initial.*`, `risk.net.*` = `risk.residual.*`, `risk.inherent.*` = `risk.initial.*`.
+> **Mode « 3 cotations »** (`extensions.display.assessment_levels = 3`) : `risk.current.*` porte la cotation **actuelle** (mesures en place). Hors mode 3, `current_assessment` est absent et `risk.current.*` se replie sur l'initiale.
 
 ### 3.4 Objet **measure** (boucle `measures`, item `measure`)
 
@@ -247,17 +249,25 @@ Balises qui produisent autre chose que du texte — c'est là que se choisit le 
 ### 4.1 Matrice — `{{ matrix … }}`
 | Attribut | Valeurs | Défaut |
 |---|---|---|
-| `type` | `initial` (syn. `gross`), `residual` (syn. `net`), `trajectory` | `initial` |
+| `type` | `initial` (syn. `gross`, `inherent`), `current` (mode 3), `residual` (syn. `net`), `side` (syn. `ir`, `both` — matrices accolées), `trajectory` (syn. `traj`) | `initial` |
+| `subset` | *(mode 3, pour `side`/`trajectory`)* sous-ensemble de niveaux : `iar` (défaut), `ar` (actuelle·résiduelle), `ir` (inhérente·résiduelle) | `iar` |
 | `filter` | expression de filtre (§8) | — |
 | `title` | texte (sinon aucun) | — |
 | `width` · `height` | dimensions en cm (§4.8) | ajustée à la page |
 
-Ex. : `{{ matrix type="initial" }}` · `{{ matrix type="initial" filter="category='Illegitimate data access'" }}`
+Ex. : `{{ matrix type="initial" }}` · `{{ matrix type="current" }}` · `{{ matrix type="trajectory" subset="ar" }}` · `{{ matrix type="side" subset="ir" filter="category='Illegitimate data access'" }}`
+
+> **Mode « 3 cotations »** : `type="current"` insère la matrice **Actuelle** seule ; sur les vues combinées `side` et `trajectory`, `subset` choisit les niveaux affichés (I·A·R / A·R / I·R). Hors mode 3, `current` se replie sur l'initiale et `subset` est ignoré.
 
 ### 4.2 Radar — `{{ radar … }}`
 Attributs : `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`, `cumulative`,
-`weighted`, `count`), `evaluation` (`initial`, `residual`, `side`, `overlay`), `empty_axes`
+`weighted`, `count`), `evaluation`, `empty_axes`
 (`show`/`all`/`true` — **défaut** — vs `hide`/`used`/`false`), `filter`, `title`, `width` · `height` (§4.8).
+
+**`evaluation`** — mode 2 : `initial`, `residual`, `side` (accolées), `overlay` (superposées, **défaut**).
+**Mode « 3 cotations »** : `initial` (syn. `inherent`), `current`, `residual`, ou séries superposées
+`over_iar` (syn. `iar`), `over_ar` (syn. `ar`), `over_ir` (syn. `ir`). En mode 3, `overlay` superpose les
+trois niveaux.
 
 **`empty_axes`** — par défaut le radar affiche **tous les axes possibles** (toutes les valeurs connues),
 y compris ceux **sans risque** : items d'un champ à valeurs fermées ou instances d'un champ `reference`

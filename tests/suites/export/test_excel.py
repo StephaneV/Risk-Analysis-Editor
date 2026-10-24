@@ -35,6 +35,19 @@ def test_xlsx_contains_risk_label(app):
     assert b"Fuite de donn" in blob  # un libellé de risque de la démo
 
 
+def test_xlsx_current_columns_mode3(app):
+    """Mode 3 cotations : colonnes/répartition « Actuelle » présentes ; absentes en mode 2."""
+    app.load("trois-cotations.rae.json")
+    parts = ooxml.open_pkg(base64.b64decode(app.js(XLSX_B64)))
+    blob = b"".join(v for k, v in parts.items() if k.startswith("xl/"))
+    assert b"Actuelle" in blob  # en-têtes de cotation + répartition
+    # non-régression : une analyse en 2 cotations ne contient pas « Actuelle »
+    app.load("ebios.rae.json")
+    parts2 = ooxml.open_pkg(base64.b64decode(app.js(XLSX_B64)))
+    blob2 = b"".join(v for k, v in parts2.items() if k.startswith("xl/"))
+    assert b"Actuelle" not in blob2
+
+
 def test_xlsx_includes_object_sheets(app):
     """Une feuille par type d'objet renseigné (id + attributs), en plus des 4 feuilles fixes."""
     app.load("ebios-objets.rae.json")

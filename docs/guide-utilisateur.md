@@ -127,6 +127,28 @@ C'est le cœur de la configuration méthodologique. Vous y définissez :
 
 > ⚠️ **Attention lorsque l'analyse est déjà cotée.** Si des risques sont déjà notés, un bandeau d'avertissement rappelle que modifier les axes, les niveaux ou la méthode de calcul **réinterprétera les cotations existantes** (un même couple vraisemblance/gravité peut changer de signification). Réglez de préférence la grille **avant** de saisir les risques.
 
+### Deux ou trois niveaux de cotation
+
+Le réglage **Niveaux de cotation** (dans *Grille de cotation*) choisit combien de cotations porte chaque risque :
+
+- **2 niveaux** *(par défaut)* — mode classique : cotation **initiale** → cotation **résiduelle**.
+- **3 niveaux** — mode étendu, avec un niveau intermédiaire :
+  - **Inhérente** — le risque **brut**, sans aucune mesure ;
+  - **Actuelle** — avec les mesures **en place** (statut *En place*) ;
+  - **Résiduelle** — la cible, une fois appliquées aussi les mesures **proposées / planifiées / en cours**.
+
+![Matrices accolées en mode 3 : Inhérente · Actuelle · Résiduelle](images/guide-30-mode3-matrices.png)
+
+> *Vue **Matrices › Initial / Résiduel** en mode 3 : les trois matrices **Inhérente**, **Actuelle** et **Résiduelle** sont affichées côte à côte, illustrant la réduction progressive du risque.*
+
+Les cotations sont **saisies à la main** (il n'y a pas de calcul automatique). En mode 3, le niveau supplémentaire s'ajoute partout : **fiche de risque** (un 3ᵉ bloc de cotation), **registres** (colonne *Actuelle*), **matrices** (vue accolée à trois matrices et **trajectoire à trois pastilles**), **radars**, **statistiques**, **rapport** et exports **Word / Excel / CSV**.
+
+![Matrices › Trajectoire en mode 3 cotations](images/guide-29-mode3-trajectoire.png)
+
+> *Vue **Trajectoire** en mode 3 : chaque risque chemine de sa position **inhérente** (contour en points) vers l'**actuelle** (tirets) puis la **résiduelle** (contour plein) ; le fond gris signale l'absence de réduction sur un segment. Un menu choisit le sous-ensemble de niveaux affiché.*
+
+> **Rétrocompatibilité.** Le défaut reste 2 niveaux : les analyses, démos et modèles existants sont inchangés. Passer de 3 à 2 niveaux **conserve** les cotations actuelles (simplement masquées), si bien que l'on peut faire l'aller-retour sans rien perdre. Le **niveau de référence** pour les compteurs, filtres, tri et criticité unique reste toujours la **résiduelle**.
+
 ### Affichage des matrices
 
 ![Paramètres : affichage des matrices](images/guide-04-parametres-affichage.png)
@@ -186,7 +208,7 @@ La fiche regroupe :
 
 - **Identifiant**, **catégorie**, **libellé** (obligatoire), **propriétaire** ;
 - **Description** et **Notes**, tous deux en **Markdown** (aperçu mis en forme par défaut ; **double-clic** ou icône œil pour basculer entre aperçu et édition — voir [§5](#5-décrire-lanalyse-onglet-présentation)) ;
-- l'**évaluation initiale (brute)** et l'**évaluation résiduelle (nette)** : vraisemblance et gravité. Le score et la criticité sont **calculés et affichés automatiquement** sous chaque bloc. Si des **champs personnalisés de cotation** ont été définis (cible *évaluation du risque*, voir [§14](#14-les-champs-personnalisés)), ils se saisissent **sous chaque bloc**, avec une valeur **distincte** pour l'évaluation initiale et pour la résiduelle (dans les modèles EBIOS RM et ISO 27005 : *Justification* et *Date de cotation*) ;
+- l'**évaluation initiale (brute)** et l'**évaluation résiduelle (nette)** : vraisemblance et gravité. Le score et la criticité sont **calculés et affichés automatiquement** sous chaque bloc. Si des **champs personnalisés de cotation** ont été définis (cible *évaluation du risque*, voir [§14](#14-les-champs-personnalisés)), ils se saisissent **sous chaque bloc**, avec une valeur **distincte** pour l'évaluation initiale et pour la résiduelle (dans les modèles EBIOS RM et ISO 27005 : *Justification* et *Date de cotation*). En **mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)), un **3ᵉ bloc *Actuelle*** s'intercale entre l'inhérente et la résiduelle (les trois blocs sont alors empilés) ;
 - la section **Mesures de maîtrise liées** (à cocher) ;
 - les **champs personnalisés** de risque, le cas échéant.
 
@@ -259,6 +281,8 @@ Deux vues, sélectionnables par la bascule en haut à gauche :
 
 ![Matrices : vue Trajectoire](images/guide-15-matrices-trajectoire.png)
 
+> **Mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)). La vue accolée montre **trois matrices** (Inhérente · Actuelle · Résiduelle) et la trajectoire **trois pastilles reliées par deux flèches**. L'apparence de chaque pastille indique le niveau (bordure en **points** = inhérente, **tirets** = actuelle, **pleine** = résiduelle) et les cas de **non-réduction** (fond gris). Un **menu déroulant** dans la barre d'outils choisit le sous-ensemble affiché : *Inhérente · Actuelle · Résiduelle*, *Actuelle · Résiduelle* ou *Inhérente · Résiduelle* — indépendamment pour la vue accolée et pour la trajectoire.
+
 Autres commandes :
 
 - **Disposition** — comment répartir plusieurs pastilles dans une même case (grille carrée centrée, rangée, colonne, amas/spirale, débordement « +N »…). En vue Trajectoire, une disposition « flèches droites optimisées » minimise les croisements. La disposition **Manuel** ajoute en plus un **placement fin** des pastilles à l'intérieur de leur case au glisser-déposer (avec grille d'accroche) ; ces positions sont enregistrées dans le fichier.
@@ -280,7 +304,7 @@ L'onglet **Radars** propose une lecture synthétique du **profil de risque** sou
 
 Une **barre d'outils** pilote l'affichage :
 
-- **Évaluation** — *Initial*, *Résiduel*, *Accolés* (deux radars côte à côte) ou *Superposés* (deux polygones sur le même radar, pour visualiser la réduction du risque).
+- **Évaluation** — *Initial*, *Résiduel*, *Accolés* (deux radars côte à côte) ou *Superposés* (deux polygones sur le même radar, pour visualiser la réduction du risque). En **mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)), un **menu déroulant** remplace ces boutons et propose, en plus des niveaux seuls (*Inhérente*, *Actuelle*, *Résiduelle*), trois superpositions : *Inhérente · Actuelle · Résiduelle*, *Actuelle · Résiduelle* ou *Inhérente · Résiduelle*.
 - **Dimension** — ce que représentent les axes : la **catégorie** de risque, ou un **champ personnalisé à valeurs fermées** rattaché au risque (liste déroulante, tags, liste à cocher, **échelle**, **référence** à un objet).
 - **Axes vides** — case à cocher (**cochée par défaut**) : affiche **tous les axes possibles** (toutes les valeurs connues), y compris ceux **sans risque** dans la vue — item ou instance non utilisé, **ou valeur écartée par un filtre actif**. Les axes restent ainsi **stables** quand vous filtrez : un axe concerné tombe à **0** au lieu de **disparaître** (ce qui déformait le radar). Décochez la case pour ne conserver que les axes **présents dans la vue**. Disponible pour **toutes les dimensions**, catégorie comprise (dont l'univers d'axes est l'ensemble des catégories de tous les risques).
 - **Métrique** — la valeur mesurée sur chaque axe :
@@ -307,7 +331,7 @@ Un sous-onglet dédié dans *Paramètres* règle deux choses, enregistrées **av
 ![Paramètres : radars](images/guide-25-parametres-radars.png)
 
 - **Poids par niveau de criticité** — utilisés par la métrique *Criticité pondérée* : chaque risque compte pour le poids de son niveau (par défaut **1 / 2 / 4 / 8**, du plus faible au plus grave).
-- **Rendu des radars** — **luminosité** et **saturation** (HSL) des bandes de fond, **épaisseur du contour**, **pas des graduations** (`0` = automatique), **couleur des rayons** et **couleurs des évaluations initiale et résiduelle** (contour et pastilles), avec un **aperçu** en direct. Ces réglages s'appliquent à l'écran, à l'export et au rapport.
+- **Rendu des radars** — **luminosité** et **saturation** (HSL) des bandes de fond, **épaisseur du contour**, **pas des graduations** (`0` = automatique), **couleur des rayons** et **couleurs des évaluations initiale et résiduelle** (contour et pastilles) — avec une **troisième couleur « Actuelle »** en mode 3 cotations ([§4](#deux-ou-trois-niveaux-de-cotation)) —, avec un **aperçu** en direct. Ces réglages s'appliquent à l'écran, à l'export et au rapport.
 
 ---
 
@@ -320,7 +344,7 @@ L'onglet **Statistiques** est un **tableau de bord chiffré** de l'analyse. Comm
 Les données sont présentées en **blocs**, chacun sous forme de **tableau**, de **graphique** (anneau ou camembert) ou des **deux** côte à côte :
 
 - **Compteurs clés** — nombre de risques, de mesures, de risques réduits, et pourcentage de risques traités.
-- **Répartition par criticité** — la distribution *initiale → résiduelle* (deux anneaux), qui montre le glissement du risque après mesures.
+- **Répartition par criticité** — la distribution *initiale → résiduelle* (deux anneaux), qui montre le glissement du risque après mesures. En **mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)), elle passe à **trois étapes** (Inhérente → Actuelle → Résiduelle).
 - **Risques par catégorie**, **Mesures par type**, **Mesures par statut**.
 - **En option** : *Risques* / *Mesures par responsable*, **Couverture** (risques sans mesure, mesures orphelines), une **répartition par champ personnalisé** et un **agrégat numérique** (autant de blocs que voulu). Pour un champ **multi-valeur** (liste à cocher, étiquettes), le centre de l'anneau compte des **valeurs**, pas des entités. Un **agrégat numérique** résume un champ *échelle* ou *calculé numérique* de risque, mesure ou lien sous forme de **tuiles** : effectif renseigné, **moyenne**, **somme**, **min**, **max**.
 
@@ -352,7 +376,7 @@ Un bloc de **synthèse** affiche l'avancement global (barre + compteurs par stat
 
 L'onglet **Rapport** génère un rapport configurable, prêt à imprimer. Par défaut, il comporte une **page de garde**, une **table des matières**, puis : le cartouche (métadonnées), un bloc **Présentation** (description et champs de l'analyse), la **synthèse** (compteurs et répartition par criticité), la **grille de cotation** détaillée, les **référentiels et légendes des champs** (valeurs des listes/tags accompagnées de leur description), les **matrices**, le **registre des risques** et le **détail** des risques, les **mesures**, les **liens** et le **plan d'action**.
 
-> Le **Détail des risques** présente, pour chaque risque, sa description et ses notes, puis **deux panneaux côte à côte** — **Initial** et **Résiduel** — chacun réunissant le **niveau de criticité** (pastille colorée), le **score**, la **probabilité** et la **gravité** (les intitulés reprennent les **libellés d'axe** de la grille), ainsi que les **champs personnalisés de cotation** propres à la phase (par ex. *Justification*, *Date de cotation*), qui ont une valeur distincte pour l'évaluation initiale et pour la résiduelle. Les **champs personnalisés du risque** (tags, références… non liés à la phase) figurent dans un bloc distinct sous les panneaux. Cette présentation est identique dans l'aperçu écran, l'impression PDF et l'export Word.
+> Le **Détail des risques** présente, pour chaque risque, sa description et ses notes, puis **deux panneaux côte à côte** — **Initial** et **Résiduel** — chacun réunissant le **niveau de criticité** (pastille colorée), le **score**, la **probabilité** et la **gravité** (les intitulés reprennent les **libellés d'axe** de la grille), ainsi que les **champs personnalisés de cotation** propres à la phase (par ex. *Justification*, *Date de cotation*), qui ont une valeur distincte pour l'évaluation initiale et pour la résiduelle. Les **champs personnalisés du risque** (tags, références… non liés à la phase) figurent dans un bloc distinct sous les panneaux. Cette présentation est identique dans l'aperçu écran, l'impression PDF et l'export Word. En **mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)), les panneaux et la répartition par criticité passent à **trois colonnes** (Inhérente · Actuelle · Résiduelle).
 
 Le bouton **🖨 Imprimer** ouvre la boîte d'impression du navigateur : choisissez « Enregistrer au format PDF » pour produire un PDF. Le bouton **⭳ Word (.docx)** exporte le même rapport en document Word éditable (voir §18).
 
@@ -367,7 +391,7 @@ Le sous-onglet **Paramètres › Rapport** permet d'adapter finement le contenu 
 - **Table des matières** — activable ; rendue en table des matières **native** (mise à jour à l'ouverture) dans l'export Word.
 - **En-tête / pied de page** — trois zones (gauche, centre, droite) avec des **variables** insérables (`{title}`, `{organization}`, `{author}`, `{date}`, `{version}`, `{confidentiality}`, `{page}`, `{pages}`). ⚠️ **Réservé à l'export Word** : l'en-tête et le pied de page n'apparaissent pas à l'écran ni à l'impression PDF.
 - **Colonnes des tableaux** — pour chaque registre (risques, mesures, liens), choisissez les colonnes et leur ordre (champs personnalisés compris) ; de même pour les **lignes du cartouche** de métadonnées et les **éléments de la Présentation**.
-- **Matrices** — trois sections indépendantes : *initiale et résiduelle accolées* (cochée par défaut), *initiale seule*, *résiduelle seule*.
+- **Matrices** — sections indépendantes : *initiale et résiduelle accolées* (cochée par défaut), *initiale seule*, *résiduelle seule* — et, en **mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)), *matrice actuelle seule*. Les sections **accolée** et **trajectoire** offrent alors un **choix de sous-ensemble** de niveaux (I·A·R / A·R / I·R), de même que l'**évaluation du radar** du rapport.
 - **Plan d'action** — présentation au choix : échéancier, par statut ou par responsable.
 - **Orientation** — portrait (par défaut) ou paysage.
 - **Structure du rapport** — trois modes exclusifs : *Analyse complète* ; *Sous-ensemble filtré* (selon les filtres et la recherche actifs — une section **« Périmètre filtré »** récapitule alors les filtres appliqués et le nombre d'éléments retenus **sur le total** `n / N`) ; ou ***Rapport éclaté***.
@@ -550,6 +574,7 @@ Chaque registre (Risques, Mesures, Liens) propose **Importer (CSV)** et **Export
 
 - **Export.** Les en-têtes sont les **clés anglaises** du format (identiques quelle que soit la langue de l'interface), avec délimiteur `;` et BOM UTF-8 pour Excel. Des colonnes dérivées en lecture seule sont ajoutées (score/criticité pour les risques ; risques couverts pour les mesures ; libellés pour les liens). Le fichier est **ré-importable**.
 - **Import.** Les colonnes sont nommées d'après ces mêmes clés anglaises ; le séparateur est auto-détecté. Les risques et mesures sont **fusionnés par identifiant** ; les liens font l'objet d'un contrôle d'intégrité et d'une déduplication.
+- **Mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)). L'export des risques ajoute les colonnes `current_probability` / `current_severity` (et les dérivées `current_score` / `current_criticality`) ; à l'import, ces colonnes reconstruisent la cotation **actuelle**. Un fichier exporté en mode 3 se **ré-importe** donc intégralement.
 - **Champs personnalisés dans les CSV.** Les colonnes de champs personnalisés portent le **libellé** du champ. Les champs **calculés** sont exportés (leur valeur) mais **jamais réimportés** — dérivés, ils se recalculent. Les **échelles** s'exportent en libellé et se ré-importent par libellé ou valeur numérique. Les **références** s'exportent en libellés d'objets et se ré-importent par libellé ou identifiant (un libellé ambigu — doublon, ou contenant une virgule — peut ne pas être reconnu). Une **couleur** s'exporte et se ré-importe en hexadécimal (`#RRGGBB`). Une **image** exporte un simple marqueur `[image]` et **n'est pas réimportée** (le data-URI n'a pas sa place dans un tableur).
 
 > Une **image** s'affiche en **vignette** dans les registres et le rapport **écran/PDF**. Dans l'export **Word**, elle est **embarquée** partout : registre natif, tableaux/notes d'objets, et gabarits personnalisés — que ce soit une valeur `{{ … .cf.<code> }}` (boucle de paragraphes ou de ligne de tableau) ou un bloc `{{ table … }}`. Dans une valeur de gabarit, on peut **dimensionner** l'image : `{{ risk.cf.photo width="4" }}` (4 cm de large, hauteur calculée) ou `height="…"`, comme les autres images de gabarit. Une **couleur** donne une **cellule teintée** (registre natif) ou une pastille ■ (gabarit), selon son mode d'affichage.
@@ -563,7 +588,7 @@ Le CSV est idéal pour préparer ou retravailler les données dans un tableur, p
 Le menu **Fichier** propose deux exports bureautiques, générés **localement et hors-ligne** (le contenu de l'analyse n'est pas transmis à un service distant) :
 
 - **Exporter en Word (.docx)** — suit la **même configuration** que le rapport (voir [§13](#13-le-rapport) : sections, ordre, colonnes, périmètre, orientation) et y ajoute une **page de garde**, une **table des matières** et un **en-tête / pied de page natifs** (avec numéros de page). Cartouche, présentation, synthèse, grille, **matrices en images**, registres et fiches détaillées. Prêt à fondre dans un gabarit d'entreprise. Également accessible via le bouton *⭳ Word* de l'onglet Rapport.
-- **Exporter en Excel (.xlsx)** — un classeur avec les feuilles **Synthèse / Risques / Mesures / Liens**, **plus une feuille par type d'objet** (une ligne par instance, une colonne par attribut), avec cellules typées (vraies dates et nombres), couleurs de criticité et de statut, en-têtes figés et filtres automatiques.
+- **Exporter en Excel (.xlsx)** — un classeur avec les feuilles **Synthèse / Risques / Mesures / Liens**, **plus une feuille par type d'objet** (une ligne par instance, une colonne par attribut), avec cellules typées (vraies dates et nombres), couleurs de criticité et de statut, en-têtes figés et filtres automatiques. En **mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)), la feuille *Risques* ajoute le bloc de cotation **Actuelle** et la *Synthèse* passe à trois colonnes.
 
 ### Exporter avec un modèle Word (gabarit personnalisé)
 
@@ -572,6 +597,7 @@ Au-delà de l'export Word « clé en main » ci-dessus, RAE peut **remplir votre
 - **Fichier › Exporter avec un modèle Word…**, choisissez votre `.docx` : le rapport rempli est téléchargé. Un **rapport d'avertissements** signale en fin de génération les balises non reconnues ou les champs absents.
 - Des **modèles prêts à l'emploi** (classique, éclaté par catégorie, référentiels, tableau de bord, et des reproductions fidèles du rapport natif) sont fournis dans le dossier [`word-templates/`](../word-templates/), en versions **propre** et **annotée** (les annotées expliquent chaque balise — à consulter pour apprendre, mais à ne pas exporter telles quelles).
 - Pour créer le vôtre : suivez le **[guide de rédaction des modèles](../word-templates/guide-redaction-modeles.md)** (tutoriel pas à pas) et gardez le **[catalogue des mots-clés](../word-templates/catalogue-mots-cles-rapport.md)** comme référence (toutes les balises, blocs, boucles, conditions, filtres et formats).
+- En **mode 3 cotations** ([§4](#deux-ou-trois-niveaux-de-cotation)), les balises exposent la cotation **actuelle** — `{{ risk.current.* }}`, colonne `current` dans `{{ table }}`, `{{ matrix type="current" }}` et l'attribut `subset="iar|ar|ir"` sur les matrices accolée/trajectoire, l'évaluation radar `over_iar|over_ar|over_ir`, et `{{ stat type="distribution" }}` à trois colonnes.
 
 ---
 
@@ -660,6 +686,9 @@ Configurez la **grille de cotation** (§4) et créez des **champs personnalisés
 
 **La modification de ma grille a changé les cotations affichées.**
 C'est attendu : le score et la criticité sont **recalculés** à partir de la grille. Fixez la grille avant de coter, ou tenez compte du bandeau d'avertissement.
+
+**Comment coter mes risques sur trois niveaux (inhérent / actuel / résiduel) ?**
+Dans *Paramètres › Grille de cotation*, réglez **Niveaux de cotation** sur **3** ([§4](#deux-ou-trois-niveaux-de-cotation)). Un 3ᵉ bloc *Actuelle* apparaît dans les fiches de risque, et l'ensemble des vues, du rapport et des exports s'adapte. Revenir à **2** n'efface rien : les cotations actuelles sont simplement masquées.
 
 ---
 

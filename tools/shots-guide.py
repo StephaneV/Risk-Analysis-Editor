@@ -76,6 +76,22 @@ SHOTS = [
     # Éditeur d'un champ « valeur calculée » : on met en avant le PICKER d'insertion de la
     # formule (onglets champs/dérivés/objets liés/fonctions/opérateurs + chips) en faisant
     # défiler la modale pour le centrer.
+    # --- Mode « 3 cotations » (§4) : trois matrices accolées Inhérente · Actuelle · Résiduelle ---
+    ("guide-30-mode3-matrices",     DEMO+"&tab=matrices",
+        "setAssessmentLevels(3);"
+        "analyse.risks.forEach(function(x){var ia=x.initial_assessment,ra=x.residual_assessment||ia;"
+        "x.current_assessment={probability:Math.round((ia.probability+ra.probability)/2),severity:Math.round((ia.severity+ra.severity)/2)};});"
+        "markDirty();matrixMode='side';renderAll();renderMatrices();",
+        True, 1040),
+    # --- Mode « 3 cotations » (§4) : trajectoire Inhérente -> Actuelle -> Résiduelle ---
+    # On active le mode 3 et on pré-remplit la cotation actuelle au point milieu
+    # (inhérente/résiduelle) pour illustrer les trois pastilles et leurs apparences.
+    ("guide-29-mode3-trajectoire",  DEMO+"&tab=matrices.traj",
+        "setAssessmentLevels(3);"
+        "analyse.risks.forEach(function(x){var ia=x.initial_assessment,ra=x.residual_assessment||ia;"
+        "x.current_assessment={probability:Math.round((ia.probability+ra.probability)/2),severity:Math.round((ia.severity+ra.severity)/2)};});"
+        "markDirty();matrixMode='traj';renderAll();renderMatrices();",
+        True, 1120),
     ("guide-28-champ-calcule",      DEMO+"&tab=settings.fields",
         "openCustomFieldModal(null);"
         "var st=document.getElementById('cfType');st.value='computed';st.dispatchEvent(new Event('change',{bubbles:true}));"

@@ -63,7 +63,7 @@ Rendu **texte** par défaut. Voir les **formats** au §5.
 méthode, ex. « Produit (P × G) »).
 Collection `grid.levels` (niveaux de criticité, triée par ordre) : `code`, `label` (**étiquette colorée** —
 `{{ level.label | badge }}`), `score_min`, `score_max`, `color`, `acceptance`, `description`, plus les
-**comptes de risques** `count_initial` et `count_residual` (par ce niveau, en initial / résiduel).
+**comptes de risques** `count_initial`, `count_current` (mode 3) et `count_residual` (par ce niveau).
 **Échelles d'axes** — collections `grid.vertical_axis.levels` (vraisemblance) et
 `grid.horizontal_axis.levels` (gravité), frame `step` : `{{ step.value }}`, `{{ step.label }}`,
 `{{ step.description }}`.
@@ -77,12 +77,14 @@ Collection `grid.levels` (niveaux de criticité, triée par ordre) : `code`, `la
 | `{{ risk.initial.probability }}` · `{{ risk.initial.severity }}` | vraisemblance · gravité (initial) |
 | `{{ risk.initial.score }}` · `{{ risk.initial.criticality }}` | score · criticité (libellé) |
 | `{{ risk.initial.criticality_code }}` · `{{ risk.initial.color }}` | code niveau · couleur hex |
+| `{{ risk.current.* }}` | idem pour la cotation **actuelle** (mode 3 cotations) |
 | `{{ risk.residual.* }}` | idem pour le risque résiduel |
 | `{{ risk.evolution }}` | Réduit / Inchangé / Aggravé |
 | `{{ risk.cf.<code> }}` | champ personnalisé de risque / de cotation |
 | `risk.measures` · `risk.links` | sous-collections (boucles imbriquées) |
 
-> Synonymes : `risk.gross.*` = `risk.initial.*`, `risk.net.*` = `risk.residual.*`.
+> Synonymes : `risk.gross.*` = `risk.inherent.*` = `risk.initial.*`, `risk.net.*` = `risk.residual.*`.
+> **Mode « 3 cotations »** : `risk.current.*` porte la cotation actuelle (mesures en place). Hors mode 3, elle se replie sur l'initiale.
 
 ### 3.4 Mesure — `measure.*` (dans `{{#each measures}}`)
 `{{ measure.id }}`, `{{ measure.label }}`, `{{ measure.type }}`, `{{ measure.status }}`,
@@ -236,15 +238,19 @@ Tous acceptent `filter="…"` (§7) et `report_filter="none"`.
 ### 4.1 `{{ matrix … }}`
 | Attribut | Valeurs (défaut) |
 |---|---|
-| `type` | `initial` (syn. `gross`), `residual` (syn. `net`), `trajectory` — défaut `initial` |
+| `type` | `initial` (syn. `gross`, `inherent`), `current` *(mode 3)*, `residual` (syn. `net`), `side` (syn. `ir`, `both`), `trajectory` (syn. `traj`) — défaut `initial` |
+| `subset` | *(mode 3, pour `side`/`trajectory`)* `iar` (défaut) · `ar` · `ir` |
 | `title` | titre (aucun par défaut) |
 | `width` · `height` | dimensions en cm (voir **§4.8**) |
 | `filter` | filtre (§7) |
 
+> **Mode 3 cotations** : `type="current"` = matrice Actuelle seule ; `subset` choisit les niveaux des vues `side`/`trajectory` (I·A·R / A·R / I·R).
+
 ### 4.2 `{{ radar … }}`
 `dimension` (`category`, `cf.<code>`), `metric` (`average`, `max`, `cumulative`, `weighted`, `count`),
-`evaluation` (`initial`, `residual`, `side`, `overlay`), `empty_axes` (`show` **défaut** / `hide`),
-`title`, `width` · `height` (§4.8), `filter`.
+`evaluation` — mode 2 : `initial`, `residual`, `side`, `overlay` ; **mode 3** : `initial`, `current`,
+`residual`, `over_iar` (syn. `iar`), `over_ar` (syn. `ar`), `over_ir` (syn. `ir`) —,
+`empty_axes` (`show` **défaut** / `hide`), `title`, `width` · `height` (§4.8), `filter`.
 Le champ de `dimension` d'un `cf.<code>` doit être un **champ personnalisé de risque** de type
 *sélection* / *cases* / *étiquettes* / *référence* ; s'il est introuvable, un **avertissement** est émis
 (le radar n'est pas produit).

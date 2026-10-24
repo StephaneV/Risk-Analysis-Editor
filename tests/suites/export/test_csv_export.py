@@ -37,6 +37,35 @@ def test_export_risks_csv(app):
     assert "id" in header and "label" in header
 
 
+def test_risks_csv_current_roundtrip_mode3(app):
+    """Mode 3 : l'export porte les colonnes current_*, et un ré-import reconstruit current_assessment."""
+    app.load("trois-cotations.rae.json")
+    cap = app.js(CAPTURE_EXPORT, "exportRisksCSV")
+    header = [str(x) for x in cap["rows"][0]]
+    for k in ("current_probability", "current_severity", "current_score", "current_criticality"):
+        assert k in header, f"colonne {k} absente de l'export mode 3"
+    # ré-import dans une analyse repartie de zéro (mêmes axes) → current_assessment restauré
+    csv = _csv_text(cap["rows"])
+    orig = app.js("(()=>{const r=riskById('R1');return {i:r.initial_assessment,c:r.current_assessment,r:r.residual_assessment};})()")
+    app.js(
+        "([csv,grid])=>{applyLoadedData({format:'risk-analysis-editor',version:'1.0',metadata:{title:'imp',language:'fr'},"
+        "grid:grid,risks:[],measures:[],treatments:[],object_types:[],objects:[],custom_fields:[]});"
+        "const res=analyzeRisksCSV(csv);commitImport('risks',res.items);}",
+        [csv, app.js("analyse.grid")],
+    )
+    got = app.js("(()=>{const r=riskById('R1');return {i:r.initial_assessment,c:r.current_assessment,r:r.residual_assessment};})()")
+    assert got["c"]["probability"] == orig["c"]["probability"]
+    assert got["c"]["severity"] == orig["c"]["severity"]
+    assert got["i"] == orig["i"] and got["r"] == orig["r"]
+
+
+def test_export_risks_csv_mode2_no_current(app):
+    app.load("ebios.rae.json")
+    cap = app.js(CAPTURE_EXPORT, "exportRisksCSV")
+    header = ",".join(str(x) for x in cap["rows"][0]).lower()
+    assert "current" not in header
+
+
 def test_export_measures_csv(app):
     app.load("ebios.rae.json")
     cap = app.js(CAPTURE_EXPORT, "exportMeasuresCSV")

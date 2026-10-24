@@ -30,7 +30,7 @@ It lets you carry out a generic, structured risk analysis: scoring configuration
 
 The tool builds on a generic, configurable model, adaptable to an internal framework and usable to structure and present analyses conducted within approaches such as ISO 27005, EBIOS RM or the DPIA. The grid is broadly configurable: dimensions, axes, levels, labels, thresholds, colors and scoring method; it is saved inside the file.
 
-The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, measures, links and initial/residual assessments. The format is **specified** ([technical documentation](specs/SPEC-format-analyse-risque.md), in French) and comes with a **JSON schema** for validation ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Property names are in English; values (labels, descriptions) stay in the analysis's own language.
+The whole analysis fits in a self-contained **`.rae.json`** file: grid, risks, measures, links and initial/residual assessments (plus current, in 3-level mode). The format is **specified** ([technical documentation](specs/SPEC-format-analyse-risque.md), in French) and comes with a **JSON schema** for validation ([schema-analyse-risque.json](specs/schema-analyse-risque.json)). Property names are in English; values (labels, descriptions) stay in the analysis's own language.
 
 **Official website:** [www.risk-analysis-editor.com](https://www.risk-analysis-editor.com/) — presentation, screenshots and links.
 
@@ -66,11 +66,12 @@ RAE thus offers a framework that is **more structured and consistent than a set 
 - **Configurable axes** (vertical / horizontal): free number of levels, labels and tooltip descriptions.
 - **Score computation methods**: product (P × S), sum (P + S) or **matrix** (level defined cell by cell, with a dedicated editor).
 - **Criticality levels**: colored zones, thresholds, color, acceptance decision and description, with a **coverage check** of reachable scores.
+- **Two or three rating levels** *(option, per analysis)*: alongside the classic **initial → residual** mode, a **inherent → current → residual** mode (gross risk, then with the measures *in place*, then the target with proposed/planned/in-progress measures). Toggled in *Settings › Scoring grid*; it adapts data entry, registers, the **matrices** (side-by-side and a **3-dot trajectory**), the **radars**, the **statistics**, the **report** and the **Word/Excel/CSV** exports. Default: 2 levels (full backward compatibility).
 - **Axis transposition** (vertical ↔ horizontal) in one click, assessments and placements included.
 
 ### Data entry
 - **Overview**: dedicated tab for the analysis's document metadata (title, status, author, organization, scope, methodology reference, description) and analysis-level custom field values.
-- **Risk register**: category, owner, description, initial and residual assessment, change indicator.
+- **Risk register**: category, owner, description, initial and residual assessment (and **current** in 3-level mode), change indicator.
 - **Controls / measures**: type (technical / organizational…), status (color-coded), responsible, due date, cost.
 - **Risk ↔ measure links**, in two sub-tabs: *Associations* (checkbox cross-table, many-to-many) and *Details* (editable register where each link carries a **note** and its own **custom fields**); enriched links are flagged in the cross-table.
 - **Action plan**: measure tracking across three views (timeline, kanban by status, grouped by owner), **overdue** measures highlighted (past due date and not finalized), and **overall progress** (bar + per-status counters). Each measure opens for editing on **double-click** — or via the **✎ button** on every row/card — (due date, status, owner, notes, custom fields) and, in the kanban, can be **dragged and dropped** between status columns.

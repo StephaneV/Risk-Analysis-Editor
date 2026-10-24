@@ -175,8 +175,9 @@ Chaque niveau de criticité définit une **plage de score** et son rendu visuel.
 | `description` | chaîne | F | Description détaillée (scénario, cause, conséquence). |
 | `category` | chaîne | F | Famille, ex. `"Cybersécurité"`, `"RH"`. |
 | `owner` | chaîne | F | Responsable du risque (risk owner). |
-| `initial_assessment` | objet `Cotation` | O | Cotation **brute**, avant mesures (§4.3.1). |
-| `residual_assessment` | objet `Cotation` | F | Cotation **nette**, après application des mesures (§4.3.1). **Si absente**, le risque est considéré non traité et le résiduel est égal à l'initial. |
+| `initial_assessment` | objet `Cotation` | O | Cotation **initiale** (mode 2) / **inhérente**, avant mesures (mode 3) — §4.3.1. |
+| `current_assessment` | objet `Cotation` | F | Cotation **actuelle** (avec les mesures *en place*), niveau intermédiaire du **mode 3 cotations** (§4.3.2). Ignorée en mode 2. **Si absente** en mode 3, l'outil la replie sur `initial_assessment`. |
+| `residual_assessment` | objet `Cotation` | F | Cotation **nette / résiduelle**, après application des mesures (§4.3.1). **Si absente**, le risque est considéré non traité et le résiduel est égal à l'initial. |
 | `comment` | chaîne | F | Note libre. |
 
 #### 4.3.1 Objet `Cotation`
@@ -185,9 +186,27 @@ Chaque niveau de criticité définit une **plage de score** et son rendu visuel.
 |---|---|---|---|
 | `probability` | entier | O | Valeur sur l'axe vertical ; doit correspondre à une `value` de `vertical_axis.levels`. |
 | `severity` | entier | O | Valeur sur l'axe horizontal ; doit correspondre à une `value` de `horizontal_axis.levels`. |
-| `custom` | objet | F | Valeurs des champs personnalisés de cible `"cotation"` (§4.6) — propres à cette cotation (initiale ou résiduelle). |
+| `custom` | objet | F | Valeurs des champs personnalisés de cible `"cotation"` (§4.6) — propres à cette cotation (inhérente, actuelle ou résiduelle). |
 
 > **Le score et le niveau de criticité ne sont pas stockés dans la cotation** : ce sont des **valeurs dérivées**, recalculées par l'outil à partir de (`probability`, `severity`) et de `grid`. Cela évite toute incohérence entre valeurs saisies et valeurs affichées. (Un outil peut néanmoins les mettre en cache dans `extensions`.)
+
+#### 4.3.2 Mode « 3 cotations » (Inhérente · Actuelle · Résiduelle)
+
+Par défaut une analyse comporte **2 cotations** par risque (initiale → résiduelle). Une analyse peut activer un
+**mode à 3 cotations** via `extensions.display.assessment_levels = 3` (§6). Les trois niveaux sont alors :
+
+| Niveau | Champ | Sens |
+|---|---|---|
+| **Inhérente** | `initial_assessment` | Risque brut, **sans aucune mesure**. |
+| **Actuelle** | `current_assessment` | Avec les mesures **en place** (statut `implemented`). |
+| **Résiduelle** | `residual_assessment` | Cible, avec aussi les mesures **proposées / planifiées / en cours**. |
+
+- Les extrémités (`initial_assessment`, `residual_assessment`) sont **inchangées** entre les deux modes ; le mode 3
+  **insère** simplement `current_assessment` au milieu. Un fichier reste donc lisible par un outil qui ignore le mode 3
+  (il verra initiale → résiduelle).
+- Les cotations sont **saisies à la main** ; l'association conceptuelle mesures↔niveaux (par statut) n'est pas calculée.
+- Le **niveau de référence** pour toute criticité unique (synthèse, compteurs, filtres, tri, export à 2 colonnes) reste
+  **la résiduelle** (`residual_assessment`), quel que soit le mode.
 
 ### 4.4 `measures` — liste des mesures de maîtrise
 
@@ -485,12 +504,14 @@ Un fichier est **valide** s'il respecte le schéma JSON (§8) **et** les règles
 - **Champs additionnels :** un producteur peut ajouter des champs à n'importe quel objet ; un lecteur les ignore s'il ne les connaît pas (§2).
 - **Espace réservé `extensions` :** objet libre, à la racine et/ou dans chaque entité, destiné aux données propriétaires (ex. cache de score, coordonnées d'affichage figées, champs métier). Il est recommandé d'y préfixer les clés par un identifiant d'éditeur, ex. `"omt:zone_geographique"`.
 - **Préférences d'affichage `extensions.display` (non normatif) :** l'application y stocke des choix de présentation propres à l'analyse.
+  - `assessment_levels` : nombre de cotations par risque — `2` (défaut, initiale → résiduelle) ou `3` (inhérente → actuelle → résiduelle, §4.3.2). En mode 3, l'application garantit `current_assessment` sur chaque risque (repli = copie de l'initiale) ; repasser à 2 **conserve** les `current_assessment` (masqués, non perdus).
+  - `matrix_subset` / `traj_subset` : en mode 3, sous-ensemble de niveaux affiché respectivement par les **matrices accolées** et la **trajectoire** — `"iar"` (défaut, les trois), `"ar"` (actuelle · résiduelle) ou `"ir"` (inhérente · résiduelle).
   - `arrangement` : disposition des pastilles dans les matrices.
   - `date_format` : format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports — `iso` (AAAA-MM-JJ, défaut), `eu` (JJ/MM/AAAA), `us` (MM/JJ/AAAA) ou `long` (localisé selon la langue). Les dates restent **stockées en ISO** ; seul l'affichage change (la saisie, le tri et les exports CSV conservent l'ISO).
-  - `columns` : personnalisation des colonnes des registres. Objet dont les clés sont `risks`, `measures` et `links` ; chaque valeur est la **liste ordonnée des colonnes visibles** du registre correspondant (la colonne « Actions » est implicite et toujours affichée). Une colonne de champ personnalisé est désignée par `cf:<code>` ; une colonne inconnue (champ supprimé) est ignorée. Absent : ordre par défaut. Exemple : `{ "risks": ["id","risk","initial","residual","cf:source_risque"] }`.
+  - `columns` : personnalisation des colonnes des registres. Objet dont les clés sont `risks`, `measures` et `links` ; chaque valeur est la **liste ordonnée des colonnes visibles** du registre correspondant (la colonne « Actions » est implicite et toujours affichée). Une colonne de champ personnalisé est désignée par `cf:<code>` ; une colonne inconnue (champ supprimé) est ignorée. Absent : ordre par défaut. Exemple : `{ "risks": ["id","risk","initial","residual","cf:source_risque"] }`. En **mode 3 cotations**, le registre des risques expose en plus la colonne `current` (résumé Actuelle) et les colonnes de détail `prob_c` / `sev_c` / `score_c` / `cotc:<code>`.
   - `filters` : **filtrage propagé** enregistré avec l'analyse et réappliqué à la réouverture. `{ risk_category, measure_type, measure_status, custom }`, où `custom` est un objet `code → valeur` pour les champs personnalisés filtrables (ce que reflète le paramètre d'adresse `?filter=`). Ne couvre pas la recherche texte ni les filtres locaux du plan d'action (responsable, « en retard »). Les valeurs périmées sont ignorées ; absent : aucun filtre.
   - `stats` : personnalisation de l'**onglet Statistiques**. `{ blocks: [ … ] }` — liste **ordonnée** de blocs `{ id, type, on, size, display, shape, target?, field? }`. Types : `counters`, `criticality`, `risk_category`, `measure_type`, `measure_status`, `risk_owner`, `measure_owner`, `coverage`, `custom` (répartition par champ personnalisé à valeurs fermées, id `custom:<cible>:<code>`) et `num_agg` (**agrégat numérique** — tuiles effectif renseigné / moyenne / somme / min / max — d'un champ *échelle* ou *calculé numérique*, id `num_agg:<cible>:<code>`). `size` : `full`/`half` ; `display` : `table`/`chart`/`both` (les compteurs et `num_agg` sont en tuiles) ; `shape` : `donut`/`pie`. Absent : blocs par défaut. Bloc de type inconnu **ignoré** ; bloc `custom`/`num_agg` dont le champ a disparu **retiré**.
-  - `radar` : personnalisation de l'**onglet Radars**. `{ view, render, weights }`. **`view`** est la vue courante, **enregistrée avec l'analyse et restaurée à la réouverture** (comme les filtres) : `{ dim, metric, eval, empty_axes }` — `dim` = `"cat"` (catégorie) ou le **code** d'un champ personnalisé de risque à valeurs fermées (select / checklist / tags / **scale** / **reference**) ; `metric` ∈ `avg` / `max` / `sum` / `weighted` / `count`, **ou** une métrique « champ numérique » `cf:<code>:avg` / `cf:<code>:max` / `cf:<code>:sum` (moyenne, max ou somme d'un champ de risque *échelle* ou *calculé numérique* par axe, indépendante de l'évaluation) ; `eval` ∈ `initial` / `residual` / `both-side` / `both-over` ; `empty_axes` (booléen, **défaut `true`**) affiche **tous les axes possibles**, y compris ceux sans risque dans la vue (item/instance non utilisé, ou valeur écartée par un filtre) — `false` ne garde que les axes présents. Une valeur périmée est ramenée à son défaut. `render` (teinte des bandes, contour, pas des anneaux, couleurs des séries, réticule) et `weights` (poids par code de criticité pour la métrique *pondérée*) portent le **rendu**. Absent : réglages par défaut.
+  - `radar` : personnalisation de l'**onglet Radars**. `{ view, render, weights }`. **`view`** est la vue courante, **enregistrée avec l'analyse et restaurée à la réouverture** (comme les filtres) : `{ dim, metric, eval, empty_axes }` — `dim` = `"cat"` (catégorie) ou le **code** d'un champ personnalisé de risque à valeurs fermées (select / checklist / tags / **scale** / **reference**) ; `metric` ∈ `avg` / `max` / `sum` / `weighted` / `count`, **ou** une métrique « champ numérique » `cf:<code>:avg` / `cf:<code>:max` / `cf:<code>:sum` (moyenne, max ou somme d'un champ de risque *échelle* ou *calculé numérique* par axe, indépendante de l'évaluation) ; `eval` ∈ `initial` / `residual` / `both-side` / `both-over` (mode 2) **ou**, en **mode 3 cotations**, `initial` / `current` / `residual` / `over_iar` / `over_ar` / `over_ir` (séries superposées Inhérente·Actuelle·Résiduelle, Actuelle·Résiduelle ou Inhérente·Résiduelle) ; `empty_axes` (booléen, **défaut `true`**) affiche **tous les axes possibles**, y compris ceux sans risque dans la vue (item/instance non utilisé, ou valeur écartée par un filtre) — `false` ne garde que les axes présents. Une valeur périmée est ramenée à son défaut. `render` (teinte des bandes, contour, pas des anneaux, couleurs des séries, réticule) et `weights` (poids par code de criticité pour la métrique *pondérée*) portent le **rendu**. Absent : réglages par défaut.
   - `report` : personnalisation du rapport (rendu écran/PDF **et** export Word, pilotés par la même configuration). Sous-clés :
     - `scope` : `"all"` (analyse complète) ou `"filtered"` (sous-ensemble selon les filtres et la recherche actifs).
     - `orientation` : `"portrait"` (défaut) ou `"landscape"` — orientation de la page à l'impression PDF et à l'export Word.
