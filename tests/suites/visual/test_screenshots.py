@@ -26,6 +26,10 @@ BASELINES = Path(__file__).parent / "baselines"
 COMBOS = [("fr", "light"), ("fr", "dark")]
 THRESHOLD = 0.02
 FIXTURE = "ebios.rae.json"
+# Date figée pour les captures : les vues Plan d'action et Rapport marquent les mesures « en
+# retard » via isOverdue() -> today(). Sans gel, leur baseline dérive au fil du temps (des
+# échéances passent). On fige « aujourd'hui » à la date « as of » de la démo (updated_at).
+FROZEN_TODAY = "2026-07-18"
 
 ARRANGEMENTS = ["grid", "row_col", "col_row", "cluster", "row", "column", "overflow", "manual"]
 RADAR_EVALS = ["both-side", "both-over", "initial", "residual"]
@@ -54,6 +58,7 @@ def test_scene_matches_baseline(app, update_baselines, name, view, setup_js, sel
     app.load(FIXTURE)
     app.set_lang(lang)
     app.set_theme(theme)
+    app.js(f"window.today=()=>'{FROZEN_TODAY}'")   # date figée : captures déterministes (cf. FROZEN_TODAY)
     app.goto(view)
     if setup_js:
         app.js(f"()=>{{{setup_js}}}")
