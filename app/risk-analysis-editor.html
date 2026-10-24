@@ -1717,8 +1717,8 @@ const I18N = {
     btn_import_csv:"⭱ Importer (CSV)", btn_export_csv:"⭳ Exporter (CSV)", toast_csv_export:"CSV exporté : {0}", btn_add_risk:"+ Ajouter un risque",
     th_id:"ID", th_risk:"Risque", th_risk_id:"ID risque", th_measure_id:"ID mesure", th_category:"Catégorie", th_initial:"Initial", th_residual:"Résiduel", th_score:"Score",
     lvl_inherent:"Inhérente", lvl_current:"Actuelle", lvl_residual:"Résiduelle",
-    sub_iar:"Inhérente · Actuelle · Résiduelle", sub_ar:"Actuelle · Résiduelle", sub_ir:"Inhérente · Résiduelle",
-    rad_over_iar:"Superposé · Inhérente · Actuelle · Résiduelle", rad_over_ar:"Superposé · Actuelle · Résiduelle", rad_over_ir:"Superposé · Inhérente · Résiduelle",
+    sub_iar:"Inhérente · Actuelle · Résiduelle", sub_ia:"Inhérente · Actuelle", sub_ar:"Actuelle · Résiduelle", sub_ir:"Inhérente · Résiduelle",
+    rad_over_iar:"Superposé · Inhérente · Actuelle · Résiduelle", rad_over_ia:"Superposé · Inhérente · Actuelle", rad_over_ar:"Superposé · Actuelle · Résiduelle", rad_over_ir:"Superposé · Inhérente · Résiduelle",
     assess_levels_label:"Niveaux de cotation", assess_levels_2:"2 (Initiale · Résiduelle)", assess_levels_3:"3 (Inhérente · Actuelle · Résiduelle)",
     assess_levels_help:"Trois niveaux : risque inhérent (sans mesure), actuel (mesures en place), résiduel (mesures proposées/planifiées/en cours).",
     th_measures:"Mesures", th_evolution:"Évolution",
@@ -2133,8 +2133,8 @@ const I18N = {
     btn_import_csv:"⭱ Import (CSV)", btn_export_csv:"⭳ Export (CSV)", toast_csv_export:"CSV exported: {0}", btn_add_risk:"+ Add a risk",
     th_id:"ID", th_risk:"Risk", th_risk_id:"Risk ID", th_measure_id:"Measure ID", th_category:"Category", th_initial:"Initial", th_residual:"Residual", th_score:"Score",
     lvl_inherent:"Inherent", lvl_current:"Current", lvl_residual:"Residual",
-    sub_iar:"Inherent · Current · Residual", sub_ar:"Current · Residual", sub_ir:"Inherent · Residual",
-    rad_over_iar:"Overlaid · Inherent · Current · Residual", rad_over_ar:"Overlaid · Current · Residual", rad_over_ir:"Overlaid · Inherent · Residual",
+    sub_iar:"Inherent · Current · Residual", sub_ia:"Inherent · Current", sub_ar:"Current · Residual", sub_ir:"Inherent · Residual",
+    rad_over_iar:"Overlaid · Inherent · Current · Residual", rad_over_ia:"Overlaid · Inherent · Current", rad_over_ar:"Overlaid · Current · Residual", rad_over_ir:"Overlaid · Inherent · Residual",
     assess_levels_label:"Rating levels", assess_levels_2:"2 (Initial · Residual)", assess_levels_3:"3 (Inherent · Current · Residual)",
     assess_levels_help:"Three levels: inherent risk (no measure), current (measures in place), residual (proposed/planned/in-progress measures).",
     th_measures:"Measures", th_evolution:"Change",
@@ -2544,8 +2544,8 @@ const I18N = {
     btn_import_csv:"⭱ Importa (CSV)", btn_export_csv:"⭳ Esporta (CSV)", toast_csv_export:"CSV esportato: {0}", btn_add_risk:"+ Aggiungi un rischio",
     th_id:"ID", th_risk:"Rischio", th_risk_id:"ID rischio", th_measure_id:"ID misura", th_category:"Categoria", th_initial:"Iniziale", th_residual:"Residuo", th_score:"Punteggio",
     lvl_inherent:"Inerente", lvl_current:"Attuale", lvl_residual:"Residua",
-    sub_iar:"Inerente · Attuale · Residua", sub_ar:"Attuale · Residua", sub_ir:"Inerente · Residua",
-    rad_over_iar:"Sovrapposto · Inerente · Attuale · Residua", rad_over_ar:"Sovrapposto · Attuale · Residua", rad_over_ir:"Sovrapposto · Inerente · Residua",
+    sub_iar:"Inerente · Attuale · Residua", sub_ia:"Inerente · Attuale", sub_ar:"Attuale · Residua", sub_ir:"Inerente · Residua",
+    rad_over_iar:"Sovrapposto · Inerente · Attuale · Residua", rad_over_ia:"Sovrapposto · Inerente · Attuale", rad_over_ar:"Sovrapposto · Attuale · Residua", rad_over_ir:"Sovrapposto · Inerente · Residua",
     assess_levels_label:"Livelli di valutazione", assess_levels_2:"2 (Iniziale · Residua)", assess_levels_3:"3 (Inerente · Attuale · Residua)",
     assess_levels_help:"Tre livelli: rischio inerente (nessuna misura), attuale (misure attuate), residuo (misure proposte/pianificate/in corso).",
     th_measures:"Misure", th_evolution:"Evoluzione",
@@ -3408,18 +3408,19 @@ function current(risk){return risk.current_assessment||risk.initial_assessment;}
 /* Accès générique par niveau logique : "inherent" (=initiale), "current" (=actuelle), "residual" (=résiduelle). */
 function assessmentOf(risk,level){return level==="current"?current(risk):level==="inherent"?(risk.initial_assessment):residual(risk);}
 /* Sous-ensemble de niveaux affichés (mode 3) pour les matrices accolées ("side") et la trajectoire ("traj") :
-   "iar" (Inhérente·Actuelle·Résiduelle, défaut) | "ar" (Actuelle·Résiduelle) | "ir" (Inhérente·Résiduelle). */
+   "iar" (Inhérente·Actuelle·Résiduelle, défaut) | "ia" (Inhérente·Actuelle) | "ar" (Actuelle·Résiduelle) | "ir" (Inhérente·Résiduelle). */
+const SUBSET_CODES=["iar","ia","ar","ir"];
 let _levelSubsetOverride=null;   // {side?,traj?} : forçage temporaire (rendu d'une section de rapport)
 function levelSubset(view){
   if(_levelSubsetOverride&&_levelSubsetOverride[view])return _levelSubsetOverride[view];
   const key=view==="side"?"matrix_subset":"traj_subset";
   const v=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display[key];
-  return (v==="ar"||v==="ir")?v:"iar";}
+  return (v==="ia"||v==="ar"||v==="ir")?v:"iar";}
 function setLevelSubset(view,v){const e=analyse.extensions=analyse.extensions||{},d=e.display=e.display||{};
   const key=view==="side"?"matrix_subset":"traj_subset";
   if(v==="iar")delete d[key];else d[key]=v;markDirty();}   // défaut non écrit
 /* Niveaux logiques d'un sous-ensemble, dans l'ordre (grille "initial"/"current"/"residual"). */
-function subsetLevels(sub){return sub==="ar"?["current","residual"]:sub==="ir"?["initial","residual"]:["initial","current","residual"];}
+function subsetLevels(sub){return sub==="ia"?["initial","current"]:sub==="ar"?["current","residual"]:sub==="ir"?["initial","residual"]:["initial","current","residual"];}
 /* Suite ordonnée des pastilles de trajectoire d'un risque (une par case distincte occupée).
    Mode 2 : [initiale → résiduelle]. Mode 3 : [inhérente → actuelle → résiduelle].
    Chaque pastille : {ev, kind, app, dashedIn}.
@@ -3437,8 +3438,9 @@ function riskTrajStages(r){
     return [{ev:I,kind:"start",app:"start",dashedIn:false,level:"initial"},{ev:R,kind:"end",app:"end",dashedIn:false,level:"residual"}];
   }
   const sub=levelSubset("traj");
-  // Séquence de stades selon le sous-ensemble (I·A·R par défaut, A·R ou I·R).
-  const seq=sub==="ar"?[["a",current(r)],["r",residual(r)]]
+  // Séquence de stades selon le sous-ensemble (I·A·R par défaut, I·A, A·R ou I·R).
+  const seq=sub==="ia"?[["i",r.initial_assessment],["a",current(r)]]
+    :sub==="ar"?[["a",current(r)],["r",residual(r)]]
     :sub==="ir"?[["i",r.initial_assessment],["r",residual(r)]]
     :[["i",r.initial_assessment],["a",current(r)],["r",residual(r)]];
   // Cas dégénéré propre à I·A·R : extrémités sur la même case malgré un stade intermédiaire distinct
@@ -4590,7 +4592,7 @@ function radarViewLoad(){
   const fields=radarDimFields();
   radarState.dim=(v.dim==="cat"||fields.some(f=>f.code===v.dim))?v.dim:"cat";
   radarState.metric=(["avg","max","sum","weighted","count"].indexOf(v.metric)>=0||radarFieldMetric(v.metric))?v.metric:"avg";
-  radarState.eval=["initial","current","residual","both-side","both-over","over_iar","over_ar","over_ir"].indexOf(v.eval)>=0?v.eval:"both-over";
+  radarState.eval=["initial","current","residual","both-side","both-over","over_iar","over_ia","over_ar","over_ir"].indexOf(v.eval)>=0?v.eval:"both-over";
   radarState.emptyAxes=v.empty_axes!==false;   // défaut : afficher tous les axes
 }
 function radarViewSave(){
@@ -4783,13 +4785,13 @@ function radarTitleText(cfg){cfg=cfg||radarState;
   const metricLabel=radarMetricLabel(cfg.metric);
   const f=radarFieldOf(cfg.dim),dimLabel=cfg.dim==="cat"?t("th_category"):(f?cfLabel(f):cfg.dim);
   if(cfg.metric==="count"||radarFieldMetric(cfg.metric))return metricLabel+" — "+dimLabel;
-  const evL=cfg.eval==="over_iar"?t("rad_over_iar"):cfg.eval==="over_ar"?t("rad_over_ar"):cfg.eval==="over_ir"?t("rad_over_ir")
+  const evL=cfg.eval==="over_iar"?t("rad_over_iar"):cfg.eval==="over_ia"?t("rad_over_ia"):cfg.eval==="over_ar"?t("rad_over_ar"):cfg.eval==="over_ir"?t("rad_over_ir")
     :cfg.eval==="initial"?(assessmentLevels()===3?t("lvl_inherent"):t("th_initial")):cfg.eval==="current"?t("lvl_current"):cfg.eval==="residual"?(assessmentLevels()===3?t("lvl_residual"):t("th_residual")):cfg.eval==="both-side"?t("radar_eval_side"):t("radar_eval_over");
   return metricLabel+" — "+dimLabel+" · "+evL;
 }
-const RADAR_EVAL3=["initial","current","residual","over_iar","over_ar","over_ir"];
+const RADAR_EVAL3=["initial","current","residual","over_iar","over_ia","over_ar","over_ir"];
 function radarEvalLabel(v){return {initial:t("lvl_inherent"),current:t("lvl_current"),residual:t("lvl_residual"),
-  over_iar:t("rad_over_iar"),over_ar:t("rad_over_ar"),over_ir:t("rad_over_ir")}[v]||v;}
+  over_iar:t("rad_over_iar"),over_ia:t("rad_over_ia"),over_ar:t("rad_over_ar"),over_ir:t("rad_over_ir")}[v]||v;}
 function radarSyncSeg(){
   const L3=assessmentLevels()===3;
   const seg=document.getElementById("radarEvalSeg"),sel=document.getElementById("radarEvalSel");
@@ -4831,7 +4833,7 @@ function radarComputeModel(cfg,risks){cfg=cfg||radarState;risks=risks||visibleRi
     // Mode 3 : simple (Inhérente/Actuelle/Résiduelle) ou superposé au choix (I·A·R / A·R / I·R).
     const ev=cfg.eval;
     series=ev==="initial"?[sI]:ev==="current"?[sC]:ev==="residual"?[sR]
-      :ev==="over_ar"?[sC,sR]:ev==="over_ir"?[sI,sR]:ev==="over_iar"?[sI,sC,sR]
+      :ev==="over_ia"?[sI,sC]:ev==="over_ar"?[sC,sR]:ev==="over_ir"?[sI,sR]:ev==="over_iar"?[sI,sC,sR]
       :(L3?[sI,sC,sR]:[sI,sR]);   // both-over / both-side (mode 2) et repli
     if(perRisk){vmax=gridMaxScore();bands=true;}
     else{vmax=radarExtVmax(radarNiceMax(series.reduce((acc,s)=>acc.concat(s.values),[])));bands=false;}
@@ -5222,7 +5224,7 @@ function renderArrangementBar(mode){
   if(assessmentLevels()===3){
     const view=mode==="side"?"side":"traj",cur=levelSubset(view);
     const ss=document.createElement("select");ss.className="topsel";ss.id="levelSubsetSel";ss.style.maxWidth="270px";
-    [["iar",t("sub_iar")],["ar",t("sub_ar")],["ir",t("sub_ir")]].forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;if(v===cur)o.selected=true;ss.appendChild(o);});
+    [["iar",t("sub_iar")],["ia",t("sub_ia")],["ar",t("sub_ar")],["ir",t("sub_ir")]].forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;if(v===cur)o.selected=true;ss.appendChild(o);});
     ss.addEventListener("change",e=>{setLevelSubset(view,e.target.value);requestAnimationFrame(renderMatrices);});
     bar.appendChild(ss);
   }
@@ -5283,7 +5285,7 @@ function renderMatrices(){
     const APP_LABEL={inherent:t("lvl_inherent"),current:t("lvl_current"),residual:t("lvl_residual"),
       unch_ia:t("leg_unch_ia"),unch_ar:t("leg_unch_ar"),unch_all:t("leg_unch_all")};
     const APPS={iar:["inherent","current","residual","unch_ia","unch_ar","unch_all"],
-      ar:["current","residual","unch_ar"], ir:["inherent","residual","unch_all"]};
+      ia:["inherent","current","unch_ia"], ar:["current","residual","unch_ar"], ir:["inherent","residual","unch_all"]};
     const swatch=cls=>'<div class="item"><span class="swatch '+cls+'">R</span>'+esc(APP_LABEL[cls])+'</div>';
     const kindsLeg=L3
       ? APPS[sub].map(swatch).join("")
@@ -6367,7 +6369,7 @@ function reportMatrixSVG(mode,risks,subset){
     const c=document.createElement("div");b.appendChild(c);holder.appendChild(b);
     const mc=buildGrid(c,"traj");renderTrajectory(mc);
     const APP_LABEL={inherent:t("lvl_inherent"),current:t("lvl_current"),residual:t("lvl_residual"),unch_ia:t("leg_unch_ia"),unch_ar:t("leg_unch_ar"),unch_all:t("leg_unch_all")};
-    const APPS={iar:["inherent","current","residual","unch_ia","unch_ar","unch_all"],ar:["current","residual","unch_ar"],ir:["inherent","residual","unch_all"]};
+    const APPS={iar:["inherent","current","residual","unch_ia","unch_ar","unch_all"],ia:["inherent","current","unch_ia"],ar:["current","residual","unch_ar"],ir:["inherent","residual","unch_all"]};
     const kinds=L3
       ? APPS[levelSubset("traj")].map(cl=>'<div class="item"><span class="swatch '+cl+'">R</span>'+esc(APP_LABEL[cl])+'</div>').join("")
       : '<div class="item"><span class="swatch start">R</span>'+esc(t("leg_start"))+'</div>'+
@@ -6508,11 +6510,11 @@ function reportCfg(){
       o.view=["table","detail"].indexOf(s.view)>=0?s.view:"table";}
     else if(reportTableId(s.id))o.columns=columns(s.columns,reportTableId(s.id),reportDefaultCols(s.id));
     else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
-    else if(s.id==="matrix_ir"||s.id==="matrix_traj")o.subset=["iar","ar","ir"].indexOf(s.subset)>=0?s.subset:"iar";   // mode 3 : sous-ensemble de niveaux
+    else if(s.id==="matrix_ir"||s.id==="matrix_traj")o.subset=SUBSET_CODES.indexOf(s.subset)>=0?s.subset:"iar";   // mode 3 : sous-ensemble de niveaux (iar/ia/ar/ir)
     else if(s.id==="radar"){
       o.dim=(s.dim==="cat"||radarDimFields().some(f=>f.code===s.dim))?s.dim:"cat";
       o.metric=["avg","max","sum","weighted","count"].indexOf(s.metric)>=0?s.metric:"avg";
-      o.eval=["initial","current","residual","both-side","both-over","over_iar","over_ar","over_ir"].indexOf(s.eval)>=0?s.eval:"both-over";
+      o.eval=["initial","current","residual","both-side","both-over","over_iar","over_ia","over_ar","over_ir"].indexOf(s.eval)>=0?s.eval:"both-over";
     }
     return o;
   }
@@ -11522,7 +11524,7 @@ function tmplMatrixBlockXml(attrs,ctx){
   const type=(attrs.type||"initial").toLowerCase();
   if(attrs.type&&["initial","inherent","current","residual","trajectory","traj","side","ir","both","gross","net"].indexOf(type)<0)tmplWarn("tw_matrix_type",attrs.type);
   // Sous-ensemble de niveaux (mode 3) pour les matrices accolées/trajectoire : iar / ar / ir.
-  const subset=({iar:"iar",ar:"ar",ir:"ir","i-a-r":"iar","a-r":"ar","i-r":"ir","iar ":"iar"})[String(attrs.subset||attrs.levels||"").toLowerCase().trim()]||undefined;
+  const subset=({iar:"iar",ia:"ia",ar:"ar",ir:"ir","i-a-r":"iar","i-a":"ia","a-r":"ar","i-r":"ir"})[String(attrs.subset||attrs.levels||"").toLowerCase().trim()]||undefined;
   const ast=tmplCombinedFilter(attrs,ctx);
   const risks=ast?tmplFilterList((analyse.risks||[]),"risk",ast):(analyse.risks||[]).slice();
   let svg;
@@ -11539,7 +11541,7 @@ function tmplMatrixBlockXml(attrs,ctx){
 // Bloc {{ radar … }} : SVG autonome (buildRadarExportSVG) -> requête d'image + drawing.
 const TMPL_RADAR_METRIC={average:"avg",avg:"avg",max:"max",maximum:"max",cumulative:"sum",sum:"sum",weighted:"weighted",count:"count",number:"count"};
 const TMPL_RADAR_EVAL={initial:"initial",inherent:"initial",current:"current",residual:"residual",side:"both-side",accolees:"both-side","both-side":"both-side",overlay:"both-over",superposees:"both-over","both-over":"both-over",both:"both-over",
-  over_iar:"over_iar","iar":"over_iar","i-a-r":"over_iar",over_ar:"over_ar","ar":"over_ar","a-r":"over_ar",over_ir:"over_ir","ir":"over_ir","i-r":"over_ir"};
+  over_iar:"over_iar","iar":"over_iar","i-a-r":"over_iar",over_ia:"over_ia","ia":"over_ia","i-a":"over_ia",over_ar:"over_ar","ar":"over_ar","a-r":"over_ar",over_ir:"over_ir","ir":"over_ir","i-r":"over_ir"};
 // empty_axes : show/all/true → tous les axes définis ; hide/used/false → seulement les axes utilisés.
 const TMPL_RADAR_EMPTY={show:true,all:true,"true":true,yes:true,"1":true,on:true,hide:false,used:false,"false":false,no:false,"0":false,off:false};
 function tmplRadarBlockXml(attrs,ctx){
@@ -12031,7 +12033,7 @@ function rcSecItemHTML(s,iterating){
   else if((s.id==="matrix_ir"||s.id==="matrix_traj")&&assessmentLevels()===3){
     // Mode 3 : sous-ensemble de niveaux affiché par la section (I·A·R / A·R / I·R).
     ctrl='<select class="rc-rowctrl" data-role="subset">'+
-      [["iar","sub_iar"],["ar","sub_ar"],["ir","sub_ir"]].map(a=>'<option value="'+a[0]+'"'+(s.subset===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';}
+      [["iar","sub_iar"],["ia","sub_ia"],["ar","sub_ar"],["ir","sub_ir"]].map(a=>'<option value="'+a[0]+'"'+(s.subset===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';}
   else if(s.id==="radar"){
     const L3=assessmentLevels()===3;
     ctrl='<button type="button" class="rc-expand" data-exp="rcsub-radar">'+esc(t("radar_dim"))+' ▾</button>';
@@ -12041,7 +12043,7 @@ function rcSecItemHTML(s,iterating){
     const metSel='<select class="rc-rowctrl" data-role="radar-metric">'+
       [["avg","radar_metric_avg"],["max","radar_metric_max"],["sum","radar_metric_sum"],["weighted","radar_metric_weighted"],["count","radar_metric_count"]].map(a=>'<option value="'+a[0]+'"'+(s.metric===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
     const evOpts=L3
-      ? [["over_iar","rad_over_iar"],["over_ar","rad_over_ar"],["over_ir","rad_over_ir"],["initial","lvl_inherent"],["current","lvl_current"],["residual","lvl_residual"]]
+      ? [["over_iar","rad_over_iar"],["over_ia","rad_over_ia"],["over_ar","rad_over_ar"],["over_ir","rad_over_ir"],["initial","lvl_inherent"],["current","lvl_current"],["residual","lvl_residual"]]
       : [["both-over","radar_eval_over"],["both-side","radar_eval_side"],["initial","th_initial"],["residual","th_residual"]];
     const evVal=L3&&evOpts.every(a=>a[0]!==s.eval)?"over_iar":s.eval;   // migrer un ancien réglage mode 2
     const evSel='<select class="rc-rowctrl" data-role="radar-eval">'+

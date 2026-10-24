@@ -103,8 +103,8 @@
           "description": "Préférences d'affichage propres à l'analyse (non normatives).",
           "properties": {
             "assessment_levels": { "enum": [2, 3], "description": "Nombre de cotations par risque : 2 (défaut, initiale → résiduelle) ou 3 (inhérente → actuelle → résiduelle ; utilise current_assessment)." },
-            "matrix_subset": { "enum": ["iar", "ar", "ir"], "description": "Mode 3 : sous-ensemble de niveaux des matrices accolées — iar (les trois, défaut), ar (actuelle·résiduelle), ir (inhérente·résiduelle)." },
-            "traj_subset": { "enum": ["iar", "ar", "ir"], "description": "Mode 3 : sous-ensemble de niveaux de la trajectoire — iar (défaut), ar ou ir." },
+            "matrix_subset": { "enum": ["iar", "ia", "ar", "ir"], "description": "Mode 3 : sous-ensemble de niveaux des matrices accolées — iar (les trois, défaut), ia (inhérente·actuelle), ar (actuelle·résiduelle), ir (inhérente·résiduelle)." },
+            "traj_subset": { "enum": ["iar", "ia", "ar", "ir"], "description": "Mode 3 : sous-ensemble de niveaux de la trajectoire — iar (défaut), ia, ar ou ir." },
             "arrangement": { "type": "string", "description": "Disposition des pastilles dans les matrices." },
             "date_format": { "enum": ["iso", "eu", "us", "long"], "description": "Format d'affichage des dates (échéances, dates du rapport, champs personnalisés de type date) dans l'application et les rapports : iso (AAAA-MM-JJ, défaut), eu (JJ/MM/AAAA), us (MM/JJ/AAAA) ou long (localisé). Les dates restent stockées en ISO." },
             "columns": {
@@ -172,7 +172,7 @@
                   "properties": {
                     "dim": { "type": "string", "description": "Dimension des axes : « cat » (catégorie de risque) ou le code d'un champ personnalisé de risque à valeurs fermées (select / checklist / tags / scale / reference). Défaut : « cat »." },
                     "metric": { "description": "Métrique mesurée sur chaque axe : une valeur standard (« avg », « max », « sum », « weighted », « count »), ou une métrique « champ numérique » de la forme « cf:<code>:avg » / « cf:<code>:max » / « cf:<code>:sum » — moyenne, max ou somme d'un champ de risque de type échelle ou calculé numérique par axe (indépendante de l'évaluation). Défaut : « avg ».", "anyOf": [ { "enum": ["avg", "max", "sum", "weighted", "count"] }, { "type": "string", "pattern": "^cf:.+:(avg|max|sum)$" } ] },
-                    "eval": { "enum": ["initial", "residual", "both-side", "both-over", "current", "over_iar", "over_ar", "over_ir"], "description": "Évaluation affichée. Mode 2 : initial, residual, both-side (accolées), both-over (superposées, défaut). Mode 3 cotations : initial, current, residual, ou séries superposées over_iar / over_ar / over_ir." },
+                    "eval": { "enum": ["initial", "residual", "both-side", "both-over", "current", "over_iar", "over_ia", "over_ar", "over_ir"], "description": "Évaluation affichée. Mode 2 : initial, residual, both-side (accolées), both-over (superposées, défaut). Mode 3 cotations : initial, current, residual, ou séries superposées over_iar / over_ia / over_ar / over_ir." },
                     "empty_axes": { "type": "boolean", "description": "Afficher tous les axes possibles, y compris ceux sans risque dans la vue (item/instance non utilisé, ou valeur écartée par un filtre). Défaut : true ; false = seulement les axes présents." }
                   }
                 },

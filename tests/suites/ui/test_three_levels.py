@@ -137,14 +137,16 @@ def test_side_view_three_matrices(app):
 def test_radar_eval_dropdown_mode3(app):
     app.load(FX)
     app.goto("radars")
-    # mode 3 : menu déroulant (seg masqué), 6 options
+    # mode 3 : menu déroulant (seg masqué), 7 options
     assert app.js("document.getElementById('radarEvalSel').style.display!=='none'")
     assert app.js("document.getElementById('radarEvalSeg').style.display==='none'")
     opts = app.js("[...document.getElementById('radarEvalSel').options].map(o=>o.value)")
-    assert opts == ["initial", "current", "residual", "over_iar", "over_ar", "over_ir"]
+    assert opts == ["initial", "current", "residual", "over_iar", "over_ia", "over_ar", "over_ir"]
     # séries selon l'option
     app.js("radarState.eval='over_iar';renderRadars();")
     assert app.js("radarComputeModel().series.map(s=>s.name)") == ["Inhérente", "Actuelle", "Résiduelle"]
+    app.js("radarState.eval='over_ia';renderRadars();")
+    assert app.js("radarComputeModel().series.map(s=>s.name)") == ["Inhérente", "Actuelle"]
     app.js("radarState.eval='over_ar';renderRadars();")
     assert app.js("radarComputeModel().series.map(s=>s.name)") == ["Actuelle", "Résiduelle"]
     app.js("radarState.eval='over_ir';renderRadars();")
@@ -186,7 +188,9 @@ def test_trajectory_subsets_mode3(app):
     def apps():
         app.js("renderTrajectory(document.querySelector('#matrixArea .matrix-container'));")
         return app.js(
-            "[...document.querySelectorAll('#matrixArea .ov-chip')].reduce((a,c)=>{const k=c.className.replace('ov-chip','').trim();a[k]=(a[k]||0)+1;return a;},{})"
+            "[...document.querySelectorAll('#matrixArea .ov-chip')].reduce((a,c)=>{"
+            "const k=c.className.split(/\\s+/).filter(x=>x&&x!=='ov-chip'&&x!=='peer-hl')[0];"
+            "a[k]=(a[k]||0)+1;return a;},{})"
         )
 
     def arrows():
@@ -195,6 +199,11 @@ def test_trajectory_subsets_mode3(app):
             ".reduce((a,l)=>{const k=l.getAttribute('stroke-dasharray')?'dashed':'solid';a[k]=(a[k]||0)+1;return a;},{})"
         )
 
+    # I·A : que inherent/current/unch_ia ; toutes les flèches pleines
+    app.js("setLevelSubset('traj','ia');renderMatrices();")
+    ia = apps()
+    assert set(ia) <= {"inherent", "current", "unch_ia"}
+    assert arrows().get("dashed", 0) == 0 and arrows().get("solid", 0) >= 1
     # A·R : que current/residual/unch_ar ; toutes les flèches pleines
     app.js("setLevelSubset('traj','ar');renderMatrices();")
     ar = apps()
@@ -205,6 +214,9 @@ def test_trajectory_subsets_mode3(app):
     ir = apps()
     assert set(ir) <= {"inherent", "residual", "unch_all"}
     assert arrows().get("dashed", 0) == 0 and arrows().get("solid", 0) >= 1
+    # le menu propose bien les 4 sous-ensembles
+    opts = app.js("[...document.getElementById('levelSubsetSel').options].map(o=>o.value)")
+    assert opts == ["iar", "ia", "ar", "ir"]
     assert not app.console_errors()
 
 
@@ -297,7 +309,10 @@ def test_report_settings_mode3_controls(app):
     assert "matrix_current" in ids
     assert app.js("!!document.querySelector('.rc-secitem[data-sec=\"matrix_traj\"] [data-role=\"subset\"]')")
     opts = app.js("[...(document.querySelector('.rc-secitem[data-sec=\"radar\"] [data-role=\"radar-eval\"]')||{options:[]}).options].map(o=>o.value)")
-    assert opts == ["over_iar", "over_ar", "over_ir", "initial", "current", "residual"]
+    assert opts == ["over_iar", "over_ia", "over_ar", "over_ir", "initial", "current", "residual"]
+    # sous-menu de sous-ensemble (trajectoire) : 4 choix dont ia
+    subopts = app.js("[...(document.querySelector('.rc-secitem[data-sec=\"matrix_traj\"] [data-role=\"subset\"]')||{options:[]}).options].map(o=>o.value)")
+    assert subopts == ["iar", "ia", "ar", "ir"]
 
 
 def test_report_matrix_current_hidden_mode2(app):
@@ -321,7 +336,10 @@ def test_word_template_tags_mode3(app):
     assert app.js("tmplStatBlockXml({type:'distribution',display:'table'},[]).includes('Actuelle')")
     assert app.js("!!tmplMatrixBlockXml({type:'current'},[])")
     assert app.js("!!tmplMatrixBlockXml({type:'traj',subset:'ar'},[])")
+    assert app.js("!!tmplMatrixBlockXml({type:'traj',subset:'ia'},[])")
     assert app.js("!!tmplRadarBlockXml({evaluation:'over_ar',dimension:'category'},[])")
+    assert app.js("!!tmplRadarBlockXml({evaluation:'over_ia',dimension:'category'},[])")
+    assert app.js("TMPL_RADAR_EVAL['over_ia']") == "over_ia"
     # dictionnaire d'évaluation radar : valeurs mode 3
     assert app.js("TMPL_RADAR_EVAL['over_iar']") == "over_iar"
     assert app.js("TMPL_RADAR_EVAL['current']") == "current"

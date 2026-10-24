@@ -250,7 +250,7 @@ Balises qui produisent autre chose que du texte — c'est là que se choisit le 
 | Attribut | Valeurs | Défaut |
 |---|---|---|
 | `type` | `initial` (syn. `gross`, `inherent`), `current` (mode 3), `residual` (syn. `net`), `side` (syn. `ir`, `both` — matrices accolées), `trajectory` (syn. `traj`) | `initial` |
-| `subset` | *(mode 3, pour `side`/`trajectory`)* sous-ensemble de niveaux : `iar` (défaut), `ar` (actuelle·résiduelle), `ir` (inhérente·résiduelle) | `iar` |
+| `subset` | *(mode 3, pour `side`/`trajectory`)* sous-ensemble de niveaux : `iar` (défaut), `ia` (inhérente·actuelle), `ar` (actuelle·résiduelle), `ir` (inhérente·résiduelle) | `iar` |
 | `filter` | expression de filtre (§8) | — |
 | `title` | texte (sinon aucun) | — |
 | `width` · `height` | dimensions en cm (§4.8) | ajustée à la page |
@@ -266,7 +266,7 @@ Attributs : `dimension` (`category` ou `cf.<code>`), `metric` (`average`, `max`,
 
 **`evaluation`** — mode 2 : `initial`, `residual`, `side` (accolées), `overlay` (superposées, **défaut**).
 **Mode « 3 cotations »** : `initial` (syn. `inherent`), `current`, `residual`, ou séries superposées
-`over_iar` (syn. `iar`), `over_ar` (syn. `ar`), `over_ir` (syn. `ir`). En mode 3, `overlay` superpose les
+`over_iar` (syn. `iar`), `over_ia` (syn. `ia`), `over_ar` (syn. `ar`), `over_ir` (syn. `ir`). En mode 3, `overlay` superpose les
 trois niveaux.
 
 **`empty_axes`** — par défaut le radar affiche **tous les axes possibles** (toutes les valeurs connues),

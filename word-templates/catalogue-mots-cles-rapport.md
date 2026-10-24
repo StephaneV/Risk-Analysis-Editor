@@ -239,7 +239,7 @@ Tous acceptent `filter="…"` (§7) et `report_filter="none"`.
 | Attribut | Valeurs (défaut) |
 |---|---|
 | `type` | `initial` (syn. `gross`, `inherent`), `current` *(mode 3)*, `residual` (syn. `net`), `side` (syn. `ir`, `both`), `trajectory` (syn. `traj`) — défaut `initial` |
-| `subset` | *(mode 3, pour `side`/`trajectory`)* `iar` (défaut) · `ar` · `ir` |
+| `subset` | *(mode 3, pour `side`/`trajectory`)* `iar` (défaut) · `ia` · `ar` · `ir` |
 | `title` | titre (aucun par défaut) |
 | `width` · `height` | dimensions en cm (voir **§4.8**) |
 | `filter` | filtre (§7) |
@@ -249,7 +249,7 @@ Tous acceptent `filter="…"` (§7) et `report_filter="none"`.
 ### 4.2 `{{ radar … }}`
 `dimension` (`category`, `cf.<code>`), `metric` (`average`, `max`, `cumulative`, `weighted`, `count`),
 `evaluation` — mode 2 : `initial`, `residual`, `side`, `overlay` ; **mode 3** : `initial`, `current`,
-`residual`, `over_iar` (syn. `iar`), `over_ar` (syn. `ar`), `over_ir` (syn. `ir`) —,
+`residual`, `over_iar` (syn. `iar`), `over_ia` (syn. `ia`), `over_ar` (syn. `ar`), `over_ir` (syn. `ir`) —,
 `empty_axes` (`show` **défaut** / `hide`), `title`, `width` · `height` (§4.8), `filter`.
 Le champ de `dimension` d'un `cf.<code>` doit être un **champ personnalisé de risque** de type
 *sélection* / *cases* / *étiquettes* / *référence* ; s'il est introuvable, un **avertissement** est émis
