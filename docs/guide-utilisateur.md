@@ -137,6 +137,10 @@ Le réglage **Niveaux de cotation** (dans *Grille de cotation*) choisit combien 
   - **Actuelle** — avec les mesures **en place** (statut *En place*) ;
   - **Résiduelle** — la cible, une fois appliquées aussi les mesures **proposées / planifiées / en cours**.
 
+![Matrices accolées en mode 3 : Inhérente · Actuelle · Résiduelle](images/guide-30-mode3-matrices.png)
+
+> *Vue **Matrices › Initial / Résiduel** en mode 3 : les trois matrices **Inhérente**, **Actuelle** et **Résiduelle** sont affichées côte à côte, illustrant la réduction progressive du risque.*
+
 Les cotations sont **saisies à la main** (il n'y a pas de calcul automatique). En mode 3, le niveau supplémentaire s'ajoute partout : **fiche de risque** (un 3ᵉ bloc de cotation), **registres** (colonne *Actuelle*), **matrices** (vue accolée à trois matrices et **trajectoire à trois pastilles**), **radars**, **statistiques**, **rapport** et exports **Word / Excel / CSV**.
 
 ![Matrices › Trajectoire en mode 3 cotations](images/guide-29-mode3-trajectoire.png)
