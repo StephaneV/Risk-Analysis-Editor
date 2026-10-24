@@ -437,12 +437,16 @@
     width:22px;height:22px;display:flex;align-items:center;justify-content:center;
     font-size:10px;font-weight:800;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.5);transition:transform .1s}
   .chip:hover{transform:scale(1.2);z-index:20}
+  /* Mise en évidence « pair » : au survol d'une pastille, toutes celles du même risque
+     (autres matrices accolées, autres positions de trajectoire) grossissent de même. */
+  .chip.peer-hl{transform:scale(1.2);z-index:20}
   .overlay{position:absolute;inset:0;pointer-events:none}
   .overlay svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
   .ov-chip{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;width:22px;height:22px;
     border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
     cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5);transition:transform .1s}
   .ov-chip:hover{transform:translate(-50%,-50%) scale(1.25);z-index:20}
+  .ov-chip.peer-hl{transform:translate(-50%,-50%) scale(1.25);z-index:20}
   /* Halo de focus : déclaré ici et non par la règle générale, car `.ov-chip` pose sa propre
      ombre portée plus bas dans la feuille, à spécificité égale — elle l'emporterait. */
   .ov-chip:focus-visible{box-shadow:0 2px 6px rgba(0,0,0,.5),0 0 0 3px var(--focus-ring);z-index:20}
@@ -5296,6 +5300,29 @@ function renderMatrices(){
 document.getElementById("matrixLegend").addEventListener("change",e=>{
   if(e.target.id==="legendGrille"){setDisplaySetting("show_grid",e.target.checked);requestAnimationFrame(renderMatrices);}
 });
+
+/* Survol lié : mettre en évidence toutes les pastilles d'un même risque (copies dans les
+   matrices accolées, positions successives d'une trajectoire). Délégation posée une fois sur
+   #matrixArea (conteneur stable, re-rempli à chaque rendu) ; les pastilles portent data-rid. */
+(function(){
+  const area=document.getElementById("matrixArea");if(!area)return;
+  const clearPeers=()=>area.querySelectorAll(".peer-hl").forEach(c=>c.classList.remove("peer-hl"));
+  area.addEventListener("mouseover",e=>{
+    if(typeof _dragging!=="undefined"&&_dragging)return;   // pas d'effet pendant un glisser
+    const chip=e.target.closest&&e.target.closest(".chip,.ov-chip");
+    if(!chip||!chip.dataset.rid||chip.classList.contains("peer-hl"))return;
+    clearPeers();
+    const rid=chip.dataset.rid;
+    area.querySelectorAll(".chip,.ov-chip").forEach(c=>{if(c.dataset.rid===rid)c.classList.add("peer-hl");});
+  });
+  area.addEventListener("mouseout",e=>{
+    const chip=e.target.closest&&e.target.closest(".chip,.ov-chip");if(!chip)return;
+    // On reste mis en évidence tant qu'on passe d'une pastille du même risque à une autre.
+    const to=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(".chip,.ov-chip");
+    if(to&&to.classList.contains("peer-hl"))return;
+    clearPeers();
+  });
+})();
 
 function critLegend(){
   return analyse.grid.criticality_levels.slice().sort((a,b)=>(a.order||a.score_min)-(b.order||b.score_min))

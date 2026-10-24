@@ -54,3 +54,26 @@ def test_export_svg_side_and_trajectory(app):
     traj = app.js("reportMatrixSVG('traj').indexOf('<svg')")
     assert side >= 0 and traj >= 0, "export SVG des matrices vide"
     assert not app.console_errors()
+
+
+def test_hover_highlights_same_risk_peers(app):
+    """Survol d'une pastille : toutes les pastilles du même risque (copies accolées) se mettent
+    en évidence, et l'effet est retiré quand on quitte vers le vide."""
+    app.load("ebios.rae.json")
+    app.goto("matrices")
+    app.js("matrixMode='side';renderMatrices();layoutStacks(document.getElementById('matrixArea'));")
+    res = app.js(
+        "(()=>{const area=document.getElementById('matrixArea');"
+        "const chips=[...area.querySelectorAll('.chip,.ov-chip')];"
+        "const rid=chips[0].dataset.rid;"
+        "const peers=chips.filter(c=>c.dataset.rid===rid);"
+        "chips.find(c=>c.dataset.rid===rid).dispatchEvent(new MouseEvent('mouseover',{bubbles:true}));"
+        "const hl=[...area.querySelectorAll('.peer-hl')];"
+        "const r={total:peers.length,hl:hl.length,allSame:hl.every(c=>c.dataset.rid===rid)};"
+        "hl[0].dispatchEvent(new MouseEvent('mouseout',{bubbles:true,relatedTarget:area}));"
+        "r.cleared=area.querySelectorAll('.peer-hl').length;return r;})()"
+    )
+    assert res["total"] >= 2, "2 matrices accolées → au moins 2 copies du risque"
+    assert res["hl"] == res["total"] and res["allSame"]
+    assert res["cleared"] == 0
+    assert not app.console_errors()
