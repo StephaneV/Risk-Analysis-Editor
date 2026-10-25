@@ -5883,7 +5883,11 @@ function renderManualTraj(mc){
    par recherche locale (descente de coordonnées + redémarrages déterministes) qui minimise :
    croisements de flèches, pastilles posées sur une flèche, décentrage et longueur des flèches.
    Les flèches droites H (même probabilité) / V (même gravité) restent alignées (même sous-ligne /
-   sous-colonne) ; des emplacements peuvent rester vides pour laisser passer les flèches. */
+   sous-colonne) ; des emplacements peuvent rester vides pour laisser passer les flèches.
+   Les flèches rigoureusement colinéaires (risques suivant le même trajet) sont regroupées en
+   « faisceaux » : elles partagent un couloir et se superposent, au lieu d'en réclamer un chacune —
+   ce qui limite le nombre de couloirs et préserve une taille de pastille lisible quand la densité
+   augmente (p. ex. en mode 3 cotations). */
 function layoutTrajectoryGridOpt(mc){
   const svg=mc.querySelector("svg"),chipsEl=mc.querySelector(".ov-chips");
   [...svg.querySelectorAll("line,.leader")].forEach(n=>n.remove());
@@ -5910,6 +5914,18 @@ function layoutTrajectoryGridOpt(mc){
   });
   if(!tokens.length)return;
 
+  /* Faisceaux : flèches droites rigoureusement colinéaires (même colonne/ligne et même segment
+     de cases). Plusieurs risques qui suivent exactement le même trajet n'ont pas besoin d'un
+     couloir chacun — ils partagent un couloir et se superposent (ils forment visuellement une
+     seule flèche). Sans ce regroupement, chaque flèche réclame sa sous-colonne : le nombre de
+     couloirs explose, K grossit et les pastilles rétrécissent jusqu'au plancher. */
+  let _uid=0;
+  arrows.forEach(a=>{
+    if(a.type==="H"){const lo=Math.min(a.start.g,a.end.g),hi=Math.max(a.start.g,a.end.g);a.bundle="H|"+a.start.p+"|"+lo+"|"+hi;}
+    else if(a.type==="V"){const lo=Math.min(a.start.p,a.end.p),hi=Math.max(a.start.p,a.end.p);a.bundle="V|"+a.start.g+"|"+lo+"|"+hi;}
+    else a.bundle="D"+(_uid++);   // diagonale : jamais regroupée
+  });
+
   const cellKey=t=>t.p+"-"+t.g;
   const cells={};tokens.forEach(t=>(cells[cellKey(t)]=cells[cellKey(t)]||[]).push(t));
   const vByCol={},hByRow={};
@@ -5920,11 +5936,14 @@ function layoutTrajectoryGridOpt(mc){
      flèches de la colonne surestime le besoin et rétrécit les pastilles sans raison — deux
      flèches qui se suivent sans se chevaucher partagent très bien la même sous-colonne.
      Se toucher en un seul niveau ne compte pas : les deux pastilles sont alors dans la même
-     case, où elles occupent déjà des emplacements distincts. */
+     case, où elles occupent déjà des emplacements distincts. Les flèches colinéaires (même
+     segment) ne comptent que pour une : elles partageront un couloir (cf. faisceaux). */
   function profondeurRecouvrement(parCouloir,axe){
     let m=1;
     Object.values(parCouloir).forEach(l=>{
-      const iv=l.map(a=>{const u=a.start[axe],v=a.end[axe];return [Math.min(u,v),Math.max(u,v)];});
+      const seen=new Set(),iv=[];
+      l.forEach(a=>{const u=a.start[axe],v=a.end[axe],lo=Math.min(u,v),hi=Math.max(u,v),k=lo+"-"+hi;
+        if(!seen.has(k)){seen.add(k);iv.push([lo,hi]);}});
       iv.forEach(x=>{const n=iv.filter(y=>Math.max(x[0],y[0])<Math.min(x[1],y[1])).length;if(n>m)m=n;});
     });
     return m;
@@ -5969,15 +5988,20 @@ function layoutTrajectoryGridOpt(mc){
   const aseg=a=>[posX(a.start),posY(a.start),posX(a.end),posY(a.end)];
 
   /* ---- coûts (pondérations en pixels) ---- */
-  const W_CROSS=140,W_ON=95,W_STR=95,W_LEN=0.045,W_CTR=2.4;
+  const W_CROSS=140,W_ON=95,W_STR=95,W_LEN=0.045,W_CTR=2.4,W_BUNDLE=22;
   const thrA=size*0.9, thrOn=size*0.8;
   function arrBase(a){ // droiture (flèches H/V) + longueur
     let c=0;
     if(a.type==="H")c+=W_STR*Math.abs(a.start.si-a.end.si);
     else if(a.type==="V")c+=W_STR*Math.abs(a.start.sj-a.end.sj);
     const s=aseg(a);c+=W_LEN*Math.hypot(s[2]-s[0],s[3]-s[1]);return c;}
-  function pairConflict(a,b){const d=segSegDist(aseg(a),aseg(b));return d>=thrA?0:W_CROSS*(1-d/thrA);}
+  function pairConflict(a,b){
+    if(a.bundle===b.bundle){ // même faisceau : on les rassemble dans un couloir (attraction), jamais de pénalité de « croisement »
+      const la=a.type==="H"?a.start.sj:a.start.si, lb=b.type==="H"?b.start.sj:b.start.si;
+      return W_BUNDLE*Math.abs(la-lb);}
+    const d=segSegDist(aseg(a),aseg(b));return d>=thrA?0:W_CROSS*(1-d/thrA);}
   function onArrow(t,a){if(t===a.start||t===a.end)return 0;
+    if(t.arrows.some(ar=>ar.bundle===a.bundle))return 0;   // t fait partie de la pile du même faisceau : sa flèche longe la même ligne
     const s=aseg(a),d=segDist(posX(t),posY(t),s[0],s[1],s[2],s[3]);return d>=thrOn?0:W_ON*(1-d/thrOn);}
   const ctrCost=t=>W_CTR*(Math.abs(t.si-cInd)+Math.abs(t.sj-cInd));
   function localCost(t){ // somme des termes qui varient quand t bouge

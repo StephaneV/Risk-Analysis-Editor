@@ -220,6 +220,33 @@ def test_trajectory_subsets_mode3(app):
     assert not app.console_errors()
 
 
+def test_trajectory_bundles_keep_chips_readable(app):
+    """Faisceaux (« Flèches droites optimisées ») : des risques suivant un trajet identique
+    partagent un couloir au lieu d'en réclamer un chacun. Sans ce regroupement, douze flèches
+    colinéaires forceraient une dizaine de couloirs et des pastilles réduites au plancher (~9 px) ;
+    avec faisceaux, un seul couloir suffit et la taille reste lisible."""
+    app.load(FX)
+    # Douze risques (clonés) suivant exactement le même trajet dans une colonne (p=3 : g4→g2→g1).
+    app.js(
+        "const R=analyse.risks;const base=JSON.parse(JSON.stringify(R[0]));"
+        "while(R.length<12){const n=JSON.parse(JSON.stringify(base));n.id='CL'+R.length;"
+        "if('code' in n)n.code='CL'+R.length;R.push(n);}"
+        "R.forEach(x=>{x.initial_assessment={probability:3,severity:4};"
+        "x.current_assessment={probability:3,severity:2};x.residual_assessment={probability:3,severity:1};});"
+        "markDirty();"
+    )
+    app.goto("matrices")
+    app.js("matrixMode='traj';renderMatrices();renderTrajectory(document.querySelector('#matrixArea .matrix-container'));")
+    size = app.js(
+        "(()=>{const c=document.querySelector('#matrixArea .ov-chip');if(!c)return 0;"
+        "return c.getBoundingClientRect().width||c.offsetWidth||parseFloat(c.style.width)||0;})()"
+    )
+    assert size >= 16, f"pastilles écrasées malgré le faisceau : {size} px"
+    # les flèches sont bien tracées (pleines, blanches) et aucune erreur
+    assert app.js("document.querySelectorAll('#matrixArea svg line').length") >= 1
+    assert not app.console_errors()
+
+
 def test_radar_render_has_three_colours(app):
     app.load(FX)
     app.settings_subtab("radars")
