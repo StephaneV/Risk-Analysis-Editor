@@ -108,3 +108,52 @@ def test_no_trajectory_instances_in_mode2(app):
       return it?{subset:!!it.querySelector('[data-role=subset]'),title:!!it.querySelector('[data-role=sectitle]'),rm:!!it.querySelector('.rc-rmsec')}:null;}""")
     assert row == {"subset": False, "title": False, "rm": False}, row
     assert not app.console_errors()
+
+
+def test_multiple_radar_sections(app):
+    """On peut ajouter plusieurs radars indépendants (paramétrage + titre + position), puis en supprimer.
+    Le rendu produit une section distincte par radar, dans l'ordre."""
+    app.load(FX3)
+    app.settings_subtab("report")
+    # bouton d'ajout présent ; un seul radar au départ
+    assert app.js("!!document.getElementById('rcAddRadar')"), "bouton d'ajout de radar absent"
+    assert app.js("reportCfg().sections.filter(s=>s.id.indexOf('radar')===0).length") == 1
+    # ajouter deux radars → identifiants uniques, dans l'ordre
+    app.js("document.getElementById('rcAddRadar').click()")
+    app.js("document.getElementById('rcAddRadar').click()")
+    ids = app.js("reportCfg().sections.filter(s=>s.id.indexOf('radar')===0).map(s=>s.id)")
+    assert ids == ["radar", "radar__2", "radar__3"], ids
+    # activer + régler évaluation/métrique et titre distincts
+    app.js("""()=>{
+      const rows=[...document.querySelectorAll('#rcSeclist .rc-secitem')].filter(it=>it.dataset.sec.indexOf('radar')===0);
+      const want=[['over_iar','avg','Superposé'],['over_ar','avg','Réduction A→R'],['current','count','Nombre']];
+      rows.forEach((it,k)=>{
+        const cb=it.querySelector('.rc-secrow input[type=checkbox]'); if(!cb.checked)cb.click();
+        const ev=it.querySelector('[data-role=radar-eval]'); ev.value=want[k][0]; ev.dispatchEvent(new Event('change',{bubbles:true}));
+        const mt=it.querySelector('[data-role=radar-metric]'); mt.value=want[k][1]; mt.dispatchEvent(new Event('change',{bubbles:true}));
+        const ti=it.querySelector('[data-role=sectitle]'); ti.value=want[k][2]; ti.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      reportCfgStore().iteration={by:'none',sort:'criticality'}; markDirty();
+    }""")
+    app.goto("report")
+    cards = app.js("[...document.querySelectorAll('#view-report [id^=\"rsec-radar\"]')].map(c=>({id:c.id,h2:c.querySelector('h2').textContent}))")
+    assert [c["id"] for c in cards] == ["rsec-radar", "rsec-radar__2", "rsec-radar__3"], cards
+    assert [c["h2"] for c in cards] == ["Superposé", "Réduction A→R", "Nombre"], cards
+    # supprimer le radar du milieu
+    app.settings_subtab("report")
+    app.js("""()=>{const it=[...document.querySelectorAll('#rcSeclist .rc-secitem')].find(x=>x.dataset.sec==='radar__2');
+      it.querySelector('.rc-rmsec').click();}""")
+    ids2 = app.js("reportCfg().sections.filter(s=>s.id.indexOf('radar')===0).map(s=>s.id)")
+    assert ids2 == ["radar", "radar__3"], ids2
+    assert not app.console_errors()
+
+
+def test_add_radar_available_in_mode2(app):
+    """Le bouton « Ajouter un radar » est disponible aussi en mode 2 (contrairement à la trajectoire)."""
+    app.load("ebios.rae.json")
+    app.settings_subtab("report")
+    assert app.js("!!document.getElementById('rcAddRadar')"), "bouton d'ajout de radar absent en mode 2"
+    app.js("document.getElementById('rcAddRadar').click()")
+    ids = app.js("reportCfg().sections.filter(s=>s.id.indexOf('radar')===0).map(s=>s.id)")
+    assert ids == ["radar", "radar__2"], ids
+    assert not app.console_errors()

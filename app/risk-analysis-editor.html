@@ -1980,7 +1980,7 @@ const I18N = {
     settings_report:"Rapport",
     rc_sections_title:"Sections du rapport",
     rc_sections_cap:"Cochez les sections à inclure ; glissez la poignée pour changer l'ordre. La page de garde et la table des matières restent en tête. Certaines sections offrent des options.",
-    rc_add_traj:"Ajouter une matrice trajectoire", rc_remove_sec:"Supprimer cette section", rc_sec_title_ph:"Titre personnalisé (facultatif)",
+    rc_add_traj:"Ajouter une matrice trajectoire", rc_add_radar:"Ajouter un radar", rc_remove_sec:"Supprimer cette section", rc_sec_title_ph:"Titre personnalisé (facultatif)",
     rc_cover_row:"Page de garde", rc_pinned:"position fixe", rc_cf:"champ perso",
     rc_lines:"Lignes", rc_items:"Éléments", rc_columns:"Colonnes",
     rc_layout_side:"Côte à côte", rc_layout_stacked:"L'une après l'autre",
@@ -2392,7 +2392,7 @@ const I18N = {
     settings_report:"Report",
     rc_sections_title:"Report sections",
     rc_sections_cap:"Check the sections to include; drag the handle to reorder. The cover page and table of contents stay at the top. Some sections offer options.",
-    rc_add_traj:"Add a trajectory matrix", rc_remove_sec:"Remove this section", rc_sec_title_ph:"Custom title (optional)",
+    rc_add_traj:"Add a trajectory matrix", rc_add_radar:"Add a radar", rc_remove_sec:"Remove this section", rc_sec_title_ph:"Custom title (optional)",
     rc_cover_row:"Cover page", rc_pinned:"fixed position", rc_cf:"custom field",
     rc_lines:"Rows", rc_items:"Items", rc_columns:"Columns",
     rc_layout_side:"Side by side", rc_layout_stacked:"One after another",
@@ -2804,7 +2804,7 @@ const I18N = {
     settings_report:"Report",
     rc_sections_title:"Sezioni del report",
     rc_sections_cap:"Seleziona le sezioni da includere; trascina la maniglia per riordinare. La copertina e l'indice restano in testa. Alcune sezioni offrono opzioni.",
-    rc_add_traj:"Aggiungi una matrice di traiettoria", rc_remove_sec:"Rimuovi questa sezione", rc_sec_title_ph:"Titolo personalizzato (facoltativo)",
+    rc_add_traj:"Aggiungi una matrice di traiettoria", rc_add_radar:"Aggiungi un radar", rc_remove_sec:"Rimuovi questa sezione", rc_sec_title_ph:"Titolo personalizzato (facoltativo)",
     rc_cover_row:"Copertina", rc_pinned:"posizione fissa", rc_cf:"campo pers.",
     rc_lines:"Righe", rc_items:"Elementi", rc_columns:"Colonne",
     rc_layout_side:"Affiancate", rc_layout_stacked:"Una dopo l'altra",
@@ -6426,7 +6426,7 @@ const REPORT_SECTION_IDS=["metadata","presentation","summary_counts","summary_di
    rapport (chacun avec sa cotation, son titre et sa position). Un exemplaire supplémentaire
    porte un identifiant « <base>__<n> » (p. ex. « matrix_traj__2 »). Le séparateur « __ » reste
    valide dans une ancre de table des matières « #rsec-… ». Seule la trajectoire l'est pour l'instant. */
-const INSTANCEABLE_SECTION_IDS=["matrix_traj"], SEC_INST_SEP="__";
+const INSTANCEABLE_SECTION_IDS=["matrix_traj","radar"], SEC_INST_SEP="__";
 function secBase(id){const i=String(id).indexOf(SEC_INST_SEP);return i<0?String(id):String(id).slice(0,i);}
 function secIsInstance(id){return String(id).indexOf(SEC_INST_SEP)>0;}
 function secIdValid(id){return REPORT_SECTION_IDS.indexOf(id)>=0||(secIsInstance(id)&&INSTANCEABLE_SECTION_IDS.indexOf(secBase(id))>=0);}
@@ -6497,6 +6497,7 @@ function secDisplayTitle(s){
   if(s&&typeof s.title==="string"&&s.title.trim())return s.title.trim();
   const base=secBase(s?s.id:"");
   if(base==="matrix_traj"&&assessmentLevels()===3)return t("mtx_traj")+" — "+accoleeTitle(s&&s.subset);
+  if(base==="radar")return radarTitleText({eval:s&&s.eval,dim:s&&s.dim,metric:s&&s.metric});   // titre décrivant l'évaluation/dimension/métrique
   return reportSectionTitle(base);
 }
 function reportCfgRaw(){const d=analyse.extensions&&analyse.extensions.display&&analyse.extensions.display.report;return (d&&typeof d==="object")?d:null;}
@@ -6560,10 +6561,11 @@ function reportCfg(){
     else if(s.id==="action_plan")o.view=["due_date","status","responsible"].indexOf(s.view)>=0?s.view:"due_date";
     else if(base==="matrix_ir"||base==="matrix_traj"){o.subset=SUBSET_CODES.indexOf(s.subset)>=0?s.subset:"iar";   // mode 3 : sous-ensemble de niveaux (iar/ia/ar/ir)
       if(base==="matrix_traj")o.title=typeof s.title==="string"?s.title:"";}   // titre personnalisé (sections trajectoire multiples)
-    else if(s.id==="radar"){
+    else if(base==="radar"){
       o.dim=(s.dim==="cat"||radarDimFields().some(f=>f.code===s.dim))?s.dim:"cat";
       o.metric=["avg","max","sum","weighted","count"].indexOf(s.metric)>=0?s.metric:"avg";
       o.eval=["initial","current","residual","both-side","both-over","over_iar","over_ia","over_ar","over_ir"].indexOf(s.eval)>=0?s.eval:"both-over";
+      o.title=typeof s.title==="string"?s.title:"";   // titre personnalisé (radars multiples)
     }
     return o;
   }
@@ -6788,12 +6790,11 @@ function renderReport(){
     },
     radar:s=>{
       const rc={eval:s.eval,dim:s.dim,metric:s.metric};
-      const head=radarTitleText(rc);
-      let inner='<h2>'+esc(head)+'</h2>';
+      let inner='<h2>'+esc(secDisplayTitle(s))+'</h2>';
       const m=radarComputeModel(rc,RISKS);
       inner+= m.tooFew?('<div class="rp-sub">'+esc(nR===0?t("matrix_empty"):t("radar_need_axes",m.axes.length))+'</div>')
              :buildRadarExportSVG(rc,RISKS,{noTitle:true}).svg;
-      return '<div class="rp-card rp-matrices" id="rsec-radar">'+inner+'</div>';
+      return '<div class="rp-card rp-matrices" id="rsec-'+esc((s&&s.id)||"radar")+'">'+inner+'</div>';
     },
     risks_table:s=>card("risks_table",'<h2>'+esc(t("risks_title"))+'</h2>'+reportTable("risks",s.columns,RISKS)),
     measures_table:s=>card("measures_table",'<h2>'+esc(t("measures_title"))+'</h2>'+reportTable("measures",s.columns,MEAS)),
@@ -10038,8 +10039,7 @@ async function buildDocx(){
     },
     radar:async(s)=>{
       const rc={eval:s.eval,dim:s.dim,metric:s.metric};
-      const head=radarTitleText(rc);
-      let out=heading(head);
+      let out=heading(secDisplayTitle(s));
       const m=radarComputeModel(rc,RISKS);
       out+= m.tooFew?dxP(dxRun(nR===0?t("matrix_empty"):t("radar_need_axes",m.axes.length),{color:"7A8699"}),{sa:120})
            :await addSvgImage(buildRadarExportSVG(rc,RISKS,{noTitle:true}).svg);
@@ -12094,9 +12094,10 @@ function rcSecItemHTML(s,iterating){
     const titleInput=secBase(s.id)==="matrix_traj"
       ? '<input type="text" class="rc-rowctrl rc-sectitle" data-role="sectitle" value="'+esc(s.title||"")+'" placeholder="'+esc(t("rc_sec_title_ph"))+'">' : "";
     ctrl=titleInput+subSel;}
-  else if(s.id==="radar"){
-    const L3=assessmentLevels()===3;
-    ctrl='<button type="button" class="rc-expand" data-exp="rcsub-radar">'+esc(t("radar_dim"))+' ▾</button>';
+  else if(secBase(s.id)==="radar"){
+    const L3=assessmentLevels()===3, subId="rcsub-"+s.id;   // id unique par exemplaire (plusieurs radars)
+    const titleInput='<input type="text" class="rc-rowctrl rc-sectitle" data-role="sectitle" value="'+esc(s.title||"")+'" placeholder="'+esc(t("rc_sec_title_ph"))+'">';
+    ctrl=titleInput+'<button type="button" class="rc-expand" data-exp="'+subId+'">'+esc(t("radar_dim"))+' ▾</button>';
     const dimSel='<select class="rc-rowctrl" data-role="radar-dim">'+
       (['<option value="cat"'+(s.dim==="cat"?" selected":"")+'>'+esc(t("th_category"))+'</option>']
         .concat(radarDimFields().map(f=>'<option value="'+esc(f.code)+'"'+(s.dim===f.code?" selected":"")+'>'+esc(cfLabel(f))+'</option>'))).join("")+'</select>';
@@ -12108,7 +12109,7 @@ function rcSecItemHTML(s,iterating){
     const evVal=L3&&evOpts.every(a=>a[0]!==s.eval)?"over_iar":s.eval;   // migrer un ancien réglage mode 2
     const evSel='<select class="rc-rowctrl" data-role="radar-eval">'+
       evOpts.map(a=>'<option value="'+a[0]+'"'+(evVal===a[0]?" selected":"")+'>'+esc(t(a[1]))+'</option>').join("")+'</select>';
-    sub='<div class="rc-subrows" id="rcsub-radar">'+
+    sub='<div class="rc-subrows" id="'+subId+'">'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_dim"))+'</span>'+dimSel+'</label>'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_metric"))+'</span>'+metSel+'</label>'+
       '<label class="rc-field"><span class="rc-lab">'+esc(t("radar_eval"))+'</span>'+evSel+'</label>'+
@@ -12155,12 +12156,15 @@ function renderReportSettings(){
     '</div>';
   }
   // 2. Sections
-  // Mode 3 : on peut ajouter plusieurs matrices trajectoires indépendantes (cotation + titre + position).
-  const addTraj=assessmentLevels()===3
-    ? '<div style="margin-top:10px"><button type="button" class="btn ghost sm" id="rcAddTraj">➕ '+esc(t("rc_add_traj"))+'</button></div>' : "";
+  // On peut ajouter plusieurs matrices trajectoires (mode 3) et plusieurs radars, indépendants
+  // (paramétrage + titre + position).
+  const addBtns=
+    (assessmentLevels()===3?'<button type="button" class="btn ghost sm" id="rcAddTraj">➕ '+esc(t("rc_add_traj"))+'</button> ':"")+
+    '<button type="button" class="btn ghost sm" id="rcAddRadar">➕ '+esc(t("rc_add_radar"))+'</button>';
   h+='<div class="card"><h2>'+esc(t("rc_sections_title"))+'</h2><div class="caption">'+esc(t("rc_sections_cap"))+'</div>'+
     '<div class="rc-seclist" id="rcSeclist">'+pin("cover",t("rc_cover_row"),cfg.cover.on)+pin("toc",t("rp_toc"),cfg.toc.on)+
-    cfg.sections.filter(s=>reportSectionAvailable(s.id)).map(s=>rcSecItemHTML(s,isSplit)).join("")+'</div>'+addTraj+'</div>';
+    cfg.sections.filter(s=>reportSectionAvailable(s.id)).map(s=>rcSecItemHTML(s,isSplit)).join("")+'</div>'+
+    '<div style="margin-top:10px">'+addBtns+'</div></div>';
   // 3. Page de garde
   h+='<div class="card"><h2>'+esc(t("rc_cover_row"))+'</h2><div class="caption">'+esc(t("rc_cover_cap"))+'</div>'+
     '<input type="hidden" id="rcLogoData" value="'+esc(c.logo||"")+'">'+
@@ -12238,10 +12242,11 @@ function collectReportCfg(){
     else if(secBase(id)==="matrix_ir"||secBase(id)==="matrix_traj"){
       const _ss=it.querySelector('[data-role="subset"]');if(_ss)o.subset=_ss.value;
       if(secBase(id)==="matrix_traj"){const _ti=it.querySelector('[data-role="sectitle"]');if(_ti)o.title=_ti.value;}}
-    else if(id==="radar"){
+    else if(secBase(id)==="radar"){
       o.dim=(it.querySelector('[data-role="radar-dim"]')||{}).value||"cat";
       o.metric=(it.querySelector('[data-role="radar-metric"]')||{}).value||"avg";
       o.eval=(it.querySelector('[data-role="radar-eval"]')||{}).value||"both-over";
+      const _ti=it.querySelector('[data-role="sectitle"]');if(_ti)o.title=_ti.value;
     }
     secs.push(o);
   });
@@ -12249,18 +12254,21 @@ function collectReportCfg(){
   store.iteration={by:_mode==="split"?(rcVal("#rcIterBy")||"risk_category"):"none", sort:rcVal("#rcIterSort")||"criticality"};
   reportCfgStore();analyse.extensions.display.report=store;markDirty();
 }
-/* Ajoute un exemplaire de matrice trajectoire, juste après le dernier déjà présent (sinon en fin
-   de liste). Identifiant unique « matrix_traj__<n> ». */
-function rcAddTrajSection(){
+/* Ajoute un exemplaire d'une section instanciable (« <base>__<n> »), juste après le dernier déjà
+   présent (sinon en fin de liste). `extra` porte les réglages par défaut du nouvel exemplaire. */
+function rcAddInstanceSection(base,extra){
   collectReportCfg();
   const store=reportCfgStore();
   const secs=Array.isArray(store.sections)?store.sections:(store.sections=reportCfg().sections.map(s=>({id:s.id,on:s.on})));
-  let n=2;secs.forEach(s=>{const m=/^matrix_traj__(\d+)$/.exec(s.id);if(m)n=Math.max(n,+m[1]+1);});
-  const newSec={id:"matrix_traj__"+n,on:true,subset:"iar",title:""};
-  let last=-1;secs.forEach((s,i)=>{if(secBase(s.id)==="matrix_traj")last=i;});
+  const re=new RegExp("^"+base+"__(\\d+)$");
+  let n=2;secs.forEach(s=>{const m=re.exec(s.id);if(m)n=Math.max(n,+m[1]+1);});
+  const newSec=Object.assign({id:base+"__"+n,on:true,title:""},extra);
+  let last=-1;secs.forEach((s,i)=>{if(secBase(s.id)===base)last=i;});
   secs.splice(last>=0?last+1:secs.length,0,newSec);
   markDirty();renderReportSettings();
 }
+function rcAddTrajSection(){rcAddInstanceSection("matrix_traj",{subset:"iar"});}
+function rcAddRadarSection(){rcAddInstanceSection("radar",{dim:"cat",metric:"avg",eval:assessmentLevels()===3?"over_iar":"both-over"});}
 /* Supprime un exemplaire supplémentaire (jamais une section de base). */
 function rcRemoveSection(id){
   if(!secIsInstance(id))return;
@@ -12354,6 +12362,7 @@ function rcWire(p){
       if(e.target.closest("#rcLogoDrop")){const fi=document.getElementById("rcLogoFile");if(fi)fi.click();return;}
       if(e.target.closest("#rcReset")){rcReset();return;}
       if(e.target.closest("#rcAddTraj")){rcAddTrajSection();return;}
+      if(e.target.closest("#rcAddRadar")){rcAddRadarSection();return;}
       const rm=e.target.closest(".rc-rmsec");if(rm){const it=rm.closest(".rc-secitem");if(it)rcRemoveSection(it.dataset.sec);return;}
     });
     p.addEventListener("focusin",e=>{if(e.target.matches(".rc-zones input"))rcLastZone=e.target;});
